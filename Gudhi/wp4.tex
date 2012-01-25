@@ -1,0 +1,156 @@
+
+\subsection*{WP4 : A software platform for geometric understanding in high
+  dimension}
+
+We intend to develop an open source  software platform that will provide a
+comprehensive and robust set of tools for geometric undertsanding in
+high
+dimension. 
+
+\paragraph{ The need for a software platform.}
+On one hand, we perceive the development of such a platform has 
+an abolute necessity to serve as a test bench and  evaluation process
+for any new algorithmic solution resulting  from  our theoretical work.
+On the other hand, we perceive the development of such a platform has
+a full research work. Indeed we are convinced that, as robustness
+issues triggered the development of a whole branch of theoretical
+work, known as Geometric Computing, the need for
+highly efficient implementations to turn around the curse of  
+dimentionality,  will participate in the emergence of relevant
+concepts for a new algorithmic foundations
+of  geometric understanding in high dimension.
+
+
+The term platform mean that we intend to capitalize
+upon development efforts and encourage contributions
+from researchers external to the ERC.
+ At the end of this ERC,
+the platform will offer 
+a comprehensive and robust set of algorithmic tools
+for high dimension data analysis.
+
+We also think about this platform as the choice
+vector for the diffusion of our algorithmic solutions 
+into application domains, such as astrophysics
+or structural biology) 
+ where the need for handling high dimensional
+data crucially arise.  Such a diffusion in various fields
+ will in turn provide for various bench set data 
+and user feedback.
+
+
+
+\paragraph{ State of the art.}  
+Leaving aside the flourishing field of machine learning
+and well-known successfull software for linear algebra,
+linear and quadratic optimization,  only  few implementations handle
+geometry in high dimension. 
+Most of those software use multiscale  grid based
+data strutures,  more or less adaptive
+ to the local  density of data.
+A typical example is the popular ANN software to compute  the approximate
+nearest-neighbor of a query point
+among a  high dimensional point cloud. 
+Only two implementations of persistent homology algorithms are
+currently available. One of them is the PLEX modulus of Matlab,
+developped by Patrice Perry and Vin de Silva. The other one is the
+library Dyonisus proposed by Dmitryi Morozov. These implementations
+do not propose parallel nor in-line versions. They are known to be
+succesfull in small dimensions but inefficient as soon as the
+dimension rises.  Their  maintenance, only assumed by the very few authors
+is likely not to be perenial.
+
+
+\paragraph{ Methodology.} 
+Two key requirements in the development of this platform will be
+efficiency and theoretical guarantees, including handling of
+robustness issues. A common
+platform is ideal for these goals, as it allows for more
+resources to be poured into the optimization, bug-fixing and interface
+design than for a single prototype.
+
+ We intend to apply to the development of this software platform 
+the very  recipees that made up the success story
+of the CGAL library. 
+The development work will be based on a strong infrastructure
+including a web site, a svn repository and  daily running of testsuites on several  hardware architectures.
+Above all we will set up  an editorial board assuming a  serious review of the 
+specifications of packages proposed for inclusion in the platform.
+We forecast that the platform will reach a sufficient critical mass
+to be of interest for a large community of researchers in
+computational geometry and neighboring applicative fields,
+which in turn will ensure the long range perenial maintenance
+of the sofware.
+
+
+
+\paragraph{Planned developments} 
+\begin{itemize}
+\item The software platform will provide tools to extract from clouds of points the
+simplicial complexes that are relevant for geometric understanding,
+Rips, Check and witnesses complexes to begin with. 
+\item The platform will provide efficient data structures to handle those
+complexes. We will in particular  focus on parcimonius data
+structures, aiming for a partially implicit representation of those simplicial
+complexes, thus avoiding the full space cost entailed by the curse of
+dimensionality. 
+\item The platform is meant to offer state of the art algoritmic tools for geometric
+understanding,
+including in particular algorithms to compute the persistent homology
+of the simplicial complexes filtration extracted from data points. 
+\item The platform will aim at providing parallel implementations as well
+as out of core versions whenever possible to make possible the
+handling of huge data sets in high dimensions.
+\end{itemize}
+
+%  It will namely include tools to extract from
+% point clouds various simplicial complexes and filtrations,
+%  like Rips, Cech or witness
+% complexes, that are relavant for data analysis and topological feature
+% extraction. It will provide data structures to handle those simplicial
+% complexes.
+% We will focus on parcimonius data structures that will contribute
+% to turn around the curse of dimensionality. Particularly promising
+% are data structure involving a  partial implicit representation of those simplicial
+% complexes. The platform will also offer 
+% robust and efficient implementations for persistent homology algorithms
+% and other state of the art algorithms arising from
+% work in this ERC and from neighboring groups. 
+
+% \thispagestyle{empty}
+% \pagestyle{myheadings}
+% \markboth{\tcg{Titre ou acronyme de l'ADT}}{\tcg{Titre ou acronyme de l'ADT}}
+
+% %\renewcommand{\thefootnote}{\fnsymbol{footnote}}
+% %\setcounter{footnote}{1}
+% %\renewcommand{\thefootnote}{\arabic{footnote}}
+% %\setcounter{footnote}{0}
+
+% \begin{center}
+% {\LARGE\bf
+% \tcg{Titre de l'ADT\footnote{
+% Tout ce qui est en \tcg{vert} explique ce qui est attendu et est \`a remplacer
+% par le texte appropri\'e \`a votre ADT. {\bf Merci d'enlever tout le \tcg{vert} au
+% moment de la soumission.}
+% }
+% }}\\[1ex]
+% \Large\bf
+% Campagne ADT 2012\\
+% \end{center}
+
+% \renewcommand{\thefootnote}{\arabic{footnote}}
+% %\setcounter{footnote}{0}
+
+
+
+
+
+
+
+
+
+
+
+
+
+\end{document}
