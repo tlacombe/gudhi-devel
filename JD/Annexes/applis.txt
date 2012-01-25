@@ -1,0 +1,22 @@
+GESTURE
+=======
+
+
+The MINT team focuses on gestural interaction, i.e. the use of gesture for human-computer interaction (HCI). The New Oxford American Dictionary defines gesture as a movement of part of the body, especially a hand or the head, to express an idea or meaning. In the particular context of HCI, we are more specifically interested in movements that a computing system can sense and respond to. A gesture can thus be seen as a function of time into a set of sensed dimensions that might include but are not limited to positional information (the pressure exerted on a contact surface being an example of non-positional dimension).
+
+Simple pointing gestures have long been supported by interactive graphics systems and the advent of robust and affordable sensing technologies has somewhat broadened their use of gestures. Swiping, rotating and pinching gestures are now commonly supported on touch-sensitive devices, for example. Yet the expressive power of the available gestures remains limited. The increasing diversity and complexity of computer-supported activities calls for more powerful gestural interactions. Our goal is to foster the emergence of these new interactions, to further broaden the use of gesture by supporting more complex operations. We are developing the scientific and technical foundations required to facilitate the design, implementation and evaluation of these interactions. Our interests include:
+
+-    Gestures captured using held, worn or touched objects (e.g. a mouse, a glove or a touchscreen) or contactless perceptual technologies (e.g. computer vision);
+
+-    Computational representations of these gestures;
+ 
+-  Methods for characterizing and recognizing them;
+
+-    Transfer functions used for non-isometric object manipulations;
+
+ -    Feedback mechanisms, and more particularly haptic ones;
+
+-    Engineering tools to facilitate the implementation of gestural interaction techniques;
+  
+-  Evaluation methods to assess their usability. 
+

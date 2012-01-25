@@ -1,0 +1,1977 @@
+\documentclass[11pt,psfig]{book}
+
+\usepackage{latexsym}
+% \usepackage{url}
+% \usepackage{hyperref}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+% \usepackage[francais]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage{times}
+
+\textwidth=6in
+\textheight=8.5in
+\topmargin=0.0in
+\oddsidemargin=0.25in
+\evensidemargin=0in
+
+\newtheorem{Definition}{Definition}[section]
+\newtheorem{PseudoDefinition}[Definition]{Pseudo-Definition}
+\newtheorem{Proposition}[Definition]{Proposition}
+\newtheorem{Corollary}[Definition]{Corollary}
+\newtheorem{Theorem}[Definition]{Theorem}
+\newtheorem{Example}[Definition]{Example}
+\newtheorem{Lemma}[Definition]{Lemma}
+\newtheorem{Notation}[Definition]{Notation}
+
+
+
+\begin{document}
+%\input{psfig}
+%environment.tex
+
+\newcommand{\comment}[1]{
+
+COMMENTS \\ #1 END-COMMENTS
+
+}
+% \newcommand{\comment}[1]{}
+
+%This is used to put some text into personal comments.  
+%	\comment{blabla ... blabla}
+%
+%For semi-final versions, 
+% 1) un-% the last line, and
+% 2) % all other lines
+
+
+%stuff for lemmas, thms, defs, etc.  for THE BOOK
+
+% in the following bactch of definitions two things happen.
+% first, temporaryxxx are environments which start with bold Lemma or Theorem,
+%	etc., and use a shared counter.
+% second, the environments lemma, thm, etc. are just the same, except
+%	unlike raw Latex, the text of the environment is roman instead of
+%	italic
+
+%the guys above share one counter, and start over with each section
+
+%note that deff and nott (for `notation') are spelled strangely
+
+% cf. p. 174 of manual
+
+\oddsidemargin=0in
+\evensidemargin=0in
+
+\newtheorem{temporarylemma}{Lemma}[section]
+\newtheorem{temporarythm}[temporarylemma]{Theorem}
+\newtheorem{temporaryprop}[temporarylemma]{Proposition}
+\newtheorem{temporaryconj}[temporarylemma]{Conjecture}
+\newtheorem{temporarycor}[temporarylemma]{Corollary}
+\newtheorem{temporaryalg}[temporarylemma]{Algorithm}
+\newtheorem{temporaryproc}[temporarylemma]{Procedure}
+\newtheorem{temporaryremark}[temporarylemma]{Remark}
+\newtheorem{temporaryexamp}[temporarylemma]{Example}
+
+
+\newenvironment{lemma}{\begin{temporarylemma} 
+	\rm}{\end{temporarylemma}}
+\newenvironment{thm}{\begin{temporarythm} 
+	\rm}{\end{temporarythm}}
+\newenvironment{prop}{\begin{temporaryprop} 
+	\rm}{\end{temporaryprop}}
+\newenvironment{conj}{\begin{temporaryconj} 
+	\rm}{\end{temporaryconj}}
+\newenvironment{cor}{\begin{temporarycor} 
+	\rm}{\end{temporarycor}}
+\newenvironment{alg}{\begin{temporaryalg} 
+	\parbox{4in}{  } \rm}{$\Box$ \end{temporaryalg}}
+\newenvironment{proc}{\begin{temporaryproc} 
+	\rm}{$\Box$ \end{temporaryproc}}
+\newenvironment{remark}{\begin{temporaryremark} 
+	\rm}{$\Box$ \end{temporaryremark}}
+
+
+% for examples, we place a horizontal bar above
+% and below the example, using the new \sep command
+% Unfortunately, one of the horizontal lines might
+% be orphaned -- either at the bottom of a page or the top of a page.
+% (Various attempts by Rick to remedy this problem failed...)
+
+\newcommand{\sep}{\rule{12.7cm}{0.1mm}}
+\newenvironment{examp}{\noindent \sep \begin{temporaryexamp} 
+		\rm}{\newline \sep \end{temporaryexamp}}
+
+% the following is for homework exercises; they
+% are numbered within chapter, not section
+
+% \newtheorem{temporaryexer}{Exercise}[chapter]
+%\newtheorem{tempclubexer}[temporaryexer]{$\clubsuit$Exercise}
+%\newtheorem{tempdiamondexer}[temporaryexer]{$\diamondsuit$Exercise}
+%\newtheorem{tempheartexer}[temporaryexer]{$\heartsuit$Exercise}
+%\newtheorem{tempspadeexer}[temporaryexer]{$\spadesuit$Exercise}
+%\newenvironment{exer}{\begin{temporaryexer} \rm}{\end{temporaryexer}}
+%\newenvironment{clubexer}{\begin{tempclubexer} \rm}{\end{tempclubexer}}
+%\newenvironment{diamondexer}{\begin{tempdiamondexer} \rm}{\end{tempdiamondexer}}
+%\newenvironment{heartexer}{\begin{tempheartexer} \rm}{\end{tempheartexer}}
+%\newenvironment{spadeexer}{\begin{tempspadeexer} \rm}{\end{tempspadeexer}}
+
+\newenvironment{deff}{\medskip \noindent \bf Definition: \rm}{\medskip}
+\newenvironment{nott}{\medskip \noindent \bf Notation: \rm}{\medskip}
+\newenvironment{fact}{\medskip \noindent \bf Fact: \rm}{\medskip}
+\newenvironment{claim}{\medskip \noindent \bf Claim: \rm}{\medskip}
+
+\newenvironment{proof}{\medskip \noindent \bf Proof: \rm}{$\Box$ \medskip}
+\newenvironment{proofnobox}{\medskip \noindent \bf Proof: \rm}{\medskip}
+\newenvironment{crux}{\medskip \noindent \bf Crux: \rm}{$\Box$ \medskip}
+\newenvironment{cruxnobox}{\medskip \noindent \bf Crux: \rm}{\medskip}
+
+
+
+% another useful place in manual is p. 57 and p. 173, 
+
+% --------------------------------------
+
+% some symbols we use
+
+\newcommand{\mvd}{\mbox{$\ \rightarrow \hspace*{-.5cm} \rightarrow \ $}}
+% for ``multivalued dependencies''
+
+\newcommand{\jd}{\Join\!\!}
+% for ``join dependencies'' -- gets the spacing right --
+% however, use: $\models \, \jd[X,Y,Z]$ ...
+
+% --------------------------------------
+
+\newcommand{\reminder}[1]{ [[[ \marginpar{\mbox{$<==$}} #1 ]]] }
+
+
+
+
+
+
+\newenvironment{Def} {\begin{Definition} \rm} {\end{Definition}} 
+\newenvironment{The} {\begin{Theorem} \rm} {\end{Theorem}} 
+\newenvironment{Exa} {\begin{Example} \rm} {\end{Example}} 
+\newenvironment{Pro} {\begin{Proposition} \rm} {\end{Proposition}} 
+\newenvironment{Cor} {\begin{Corollary} \rm} {\end{Corollary}} 
+\newenvironment{Lem} {\begin{Lemma} \rm} {\end{Lemma}} 
+\newenvironment{Not} {\begin{Notation} \rm} {\end{Notation}} 
+
+\newcommand{\pp}{\vspace{6 mm}}
+
+\newcommand{\begindef}{\begin{Definition} \rm}
+\newcommand{\ben}{\begin{enumerate}}
+\newcommand{\een}{\end{enumerate}}
+\newcommand{\bit}{\begin{itemize}}
+\newcommand{\eit}{\end{itemize}}
+\newcommand{\bve}{\begin{verbatim}}
+\newcommand{\eve}{\end{verbatim}}
+\newcommand{\btab}{\begin{tabbing}}
+\newcommand{\etab}{\end{tabbing}}
+
+\newcommand{\sect}{\section}
+\newcommand{\ssect}{\subsection}
+\newcommand{\sssect}{\subsubsection}
+
+\newcommand{\bigR}{$\cal R$}
+\newcommand{\bigS}{$\cal S$}
+\newcommand{\bigT}{$\cal T$}
+% \newcommand{\SS}{\cal S}
+
+\newcommand{\So}{\setlength{\hspace{-0.2mm}\unitlength}{1mm}\begin{picture}(3.5,5)(0,1.3)\put(1,0){\line(0,1){5}}\put(1.6,0){\line(0,1){5}}\put(1,0){\line(1,0){1.5}}\put(1,5){\line(1,0){1.5}}\end{picture}\hspace{-1mm}}
+\newcommand{\Sc}{\setlength{\unitlength}{1mm}\hspace{-2.5mm}\begin{picture}(3.5,5)(0,1.3)\put(3.5,0){\line(0,1){5}}\put(2.9,0){\line(0,1){5}}\put(3.5,0){\line(-1,0){1.5}}\put(3.5,5){\line(-1,0){1.5}}\end{picture}\hspace{0.5mm}}
+\newcommand{\EMo}{{\Large\bf\protect[}}
+\newcommand{\EMc}{{\Large\bf\protect]}}
+\newcommand{\sem}[2]{\So #1\Sc$\!\,_{\mbox{\small #2}}$}
+
+% \newcommand{\mvd}{\mbox{$\ \rightarrow \hspace*{-.5cm} \rightarrow \ $}}
+
+\newcommand{\esp}{\vspace*{1cm}}
+\setlength{\parindent}{0.7cm}
+\setlength{\parskip}{0.3cm}
+
+\vspace*{1cm}
+
+
+\begin{center}
+\Huge{Webdam} \\
+\vspace*{1cm}
+\Large{Foundations of Web Data Management}\\
+\vspace*{1cm}
+\Large{Grant agreement - Annex 1 - Description of Work}\\
+\vspace*{1cm}
+\Large{ERC Advanced Grant} \\
+\Large{7th Framework Programme} 
+
+\end{center}
+
+\vspace*{1cm}
+Principal Investigator: Serge Abiteboul 
+
+Host institution: INRIA Saclay--Île-de-France
+
+Full title: Foundations of Web Data Management 
+
+Short name: Webdam
+
+Number: 226513 
+
+Duration in months: 60 
+
+Date of draft: \today
+
+\newcommand{\victor}[1]{ }
+\newcommand{\serge}[1]{ }
+
+%% \newcommand{\victor}{{\bf FIX }}
+%% \newcommand{\serge}{{\bf Serge }}
+
+% {mh.pautrat@orange.fr}
+
+% \renewcommand{\thesection}{}
+% \renewcommand{\thesubsection}{}
+% \renewcommand{\thesubsubsection}{}
+
+\newcommand{\url}{}
+
+
+\newpage
+
+\pagestyle{myheadings}
+\markboth{WebDam - Proposal 226513 - Draft - \today}{WebDam - Proposal 226513 - Draft - \today}
+
+
+% {\input{abstractERC}}
+
+% \newpage
+
+\tableofcontents
+
+\chapter{The principal investigator}
+
+\section{Curriculum Vit{\ae} }
+
+Serge Abiteboul \\
+Email: Serge.Abiteboul@inria.fr \\
+Web : \url{http://www-rocq.inria.fr/\~{ }abitebou}\\
+Born: August 25th, 1953, Paris 
+
+Senior researcher at the Institut National de Recherche en
+Informatique et Automatique, in the highest ranking, ``classe
+exceptionnelle''.
+
+Manager of the Gemo Team on the Management of data and knowledge
+distributed over the Web.
+
+Diplomas: PhD from USC, Los Angeles, in 1982 (with Seymour Ginsburg)
+and Thèse d'Etat, Université Paris-Sud, 1985. 
+
+Professional experience:
+\begin{center}
+\begin{tabular}{|l|}
+\hline
+ 2002-now: Researcher at INRIA Saclay, France; also Lecturer at
+Université Paris-Sud 
+\\ 2000: Co-Founder of Xyleme \cite{xyleme}
+\\ 1997-2003: Part time professor, Ecole Polytechnique, Palaiseau
+\\ 1995-1997: Visiting Professor at Computer Science Dept, Stanford University
+\\~~~~~~ (Database and Theory groups)
+\\ 1990-1995: Part time professor, Ecole Polytechnique, Palaiseau
+\\ 1982-2002: Researcher at INRIA Rocquencourt, France
+\\ 1979-1982: Teaching/Research assistant at USC, Los Angeles
+\\ 1977-1978: Lecturer at ESEAT, Rennes, France (military service)
+\\ 1976-77: Research Assistant, Computer Science Dept, Technion, Haifa, Israel
+\\
+\hline
+\end{tabular}
+\end{center}
+
+Other appointments:
+\begin{itemize}
+\item Manager of research teams at Verso INRIA-Rocquencourt team (8
+years) and the Gemo INRIA-Saclay one (5 years).
+
+\item Chairman of the Scientific Board of Rocquencourt INRIA Research
+  Center (2 years), and of the Scientific Board of Futurs
+  (Lilles-Bordeaux-Saclay) Center (4 years). 
+
+\item Steering committees of international conferences including ACM
+Pods (chair), ACM Sigmod, LICS, ICDT, EDBT, DOOD. He has been a member
+and chaired ACM Sigmod Awards committee. Member of committees of
+Agence Nationale de la Recherche. 
+
+\item Consultant for companies including Nasa, O2 Technology,
+Xyleme and VCs, Isource.
+\end{itemize}
+
+Awards and citations: 
+\begin{center}
+\begin{tabular}{|l|}
+\hline
+ ACM SIGMOD Edgar F. Codd Innovations Award, 1998.
+\\ Grand Prize in Computer Science of the French Academy of Sciences,
+2007.
+\\
+ ACM SIGMOD Test of Time Award in 2004 (for paper in 1994).
+\\
+ACM PODS Alberto O. Mendelzon Test-of-Time Award 2008 (for paper in
+ 1998). 
+\\ \hline
+h-index of 60 (Harzing P\&P; Jan 2008).
+\\ Citeseer, most cited authors in Computer Science, ranked 42 (Jan
+2008).  
+\\ Citeseer Top 100 all time most cited article (for the Lorel paper -
+ 1998). 
+\\ Citeseer Top 100 most cited article for year 1990, 1996, 1997 (as
+ of June 2007).  
+\\ ISI Highly cited researcher.
+\\ Abiteboul is co-author of 210 entries in DBLP (January 2008). \\
+\hline
+\end{tabular}
+\end{center}
+
+Some main recent software developments include Xyleme commercialized
+by Xyleme Inc (a system for the massive storage of XML), ActiveXML in
+open source (activexml.net; a system for Web data management); and
+Kadop in open source (a P2P system for indexing and querying XML
+collections).
+
+Program Committee Chair for international conferences including:
+\begin{center}
+\begin{tabular}{|l|}
+\hline
+Very Large Database Conference, General program, Lyon
+(2009)
+\\ Very Large Database Conference, Infrastructure track,
+Berlin (2003)
+\\ European Conference on Digital Libraries, Paris (1999)
+\\ ACM Symposium on Principles of Database Systems, San
+Jose (1995)
+\\ International Colloquium on Automata, Languages and
+Programming, Jerusalem (1994)
+\\ International Conference on Database Theory, Paris (1990)
+\\
+\hline
+\end{tabular}
+\end{center}
+
+Abiteboul has been member of more than 70 international program
+committees including VLDB, SIGMOD, LICS, PODS, ICALP, W3, SAC, ECDL,
+ICDE. He has organized more than a dozen conferences, summer-schools
+or workshops including major ones such as the International Conference
+on Database Theory (Paris 90) and the European Conference on Digital
+Libraries (Paris 99) and participated in the organization of ACM
+Sigmod and PODS (Paris 04).
+
+Funding: He has participated in the past in many French or European
+grants as well as US grants, NSF and DARPA.  On going grants:
+\begin{center}
+\begin{tabular}{|l|l|l|l|l|}
+\hline
+Grant	& Funding scheme	& Participation & Amount &  Duration  \\
+\hline \hline
+Webcontent & ANR (France) & participant	& 262K & 06-09 \\
+Docflow	& ANR (France) & participant	& 190K & 07-09 \\
+\hline 
+\end{tabular}
+\end{center}
+
+Webcontent: The semantic Web Platform. Abiteboul has been the
+initiator of that major French project for a platform for Web content
+management with major industrial partners (e.g., EADS, Thales),
+start-ups (e.g., Exalead) and a dozen of top research groups.
+
+Docflow: Analysis, monitoring, and optimization of Web documents and
+services. 
+
+\newpage
+\section{Scientific Leadership Profile}
+
+\begin{quotation}
+\noindent
+Serge Abiteboul, PhD 1982 from the University of Southern California,
+is Senior Researcher at INRIA and manages the Gemo team on the
+Management of data and knowledge distributed over the Web.  He has
+held Professor positions at Stanford U. and the Ecole Polytechnique.
+He is one of the co-authors of {\em Foundations of Databases}
+\cite{AHV}, the book of reference in database theory.  He received the
+1998 ACM SIGMOD Edgar F. Codd Innovations Award, ACM SIGMOD Test of
+Time Award in 2004, and the 2007 Computer
+Science Prize of the French Academy of Sciences.  He has been program
+chair of a number of conferences including ACM PODS-1995, ICALP-1994,
+ICDT-90, ECDL-99 and the EDBT99 Summer School, and VLDB-03. He will be
+program chair of VLDB09.  He chaired the executive committee of ACM
+SIGACT-SOGMOD-SIGART PODS. He co-founded in 2000 a start-up, named
+Xyleme.
+\end{quotation}
+
+Since his PhD in 1982 from the University of Southern California, he
+has been with the Institute National de Recherche en Informatique et
+Automatique. He is now Senior Researcher at INRIA, in the highest
+ranking, {\em classe exceptionnelle}. He manages the Gemo team on the
+Management of data and knowledge distributed over the Web (around 30
+people).  Abiteboul has brought substantial advances in computer
+science both on theoretical foundations and in software developments.
+For several years now, he has been focusing on Web data management
+with contributions around XML, distributed query processing, and
+verification.  His expertise is most adapted to this proposal focusing
+on foundations of Web data management and targeted towards
+optimization and automatic verification.
+
+Abiteboul has made major contributions in a number of areas,
+with significant scientific and industrial impact. One can notably cite
+three areas:
+\begin{description}
+
+\item [Database theory] He is considered one of the world leaders in
+database theory (only European to ever chair the ACM PODS steering
+committee). His book with Hull and Vianu \cite{AHV} is {\em the}
+reference in the field. A result with Vianu (the so-called
+``Abiteboul-Vianu theorem'') is often quoted in finite model theory
+and descriptive complexity.
+
+\item [Object databases] He is the recipient of the prestigious ACM
+SIGMOD Edgar F. Codd Innovations Award for his work in object
+databases (1998). The only other European who received this award was
+Rudolf Bayer in 2001.
+
+\item [Semistructured data] His work on languages for semistructured data at
+INRIA then Stanford is seen as a precursor to XQuery, the standard for
+XML. His paper on the Lorel language \cite{lorel} is in Citeseer's Top
+100 all-time most cited articles in computer science.
+
+\end{description}
+
+More recently, Abiteboul has worked on topics directly related to
+Webdam. He is one of the initiators, with Omar Benjelloun and Tova Milo,
+of ActiveXML, and with Ioana Manolescu, of ActiveXML algebra. He has
+recently initiated a project on the verification and monitoring of
+data management tasks in distributed environments with Albert
+Benveniste, Anca Muscholl, Luc Segoufin and Victor Vianu.
+
+\paragraph{Technology transfer} Abiteboul has a long record of
+technology transfer to industry. In particular, he co-founded in 2000
+Xyleme, a company specialized in the management of massive volumes of
+XML data (acquired recently by Xitec). Recently, he was awarded the
+Grand Prize in Computer Science of the French Academy of Sciences (a
+yearly award, first time awarded by the academy) that recompenses
+{\em scientific achievements with impact on industry}.
+   
+\paragraph{Impact measures} According to Citeseer, he is ranked 42nd
+(as of Jan 2008) most cited author in computer science. He co-authored
+one paper that is in Citeseer Top 100 all time most cited article
+(1998). Three others reached Citeseer Top 100 most cited article for
+year 1990, 1996, 1997 (as of June 2007).  Measures such as h-index are
+rather fragile and depending on the data set.  Google Scholar seems
+the most stable for computer science. Unfortunately, it includes self
+citations.  Abiteboul h-index is of 60 (Harzing P\&P; Jan 2008),
+computed by Quadsearch using GoogleScholar. He is a ``Highly cited
+researcher'', according to ISI.
+   
+\paragraph{Management of science} Abiteboul has been 
+  Chairman of the Scientific Board of Rocquencourt INRIA Research
+  Center (2 years), and of the Scientific Board of Futurs
+  (Lilles-Bordeaux-Saclay) Center (4 years).  In this position, he has
+  overseen the evaluation of research teams and the creation of new
+  ones. He participated in a number of prospective initiatives notably
+  \cite{lowell,delos,2020}. He has served on steering committees of
+  international conferences including ACM Pods (chair), ACM Sigmod,
+  LICS, ICDT, EDBT, DOOD and Program Chair for the main database
+  conferences (VLDB09, VLDB03, PODS95, ICDT90), digital library
+  (ECDL99), computer science theory (ICALP94).  He has been a member
+  and chaired ACM Sigmod Awards committee. He has organized more than
+  a dozen conferences, summer-schools or workshops.
+
+\paragraph{Students} Although his position is only for research, he has
+continuously taught, in general at the graduate level. He has been
+Invited Professor at Stanford (2 years) and part time Professor at
+Ecole Polytechnique, Palaiseau (10 years).  He has also taught classes
+in prestigious schools in Europe (e.g., Ecole Normale Supérieure,
+Oxford U.) and the US (e.g., UC Berkeley, UC San Diego). Some of his
+PhD students and post-docs now hold academic positions in France,
+India, China, U.K., Finland, Greece, Canada, Israel, Germany, Norway,
+Italy, Belgium, USA. Many of his ex-students are very successful in
+industry as well.
+
+\newpage
+\section{10-year-Track-Record}
+
+Eight most cited papers since 2007 according to Google
+Scholar:
+
+\begin{enumerate}
+\item Object identity as a query language primitive, 
+S. Abiteboul, P.C. Kanellakis, 
+Journal of the ACM, 1998.
+{\em Cited by 482}
+
+\item Complexity of answering queries using materialized views,
+S. Abiteboul, O. Duschka, ACM Conference on Principles
+of Database Systems, 1998.  {\em Cited by 277}
+
+\item Detecting changes in XML documents,
+G. Cobena, S. Abiteboul, A. Marian, 
+ International Conference on  Data Engineering, 2002.
+{\em Cited by 235}
+
+\item Extracting schema from semistructured data,
+S. Nestorov, S. Abiteboul, R. Motwani,
+ACM SIGMOD Conference on the Management of Data, 1998. 
+{\em Cited by 225}
+
+\item Regular Path Queries with Constraints,
+S. Abiteboul, V. Vianu, 
+Journal of Computer and System Sciences, 1999.
+{\em Cited by 199}
+
+\item Query flocks: a generalization of association-rule mining, 
+J.D. Ullman, S. Abiteboul, C. Clifton, R. Motwani,
+ACM SIGMOD Conference on the Management of Data, 1998. 
+{\em Cited by 161}
+
+\item Change-Centric Management of Versions in an XML Warehouse,
+A. Marian, S. Abiteboul, G. Cobena, L. Mignet,
+International Conference on Very Large Databases, 2001 
+{\em Cited by 156}
+
+\item On views and XML,
+S. Abiteboul,
+ACM PODS, 1999. Also in ACM Sigmod Record. 
+{\em Cited by 139}
+  
+\end{enumerate}
+ACM PODS, SIGMOD and VLDB are the most selective conferences in
+databases. Typically, acceptance is considered as hard or harder than
+in journals. Their estimated impacts computed by citeseer are of 1.86
+(PODS), 1.74 (SIGMOD) and 1.52 (VLDB)- between top 3.68\% and 8.68\%
+publication venues in computer science.
+
+Two recent publications not yet high on Google Scholar:
+\begin{enumerate}
+\item Adaptive on-line page importance computation\footnote{The
+algorithm computes the page rank of Web pages using very limited
+resources. In particular, unlike Google PageRank, it does not require
+storing the graph of the Web. It was validated on a crawl of one
+billion URLs.}, S. Abiteboul, M. Preda, G. Cobena, World-Wide-Web
+Conference, 2003.
+
+\item The Active XML project,
+S. Abiteboul, T. Milo, O. Benjelloun, 
+The International Journal on Very Large Databases, To appear in 2008. 
+
+\end{enumerate}
+
+One book: Data on the Web: From Relations to Semistructured Data and
+XML, S Abiteboul, P Buneman, D Suciu, Morgan-Kaufman,  1999.
+(translated to Portuguese and Japanese) {\em Cited by 892}.
+
+Invited talks to peer-reviewed, internationally established
+conferences: International Symposium on Theoretical Aspects of
+Computer Science (2007), European Conference on Object-Oriented
+Programming (2006), International Workshop on Abstract State Machines
+(2005), International Conference on Flexible Query Answering Systems
+(2004), International Conference on Fundamental Approaches to Software
+Engineering (part of European Joint Conferences on Theory and Practice
+of Software) (2004), International Conference on Advanced Information
+Systems Engineering (2003), International Conference on Database and
+Expert Systems Applications (2002), International Conference on Web
+Information Systems Engineering (2002), European Conference on
+Research and Advanced Technology for Digital Libraries (1997)
+
+Organization of scientific events: International Workshop on Semantic
+Data and Service Integration, Vienna (2007), European Conference on
+Digital Libraries, Paris (1999), Summer School on Extending Database
+Technology, La Baule-les-Pins (1999), Dagstuhl School on Foundations
+for Information Integration (1999).  Participation in the organization
+of the ACM SIGMOD International Conference on Management of Data and
+ACM International Conference on Principles of Database Systems (Paris
+2004, first time outside of North America), International Conference
+on Very Large Databases (Lyon 2009).
+
+Patents:
+\begin{enumerate}
+\item U.S. Patent, 400652, filed 2003-03-28; System and method for
+providing content warehouse; with Amir Milo and Sophie Cluet.
+
+\item U.S. Patent, 940132, filed 2001-08-27; Ranking nodes in a graph, with
+Mihai Preda.
+\end{enumerate}
+
+\chapter{The research proposal}
+
+\section{Extended synopsis of the project proposal}
+
+\input{abstractERC}
+
+One can see in computers and the network, a revolution comparable to
+that of writing. Writing freed us from the need to memorize
+information \cite{Serres07}. The new technology is freeing us (to some
+extent) from the need to reason about information and will enable us
+to focus our energy to imagination and creativity. The Web with data
+deployed on millions of machines flourishes at the core of this new
+revolution. 
+
+The Web was first seen as a universal access to an ocean of documents.
+It is progressing slowly (by Web-time measure) towards a world-wide
+repository of knowledge, i.e., towards the Semantic Web
+\cite{TBL01}. We are also observing the birth of Web 2.0
+\cite{OReilly05}, that stresses social networks and community
+building. Then came proposals for Web 3.0 up to Web Googol.0.  These
+initiatives, totally lacking scientific grounding, have ``invented''
+concepts already studied in research labs and sometimes even present
+in software products.  However, in spite of their obvious weaknesses,
+these proposals highlight the fact that the Web is meant to support
+functionalities that are beyond a simplistic query/answer paradigm.
+Indeed, with the Web as the basis of human sharing of information and
+human interaction,
+\begin{quotation}
+\noindent
+{\em Web data management is becoming the cornerstone of human
+activities.} 
+\end{quotation}
+
+In spite of its importance, the management of data on the Web suffers
+from a number of weaknesses that can be blamed to its recent birth and
+% BUZZ
+its too rapid growth. The goal of the proposal is to develop a
+mathematical model for Web data management and formal foundations to
+reason about Web applications. Indeed, we propose to develop the
+analog of the formal model that has successfully underlied relational
+database systems. Building on it, we propose to develop the necessary
+reasoning capabilities for controlling data exchange, sharing,
+integration, querying and updating, in a Web environment.
+    
+\paragraph{Time to stop hacking the Web }
+
+For data management, the turn of the century has seen the maturing of
+the relational database industry (with notably Oracle, IBM DB2 and MS
+SQL Server) and of the corresponding scientific field, at the border
+of logic and complexity theory. Since the 60's, industry and academic
+research have progressed in tandem, with strong interactions that have
+been instrumental in their respective successes. Today, with the
+preeminence of the Web, new challenges are facing the data management
+arena. New ideas are emerging and transferred into products very
+rapidly. The scientific community has difficulties following the pace
+and to a large extend, it is lagging behind. We claim that the quick
+and dirty solutions, often used today, cannot provide long-term
+solutions and do not scale to the Web of the future. We argue that,
+perhaps even more than for relational systems, academia has an
+essential role to play in shaping the new field. Indeed, the project
+we propose tackles key technological issues that present the severe
+risk of slowing down Web data management. Solutions even designed by
+fantastic hackers are bound to fail due to the complexity of the
+problem and its scale. We therefore propose to develop a formal model
+that is needed for developing efficient, powerful and reliable
+software for Web data management.
+   
+\paragraph{Limiting the scope: semantics}
+A main issue for the Web is semantics. For instance, it is simply not
+possible to use some newly discovered resource without understanding
+first its semantics. The study of Web semantics leads to fascinating
+challenges of an AI nature such as knowledge representation, knowledge
+extraction from text, or reasoning with knowledge. Such issues will
+not be central here. We are focusing instead on the data layer that
+will help support semantic layers. To illustrate the distinction, for
+instance, we are not concerned here with how a system analyses a Web
+service to understand how to use it (an AI problem) but rather, with
+how it will actually take the best advantage of the service to obtain
+data (a DB problem). Of course, the boundary between the two domains
+is fuzzy and the author of the proposal has worked on a number of
+projects at their frontier. However, the techniques they require are
+rather different, which justifies limiting the scope of the proposal
+to the data management side. Clearly, semantics will still be very
+present in the sense that the data management layer should be powerful
+enough to satisfy the needs of semantic layers. So, for instance, the
+formal model will include the means to describe static
+properties of the data (e.g., with tree automata) as well as
+behavioral properties (e.g., with temporal logic formulas).
+
+\paragraph{A unifying model} 
+An underlying philosophy of the proposal is that we need an unified
+formal model for noncentralized data management.  So, we are concerned
+here with all distributed applications that {\em possibly} manage huge
+volumes of data with {\em possibly} large number of autonomous and
+heterogeneous computers, typically without centralized authority.  We
+believe that the foundational work that is needed should be applicable
+to such a wide range of applications. The prime motivation for using a
+single model across all Web applications is that it will enable all
+kinds of Web applications to exchange data. Another positive aspect of
+genericity, is that it will force us to stay away from being too
+directly influenced by particular technological biases, and focus on
+rich mathematical notions.  The Webdam proposal is thus extremely
+ambitious because it targets the world-wide acceptance of a unique
+model for data management on the Web.
+
+Note that we did not use the term ``distributed data management''
+because for many it comes with limitations to small numbers of data
+servers, often with a centralized authority.  We were also reluctant
+to use the term ``peer-to-peer'' because for many its meaning is
+restricted to very large numbers of machines and high churn rates. In
+Webdam, we address distributed and peer-to-peer data management
+scenario, even if each such context may come equipped with its specific
+optimization strategies and its specific issues. We prefer the term
+``Web data management'' to stress that the Web is the testbed for this
+new technology. Observe that we are neither excluding smaller scale
+devices (such as RFIDs) nor smaller scale networks (such as home
+networks).
+
+Since distributed databases have been around for more than twenty
+years, one may wonder at this point whether some such foundations
+already exist.  It turns out that this is not the case. While he
+taught distributed databases at Stanford, the principal investigator
+realized how informal, imprecise and incomplete was the material on
+the topic.  For teaching relational databases, one can rely on a clean
+and solid formal model \cite{AHV,Ullman}. But when distribution is
+considered, the rare existing books, e.g. \cite{OV99}, propose ad hoc
+extensions, developed for the purpose of explaining particular aspects
+and specific techniques.  A formal model is missing and to develop one
+is a main goal of Webdam. Indeed, as a by-product, Webdam should
+bring improvements to course materials for distributed databases, and
+provide the basis for new courses on Web data management.
+
+The first goal of the proposal is thus to develop a mathematical model
+for Web data management. We next discuss the second goal, that is, to
+develop formal foundations to reason about Web applications.
+
+\paragraph{Automatic reasoning}
+
+In many Web applications, notably industrial applications, we are
+interested in achieving some desired quality of service level. For
+instance, we may want to allow several users working on the same data
+collection without disrupting each other (concurrency control) or to
+support recovery from peer failures. Other examples of a less
+classical database nature involve guaranteeing full awareness of
+changes occurring in sites of interest (monitoring) or checking that
+data only come from trusted sites (provenance). The current style of
+development of Web applications makes it infeasible to obtain such
+guarantees. Techniques developed for the relational model are not
+directly applicable. For instance, concurrently control techniques are
+typically assuming a central authority which rarely exists in a Web
+context. Two aspects are making the problem even more challenging: (i)
+the application design must be extremely flexible to adapt to the
+intrinsic anarchist style of the Web and (ii) there is typically no
+database administrator in Web applications and often not even any
+computer specialist to design and maintain the application.  For
+instance, most cooperative Web sites (e.g., based on Wordpress or
+similar systems) integrating data from many sources (e.g., RSS feeds),
+are developed by non computer experts.  Because of (i), we cannot
+impose any a-priori design such as ACID for relational
+transactions. And, because of (ii), we have to favor approaches that
+do not require actually writing any complex code, with application
+developers specifying declaratively requirements, and the code being
+generated from them. As a consequence of the two, to still be
+manageable, the system has to be able to reason about an application,
+analyze the current or future run and possibly adapt based on the
+results of the analysis. Automatic reasoning (taken here in a very
+large sense) is unavoidable in this setting to support all activities
+from querying and optimization, to updates, tuning, recovery,
+monitoring, etc. We will precise further on, the kind of reasoning
+that we mean.
+
+\paragraph{High-risk, high gain}
+
+What are the challenges and chances for achieving such an ambitious
+goal with Webdam?
+
+\paragraph{Not enough theoretical}
+There is a risk to stay too close to the current Web technology.  If
+we are too influenced by technological details of a non fundamental
+nature, we will obtain a too complex model, biased by the current
+technology and its limitations. As a consequence, it will be
+impossible to lay the appropriate formal foundations.  In recent
+applied works, the principal investigator could observe the limits of
+ad hoc approaches and the crucial need for solid foundations for Web
+data management. He is thus much aware of this pitfall. His experience
+and that of a number of talented theoreticians who will be associated
+to the endeavor, should allow avoiding it.
+
+\paragraph{Too theoretical}
+Of course, there is the somewhat opposite risk of developing beautiful
+theoretical techniques with little impact outside of academic circles.
+The record of the principal investigator is a strong indication that
+this will not be the case. Indeed, he has for the last ten years
+always been involved with works with transfer to industry. In
+particular, his work around semistructured data has had important
+impact notably on standards for XML query languages. Foundational work
+here is not a goal for its own sake (which would already have been a
+fair motivation) but is meant as a sound basis for future software
+development.
+
+\paragraph{All or nothing?}
+% We are convinced that we can develop in the time frame desired
+% foundations that should serve as the basis for needed new standards.
+% Our experience in data management and more specifically on Web data
+% management and the results we have already obtained in that field
+% substantiate our claim.  
+With top quality researchers and the ambition to succeed, Webdam will
+serve as the catalyst for excellent European research on the topic.
+Even if Webdam does not reach its full goal of providing a
+comprehensive, universally accepted framework for Web data management,
+it should provide substantial progress towards this goal.
+
+\paragraph{An opportunity for Europe}
+Does Europe have a chance to succeed in this strategic field that will
+surely be very competitive?  In the early 80ths (when the PI finished
+his PhD), Europe was almost absent from data management research. For
+data management systems, Europe has regularly closed the gap with the
+US and now hosts international quality groups in many countries, one
+of them being the Gemo team.  Database theory developed in Europe
+starting from a few pioneers, e.g., Paredaens from Belgium and the PI
+in France.  One can now say that the center of gravity has shifted
+from the US to Europe in this area.  ACM PODS has had 4 European
+Program Chairs since 2000 and the past {\em 7} winners of the Best
+Paper Awards had one European co-author.  Success can be achieved only
+by driving the development of sophisticated mathematical models with
+concrete technological goals.  With a strong presence in both database
+theory and data management systems, Webdam and more generally Europe
+are ideally placed to carry out such a program.
+
+We will see in the next section how this can be achieved using a
+methodology based on the following principles:
+\begin{enumerate}
+
+\item developing mathematical foundations combining techniques from
+databases and verification,
+
+\item building on the results and experience already achieved, 
+
+\item bringing together local talents and researchers from an already
+existing network of collaborators, that will be extended during the
+project,
+
+\item relying on simplicity and carefully chosen limitations in
+the model of computation we use, 
+
+\item getting inspiration from real Web applications and validating
+results with prototypes.
+\end{enumerate}
+
+To conclude this section, we want to stress that:
+\begin{quotation}
+\noindent
+{\em for obvious economical, social and political reasons, the
+management of the data of the Web is of strategic importance. }
+\end{quotation}We therefore strongly believe
+that it is essential to fund ambitious projects in this area.
+
+%% Because of industry pressure, it is
+%% especially difficult to retain research talent in Europe and in
+%% academia, in particular young researchers. For instance, 4 top
+%% ex-students of the investigator now work for Google and 2 for Yahoo!
+%% It is thus critical to host ambitious projects in Europe to motivate
+%% the best researchers.  
+
+
+
+\newpage
+
+We next discuss the state of the art and the objectives, considering
+in turns the two main facets, namely formal model and reasoning. We
+then present the main traits of the proposal, briefly sketching the
+expected scientific contributions and the milestones. More technical
+details on some of these aspects may be found in a CIDR vision paper,
+written with Neoklis Polyzotis \cite{AP}. Finally we discuss
+resources.
+
+\section{State-of-the-art and objectives}
+
+\subsection{A first scientific shift in data management: trees,
+functions}
+
+With the Web, we have shifted from the management of very structured
+data (i.e. relations) in centralized databases to semistructured data
+(from text to trees and graphs) in autonomous distributed
+systems. Even if most Web data still comes from relational databases,
+they are typically viewed on the Web as trees, XML or HTML.  A main
+aspect of the information is its lack of regularity coming from the
+heterogeneity of the Web and from the multiplicity of sources and
+authors. It is also most importantly distributed, and dynamic. Another
+essential aspect of modern data management is its scale in terms both
+of quantity of data (e.g., see the billions of pages indexed by
+Google) and of number of peers (e.g. millions of peers for P2P music
+sharing).  In Webdam, we will build on the standards of the Web,
+namely XML \cite{xml} and Web services
+\cite{ws}. These choices are somewhat not negotiable on the Web. They
+happen to also be scientifically sound. Indeed, these standards may be
+abstracted in a clean and elegant manner using trees and functions.
+
+\paragraph{XML}
+XML, the Web standard for data exchange, is based on unranked,
+labeled, ordered trees. Depending on the needs, we will sometimes see
+the trees as unordered to bring the model closer to standard logics
+that are set-oriented as well as to lower the complexity. Labeled
+trees are much more appropriate to the Web than relational structures
+that are too rigid and constraining. A most natural tool for such
+trees is tree automata \cite{tata} that have strong connections with
+monadic second-order logic. Standard query languages for XML, XPATH
+and XQuery may be seen (with some stretch of imagination) as logics
+for such trees.  Theoretical aspects of XML have been actively
+investigated during the last few years, with tree automata and monadic
+second-order logic playing central roles. The results that were
+obtained are important for us and they will serve as basis for our
+investigation. They miss the target of being a formal model for Web
+data management - our primary concern - for two main reasons. First,
+they do not directly address distribution.  Second, they are
+tree-based and not graph oriented, as more essential for the
+Web. Finally, they address static issues and miss the dynamic nature
+and interactivity of Web needs. For instance, tree automata are a
+fantastic tool for static centralized trees, whereas we have to manage
+evolving distributed graphs.
+
+\paragraph{The playground: the Web and Web services}
+One of the key features of the Web are Web services, that is the
+possibility to activate a computation on a distant site and obtain
+data from it or more generally interact with that data (e.g. apply
+updates). In some sense, HTML, the hypergraph structure of the Web, and
+Web search engines, may be seen as very limited forms of read-only
+services and Web publication as primitive write services. Web services
+are now giving birth to a very active area of software
+development. Data exchanges between peers are captured by calls to
+complex Web services taking into account the {\em logic} of these data
+exchanges typically specified intentionally using logical
+formulas. Like XML coming with a family of ``standards'' (XML schema,
+XQuery, Xpointer, etc.), Web services come with a family of
+``standards'', in particular, WSDL for specifying the signatures of
+services, BPEL for specifying their sequencing, UDDI for
+publishing/discovering services. In this proposal, the focus is on
+services for managing information, e.g., query/update services or data
+monitoring, that is on data intensive services rather than on services
+performing intensive computations as in scientific grids.  More
+precisely, we see a Web service here as a function that just
+happens to be supported elsewhere, with some side effect there and
+eventually returning a piece or a flow of data.
+
+We have already worked for several years on a formal model based on
+XML and Web services that will serve as a first step towards the Webdam
+model.
+
+\paragraph{ActiveXML}
+
+ActiveXML \cite{axml} is simply XML with embedded Web services, i.e.,
+with intentional information. So the fundamental idea is to place views,
+i.e. possibly external information, at the center of the picture.  The
+notion of documents with function calls is in the spirit of
+object-oriented languages.  The combination of trees and functions
+opens an array of new questions that are central to Web data
+management, some we started addressing, for instance:
+\begin{enumerate}
+\item Querying intentional data: evaluating queries when part of the
+data is elsewhere.
+\item Incremental maintenance: maintaining a materialized view when
+some functions bring in continuously data.
+\item Casting: choosing which functions to call to force such a tree
+to match a desired type.
+\item Distribution: distributing a tree between several peers in the
+style of Ldap to distribute both the information and the processing
+load.
+\end{enumerate}
+Two essential lessons we have learned from the ActiveXML project, are
+the following: (i) function calls should be asynchronous and (ii) data
+exchange should be based on data streams. But most importantly we have
+acquired experience in developing Web applications and on the various
+facets of the problem.
+
+The ActiveXML model is more complex than the relational model because
+it encompasses in a nutshell most of the various themes of 20 years of
+database research, most notably: deductive databases \cite{AHV},
+object databases \cite{odmg} and active databases
+\cite{WidomCeri96}. This together with the simplicity of the
+definition and experiments with real Web applications are, we believe,
+indications that we are on the right track. Another indication is that
+independent proposals seem to reach similar shores from different
+angles. For instance, starting from XQuery, accesses to several
+sources are considered in \cite{DXQ}.  Although the approach may seem
+very different, similar issues are encountered.
+
+In its current state, the ActiveXML model is too basic, say like the
+core relational model of the early days, before dependency and
+concurrency control theory matured. As previously mentioned, the
+setting is much more complex so more work is needed to achieve the
+goal of a general model for Web data management with the proper
+accompanying theory. Building on the results already obtained with
+ActiveXML, with the experience in designing applications with that
+language, we are now ready for a crucial part of the work in Webdam:
+developing a simple and solid mathematical model for distributed data
+management and building the accompanying theory to obtain the desired
+formal foundations.  We will sketch in the next section some
+directions to improve the model and questions to solve about this
+model.
+
+\subsection{A second shift in data management: deduction}
+
+Let us reconsider the origin of the success of the relational model. A
+relational database system is essentially a First-Order Logic machine
+placed on everyone's desk to manage data.  More precisely, a
+non-specialist can specify some needs, declaratively, in first-order
+logic terms. The system then compiles such a ``logical query'' into an
+``algebraic query plan'' that is optimized then evaluated. Relational
+systems therefore perform automatic reasoning to handle queries and
+views, e.g., to rewrite queries into equivalent ones to optimize
+them. Reasoning is also present in many other aspects of relational
+systems, e.g., dependencies (logical formulas over the data that the
+system should enforce), transactions and concurrency control, triggers
+(i.e. active rules).  In relational systems, such reasoning is in some
+sense ``hard-wired''.  For instance, several transactions are allowed
+to access/update simultaneously the same database. The system is in
+charge of verifying that they do not interact improperly. To do that,
+the system assumes some laws governing the interactions and implements
+an algorithm (some reasoning) to check that these laws are not
+violated.  The laws are decided in advance (e.g., ACID properties) and
+the reasoning is encoded in algorithms, the correctness of which has
+been proved in advance (e.g., 2phase-locking).
+
+Similarly, we want an intelligent interface between a human being and
+the network that nowadays stores the data we use.  On the Web,
+logic is needed for the declarative specification of the application,
+but it is also needed to describe the laws governing applications
+(the equivalent to the ``hard-wired'' logic of relational systems)
+since much more freedom is desired and Web data management cannot live
+with inflexible preconceived laws.  The distribution also brings
+fundamental differences.  The reasoning is now performed by different,
+typically heterogeneous and autonomous systems.  This entails that
+reasoning must become a first class citizen in the sense that one peer
+may have to delegate some reasoning task to another one and that they
+may have to exchange (partial) proofs.  Also, reasoning will typically
+be much less hard-wired than in relational systems, since we need to
+support complex interactions between peers governed by
+application-dependent laws that are not known in advance. As a
+consequence, the system must rely on more sophisticated reasoning for
+instance to optimize queries in a distributed setting (between
+autonomous peers) or perform change control in a very dynamic
+distributed environment.
+
+Deduction and reasoning have been around in relational databases,
+e.g. with deductive databases. The novel shift is that deduction is
+now used within a much wider spectrum of functionalities.
+
+Reasoning about applications is also particularly essential when one
+wants to compose Web services to support some complex task
+(orchestration) or when several services cooperate towards a
+particular goal (choreography).  One may want to verify that a
+particular contract is enforced, some quality of service guaranteed.
+Current Web service technology is way too limited in terms of
+functionalities. Tools for verifying properties of Web services, e.g.
+their composability, are too primitive. These issues are not
+particular to data management, but as we will see, the fact that the
+focus is on data management, does bring fundamental differences.
+
+We briefly consider next relevant existing technologies.
+
+Web knowledge representation languages such as RDF \cite{rdf}, SPARQL
+\cite{sparql} or Owl \cite{owl} are essential components of the Web,
+in particular, for data integration.  They adress issues that somewhat
+complement the core issues we consider.  They often ignore
+distribution and when they provide rich means for describing changes
+and dynamic behavior, little is known on the automatic verification of
+dynamic properties.  Since the developments of knowledge
+representation models and systems are important for the semantic Web,
+we will have to consider their interaction with the techniques for
+data management we envision.  However, research on Web knowledge
+representation is not at the core of Webdam.
+
+In databases, reasoning about data and queries has a long history. In
+particular, the beautiful theory of dependencies has emerged and query
+equivalence and optimization have been studied extensively.  Most
+results were obtained for the relational model even if recent
+developments have been concerned with tree data and XML.  Results in
+this areas are relevant, e.g. the chase, a general technique used in
+many contexts for inferring data properties. Unfortunately, most of the
+results deal with query processing (most of the time for monotone
+queries) and ignore data changes, an essential aspect in our setting.
+
+Information retrieval and search technology are also relevant for the
+Web, because of the number of available resources and the difficulty
+to choose between them.  For that aspect, we will rely on results
+obtained by the ERC Advanced Grant Proposal SeCo on Search Computing.
+We are considering collaborations between the two projects. 
+
+For reasoning about Web applications, three other computer science
+areas are very relevant: model checking \cite{mc}, automata
+\cite{tata} and temporal logic \cite{tl}.  These areas are now very
+mature with impressive achievements. In particular, the automatic
+verification of temporal properties of (even distributed) programs has
+made enormous progress.  Unfortunately, works in these directions
+rarely take data into consideration.  Automatic program analysis is
+typically limited to finite state systems whereas the presence of data
+immediately leads to infinite states.  Researchers in these areas are
+aware of the limitations and have considered recently incorporating
+data.  For instance, there has been some recent work on integrating
+some aspects of data into automata, logics, and model checking, see,
+e.g., \cite{Neven&Schwentick&Vianu04,JL07,BMSSD06,B+07}.  One can in
+general consider extensions of model checking techniques to infinite
+state systems. In particular, symbolic analysis of infinite systems
+based on rewriting techniques analyzed with automata techniques have
+already proved successful in a number of areas: communication systems,
+parameterized verification, program analysis, timed systems, security
+protocols, XML and Web services.  This is the topic of a Dagstuhl
+seminar \cite{dagstuhl} and we intend to follow this line of work.
+There are also interesting recent works on the verification of Web
+services with data (so infinite state), e.g., \cite{hull+05,Vianu+06}.
+We will study more systematically verification techniques adapted to
+our context that includes data.
+
+Another technology is very relevant, notably because it has data at
+its core, namely, datalog and deductive databases \cite{ddb,AHV}.
+Observe that, because of distribution, the specification of data on
+the Web, so issues such as query evaluation, are recursive by nature:
+Data in Peer 1 refers to data in Peer 2, that refers to data in Peer
+1. So, we need a logic that handles recursion and datalog is one that
+scales to large volumes of data.
+
+\paragraph{Datalog }
+Datalog has been very popular in the 80's. In essence, datalog offers
+the possibility to define recursive views, i.e., associate names to
+recursive query statements. Unfortunately, datalog found no real
+application that the simple transitive closure of relations from SQL
+could not solve. Thus, even if sometimes silently present in
+relational systems via recursive CREATE VIEW statements, datalog has
+not been a success. The situation is very different now because of
+distribution.  Indeed, we believe that the Web is the killer
+application for datalog. To motivate this claim, we next mention three
+recent works all relevant here that have in common their reliance on
+datalog:
+\begin{itemize}
+\item Trees: In \cite{lixto}, Gottlob et al specify the extraction of
+data from trees in datalog. Here what is useful is the notion of
+patterns in datalog and in particular that of tree patterns.
+
+\item Graph: In \cite{H+}, Hellerstein et al compute rooting tables
+over the Internet with datalog. Here, what is useful is the recursion
+in datalog that permits navigating in a graph by traversing new peers.
+
+\item Trees and graphs: In \cite{AA05}, Abiteboul et al use datalog
+to study the diagnosis problem in a network of independent
+components. The ``unfolding'' of a computation (in the distributed
+Petri net sense) is captured as a tree that is distributed between
+different peers.
+\end{itemize}
+
+We will study datalog and extensions (in particular, with negation) in
+the Web setting.  We will use the language (and extensions) both for
+describing and for reasoning about Web computations.
+
+\section{Methodology}
+
+The methodology we adopt is based on a number of
+principles that we develop in this section. We also mention problems
+that we will address. Clearly, five years is a long time frame and we
+expect more issues to be raised during the project.
+
+\paragraph{A model for Web data management}
+
+We will first develop a mathematical model for Web scale data
+management.  We use the term model here in a very broad sense,
+encompassing issues such as the syntax of the data and typing, but
+also the specification of some processing on it (data transformations,
+queries, updates) as well as of behavioral properties.
+
+The model should capture data management in typical Web applications
+(see examples further).  In a nutshell, the setting consists in a
+number of autonomous systems communicating by activating services on
+other peers and exchanging information. Locally a peer evaluates
+queries and updates, communicates with other peers, and as a result
+its state evolves in time. Observe that we typically assume no central
+authority and no global knowledge.  Each peer reasons and decides
+independently of the other peers, even though they may exchange
+information.  Critical issues such as avoiding deadlocks or not
+disclosing information to peers without proper credentials have to be
+resolved based on local processing only.
+
+A major aspect of Webdam is that the mathematical model will be driven
+by the specific domain of interest.  So, in the forthcoming model, we
+should be able to describe complex tasks such as:
+\begin{enumerate}
+\item query processing and optimization, the most common tasks for
+data management, including locating the data of interest, and the
+management and use of (distributed) access structures such as
+distributed hash tables and replication.
+
+\item change management including the management of updates, versions
+and the specification of policies for concurrency control.
+
+\item data integration and in particular, dynamic data integration in
+the style of mashups (Web applications that combine data from more
+than one sources into a single integrated tool).
+
+\item surveillance with functionalities such as complex monitoring
+subscriptions.
+
+\item efficient data exchange and integration based on complex mapping
+rules between different peers in a static or dynamic (source changing)
+environment.
+
+\item diffusion/communication of information based on structured
+or unstructured (gossiping) networks.
+
+\item choreography of the activities of several services collaborating
+to achieve some particular data (intensive) task.
+
+\end{enumerate}
+
+We already mentioned Active XML as a starting point. Part of the work
+will consist in studying logics and algebras for Web data management
+going beyond ActiveXML that has been previously mentioned.  In
+particular, experience with that language have stressed its
+limitations in terms of control.  Recent work with Segoufin and Vianu
+has introduced the concept of {\em guarding} formulas to control the
+activation of services.  Such features in the spirit of active rules
+in databases or standard rules in production systems seem quite
+promising. Indeed, they correspond quite closely to features found in
+mashup systems. So the challenge will be to integrate such
+sophisticated notions of control and simultaneously study restrictions
+of the model so that reasoning about applications remains feasible.
+
+\paragraph{Reasoning about Web applications}
+
+We will also develop the necessary tools to reason about Web
+applications, e.g. verify temporal properties of a system.  We will
+consider both static and dynamic properties, for example:
+
+\begin{enumerate}
+
+\item To optimize queries (similarly for updates), we need to
+automatically verify equivalence. This is typically a static property
+although in a Web context, one tends to blur the separation between
+query optimization (compile time) and processing (runtime) and are
+often led to modify an execution plan at runtime.
+
+\item One may wish to determine (at compile time) whether a process is
+guaranteed to terminate, or whether it will always satisfy certain
+desired properties (no product is ever shipped before payment has been
+received).
+
+\item One may want to determine (at runtime) why certain situation has
+been reached (diagnosis) and how to recover from an undesired state
+(error recovery).  This has to be done automatically since the systems
+are typically self administered (self healing).
+
+\item One may want to analyze the log of some run (possibly
+distributed between several machines) and detect a posteriori, e.g.,
+misuses of the system or rooms for better taking advantage of
+resources.
+
+\end{enumerate}
+Observe that one cannot separate the static part of the processing
+(query optimization) from the dynamic part.  For instance, a mail
+order system obeying a certain workflow may involve many calls to
+databases (for stock management and billing). And one may want, for
+optimization reasons, to ``pack'' several calls to the databases. The
+separate optimization of each call would simply miss the point.
+
+To attack the problem, we will combine techniques from databases and
+verification, using logic and automata as the cornerstone. We place as
+a compulsory requirement that we want to be able to reason in absence
+of any centralized authority in a context possibly involving a large
+number of peers and huge volumes of data.  A measure of success for
+the modeling task is the range of Web management activities we will
+be able to describe (data exchange, surveillance, error recovery,
+etc.). For reasoning, they are first the nature of the reasoning, both
+static and on-line analysis, from optimization, to tuning, error
+diagnosis and recovery, automatic administration, etc.
+
+In contrast with theories developed in the relational context, we will
+take into account the dynamic nature of the information.  In contract with
+the standard works on verification, we will place information at the
+center of the picture so that we do not only talk about control but
+primarily about data (exchange, transformation, query, update,
+etc.)
+
+% Some of the work will consist in pursuing the transfer of
+% the relational technology developed for static relations to trees and
+% combine it with verification techniques developed in more dynamic
+% contexts.  
+
+The problem we will be addressing are complex. Two
+main guiding principles for the methodology will make the entire
+research program feasible:
+\begin{enumerate}
+
+\item Accept severe limitations: The limitations of the relational
+model were indispensable to achieve its success. We will similarly
+adopt severe limitations. The crux will be to still be able to capture
+the essence of Web data management.
+
+\item Keep it simple: Model simplicity is always essential in
+mathematics and is a main factor of success in software development,
+and this most particularly in the context of the Web (because of the
+distribution, the scale, the heterogeneity and autonomy of the
+participants).
+
+\end{enumerate}
+
+To illustrate the style of work that we will conduct, we next mention
+some first results in that spirit.
+
+Some recent works around ActiveXML \cite{AbiteboulSegoufinVianu08}
+trace the border of decidability of reasoning for a specific model for
+Web data management.  Temporal properties are specified in a temporal
+logic based on Linear Temporal Logic \cite{tl}, that allows specifying
+statements such as, {\em eventually} the system will reach the state
+{\em delivered} or {\em mailorder-aborted}.  But we are specifically
+interested in statements that mention explicitly data and distribution
+such as: for each mailorder with a particular ID, we will eventually
+reach a state, where there will be a receipt with the same ID at the
+financial service of some department or a reject mail will have be
+sent to the appropriate customer.  In \cite{AbiteboulSegoufinVianu08},
+we use a temporal logic that integrates LTL and XML tree pattern
+formulas.  We established the boundaries of decidability and the
+complexity of automatic verification for this temporal logic.  From a
+positive angle, this work demonstrates that one can isolate models
+where desirable dynamic properties can be decided. From a negative
+one, the complexity is very high. So, why are we convinced such an
+approach is feasible in practice? Because the tasks we are interested
+in are fairly simple: fetch data, apply simple transformation rules to
+obtain new data or update existing data.  Very strong limitations (to
+start, as classical in databases, abandoning Turing completeness) are
+acceptable for the ability to reason about programs and in particular
+optimize them.
+
+\paragraph{Workflow and business artifacts}
+An important aspect of the work will be to also develop a better
+understanding of the flow of control in these applications.  The
+connections with workflows will in particular have to be investigated.
+A workflow is a reliably repeatable pattern of activity enabled by a
+systematic organization of resources, defined roles and information
+flows, into a work process that can be documented and learned
+\cite{wikipedia}.  We have witnessed a mixed success of workflow
+systems in industry. They are successful at an atomic level with local
+applications described by workflow systems more and more routinely
+turned into actual Web services. But the approach is much less
+successful in environments where one has to perform the choreography
+of many Web services.  In particular, the workflow approach seems to
+be poorly adapted to the needs of business applications designers who
+think more in terms of rules and constraints than in terms of too
+constraining workflows.  A new approach based on ``business
+artifacts'' has been proposed \cite{NigamCaswell}. A business artifact
+can be seen as a document capturing the information that is produced
+during some business activity. The state of the process is obtained
+from the content of the artifact and a change of state corresponds to
+an update (typically an insertion) to the artifact. This is also the
+spirit of the approach we will follow, with the data and its evolution
+seen as the core of Web applications and not as the by-product of a
+complex workflow.  In that sense, the model we will develop may also
+be seen as a theory of business artifacts.  The philosophy here is
+that we want to unify the approaches based on data with those based on
+control, and thus be able to reason explicitly with applications
+involving both data and control.
+
+\paragraph{Datalog}
+As already mentioned, we expect datalog to play an important role in
+Webdam. So we will study datalog and extensions (in particular, with
+negation) in a Web setting.  By considering datalog in a distributed
+context, new issues arise. For instance, simply detecting the
+termination of a datalog query evaluation that is trivial in a
+centralized context, becomes nontrivial and costly.  We illustrate
+next three issues where datalog can be useful in our context that we
+will investigate:
+\begin{enumerate}
+
+\item Query evaluation. We will study the evaluation of datalog
+queries in a Web setting, with the extensional data and the
+intentional definitions distributed over the network.  Difficulties in
+this context (compared to a centralized one) are that the processing
+may involve a large number of peers (possibly an unbounded number as
+in queries to retrieve music over the Internet) and that we have to
+optimize a datalog program that is distributed between many peers with
+no one having a global picture of the program.
+
+\item Data evolution.  Techniques have been developed for the
+incremental maintenance of datalog queries. These techniques should be
+adapted to our context in particular for handling monitoring
+functionalities in a Web setting.
+
+\item Run analysis. One can imagine some computation going on the Web
+with the participants logging in journals partial distributed traces
+of the execution. At any time, one may want to analyze the traces,
+e.g. to detect patterns of usage of the system (surveillance), or
+explain some unexpected behavior (diagnosis).  Datalog is quite
+appropriate to do so.
+
+\end{enumerate}
+We expect more applications of datalog to come up during the project. 
+
+In spite of its simplicity and limitations, it is not easy to reason
+in general with datalog (e.g., containment is undecidable for
+datalog), and even less with extensions such as datalog with negation
+that we will have to consider.  However, datalog is a natural setting
+for defining even more restricted models where reasoning is possible.
+
+\paragraph{Inspiration and validation}
+
+The road map up to this point may sound abstract. But we will use real
+applications as inspiration for our work. We will also use the
+applications as testbeds to validate the model and the results through
+prototypes.  
+
+We conclude this section by briefly presenting three of the
+applications that we will consider in order to validate the
+results. They will illustrate the kinds of Web activities we are
+targeting.  The first example is of an industrial nature, the second
+is about scientific data management, while the last one is about
+social networks. The common ground is that all three involve
+autonomous systems interacting by exchanging data.
+
+\paragraph{Biological data management}
+
+We focus on biological data but similar concerns may be found for
+different kinds of scientific data as well.  There are several major
+biological databases (e.g. genetics, proteomics) and thousands of
+specialized databases. As a result of the evolution of domain
+knowledge, these databases change regularly; the few ontologies that
+govern their terminologies and notably the identifiers they use also
+change often.  Although the volumes of data are not very large, the
+integration of these databases poses real challenges in particular
+because of dependencies between them, their highly dynamic nature and
+often the presence of many inconsistencies.  In this context, a
+particular database typically imports data from a number of
+independent sources, restructures it, integrates it with local data,
+exports some data itself. The main issues are related to the
+management of changes, propagation, synchronization, etc.  The current
+data models that are used, typically ad hoc extensions of the
+relational model, poorly capture complex aspects such as data
+provenance or temporal information and bring very limited responses to
+the scientists expectations.  \\
+\hspace*{0.5cm} In this application, we will most particularly focus
+on change control aspects and the management of data evolution.
+      
+\paragraph{Supply chain}
+
+Consider the supply chain of a computer manufacturer \cite{dell}.  The
+manufacturing system processes continuous flows of orders and has to
+cope with issues such as distant suppliers.  The different
+participants in the P2P system are the Web servers that are used by
+customers, the plants that put together the computers, the banks that
+process payments, dispatchers that assign mail orders to plants,
+warehouses that act as buffers between plants and suppliers, and
+finally the suppliers themselves. Each participant is represented by
+an autonomous peer of the system. The data exchanges between
+participants are intense. We want to be able to specify such an
+application, deploy and monitor it, detect, diagnose and recover from
+errors, enrich the application dynamically with complex business
+rules, discover and integrate new partners dynamically. 
+\\
+\hspace*{0.5cm} We are already using this example to test a P2P
+monitoring system we have developed \cite{demo:p2pm}.
+\\
+\hspace*{0.5cm} In this application, we will most particularly test
+issues related to the flow of control and novel ideas around business
+artifacts.
+   
+\paragraph{Social Networking in P2P}
+
+A social networking system such as Facebook is based on the management
+of information about its users stored in a central repository. It is
+rather straightforward to develop new applications using a simple
+API. However, these applications are rather limited in scope. We claim
+that there are two fundamental flows in this setting. The first one is
+that it is technically rather inefficient to centralize all the data
+and the control in a system that is bound to become a bottleneck or
+end up wasting enormous resources (the Facebook farm). More
+importantly, many users are reluctant to give full control over their
+data to a provider (Facebook) who can sell it to other businesses and
+worse, leave such control to third parties of unknown affiliations. It
+is feasible to develop similar systems where personal data is kept in
+full control (in some proxy database) by their owners. This becomes a
+problem of Web data management in the realm we are addressing.
+\\
+\hspace*{0.5cm} A user interacts with a system with an interface in
+the style of mashups. A proxy handles her data and the interaction
+with the community. Note that with such an approach, a user can have
+her own data (e.g., phone number, list of trusted friends) shared
+between many systems (Myspace, GoogleMail, Flickr, etc.) rather than
+replicated and inconsistent on the private servers of these systems.
+\\
+\hspace*{0.5cm} 
+In this last application, we will more particularly test interactions
+among a large number of peers. 
+
+Each of the three application has its own specificities. The Social
+Network one involves a huge number of peers. The Scientific one may be
+quite demanding in terms of quantity of data. The Manufacturing one
+comes with high quality of service requirements. But beyond their
+specificities, all three belong to a wide range of applications that
+are based on data management in a distributed context with autonomous
+machines.  More generally, the technology we will develop will be
+applicable to a large number of fields, including e-commerce,
+e-government, information manufacturing systems, social networking
+systems, classical and new telecom services.  In many such
+applications, the number of participants, the complexity of their
+interactions and the pressure for fast deployment and evolution make
+manual solutions infeasible. The clear needs for declarative
+specifications and for being able to automatically analyze and reason
+about applications are essential motivations for using the forthcoming
+Webdam technology.
+
+\paragraph{Acknowledgments}
+The Webdam proposal owes a lot to a number of colleagues, in
+particular, Omar Benjelloun, Ioana Manolescu, Tova Milo, Neoklis
+Polyzotis, Luc Segoufin and Victor Vianu. Also, this proposal has been
+influenced by the work in the ANR project Docflow with Anca Muscholl
+and Albert Benveniste, as well as by brainstorming around the FET-Open
+project proposal Fox lead by Luc Segoufin.  We also wish to thank
+Marie-Hélène Pautrat for her help in preparing the Webdam proposal.
+
+
+\begin{thebibliography}{5}
+
+\bibitem {AA05} 
+Diagnosis of Asynchronous Discrete Event Systems - Datalog to the
+Rescue!  
+S. Abiteboul, Z. Abrams, S. Haar, T. Milo, 
+ACM Conference on Principles of Database Systems, 2005.
+
+\bibitem{sigmod04} 
+Lazy Query Evaluation for Active XML, 
+S. Abiteboul, O. Benjelloun, B. Cautis, I. Manolescu, T.  Milo, N. Preda,
+ACM SIGMOD Conference on the Management of Data, 2004.
+
+\bibitem{axml} 
+The Active XML project,
+S. Abiteboul, O. Benjelloun, T. Milo, 
+VLDB Journal, to appear.  \\
+see  \url{http://activexml.net}.
+
+\bibitem{demo:p2pm}
+Distributed Monitoring of Peer to Peer Systems"(demo),
+S. Abiteboul, P. Bourhis, B. Marinoiu,
+International Conference on Data Engineering, 2008.
+
+\bibitem{ABS00} 
+Data on the Web, 
+S. Abiteboul, P. Buneman, D.  Suciu, 
+Morgan Kaufmann Publishers, 2000.
+
+\bibitem{xyleme} 
+The Xyleme project.  S. Abiteboul, S. Cluet, G. Ferran, M.-C. Rousset,
+Computer Networks 39(3): 225-238 (2002)
+
+\bibitem{AHV} Foundations of databases, 
+S. Abiteboul, R. Hull, V. Vianu, 
+Addison-Wesley, 1995.
+
+\bibitem{lorel} 
+The Lorel Query Language for Semistructured Data, 
+S. Abiteboul, D. Quass, J. McHugh, J.
+Widom, J. L. Wiener, 
+International Journal on Digital Libraries, 1997.
+
+\bibitem {AP}
+The Data Ring: Community Content Sharing,
+S. Abiteboul, N. Polyzotis,
+Conference on Innovative Data Systems Research, 2007.
+
+\bibitem{AbiteboulSegoufinVianu08}
+Static Analysis of Active XML Systems,
+S. Abiteboul, L. Segoufin, V. Vianu,
+ACM Conference on Principles of Database Systems, 2008.
+
+\bibitem{lixto}
+Visual Web Information Extraction with Lixto,
+R. Baumgartner, S. Flesca, G. Gottlob, 
+VLDB Journal, 2001.
+
+\bibitem{hull+05}
+Automatic composition of transition-based semantic web services with
+messaging, 
+D. Berardi, D. Calvanese, G. De Giacomo, R. Hull, M. Mecella,
+International Conference on Very Large Databases,
+2005.
+
+\bibitem {TBL01}
+The Semantic Web,
+T. Berners-Lee, James Hendler and Ora Lassila,
+Scientific American Magazine, 2001.
+
+\bibitem{BMSSD06}
+Two-Variable Logic on Words with Data,
+M. Boja\'nczyk et al.,
+Conference on Logic in Computer Science,
+2006. 
+
+\bibitem{B+07} 
+A Generic Framework for Reasoning about Dynamic
+Networks of Infinite-State Processes, 
+A. Bouajjani, Y. Jurski and M. Sighireanu, 
+International Conference on
+Tools and algorithms for the construction and analysis of systems,
+2007.
+
+\bibitem{odmg} The Object Database Standard: {ODMG-93}, editor
+R. Cattell, Morgan Kaufmann, San Mateo, California, 1994.
+
+\bibitem{mc} Model Checking, E. M. Clarke, B.-H.
+Schlingloff, Chapter 24, Handbook of Automated Reasoning, Elsevier,
+2001.
+
+\bibitem{tata} Tata, Tree Automata Techniques and Applications,
+H. Comon, M. Dauchet, R. Gilleron, F. Jacquemard, D. Lugiez, S. Tison
+and M. Tommasi, www.grappa.univ-lille3.fr/tata/
+
+\bibitem{delos}
+DELOS-NSF Working Group on ``Digital Library Information-Technology
+Infrastructures'', 2003. 
+
+\bibitem{tl} Temporal and modal logic, E.A. Emerson, Handbook of
+Theoretical Computer Science, Chapter 16, the MIT Press, 1990.
+
+\bibitem{DXQ}
+Highly distributed XQuery with DXQ,
+M. F. Fernández et al.,  
+ACM SIGMOD Conference on the Management of Data,
+2007.
+
+\bibitem{JL07}
+Alternation-free modal mu-calculus for data trees,
+M. Jurdzinski and R. Lazic,
+Conference on Logic in Computer Science,
+2007.
+
+\bibitem {dell}
+Inventory Decisions in Dell's Supply Chain, 
+R. Kapuscinski, R. Q. Zhang, P. Carbonneau, R. Moore, B. Reeves,
+Interfaces, Vol. 34, No. 3, 2004.
+
+\bibitem{H+} 
+Declarative Networking: Language, Execution and Optimization,
+B. T. Loo et al.,
+ACM SIGMOD Conference on the Management of Data, 2006.
+
+\bibitem{lowell} The Lowell Database Research Self-Assessment Meeting,
+2003.  research.microsoft.com/\~{ }gray/lowell/
+
+\bibitem {dagstuhl} Beyond the Finite: New Challenges in Verification
+and Semistructured Data, A. Muscholl, R. Ramanujam, M. Rusinowitch,
+T. Schwentick, V. Vianu, Dagstuhl Seminar, April 2008.
+
+\bibitem{Neven&Schwentick&Vianu04}
+Finite State Machines for Strings Over Infinite Alphabets,
+F. Neven, T. Schwentick and V. Vianu,
+ACM Transactions on Computational Logic, 2004.
+
+\bibitem{NigamCaswell} Business
+artifacts: An approach to operational specification. 
+A. Nigam, N. S. Caswell, 
+IBM Systems
+Journal, 42(3):428-445, 2003.
+
+\bibitem{OReilly05}
+What Is Web 2.0, 
+Design Patterns and Business Models for the Next Generation of Software,
+T. O'Reilly,
+http://www.oreillynet.com, 2005.
+
+\bibitem{owl} OWL Web Ontology Language Overview,
+http://www.w3.org/TR/owl-features/
+
+\bibitem{OV99}
+Principles of Distributed Database Systems, 
+T. Ozsu and P. Valduriez,
+Prentice Hall,
+1999.
+
+\bibitem{ddb}
+A Survey of Research on Deductive Database Systems, 
+R. Ramakrishnan, J. D. Ullman
+Journal of Logic Programming, 1993.
+
+\bibitem{rdf} Resource Description Framework 
+http://www.w3.org/RDF/
+
+\bibitem{Serres07} Les nouvelles technologies, M. Serres, INRIA
+4Oth anniversary, Lille, 2007.
+
+\bibitem{2020} Towards 2020 Science, 2005. Inspired a special issue of
+{\em Nature}, 2020: Future of Computing, March 2006.\\
+http://research.microsoft.com/towards2020science/
+
+\bibitem{Ullman} Principles of Database and Knowledge Base Systems,
+Volume I and II, J.D. Ullman, Computer Science Press, 1988-89.
+
+\bibitem{Vianu+06}
+Verification of communicating data-driven web services,
+A. Deutsch, L. Sui, V. Vianu, D. Zhou,
+ACM Symposium on Principles of Database Systems,
+2006. 
+
+\bibitem {WidomCeri96}
+Introduction to Active Database Systems,
+J. Widom, S. Ceri, 
+in Active Database Systems: Triggers and Rules For Advanced
+               Database Processing,
+Morgan Kaufmann, 1-41, 
+1996.
+
+\bibitem{xml}
+The Extensible Markup Language (XML),
+http://www.w3.org/XML/
+
+\bibitem{sparql}
+SPARQL Query Language for RDF,
+http://www.w3.org
+
+\bibitem{wikipedia} Wikipedia, http://www.wikipedia.org/
+
+\bibitem{w3c}
+The World Wide Web Consortium (W3C),
+http://www.w3.org/
+
+\bibitem{ws}
+The W3C Web Services Activity,
+http://www.w3.org/2002/ws/
+
+\end{thebibliography}
+
+\newpage
+\section{Resources}
+
+\subsection{Budget table} \label{table1}
+
+The budget distribution is as follows:
+
+\begin{center}
+\includegraphics[width=400pt]{Table1.jpg}
+\end{center}
+
+% \begin{center}
+% \begin{tabular}{|l|l|r|}
+% \hline
+% Type	& Time frame	&  Amount 	\\
+% \hline \hline
+% && \\ \hline
+% Temporary staff  && 1 183 591	\\  \hline
+% Phd 1 	& year 1-3	&		105 193\\
+% Phd 2 	& year 2-4	&		106 771\\
+% Phd 3 	& year 3-5	&		108 372\\
+% Research engineer 	& year 2-5	&		220 000\\
+% Postdoc & 5 $\times$ 1 year	&		231 667\\
+% Invited researchers 	& 3 $\times$ 3 months   &		49 500\\
+% Invited researchers 	&  3 $\times$ 10 months	&		198 000\\
+% Professor seconded at INRIA & 2 years (full time) & 164 088\\ \hline 
+% && 	\\ \hline
+% Permanent Staff && 629 426 \\ \hline 
+% Serge Abiteboul &75\%	&		424 270\\
+% Luc Ségoufin &25\%	&		102 578\\
+% Iona Manolescu &25\%	&		102 578\\ \hline
+% && 	\\ \hline 
+% \end{tabular}
+% \end{center}
+
+% \begin{center}
+% \begin{tabular}{|l|r|}
+% \hline \hline
+% Personal costs	&	1 813 017 \\ \hline
+% Workshop and travels	&	200 000\\ \hline
+% Overhead (20\%)		&	402 603	\\ \hline \hline 
+% Total eligible cost 	& 	2 415 620 \\ \hline  \hline 
+% & \\ \hline \hline
+% Requested ERC grant & 2 415 620 \\
+% \hline \hline 
+% \end{tabular}
+% \end{center}
+
+This budget involves some permanent researchers: Serge Abiteboul
+(75\%), Ioana Manolescu and Luc Segoufin (for some smaller proportions
+of their time because they are involved in other projects as well).
+We expect several other researchers and professors of the
+world class Data Management team Gemo and of the world class
+Verification team Dahu, to also be involved in Webdam directly or in
+satellite projects that will emerge from it.  They will be financed by
+INRIA and its partners.
+
+The project will involve some PhD students and
+postdocs. Unfortunately, these are not easy to find.  As an
+indication, in the original proposal we mentioned 3 PhD students and 5
+years of postdocs. We also mentioned an engineer and some positions of
+professors seconded at INRIA. We also plan to invite world class
+researchers to participate in the project.  We will also rely on other
+local resources for complementing the Webdam budget.
+
+\subsection{Task table} \label{table2}
+
+Estimated distribution between tasks and planning.
+
+\begin{center}
+\includegraphics[width=400pt]{Table2.jpg}
+\end{center}
+
+% This budget will be split between four main tasks. The following
+% indicates the distribution of resources between these tasks that we
+% foresee:
+
+% \begin{center}
+% \begin{tabular}{|l|c|l|}
+% \hline
+% Topic		& Resource share & Time frame 	\\
+% \hline \hline
+% Model definition &	30\%		& main effort in first 2 years 	\\
+% Reasoning	 &		30\% 	& main effort in years 2-4	\\
+% System issues 	 &		20\% 	& main effort in years 2-4	\\
+% Prototyping 	&		20\% 	& main effort in last 2 years 	\\
+% \hline 
+% \end{tabular}
+% \end{center}
+% By system issues, we mean here distributed reasoning on aspects that
+% are typically viewed as system aspects such as query optimization,
+% concurrency management or self-administration/healing.
+
+Most of these tasks are open ended and the borders between them are
+imprecise. We still believe that it is important to keep some form of
+balance between them. For instance, the study of a formal model has to
+rely on optimization techniques, that need some prototyping and
+experimentation to be validated.
+
+
+\subsection{Reporting} \label{reporting}
+
+There are two scientific reporting periods: months 1 to 30 and months
+31 to 60.
+
+Reports will be produced for these periods.
+
+In between, the progress of the project will be reflected in a web
+site: {\bf http://webdam.saclay.inria.fr}
+
+
+\chapter{Research environment}
+
+\section{PI's Host institution} \label{team}
+
+\paragraph{INRIA Saclay--Île-de-France}
+INRIA, the French institute for research in computer science and
+control, operating under the dual authority of the Ministry of
+Research and the Ministry of Industry, is dedicated to fundamental and
+applied research in information and communication science and
+technology (ICST). The Institute also plays a major role in technology
+transfer by fostering training through research, diffusion of
+scientific and technical information, development, as well as
+providing expert advice and participating in international
+programs. By playing a leading role in the scientific community in the
+field and being in close contact with industry, INRIA is a major
+participant in the development of ICST in France with a long record of
+excellency in research.  The institute has often demonstrated in the
+past its capacity to identify and strongly support ambitious research
+by providing a good infrastructure, and appropriate logistics.  
+\\
+\hspace*{0.5cm} INRIA created a sixth center in 2002, INRIA Futurs.  In
+2008, this center is splitting into 3, Lille, Bordeaux and Saclay. The
+hosting institution is INRIA Saclay, set south of Paris.
+
+\paragraph{Digiteo Lab}
+There exists a strong policy of the French government to promote
+Saclay as a center of excellence with the recent creation of Digiteo
+Labs, a joint lab with INRIA, CNRS, University Paris-Sud, Ecole
+Polytechnique, Ecole Normal Supérieure de Cachan among others.  This
+environment is ideal to bring in the best students (e.g., from Ecole
+Normale Supérieure, Ecole Polytechnique) to graduate programs e.g., at
+University Paris-Sud. The environment is also rich in expertise in
+many domains of computer science that are very relevant to Webdam,
+notably human-machine interfaces (e.g. Beaudouin-Lafon, Mackay),
+theorem proving and program verification (e.g., Miller, Palamidessi,
+Dowek, Paulin).  Via Digiteo Labs, INRIA is a also partner of the
+competitiveness cluster, {\bf System@tic Paris-Region} on telecoms,
+security, defense, automotive, transportation, system design and
+development tools.
+
+{\em Saclay is a superb environment for Webdam with a large number of
+internationally recognized groups in a rather small geographical
+perimeter. INRIA and Digiteo Labs will bring valuable support to
+Webdam. }
+
+Two INRIA Saclay research teams will provide an excellent environment
+for Webdam, namely Gemo and Dahu, in two educational centers of
+excellence, respectively, Université de Paris-Sud and Ecole Normale
+Supérieure de Cachan. Abiteboul will share his time between the two
+places. The distance between them is 15 km with good public
+transportation.
+
+\noindent
+{\bf Gemo \& Université Paris-Sud} Gemo is a joint team between INRIA
+and the Laboratoire de Recherche en Informatique (Université
+Paris-Sud).  \underline{Serge Abiteboul} has built that group, among
+the bests in the world for distributed data and knowledge management,
+and is managing it. In particular, ActiveXML has been proposed and
+developed in that group.  The group includes a number of excellent
+researchers with expertise on distributed data and knowledge
+management who will be able to actively participate in Webdam; in
+particular \underline{Ioana Manolescu} (distributed query
+optimization),\underline{ François Goasdoué}, \underline{Laurent
+Simon}, \underline{Philippe Chatalic} (distributed reasoning),
+\underline{Philippe \- Dague} (Web services and verification).  \\
+{\bf Dahu \& ENS Cachan} Dahu is a joint team between INRIA and the
+Laboratoire Spécification et Vérification (ENS Cachan).
+\underline{Luc Segoufin} recently left Gemo to found this small but
+top quality team on databases and verification. Abiteboul was
+instrumental in creating this spin off of Gemo to build on the
+competence of LSV on the verification of critical software and
+systems. Besides Luc Segoufin the team includes excellent researchers
+in verification; in particular, \underline{Stéphane Demri},
+\underline{Florent Jacquemard} and \underline{Cristina Sirangelo}.
+
+{\em The two groups, with excellent researchers both in data
+management and verification, provide an ideal workforce for
+Webdam. }
+
+\paragraph{The extended team}
+
+Abiteboul has established over the years, intense collaborations with
+top scientists who will be encouraged to pursue these collaborations
+in the Webdam context. We only mention next on-going collaborations
+with direct links to Webdam. 
+\\
+\hspace*{0.5cm} 
+In France, some collaboration has been
+going on the {\em verification of ActiveXML} with notably Albert
+Benveniste and Anca Muscholl (ANR DocFlow project). 
+Abiteboul is also involved in new ANR project,
+namely Dataring. The PI is Patrick Valduriez. It treats of systems
+aspects closely related to the topics of Webdam.  Some synergy is
+expected. 
+\\
+\hspace*{0.5cm} In Europe, Segoufin is the prime investigator in the
+Fox grant F7P proposal (short listed; Abiteboul is also involved) on
+the {\em Foundations of XML} that involves the best database theory
+groups in Europe (and we already mentioned the excellence of Europe on
+that topic). If Fox is funded, a lot of synergy should be
+expected.  
+\\
+\hspace*{0.5cm} 
+Abiteboul has recently started
+collaborating with the Oxford Group (notably \underline{Georg Gottlob}
+and Michael Benedikt). (He obtained a Plummer Fellowship to visit that
+group part time beginning of 2008.) He also has an on-going
+cooperation with Tel Aviv U. (\underline{Tova Milo}) on {\em
+workflows} and {\em mashups}.  \\
+\hspace*{0.5cm} With the US, we already mentioned some existing
+collaboration with UC San Diego (\underline{Victor Vianu}, \underline{Yannis
+Papakonstantinou}, \underline{Alin Deutsch}) some of it on {\em reasoning on
+distributed data management} and with UC Santa Cruz
+(\underline{Neoklis Polyzotis}) on {\em self tuning in P2P
+systems}. The UC San Diego team and Gemo have formed for several years
+a {\em joint team} with funding for this cooperation both from the
+French and US side (NSF).  \underline{Richard Hull} at IBM Research
+has a research program on business artifacts that would fit nicely
+with the Webdam agenda; he also worked in the past with Abiteboul.
+
+Observe that these topics all participate to the Webdam vision.
+Several of these top researchers (Milo, Vianu, Polyzotis) are already
+regular visitors of Abiteboul (yearly and often for long periods) and
+have already been important contributors to works that form the
+starting point of Webdam.  We expect some of the researchers
+previously mentioned and their teams to actively collaborate with
+Webdam notably via visits to INRIA Saclay.  Those who are underlined
+have already agreed to consider working or collaborating with Webdam.
+Webdam can immensely benefit from this already existing international
+network of top quality researchers and expend from it.
+
+{\em Webdam will bring together local talent and top researchers who
+have already been involved with Webdam related works in the past. We
+expect more talents to join us during the project, in particular to
+bring novel expertise.}
+
+Ethical Issues: no ethical issue applies to this proposal. See Ethical
+Issues Table.
+
+\end{document}
+
+

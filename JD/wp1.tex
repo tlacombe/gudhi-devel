@@ -1,0 +1,223 @@
+\subsection*{WP 1: Computational geometry in non euclidean spaces} 
+Delaunay triangulation and Voronoi diagrams in non-euclidean spaces, e.g. riemannian manifolds,
+Bregman and statistical spaces, intrinsic algorithms (discrete metric spaces). Triangulating Riemannian manifolds, stratified shapes, mesh generation, reconstruction.  Parameterization of data/nonlinear shapes. 
+
+In the last decades, a set of new geometric methods, known as manifold learning, have been developed with the intent of parametrizing nonlinear shapes embedded in high-dimensional spaces. Let us mention MDS, LLE, Isomap to name a few. While these methods are able to parametrize nonlinear manifolds, they assume however very restrictive hypotheses on the geometry of the manifolds sampled by the datapoints to ensure correctness.  Moreover, from a computational point of view, a common drawback of these methods is that they usually involve computations of eigenvalues and eigenvectors of matrices of the size of the dataset, preventing to deal with huge datasets without a pre-processing.
+
+Our goal is to design new methods and algorithms for sampling and approximating shapes of any codimension in high dimensional spaces.
+
+Approximation of submanifolds using Delaunay refinement. We intend to extend the Delaunay refinement paradigm to higher-dimensional manifolds. For surfaces of R3, this approach has been proven to have several advantages over grid methods, leading to better quality and complexity of the approximation. We expect this advantage to be even stronger as the dimension increases. Two main issues should be considered. First, since the size of the Delaunay triangulation depends exponentially on the ambient dimension, we intend to compute instead lighter data structures such as the ones proposed in Work Package 2 (witness complex, Rips complex or tangential complex). Second, in order to get guaranteed approximation properties, we will have to propose mechanisms to remove badly shaped simplices (slivers) in higher dimensions. Although techniques have been proposed for sliver removal in higher dimensions, they are either inefficient or do not have theoretical guarantees. We intend to develop new techniques based on optimal sampling of convex function to get rid of slivers. Such an approach has proven to be very successful in practice for surfaces in R3. We intend to give better theoretical foundations to this method and to implement it for higher-dimensional manifolds. An important special case we intend to consider is isosurfacing in arbitrary dimension and codimension [90]. By isosurfacing, one means constructing f−1(c) where f is a discrete function f:Zd→Rk and c a given point in Rk.
+
+================DELAUNAY
+
+===========STABILITY
+
+
+Delaunay triangulations are one of the most useful constructions in
+Computational Geometry that have found applications in many domains of
+science. Delaunay triangulations have been extensively studied since
+the work of B. Delaunay in 1934 and discovery of new important
+properties has never declined. Rather surprisingly though, the
+stability of those structures has not been studied in a systematic
+way. Related work can be found in the context of kinetic data
+structures \cite{Agarwal:2010:KSD:1810959.1810984} or in the context
+of robust computation \cite{Salesin:1989:EGB:73833.73857}. Our
+motivation comes from recent attemps to extend Delaunay triangulations
+beyond Euclidean spaces. A first example is the generation of
+anisotropic meshes. In such an application, a metric tensor field is given
+that varies over a domain of $\rem$ we want to mesh. Anisotropic
+Voronoi diagrams and anisotropic Delaunay triangulations then emerge
+as natural structures \cite{labelle2003}. A related (and more general) question
+is to define intrinsic Delaunay triangulations on a Riemannian
+manifold \cite{leibon2000}. Other types of Delaunay-like structures have been
+proposed to approximate submanifolds, most notably the restricted
+Delaunay triangulation \cite{edelsbrunner1997rdt}, and the tangential Delaunay complex
+\cite{boissonnat2011tancplx}. We might expect that, when the density of points is dense
+enough, all these Delaunay-like structures are similar. In fact this
+is the type of result that can be found in \cite{labelle2003}
+and in \cite{leibon2000}. However, the result of Labelle and
+Shewchuk is limited to the 2-dimensional case and the paper of Leibon
+and Letscher contains a flaw. These papers in fact miss an important
+condition which is not related to the sampling density but to its
+genericity. Roughly, the Delaunay triangulation is unstable around
+cospherical configurations which ruins any attempt to define Delaunay
+triangulations on domains where the metric varies.
+
+The aim of this paper is to introduce a parametrized notion of
+genericity for Delaunay triangulations and to state stability results
+when we keep away from degeneracies. This paper builds over
+preliminary results on anisotropic Delaunay meshes
+\cite{Boissonnat:2008:ADL:1456721.1456962} and manifold reconstruction
+using the tangential Delaunay complex \cite{boissonnat2011tancplx}. The central idea in
+both cases is to define Delaunay triangulations locally and to glue
+the local triangulations together by removing inconsistencies among
+the local triangulations. This is achieved by first detecting the
+so-called cospherical configurations and then by killing them. The
+cospherical configurations are themselves fragile and can be killed by
+various means, e.g., by weighting the points or by refining the
+sample.
+
+The present paper provides a general study of the stability of
+Delaunay triangulations, and applies the results to the problem of
+meshing compact differentiable submanifolds of Euclidean space. We
+introduce the notion of $\delta$-protected Delaunay simplices and of
+$\delta$-generic point sets.  This leads to our stability results. The
+concept is also related to the well-known notion of thickness (or
+fatness) of a simplex: We show that the Delaunay simplices of
+$\delta$-generic point sets are thick.  We also show how to produce
+such point sets.
+
+
+
+==================MESHING
+
+The problem of triangulating manifolds has a long history in the
+mathematical literature. In differential topology, seminal
+contributions are due to Whitney~\cite{whitney}, Cairns~\cite{cairns},
+Munkres~\cite{munkres}, Whitehead~\cite{whitehead} to name a
+few. Although these papers are not of an algorithmic nature, they
+introduce and study several interesting concepts that have been
+extensively used in Computational Geometry recently such as Voronoi
+diagrams restricted to a manifold, $\e$-sample of a manifold, fat (or
+thick) triangulations. However, these papers do not discuss the
+geometric quality of the approximation nor the size of the sample. The
+optimal sampling and approximation of convex bodies is also a long
+standing problem in convex optimization with major contributions by
+Gruber~\cite{gruber1,gruber2} and Dudley~\cite{dudley}. Recently,
+Clarkson~\cite{clarkson} extended this line of work to non-convex
+smooth manifolds of arbitrary dimensions. 
+%In~\cite{clarkson}, tight
+%bounds on the Hausdorff error are established. Moreover, as pointed
+%out by Clarkson, there exists a general algorithm to construct such
+%approximations. 
+However, his algorithm follows an intrinsic point of
+view which makes it difficult to use in practice since it requires to
+compute geodesic distances on the manifold which may be quite
+complicated in practice \cite{pc-gcsrp-05}. Other, more practical
+algorithms for approximating convex bodies, including the well-known
+sandwich algorithm, have been analyzed by
+Kamenev~\cite{convex-bodies}. We are not aware of similar studies for
+non convex manifolds except for the case of surfaces embedded in $\R
+^3$ which has been extensively studied in the Computational Geometry
+literature.  See \cite{ECGBook} for a recent survey.  These methods
+start by computing some subdivision of the embedding space (such as a
+grid or a triangulation of the sample points)  and their
+direct extension to higher dimensions would face an exponential
+dependence on $d$. A step in this direction is the extension of the
+celebrated Marching Cube algorithm to manifolds of higher
+dimensions~\cite{marching-cube1,isosurface}.  Continuation methods do
+not use any subdivision of the ambient space and are close in spirit
+to our approach. They construct a triangulated approximation of a
+$k$-dimensional submanifold in a greedy way and extend the current
+$k$-dimensional triangulated domain by adding a neighborhood of a
+boundary point. Some experimental results can be found in \cite{henderson} but
+no theoretical analysis of continuation methods is available.
+
+=================RECONSTRUCTION
+
+Manifold reconstruction consists of computing a piecewise linear
+approximation of an unknown manifold $\M \subset \R^d$ from a finite
+sample of unorganized points $\pp$ lying on $\M$ or close to
+$\M$. When the manifold is a two-dimensional surface embedded in
+$\R^3$, the problem is known as the surface reconstruction
+problem. Surface reconstruction is a problem of major practical
+interest which has been extensively studied in the fields of
+Computational Geometry, Computer Graphics and Computer Vision.  In the
+last decade, solid foundations have been established and the problem
+is now pretty well understood. Refer to Dey's book \cite{bookdey}, and
+the survey by Cazals and Giesen in \cite{book1} for recent
+results. The output of those methods is a triangulated surface that
+approximates $\M$. This triangulated surface is usually extracted from
+a 3-dimensional subdivision of the ambient space (typically a grid or
+a triangulation). Although rather inoffensive in 3-dimensional space,
+such data structures depend exponentially on the dimension of the
+ambient space, and all attempts to extend those geometric approaches
+to more general manifolds have led to algorithms whose complexities
+depend exponentially on
+$d$~\cite{manifold3, manifold4,manifold2,homology1}.
+
+The problem in higher dimensions is also of great practical interest
+in data analysis and machine learning. In those fields, the general
+assumption is that, even if the data are represented as points in a
+very high dimensional space $\R^d$, they in fact live on a manifold of
+much smaller intrinsic dimension~\cite{seung-lee}. If the manifold is
+linear, well-known global techniques like principal component analysis
+(PCA) or multi-dimensional scaling (MDS) can be efficiently
+applied. When the manifold is highly nonlinear, several more local
+techniques have attracted much attention in visual perception and many
+other areas of science. Among the prominent algorithms are
+Isomap~\cite{isomap}, LLE~\cite{lle}, Laplacian
+eigenmaps~\cite{laplacian}, Hessian eigenmaps~\cite{hessian},
+diffusion maps~\cite{diffusion,diffusion1}, principal
+manifolds~\cite{principal-manifolds}. Most of those methods reduce to
+computing an eigendecomposition of some connection matrix. In all
+cases, the output is a mapping of the original data points into $\R^k$
+where $k$ is the estimated intrinsic dimension of $\M$.  Those methods
+come with no or very limited guarantees. For example, Isomap provides
+a correct embedding only if $\M$ is isometric to a convex open set of
+$\R ^k$ and LLE can only reconstruct topological balls. To be able to
+better approximate the sampled manifold, another route is to extend
+the work on surface reconstruction and to construct a piecewise linear
+approximation of $\M$ from the sample in such a way that, under
+appropriate sampling conditions, the quality of the approximation can
+be guaranteed. First investigations along this line can be found in
+the work of Cheng, Dey and Ramos \cite{manifold2}, and Boissonnat,
+Guibas and Oudot \cite{manifold3}. In both cases, however, the
+complexity of the algorithms is exponential in the ambient dimension
+$d$, which highly reduces their practical relevance.
+
+In this paper, we extend the geometric techniques developed in small
+dimensions and propose an algorithm that can reconstruct smooth
+manifolds of arbitrary topology while avoiding the computation of data
+structures in the ambient space.  We assume that $\M$ is a smooth
+manifold of known dimension $k$ and that we can compute the tangent
+space to $\M$ at any sample point. Under those conditions, we propose
+a provably correct algorithm that %\framebox{\text{\color{red}{Changed}}} %allows to 
+construct a simplicial
+complex of dimension $k$ that approximates $\M$. The complexity of the
+algorithm is linear in $d$, quadratic in the size $n$ of the sample,
+and exponential in $k$.  Our work builds on \cite{manifold3} and \cite{manifold2} 
+but dramatically reduces the dependence on $d$. To
+the best of our knowledge, this is the first certified algorithm for
+manifold reconstruction whose complexity depends only linearly on the
+ambient dimension. In the same spirit, Chazal and Oudot
+\cite{persistence} have devised an algorithm of intrinsic complexity
+to solve the easier problem of computing the homology of a manifold
+from a sample.
+
+Our approach is based on two main ideas~: the notion of {\it
+  tangential Delaunay complex} introduced in %\framebox{\text{\color{red}{Changed: references rearranged}}}
+\cite{coordinate-system,thesis1,freeman}, and the technique of sliver
+removal by weighting the sample points \cite{sliver1}. The tangential
+complex is obtained by gluing local (Delaunay) triangulations around
+each sample point. The tangential complex is a subcomplex of the
+$d$-dimensional Delaunay triangulation of the sample points but it can
+be computed using mostly operations in the $k$-dimensional tangent
+spaces at the sample points. Hence the dependence on $k$ rather than
+$d$ in the complexity. %\framebox{CHECK}  
+However, due to the presence of so-called
+inconsistencies, the local triangulations may not form a triangulated
+manifold. Although this problem has already been reported \cite{freeman}, no
+solution was known except for the case of curves ($k=1$)
+\cite{thesis1}.
+The idea of removing inconsistencies among local triangulations that
+have been computed independently has already been used
+for maintaining dynamic meshes \cite{starsplaying} and generating anisotropic
+meshes~\cite{anisotropic1}. Our approach is close in spirit to the one
+in ~\cite{anisotropic1}.
+We show that,  under appropriate sample conditions, we can remove inconsistencies by weighting the
+sample points. We can then prove
+that the approximation returned by our algorithm is ambient isotopic to $\M$,
+and a close geometric approximation of $\M$.
+
+Our algorithm can be seen as a {\em local} version of the cocone
+algorithm of Cheng et al. \cite{manifold2}. By local, we mean that we
+do not compute any $d$-dimensional data structure like a grid or a
+triangulation of the ambient space. Still, the tangential complex is a
+subcomplex of the weighted $d$-dimensional Delaunay triangulation of
+the (weighted) data points and therefore implicitly relies on a global
+partition of the ambient space. This is a key to our analysis and 
+% \framebox{\text{\color{red}{Changed}}} %makes
+distinguishes our method %depart 
+from other local algorithms that have been proposed
+in the surface reconstruction literature \cite{prisme-4564a,gopi}.

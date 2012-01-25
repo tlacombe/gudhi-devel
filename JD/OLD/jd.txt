@@ -1,0 +1,80 @@
+Effective Computational Geometry of High Dimensional Data (CGHD)
+
+
+I. Summary
+
+1. Unveiling the geometry of data. 
+structure exists, conveys information, recovering this information is
+an important issue for applications : compression, analysis/learning,
+automatic processing of huge amounts of data
+Examples : images, galaxies, bio
+
+2. Early geometric approaches, the emerging field of structural data analysis 
+dimension reduction, NL manifold learning, computational topology, geometric inference
+3d data processing, surface reconstruction, simplification. 
+
+3. Scientific challenges
+-- Beyond affine models and euclidean spaces: diffusion, hyperbolic
+geometry, Bregman
+-- Statistical nature of data
+-- Walking around the curse of dimensionality 
+-- Adressing applications with new methodologies
+
+4. Methodology
+-- Mathematically sounded approaches (one cannot see or check)
+-- Algorithms that are of both theoretical and practical interest
+-- A software architecture that ensures genericity, robustness, efficiency
+-- A voluntary action towards code diffusion
+
+5. An opportunity for Europe
+-- CGAL etc
+-- Carlsson company (similar topics but maths)
+
+6. Objectives
+-- settle foundations for structural data analysis
+-- provide robust and efficient open code with guarantees
+-- demonstrate the availability of the approach on some applications
+
+II. Worktasks
+
+A. Fundamental data structures and algorithms
+
+1. Data structures with an intrinsic dimension sensitivity : NN
+search, small simplicial complexes, Delaunay-like, random, compact
+representation, entropy, parallelism (thèse Clément), intrinsic
+algorithms (based on an oracle providing interpoint distances)
+
+2. Computational geometry in non euclidean spaces : Riemannian manifolds,
+hyperbolic, Bregman, statistical spaces (including distance to a proba
+measure?) (thèse 2)
+
+3. Towards removing the curse of dimensionality : intrinsic
+dimension, practical. Many recent results from the CG community (ANN, proof
+of SVM, better algo for SVM, core sets,...) (thèse 3)
+
+4. Structural data analysis : dimension reduction, non linear manifold
+learning, beating the sampling bounds **, clustering,  persistent homology, topology preserving
+approximation/simplification 
+
+
+B. Software development
+
+6. CGAL-HiD (ingénieurs)
+
+C. Application/validation
+
+impliquer des industriels --> données, pbs
+
+7. Configuration spaces of robots and molecules (thèse )
+8. Meshing of high-dimensional manifolds
+9. Visualization of high-dimensional data
+
+Needs
+-- rare profile : high high level engineers (cannot be found in academia)
+
+**(see compressive sensing)
+the current bounds ensure topological correctness at the price of good
+geometric approximation. is it necessary ? NP-hardness result of
+Attali and Lieutier
+
+

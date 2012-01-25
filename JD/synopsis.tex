@@ -1,0 +1,236 @@
+\section{Extended synopsis of the project}
+
+\paragraph{The need to understand higher-dimensional spaces and shapes}
+% 3D shapes are now ubiquitous and there is no need to motivate 
+%  % with applications ranging from numerical simulations, visualization, reverse engineering, and in so many fields
+% % medical imaging, cultural heritage, 
+% that it may be considered strange that the huge amount of techniques developed for modeling 3D
+% shapes has not yet found extensions to higher dimensions. This project is built on the conviction that it is time to remedy to this state of affairs.
+
+% Geometric modeling refers to the construction and the manipulation of computerized representations of shapes. Since shape is the first and foremost attribute of 
+% our familiar 3D world, geometric modeling has been and still is a core discipline with a vast array of applications ranging from multimedia to engineering through computer-aided medicine. It has been  on the research agenda of several communities like  computer-aided design, computer graphics, computer vision, computational geometry, geometry processing and numerical analysis.
+
+% Until now, most of the work on geometric modeling has been restricted to 3D shapes. However, 
+%The need to represent higher-dimensional spaces and shapes 
+is ubiquitous in science.  Physicists are used to combine space and time into a single 4-dimensional {\em space-time} continuum.  In particle physics, the {\em phase space} consists of all possible values of position and momentum variables and is 6-dimensional.  {\em Configuration spaces} of mechanical systems, {\em conformational spaces} of macromolecules are other examples of common high-dimensional geometric objects.  Although their needs may be very different, numerical simulations, motion planning, molecular docking are among celebrated applications where approximating and processing high-dimensional objects is a central issue. 
+
+A maybe less intuitive place where one needs to understand  high-dimensional geometry is in {\em data analysis}. Natural and artificial systems like biological or sensor networks are often described by a large number of real parameters, whereas a collection of text documents can be represented as a set of term frequency vectors in Euclidean space; similar interpretations can be given for image and video data~\cite{sl-mwp-2000}.  Data analysis can then be turned into a geometric problem by encoding those heteregeneous data as clouds of points in high dimensional spaces equiped with some appropriate metric. Usually those points are not distributed in the whole embedding space but, due to the very nature of the system that produced those data, lie close to some subset of much smaller intrinsic dimension. Hence, the data conveys some geometric structure whose extraction and analysis are key to understanding the underlying system.
+Since data are produced at an unprecedented rate in all sciences, 
+%modeling complex high-dimensional shapes and extracting geometric information from point clouds in high-dimensional spaces have become core tasks in science and engineering. 
+understanding the geometry of high-dimensional point clouds has become a core task in science and engineering. 
+
+% The availability of tools for assisting geometric modeling and data analysis in higher-dimensional spaces may have a huge impact in applications as diverse as numerical simulations, medical imaging, bioinformatics, astrophysics and finance.
+
+
+%eager need for appropriate tools that will 
+% There are many other situations where complex, heteregeneous data are encoded as clouds of points in high dimension. They routinely surface in applications as diverse as medical imaging, bioinformatics, astrophysics and finance.
+
+
+% A text can be considered as a point in high dimension with word frequencies acting as coordinates. Similarly, in image processing, an image of a million colorful pixels can be considered as a point in $10^6$-dimensional spaces, i.e. each pixel's RGB intensity is taken as a separate coordinate. 
+
+
+% \paragraph{Unveiling the geometry of data.} {\em structure exists, conveys information, recovering this information is
+% an important issue for applications : compression, analysis/learning,
+% automatic processing of huge amounts of data
+% Examples : images, galaxies, bio }
+
+% In fact geometric data are ubiquitous and produced at an unprecedented rate.  They arise from measurements and simulations in the natural sciences that can easily be converted into geometric point cloud data. Most of these data reside in high-dimensional spaces.  
+
+
+
+% An important feature of modern science and engineering is that data of various kinds is being produced at an unprecedented rate. This is so in part because of new experimental methods, and in part because of the increase in the availability of high powered computing technology. It is also clear that the nature of the data we are obtaining is significantly different. 
+
+\paragraph{The curses of higher-dimensional geometry.} 
+
+High-dimensional geometries are much more difficult to process and analyse than 3D shapes. The dimensionality severely restricts our intuition and ability to visualize the data. Hence  understanding higher dimensional shapes must rely on automated tools able to extract useful qualitative and quantitative information from the input high-dimensional data.
+
+Moreover, the complexity of the data structures and of the algorithms used to  approximate shapes  rapidly grows as the dimensionality increases, which makes them intractable in high dimensions.  This curse of {\em dimensionality} is exemplyfied by the size of one of the simplest representations of a point set, namely its convex hull, whose complexity depends exponentially on the dimension. 
+%last sentence can be removed
+
+In addition, high-dimensional data often suffer from significant {\em defects}, including sparsity, noise, and outliers  which make them much more difficult to process than 3D data routinely provided by scanning devices. This is particularly so in the case of biological data, such as high throughput data from microarray or other sources. Moreover, the structure and occurrence of geometric features in the data may depend on the {\em scale} at which it is considered, thus requiring the analysis process to be multiscale.  
+
+\paragraph{The emergence of computational topology.}
+The last decade has seen tremendous progress in processing high-dimensional shapes and spaces. In robotics~\cite{sml-pa-2006}, randomized techniques have been proposed to capture the topology of configuration spaces and to search paths. In machine learning, a variety of techniques have been proposed to reduce the dimension of data, learn nonlinear manifolds and cluster data~\cite{hs-fmmds-2006}. In computational geometry, new approaches have been proposed to solve basic problems like searching nearest neighbours, computing smallest enclosing ellipsoids or approximating convex sets.
+Most  of these methods have limited guarantees and 
+%address elementary questions (which may be very hard to solve though) and 
+impose strong constraints on the dimension or the topology of the shapes they can successfully handle. Computational topology emerged as a new discipline  to 
+provide solid foundations for the effective understanding of complex shapes~\cite{hh-ct-2010}. 
+The concepts of $\varepsilon$-samples, restricted Delaunay triangulation, anisotropic meshes emerged together with the first efficient and provably correct algorithms for emblematic problems like mesh generation and shape reconstruction in 3-dimensions~\cite{geometrica-ecg-book}. 
+
+ The attempt to extend these results to higher dimensions led to the development of beautiful pieces of theory with deep roots in various areas of mathematics like Riemannian geometry, geometric measure theory, differential and algebraic topology. Let us mention  the emergence of a sampling theory of geometric objects and of geometric inference~\cite{geometrica-ccl09}, and the groundbreaking invention and rapid growth of persistent homology~\cite{eh-ph-2008}.
+Although of a fundamental nature, these advances 
+attracted  interest in several fields like data analysis, computer vision or sensor networks.
+
+\paragraph{The computational bottleneck.}
+
+ % Although there is a crucial need for geometric modeling tools in higher dimensions, the theoretical results obtained so far  only led to prototype codes, and applications have been limited to low dimensions or to rather crude techniques. 
+
+%The project addresses fundamental issues in an emerging field with huge potential impact.
+% it has not yet penetrated applied fields due to the lack of satisfactory algorithmic solutions in high-dimensional spaces. 
+% This project is intended to remedy to this situation by proposing  a long-standing alliance between mathematical developments, algorithmic design and advanced programming.
+
+
+However, the current theory has not demonstrated its scalability to real problems and, up to now, it has only been applied to rather simple cases and in low dimensions. This is  due to the lack of satisfactory algorithmic solutions in high-dimensional spaces.
+Breaking the computational bottleneck is now the main issue.  Settling the {\em algorithmic foundations} of geometry understanding in
+higher dimensions
+%al geometric modeling 
+is a grand challenge of great theoretical and practical significance. 
+
+
+The tenet of this proposal is that, to take up the challenge, we need a global approach involving
+tight and long-standing interactions between mathematical developments, algorithmic design and advanced programming. We believe that this is key to obtaining methods with built in
+robustness, scalability and guarantees, and therefore  impact in the long run.
+Such an approach has been successfully carried out in low dimensions with the 
+development of the Computational Geometric Algorithms Library CGAL~\cite{cgal}. 
+
+%We want to build upon this success 
+By following this paradigm, we want  to give to  geometry understanding in higher dimensional an effective theory and a reference software platform. 
+We strongly believe that this ambitious objective is realistic and can be reached. To pave the way towards this goal, we have identified  four main scientific challenges that will also correspond to the main worktasks of the project.
+
+% \paragraph{The emerging field of structural data analysis.} {\em Early geometric approaches, 
+% dimension reduction, NL manifold learning, computational topology, geometric inference
+% 3d data processing, surface reconstruction, simplification. }
+
+
+\paragraph{Scientific challenge 1 :  Going beyond affine models and Euclidean spaces.}
+
+% Standard methods like PCA in Machine Learning to deal with high dimensional data assume that the data can be well approximated by some affine subspace of small dimension.  To overcome this 
+
+In the last decades, a set of new geometric methods, known as manifold learning, have been developed with the intent of parametrizing nonlinear shapes embedded in high-dimensional spaces. Although widely used, those methods  assume very restrictive hypotheses on the geometry of the manifolds sampled by the datapoints to ensure correctness. 
+A different route, inspired by what has been done in 3-dimensions, consists in approximating highly nonlinear shapes by {\em simplicial complexes}, the analogue of triangulations in higher dimensions. Recent research has exhibited sampling conditions under which  topological or geometric properties, or even a full approximation of the sampled shape can be recovered~\cite{nsw-fhm-2008,geometrica-ccl09,geometrica-7142i}. Still the sampling conditions are quite stringent, the simplicial complexes are huge objects and their construction may be problematic.  
+%Progress in higher-dimensions so far has been mostly theoretical and a  huge gap  remains to be %filled before  having at one's disposal fully satisfactory solutions of practical significance.% One research direction is to invent simplicial complexes of small complexity and easy to compute that still capture the main features of the underlying shape. see Attali and Carlsson. 
+
+A fundamental issue is the choice of a metric which determines the type and quality of an approximation.
+ The simple Euclidean distance in the ambient space, while easy to deal with, is often not the right choice.  As already mentionned, most of the time, when working in high dimensional spaces, we are in fact interested by objets of much smaller intrinsic dimension. The intrinsic geometry on the objects provides the right framework. Computational intrinsic geometry has not been seriously tackled yet and a basic question like the existence of  Delaunay triangulations on Riemannian manifolds is still open.  This question is of utmost importance for anisotropic mesh generation and optimal approximations. Another important situation is when the data are not given as a point cloud in some Euclidean space, but rather as a matrix of pairwise distances (i.e. a discrete metric space). Although such data may not be sampled from geometric subsets of Riemannian manifolds, it may still carry some interesting topological structures that need to be understood. 
+
+In information theory, signal and image processing, other pseudo-distances such as Kullback-Leibler, Itakura-Saito or Bregman divergences are prefered.  
+%  In computer  vision, divergences are used throughout all the process of object recognition: to detect features using statistical, algebraic or geometric techniques, and to use these features throughout classifiers.
+%The recognition of objects in potentially complex scenes is a major issue in Computer Vision. 
+% Prominent advances in object recognition integrate two essential stages: the induction of features of limited size, over a potentially huge feature space, and the use of these features for learning and classification. 
+These divergences are usually not true distances (they may not be symmetric nor satisfy the triangular inequality) and it is necessary to revisit geometric data structures and algorithms in this context~\cite{geometrica-6154a}.
+
+
+
+
+\paragraph{Scientific challenge 2 :  Bypassing the curse of dimensionality.} 
+
+The complexities of many geometric algorithms and data structures grow exponentially with increasing dimension. %This behavior is commonly called the curse of dimensionality after Bellman.  An immediate consequence is that it is no longer possible to partition a high dimensional space. 
+This rules out most, even if not all, geometric algorithms developped in low dimensions.  Hence, extending Computational Geometry in high dimensions cannot be done in a straightforward manner and one has to take advantage of additional structure of the problem or to restrict attention to approximation. This motivated a number of new algorithmic paradigms such as locality-sensitive hashing, smoothed analysis, intrinsic algorithms.  In this project, we will address the curse of dimensionality by focusing on the inherent structure in the data which in some sense needs to be sparse or of low intrinsic dimension as well as by putting the emphasis on output-sensitive algorithms and average-case analysis~\cite{sl-mwp-2000}.  
+First investigations led to very promissing results, such as the design of new simplicial complexes with good complexity and approximation algorithms that scale well with the dimension \cite{cds-tewc-2004,geometrica-7142i}.
+
+
+An important feature is that, even if we go to approximate solutions, we do not want to sacrifice guarantees. This is mandatory since the behaviour of algorithms in high dimensions is much less intuitive and easy to predict than in small dimensions. %\framebox{Numerics?} 
+
+
+
+
+
+% The intrinsic geometric structure is often not easy to capture. In some situations the object is implicitly known and one can query the object of interest using appropriate oracles to get new information  (black-box model). In other situations like in Data Analysis, detecting the hidden structure is part of the problem. 
+
+\paragraph{Scientific challenge 3 : Searching for stable models.} 
+When dealing with approximation and samples, one needs stability results to ensure that the quantities that are computed are good approximations of the real ones. This is especially true in higher-dimensions where data are usually corrupted by various types of noise. A number of groundbreaking new approaches appeared recently.  {\em Topological persistence} was recently introduced as a powerful tool for the study of the topological invariants of sampled spaces~\cite{eh-ph-2008}. % Given a point cloud in Euclidean space, the approach consists in building a simplicial complex whose elements are filtered by some user-defined function. Under reasonable conditions on the input point cloud, and modulo a right choice of filter, the most persistent invariants in the filtration correspond to invariants of the space underlying the data~\cite{geometrica-cseh-07}. Thus, the persistence algorithm allow to recover global information from noisy data.
+
+To deal with {\em non-local noise} and outliers, another  new paradigm for point cloud data analysis has emerged recently.  Point clouds are no longer treated as mere compact sets but rather as empirical measures. A notion of distance to such measures has been defined and shown to be stable with respect to perturbations of the measure \cite{ccsm-gipm-2011}. A big challenge is to find efficient algorithms in arbitrary dimensions to compute or approximate the topological structure of the sublevel-sets of the distance to a measure. Such algorithms would naturally find applications in topological inference in the presence of significant noise and outliers, but also in other less obvious contexts such as stable clustering. 
+
+{\em Multiscale reconstruction} is another novel approach~\cite{geometrica-bgo-09}. Taking advantage of the ideas of persistence, the approach consists in building a one-parameter family of simplicial complexes approximating the input at various scales. %  It was shown that, for a sufficiently dense input data set, the family contains a long sequence of complexes that approximate the underlying space provably well, both in a topological and in a geometric sense. In fact, there can be several such sequences, each one corresponding to a plausible reconstruction at a certain scale. Thus,
+ Determining the topology and shape of the original object reduces to finding the stable sequences in the one-parameter family of complexes. Despite its nice features, multiscale reconstruction, in its current form, can only be applied to low-dimensional data sets in practice. 
+
+
+
+\paragraph{Scientific challenge 4 : Building up the reference platform for high-dimensional geometric modeling.}
+
+
+
+% We plan to follow an integrated approach of developing the geometric foundations theoretically, but also practically in the form of high quality software on which many applications can build. With the vision of a “high-dimensional CGAL” in mind, we will develop algorithms and data structures with theoretical guarantees that should be directly applicable in Numerical Simulations, Data Analysis and and Geometric Computing, and that can serve as a basis for robust applications in fields such as Computer Vision, Medical Imaging, Robotics or Structural Biology.
+
+% An important focus of Computational Geometry (especially of the European community) has been the design and analysis of geometric algorithms and data structures. This focus is well reflected in one of the major success stories of computational geometry, namely the Computational Geometry Algorithms Library (CGAL) that provides easy access to efficient and reliable geometric algorithms in the form of a C++ library. In most cases, reliability is achieved through guarantees.  CGAL is by now the gold standard for low dimensional geometric computing.
+
+Software development is a central issue in this project and we will devote a substantial part of the effort to build up a software platform that will provide easy access to efficient and reliable high-dimensional geometric algorithms in the form of a C++ library. We will follow the example of the Computational Geometry Algorithms Library (CGAL), one of the major success stories of computational geometry, by now the gold standard for low dimensional geometric computing~\cite{cgal}. 
+ Our project aims at extending this success story, combining efficiency with correctness guarantees to high-dimensional geometric computation.
+
+The development of  a reference platform for high-dimensional geometric modeling is dictated by three main motivations.
+{\em First}, the sofware platform will allow to experiment at a large scale, which is mandatory to 
+design the right models and data structures. It will boost theoretical research  in geometric modeling, computational geometry in high dimensions, and computational topology, leading towards a virtuous circle between theory and experimental research. This has proven to be of utmost importance when developing the CGAL library and will be even truer in high dimensional geometry.
+
+{\em Second}, maintaining such a platform will help further effort and consolidation in the long run.  Having a library with interoperable modules will allow to incrementally add more and more sophisticated tools based on solid foundations.  This is consistent with our long-term vision and our conviction that it is only through such a long standing effort that true impact, both theoretical and applied, can be gained.
+
+{\em Third}, the platform will serve as a unique tool to communicate with the computational geometry community and with researchers from other fields. In return, we will get feedback from practionners that will help shaping the platform.
+
+%In a way, one may compare such a software platform to a large scale instrument in physics and 
+ 
+
+
+% \paragraph{Scientific challenge 4 : Adressing applications with new methodologies.}
+
+% fast and robust application software (building on the fundamental algorithms and data struc- tures) for specific important problems in robotics, computational biology, and astrophysics.
+
+\paragraph{Risks and feasibility of the project.} 
+Simultaneously pursuing basic research at the best international level and developing industrial strength software is not without risks. % On one side, there is a risk to stick to heuristics solutions and software with no guarantees. The opposite pitfall would be to develop beautiful theoretical techniques with little impact outside of academic circles. 
+My personnal record as well as the record of the members of my research team  Geometrica who will be involved in this project are strong indications of our ability to take up the challenge with good chances of success.  Geometrica has been at the cutting edge of research in geometric data structures and algorithms~\cite{by-ag-98,geometrica-ecg-book,geometrica-6154a}, mesh generation, shape approximation~\cite{}, geometric inference and computational topology~\cite{geometrica-cseh-07,co-tpr-2008,geometrica-ccl09,geometrica-bgo-09,ccsm-gipm-2011}.  Geometrica is also one of the leader teams of the CGAL project~\cite{cgal}.  We were at the source of successfull developments in CGAL like interval arithmetics, triangulations (now integrated in the heart of Matlab) and meshing packages. We also took a prominent part in the animation of the CGAL project and community, and in the creation of the spinoff GeometryFactory. It can be argued that  my research group Geometrica is the best team worldwide to take up this dual challenge and to make this project a success.
+
+I will devote 70\% of my time to this project, and I will dedicate all my expertise and efforts to conduct and supervise the research work. To this end, I will receive the precious help of 2 permanent researchers of the Geometrica team : Fr\'ed\'eric Chazal who is a  leading researcher in geometric inference and computational topology and Mariette Yvinec who is an expert in geometric computing and a member of the CGAL Editorial Board. They will devote 20\% of their time to this project to co-supervise with me the research and implementation work of the students, postdocs and engineers to be engaged in this project. Other members of Geometrica,
+not financially supported by this project, will also collaborate to the project.
+
+%The research won't be conducted in isolation.  
+We will benefit from our strong collaborations with the best groups in Europe and in the US.
+Research in computational geometry and topology is very active in  Europe.  The academic European community has been supported through several research projects by the European Commission leading to the successful development of CGAL over the years.  The ICT Fet-Open project Computational Geometric Learning (CG-Learning) is closely related to this project. The focus, the timetable and the management though are different. The proposed project wants to take over the results of CG-Learning and to go beyong prototype developments.  %by establishing a strong management. %This new project will further strenghten the leadership of Europe  in Geometric Computing.
+
+We will also benefit from our long-standing collaborations in the USA with Stanford university (Pr. Guibas) and Ohio State university (Pr. Dey) on topics that are related to this project.
+
+
+
+\paragraph{New horizons and opportunities.} 
+
+
+
+% Computational geometry and topology have produced beautiful pieces of theory and. Although many of these tools are of great potential impact in applications, implementing those ideas in robust and efficient codes will only be possible through a long-standing alliance between mathematical developments, algorithmic design and advanced programming.  This last point is underestimated and implementation is often considered as an engineering activity that can be let to students. I believe that this is a wrong vheartiew that largely explains the current absence of  reliable software toolbox for geometric modeling in higher-dimensions. % My conviction, built after more than ten years of development of CGAL, is  that the suggested workplan is the only way to make  impact in the long run.
+
+If successful, the project will put higher-dimensional geometric modeling on new theoretical and algorithmic ground. It will help strengthening a research team with a unique spectrum of expertise covering mathematics, algorithm design and software development.
+It will also provide an open platform with no equivalent in USA or Asia. We forsee the platform to become a catalyst for research in high-dimensional geometry inside and outside of the project.  
+By implementing the most effective techniques in a  reliable and scalable way, the platform will
+%the platform will also allow the development of applications that are currently out of reach. 
+open the way to groundbreaking technological advances for applications as varied as numerical simulation, visualization, machine  learning, computer vision, data analysis, robotics or molecular biology.
+We will keep close contacts with research groups working in those domains and leap on opportunities arising from our new results and tools.
+ In return, we will get feedback from practitionners which will help shaping the theoretical models and the software platform. Based on our experience with CGAL, we will undertake a vigorous action towards code diffusion in applied domains.
+
+
+%\paragraph{An opportunity for Europe.} {\em enlever le paragraphe. extraire CGL dans paragraph risks : reseau de coll. de Geometrica}
+
+% Research in computational geometry and topology is very active in  Europe.  The academic European community has been supported through several research projects by the European Commission leading to the successful development of CGAL over the years.  The ICT Fet-Open project Computational Geometric Learning (CG-Learning) is closely related to this project. The focus and the timetable are different though. The proposed project wants to take over the results of CG-Learning and to go beyong prototype developments. This new project will further strenghten the leadership of Europe  in Geometric Computing.
+
+% On the industrial side, Dassault Syst\`emes is a world leader in Geometric Modeling and we have been collaborating  with them for more than 10 years (commercialization of software, co-advised Ph.D. student, joint publications and patents). We intend to pursue this fruitful collaboration and to keep our collaborators at Dassault-Syst\`emes informed of our advances. CGAL is commercialized by the start-up company GeometryFactory. The small size of the company and the fact that most of its members are alumni of the Geometrica team makes contacts very easy and allows fast transfer of results. 
+
+% It is to be noted that a start-up company has just been created in California. Its motto ``using shapes to find patterns in data'' is close to ours (http://www.ayasdi.com/).
+
+
+
+% \paragraph{Methodology.}  
+
+% The proposal is structured into the following four workpackages:
+
+
+% -- {\bf WP 1:   Computational geometry in non euclidean spaces.} \\
+% Delaunay triangulation and Voronoi diagrams in non-euclidean spaces, e.g. Riemannian manifolds,
+% Bregman and statistical spaces, intrinsic algorithms (discrete metric spaces). Approximate nearest-neighbour search and other basic algorithms. 
+
+
+% -- {\bf WP 2: Dimension-sensitive algorithms and data structures.} \\
+% Data structures with an intrinsic dimension sensitivity : small simplicial complexes, compact
+% representation of simplicial complexes. Random simplicial complexes. More general complexes (e.g.cubical)?  Efficient construction of simplicial complexes from data points. Major progress in mesh generation and surface reconstruction has been obtained through the elaboration of the theory of Delaunay triangulations. Although not usable in high dimensions, the search for tractable Delaunay-like simplicial complexes is an avenue for research. 
+
+% -- {\bf WP 3: Geometric modeling.}\\
+% Triangulating Riemannian manifolds, stratified shapes, mesh generation, reconstruction.  Parameterization of nonlinear shapes. Geometric inference. Feature extraction. Persistent homology.  Handling of noisy data. Topology preserving approximation/simplification. Clustering. Applications in data analysis, computer vision, numerical simulation, robotics, molecular biology.
+
+% -- {\bf WP 4:  Platform for geometric modeling in higher dimensions. } \\
+% Development of a C++ platform that implements the best algorithms developed during the project or by external collaborators. Set up datasets for controlled experiments in support of WP 1-3, and more generally, research on Geometric Modeling in higher dimensions.  Diffuse the software and promote its use in fields like machine learning, data analysis, numerical simulation, visualization, structural biology and others. 
+
+
+
+%\paragraph{References.}
+
+
+\bibliographystyle{abbrv}
+\bibliography{erc}
+
+
+

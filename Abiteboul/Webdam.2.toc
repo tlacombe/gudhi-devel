@@ -1,0 +1,45 @@
+\contentsline {chapter}{\numberline {1}The principal investigator}{5}
+\contentsline {section}{\numberline {1.1}Curriculum Vit{\ae } }{5}
+\contentsline {section}{\numberline {1.2}Scientific Leadership Profile}{8}
+\contentsline {paragraph}{Technology transfer}{9}
+\contentsline {paragraph}{Impact measures}{9}
+\contentsline {paragraph}{Management of science}{9}
+\contentsline {paragraph}{Students}{9}
+\contentsline {section}{\numberline {1.3}10-year-Track-Record}{10}
+\contentsline {chapter}{\numberline {2}The research proposal}{13}
+\contentsline {section}{\numberline {2.1}Extended synopsis of the project proposal}{13}
+\contentsline {paragraph}{Time to stop hacking the Web }{14}
+\contentsline {paragraph}{Limiting the scope: semantics}{14}
+\contentsline {paragraph}{A unifying model}{14}
+\contentsline {paragraph}{Automatic reasoning}{15}
+\contentsline {paragraph}{High-risk, high gain}{16}
+\contentsline {paragraph}{Not enough theoretical}{16}
+\contentsline {paragraph}{Too theoretical}{16}
+\contentsline {paragraph}{All or nothing?}{16}
+\contentsline {paragraph}{An opportunity for Europe}{16}
+\contentsline {section}{\numberline {2.2}State-of-the-art and objectives}{18}
+\contentsline {subsection}{\numberline {2.2.1}A first scientific shift in data management: trees, functions}{18}
+\contentsline {paragraph}{XML}{18}
+\contentsline {paragraph}{The playground: the Web and Web services}{18}
+\contentsline {paragraph}{ActiveXML}{19}
+\contentsline {subsection}{\numberline {2.2.2}A second shift in data management: deduction}{20}
+\contentsline {paragraph}{Datalog }{22}
+\contentsline {section}{\numberline {2.3}Methodology}{22}
+\contentsline {paragraph}{A model for Web data management}{22}
+\contentsline {paragraph}{Reasoning about Web applications}{23}
+\contentsline {paragraph}{Workflow and business artifacts}{25}
+\contentsline {paragraph}{Datalog}{25}
+\contentsline {paragraph}{Inspiration and validation}{26}
+\contentsline {paragraph}{Biological data management}{26}
+\contentsline {paragraph}{Supply chain}{27}
+\contentsline {paragraph}{Social Networking in P2P}{27}
+\contentsline {paragraph}{Acknowledgments}{28}
+\contentsline {section}{\numberline {2.4}Resources}{32}
+\contentsline {subsection}{\numberline {2.4.1}Budget table}{32}
+\contentsline {subsection}{\numberline {2.4.2}Task table}{33}
+\contentsline {subsection}{\numberline {2.4.3}Reporting}{34}
+\contentsline {chapter}{\numberline {3}Research environment}{35}
+\contentsline {section}{\numberline {3.1}PI's Host institution}{35}
+\contentsline {paragraph}{INRIA Saclay--\^Ile-de-France}{35}
+\contentsline {paragraph}{Digiteo Lab}{35}
+\contentsline {paragraph}{The extended team}{36}

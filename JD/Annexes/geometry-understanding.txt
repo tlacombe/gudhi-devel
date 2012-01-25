@@ -1,0 +1,98 @@
+Geometry analysis/understanding in high dimensional spaces
+GUDHI
+
+On Gudi Padwa, a gudi is found hanging out of a window or otherwise
+prominently displayed in traditional Maharashtrian households. Gudi is
+a bright green or yellow cloth adorned with brocade (zari) tied to the
+tip of a long bamboo over which gathi (sugar crystals), neem
+leaves[citation needed], a twig of mango leaves and a garland of red
+flowers is tied. A silver or copper pot is placed in the inverted
+position over it. This gudi is then hoisted outside the house, in a
+window, terrace or a high place so that everybody can see it.
+
+Some of the significances attributed to raising a Gudhi are as follows:
+
+    Gudhi symbolizes the Brahmadhvaj (translation: Brahma’s flag)
+    mentioned in the Brahma Purana, because Lord Brahma created the
+    universe on this day. It may also represent Indradhvaj
+    (translation: the flag of Indra).[5]
+
+   Mythologically, the Gudhi symbolizes Lord Rama’s victory and
+   happiness on returning to Ayodhya after slaying Ravan. Since a symbol
+   of victory is always held high, so is the gudi (flag). It is believed
+   that this festival is celebrated to commemorate the coronation of Rama
+   post his return to Ayodhya after completing 14 years of exile.5
+
+    Maharashtrians also see the Gudhi as a symbol of victory
+    associated with the conquests of the Maratha forces led by
+    Chhatrapati Shivaji. It also symbolizes the victory of King
+    Shalivahana over Sakas and was hoisted by his people when he
+    returned to Paithan.[5] Gudhi is believed to ward off evil, invite
+    prosperity and good luck into the house.[5]
+
+
+INPUT : Types of data
+-- point clouds
+-- isomanifold in digital images (examples?)
+-- shapes defined implicitly as a system of equations 
+-- black box model
+-- hyperspectral images
+
+What makes higher dimensional shapes different
+-- dimension 
+-- importance of topology : cc (clustering), holes, cavities (homology)
+-- classification of surfaces known,  problematic in higher dim 
+-- complexity (size of good  samples)
+
+OUTPUT
+
+Approximation
+-- projection onto affine space (linear methods): PCA, DFT (discrete
+Fourier transform), random projections
+-- embedding in affine space while preserving distances (spectral methods) : MDS, local : LLE,
+Isomap, Laplacian eigenmaps
+-- simplicial complexes and nerves
+
+   		 topological approximation :  preserving homology,
+		 homotopy  type, topological type (homeomorphism) 
+
+		 metric approximation (different from embedding,
+		 e.g. tree embedding, "instrinsic" algorithms)
+
+		 simplification/refinement/incremental construction
+		  approximation by graphs, low dimensional complexes
+
+-- Morse Smale complexes
+-- multiscale analysis
+
+Segmentation/feature/structure extraction
+-- clustering, separation, SVM
+-- skeletonization (Reeb graph)
+-- detection of substructures :  e.g. graph, filaments etc
+-- signatures/shape descriptors
+-- boundaries, singularities, highly curved regions
+-- topological invariants : Betti numbers, generators of the homology
+groups
+-- model-based clustering
+
+
+Shape similarity
+-- distance between shapes (Hausdorff, Fr\'echet, Gromov-Hausdorff)
+-- detection of symmetries, similarities
+-- shape matching and recognition
+
+TECHNIQUES
+
+-- simplicial complexes
+-- distance function
+-- persistent homology
+-- Laplacian operator, discrete differential geometry
+-- discrete Morse theory
+-- computational metric geometry
+
+
+APPLICATIONS
+
+-- meshes for numerical simulations
+-- topological data analysis
+-- visualization of data, visual representation, walk through data

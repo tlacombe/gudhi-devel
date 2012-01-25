@@ -1,0 +1,352 @@
+\subsection*{WP 2:  Dimension-sensitive algorithms and data structures} 
+
+Central to the techniques we intend to develop is the construction of simplicial complexes.  A graph is an example of a 1-dimensional simplicial complex but simplicial complexes are much more powerful than graphs and allow to approximate complicated shapes of arbitrary dimension and topology. They offer a flexible data structure to represent and process higher-dimensional shapes and recent developments have shown that simplicial complexes computed on top of point clouds are primary tools to capture the topology of the underlying space of the data. 
+
+In 3-dimensions, 2 and 3-dimensional simplicial complexes of surfaces and volumes are widely used in graphics, scientific computing and manufacturing. Because of its numerous interesting properties and of the existence of extremely efficient algorithms to compute it, the Delaunay triangulation has become one of the most famous and widely used geometric data structures that spread out accross all sciences. The algorithms we have implemented in CGAL are among the most reliable and fast algorithms. They have been included in the heart of MATLAB. 
+
+The algorithms used in 3 dimensions extend to any dimension but their complexity grows exponentially with the dimension which makes them useless for real applications beyong say dimension 6~\cite{avis,hornus}.  In order for algorithms and implementations to scale with the dimension, we need to exploit (hidden) structure of the data and to design dimension-sensitive algorithms and data structures.
+
+% our focus is not on worst-case complexity, but on (provably) good performance under some given structural properties of the input. These properties may be of statistical nature (when we are dealing with noise, for example), or of geometric nature (when data is of low intrinsic dimension, say). Related to this, we are also aiming at output-sensitive algorithms.
+
+\paragraph{Design of small yet faithfull simplicial complexes.} 
+Given a set of points $V$ in $\R ^d$, a number of simplicial complexes
+with vertex set $V$ have been proposed. A first class of simplicial
+complexes uses a parameter $\alpha$ which can be used to order the
+simplices of the complex.
+
+The \u{C}ech complex is the nerve of the set $B_{\alpha}$ of balls of
+radius $\alpha$ centered at the points of $V$. The nerve of
+$B_{\alpha}$  associates a
+$i$-simplex to any subset of $i+1$ balls that have a common
+intersection. This is a simplicial
+complex that is in general not embeddable in $\R ^d$. Moreover, it is usually very big and
+difficult to compute since it requires to detect whether a subset of
+balls of  $\R ^d$ intersect. 
+
+A simpler to compute simplicial complex is the Rips complex whose
+edges are the same as for the \u{C}ech complex. The higher dimensional
+simplices of the Rips complex are obtained by computing the cliques of
+sizes 3, 4 etc. in the graph of the edges. This simplicial complex is
+much easier to compute than the \u{C}ech complex and it has the
+vremarkable property that it can be constructed in a purely
+combinatorial way from 
+its 1-skeleton.  Such a simplicial complex is called a {\em flag
+  complex}. Nevertheless, the Rips complex is not embedded in $\R ^d$
+and may have a dimension much higher than the dimension of the underlying structure
+of the data.
+
+
+Various simplicial complexes have been derived from the Delaunay
+triangulation of the vertices. The $\alpha$-complex is the nerve of
+the restriction of the Delaunay triangulation to the union of the
+balls of $B_{\alpha}$. This complex is embedded in $\R^d$ (provided
+that the vertices are in general position) but very difficult to
+compute in high dimension for the same reason as the \u{C}ech complex.
+
+Other simplicial complexes derived from the Delaunay triangulation do
+not involve any parameter, most notably the restricted Delaunay
+triangulation, the tangential Delaunay complex and the witness
+complex. Those complexes are
+especially designed for the case where $V$ samples a topological space
+of small dimension $k$, the central hypothesis in Machine
+Learning. Both the restricted and the tangential Delaunay complexes are embedded in $\R^d$, have dimension $k$
+(under a mild general position assumption). Still, these simplicial
+complexes are limited to small $k$.  The witness complex is
+another variant of the Delaunay triangulation introduced by
+Vin de Silva and Carlsson. The witness complex is embedded in $\R ^d$
+and is remarkably easy to compute in any dimension
+since the only numerical operations involves in its construction are
+comparisons of distances.
+
+It should be noted that the Rips complex and the witness complex can
+both be computed from the knowledge of the distances between the
+vertices. Hence these complexes can be computed in any discrete metric
+space.
+
+We identify four research directions~:
+\begin{enumerate}
+\item Classifying simplicial complexes
+\item Combinatorial and algorithmic complexity 
+\item Compact representation
+\item New types of simplicial complexes
+\end{enumerate}
+
+\paragraph{Classifying simplicial complexes.}
+Some equivalences between the various types of simplicial complexes are known. For example,
+the Rips and the \u{C}ech complexes are identical for the $L_1$ norm and for the Euclidean norm, we have 
+\[ \rips () \subset \cech () \subset \rips () .\]
+Recently, we have established conditions under which the witness complex, the restricted Delaunay triangulation and the tangential complex are identical~\cite{}. A more complete classification is required to better understand these structures and their properties.
+
+\paragraph{Combinatorial and algorithmic complexity.}
+A main limitation of using simplicial complexes is their combinatorial and algorithmic complexity. 
+Differently from polytopes, very few results are known. The flag random complex is a noticeable exception~\cite{}. Other types of random abstract complexes have to be studied from a combinatorial point of view. Geometric simplicial complexes should also be considered. We intend to develop probabilistic analyses.
+
+\paragraph{Compact representation of simplicial complexes.}
+{\em state of the art} Currently no code allows to manipulate simplicial
+complexes of arbitrary dimension in a routine way as is possible for 2 and 3-dimensional
+triangulations of $\R ^3$
+\cite{springerflo,DBLP:journals/tog/PaoluzziBCF93,svy-crm-99}.
+We are aware of only a few works on the design of data structures for
+general simplicial complexes. Brisson~\cite{Brisson:1989:RGS:73833.73858} and Lienhardt~\cite{DBLP:journals/ijcga/Lienhardt94}
+have introduced data structures to represent $d$-dimensional cell
+complexes, most notably subdivided manifolds. While those data
+structures have nice algebraic properties, they are very redundant and
+do not scale to large data sets or high dimensions. More recently, Attali et
+al.~\cite{Attali2011} have proposed an efficient data structure to represent and
+simplify flag complexes, a special family of simplicial complexes
+including the Rips complex. This work is close in spirit to our work but is
+limited to flag complexes and simplicial complexes that are almost
+flag complexes. Experimental results are only reported in dimension $3$.
+
+{\em full representation} Needed to store info at the faces.
+Recently, we have experimented with a tree representation for simplicial
+complexes that seems to perform very well. Simplicial complexes of 500 millions of simplices have been constructed and stored on a laptop. The nodes of the tree are in bijection with the simplices
+(of all dimensions) of the simplicial complex, and each node in the
+tree requires $O(1)$ space. Hence, our data structure explicitly stores
+all the simplices of the complex but does not represent explicitly the
+adjacency relations between the simplices. Storing all the simplices
+provides generality, and the tree structure of our representation
+enables us to implement basic operations on simplicial complexes
+efficiently. In particular to retrieve of incidence relations. In
+addition, more compact storage could be further obtained by using
+well-known succinct representations of trees~\cite{10.1109/SFCS.1989.63533,Munro:2002:SRB:586840.586885,Ferragina:2005:SLT:1097112.1097456,DBLP:conf/icalp/2003}.
+
+Our data structure is purely combinatorial and can represent any
+abstract simplicial complex. Geometric simplicial complexes can be represented
+on top of such a representation by adding the appropriate geometric
+operations. We validate our approach on several types of simplicial
+complexes. 
+
+
+{\em compact representation}. Flag complexes. 
+A second line of research is to design compact representations of the simplicial complexes men- tioned above. A lot of work has been done for triangulated surfaces (2-dimensional simplicial complexes). Much less has been done in three dimension [16] and almost nothing in higher dimen- sions. One approach is to use semi-implicit representations where we only store the 1-skeleton of the data structures (i.e. the vertices and the edges but not the faces of higher dimensions). The full data structure is then reconstructed locally on the fly when needed. Preliminary work on Delaunay triangulations has shown that this approach dramatically reduces the space requirement while it increases the computational time by a mild factor only [18]. Further work on this topic will involve the adaptation to this context of techniques to represent graphs in a compact way while allowing fast queries of the data structure. We also intend to explore variants of this approach to efficiently code k-skeletons of simpicial complexes.
+
+other known results on compact data structures (graphs, trees)
+
+{\em new computational paradigms.} Parallelism, out of core.
+
+
+\paragraph{New types of simplicial complexes.}
+
+
+
+
+
+==========
+
+
+Various simplicial complexes have been proposed. The \u{C}ech complex is important in the mathematical literature  because it is known to capture the homotopy type of the underlying object under general conditions (nerve theorem). However, the \u{C}ech complex The Rips complex 
+
+
+including the Cech, the Rips and the $\alpha$-complex~\ref{edelsbrunner}. These complexes realize various compromises between their power to capture the topology of the underlying topological space and their complexity. One of the main bottlenecks that limit their use resides in the fact that the size of those data structures increases exponentially with the dimension of the ambient space. Restricted Delaunay triangulation.
+
+Recently, new simplicial complexes have been defined whose complexity depend on the intrinsic dimension of the data. Witness, tangential. 
+
+Distinguish abstract/geometric, the nature of predicates involved. Connections : \u{C}ech = Rips for L1 and well known inclusion (equation). Very recently (unpublished work), we have established conditions under which RDT=TDC=intrinsic DT= witness.
+Such results involve a better understanding and simpler algorithms.
+
+Our goal is to provide a fine analysis of the {\em complexity} of those complexes and to develop various strategies to compute those cell complexes, aiming to by-pass the curse of dimensionality. Such a study will lead to efficient code for cell complexes in higher dimensions that will be integrated in the platform.
+
+It is important to have a better understanding of the complexity of the cell complexes mentioned above. Some results are known for simple cases. The Delaunay triangulation of point sets that belong to lower dimensional manifolds  has a complexity that is lower than in the general case where the points span the entire space~\cite{}. 
+
+Random complexes.
+
+Smoothed analysis. We intend to measure the effect of perturbations (either noise or computed perturbations) on the mathematical properties and combinatorial complexity of those structures.
+
+Complexity  bounds for simplicial complexes of well sampled substructures (e.g. submanifolds).
+
+
+
+Lastly, we intend to {\em implement} those structures, experiment with them and see how they be- have under realistic conditions. We intend to deliver CGAL code for the most efficient data struc- tures. Some implementation of Delaunay triangulations in higher dimensions exists, the only fully robust being the one developed by one the partners [18]. Prototype codes for other simplicial com- plexes have been developed in the context of the PLEX library http://comptop.stanford.edu/ programs/plex/ developed at Stanford university. However, the code is primarily intended for pedagogical and research purposes and does not address efficiency and robustness issues.
+
+{\em Validation.}
+1. Compute the combinatorial structure of the flow complex on an image data sets where the different dimensions are given by the image’s pixels, e.g., for the Semeion Handwritten Digit Data Set from the UCI repository [8]. This is a data set of 1593 points in 256 dimensions.
+
+2. Deliver a CGAL package for computing Delaunay triangulations, witness and Rips complexes for data set with dimensions up to 10-15, as required e.g. by the analysis of astronomic data.
+
+3. Provide benchmarks
+
+\paragraph{Dimension-sensitive algorithms and data structures}
+
+Work Package 2.3: Output sensitive detection of substructure
+
+Objectives. 
+
+Typically geometric algorithms are analyzed with respect to worst-case complexity, which is often an unrealistic measure, especially when dimension is a parameter. We focus on output-sensitive and expected-case complexities. We plan to develop algorithms and data structures that balance complexity and expressiveness for representing objects of intrinsically low dimension in high-dimensional ambient spaces, and for extracting important substructures, with methods whose complexity depends on the size of the computed object. Our implementations support methods developed in Work Package 3, and enhance Cgal’s d-dimensional kernel in conjunction with Work Package 2.1. In particular, we examine simplicial complexes based on restricted Delaunay triangu- lations that scale well with dimension.
+
+Work plan.	Restricted Delaunay triangulations and variants. 
+
+Our first goal is to compute simplicial complexes that are good approximations of a given submanifold. In small dimensions, the approach consists in computing a subdivision of the whole space and then to extract a complex that approximates the manifold. Two main such approaches have been considered. The first one uses grids and the marching cube algorithm. Extending this approach in higher dimensions is limited due to the fact that the complexity of the grid depends exponentially on the ambient dimension. A second approach is to use Delaunay triangulations and approach the manifold by extracting the so-called restricted Delaunay triangulation (RDT). Though more adaptive than the grid approach, this method suffers also from the curse of dimensionality. Furthermore, the presence of badly shaped simplices (so-called slivers) leads to bad approximations of the manifold. To overcome these diffi- culties, we propose to construct instead variants of the RDT that scale better with the dimension and avoid badly shaped simplices. Several directions will be pursued: restricting the Delaunay triangulations to tangent spaces (tangential complex), and relaxing the definition of Delaunay tri- angulations (witness and Rips complexes). We intend to exhibit conditions on the input data under which these complexes are a good approximation of the manifold, and to provide algorithms whose complexity depends on the intrinsic dimension of the manifold.
+
+Non smooth : homology or homotopy type via $\alpha$-shapes. easier constructions ?
+weaker sampling conditions.
+
+
+
+======================WITNESS
+
+Various subcomplexes of the Delaunay triangulation have been used with
+success for approximating $k$-submanifolds of $\R^d$ from finite
+collections of sample points. Perhaps the most popular one in small
+dimensions ($k\in\{1,2\}$ and $d\in\{2,3\}$) is the so-called {\em
+  restricted Delaunay complex}, defined as the subcomplex spanned by
+those Delaunay simplices whose dual Voronoi faces intersect the
+manifold. Its main selling point is to be a faithful approximation to
+the manifold underlying the data points, in terms of topology (ambient
+isotopy), of geometry (Hausdorff proximity), and of differential
+quantities (normals, curvatures, etc), and this under very mild
+conditions on the sampling density. These qualities explain its
+success in the context of curve and surface meshing or
+reconstruction, where it is used either as a data structure for the
+algorithms, or as a mathematical tool for their analysis, or both.
+
+The story becomes quite different when the data is sitting
+in higher dimensions, where two major bottlenecks appear:
+\begin{itemize}
+\item[(i)] The nice structural properties mentioned above no longer
+  hold when the dimension $k$ of the submanifold is $3$ or more. In
+  particular, normals may become arbitrarily wrong~\cite{cdr-mr-05},
+  and more importantly the topological type of the complex may deviate
+  significantly from the one of the manifold~\cite{bgo-mrwc-09}. These
+  shortcomings question the usefulness of the complex as a theoretical tool.
+\item[(ii)] It is not known how to compute the restricted Delaunay
+  complex without computing the full-dimensional Delaunay
+  triangulation or at least its restriction to some local
+  $d$-dimensional neighborhood. The resulting construction time incurs
+  an exponential dependence on the ambient dimension $d$, which makes
+  the complex a prohibitively costly data structure in practice.
+\end{itemize}
+
+To address problem~(i), Cheng {\em et al.}~\cite{cdr-mr-05} suggested
+to use weighted Delaunay triangulations. The intuition underlying
+their approach is simple: when the restricted Delaunay complex
+contains badly shaped simplices, called {\em slivers}, its behavior in
+their vicinity may be arbitrarily bad: wrong normals, wrong local homology,
+and so on. By carefully assigning weights to the data points, one can remove
+all the slivers from the restricted Delaunay complex and thus have it
+recover its good structural properties. This idea was carried on in
+subsequent work~\cite{bgo-mrwc-09,bg-mrtc-10}, and it is now
+considered a fairly common technique in Delaunay-based manifold
+reconstruction.
+
+Yet, the question of computing a good set of weights given the input
+point cloud remains. This question is closely connected to
+problem~(ii) above, since determining which simplices are the slivers
+to be removed requires first to compute the restricted Delaunay
+complex. To address this issue, it has been proposed to build some
+superset of the restricted Delaunay complex, from which the slivers
+are removed~\cite{bgo-mrwc-09,cdr-mr-05}. After the operation the
+superset becomes equal to the restricted Delaunay complex, and thus it
+shares its nice properties. Unfortunately, the supersets proposed so
+far were pretty crude, and their construction times
+ depended exponentially on the ambient dimension
+$d$, which made the approach quickly intractable in practice.
+
+To circumvent the building time issue, Boissonnat and
+Ghosh~\cite{bg-mrtc-10} proposed to use a different subcomplex of the
+Delaunay triangulation, called the {\em tangential complex}, whose
+construction reduces to computing local Delaunay triangulations in
+(approximations of) the $k$-dimensional tangent spaces of the manifold
+at the sample points. Once these local triangulations have been
+computed, the tangential complex is assembled by gluing them
+together. Consistency issues between the local triangulations may
+appear, which are solved once again by a careful weight assignment
+over the set of data points to remove slivers. The catch is that the
+slivers to be removed are determined directly from the complex, not
+from some superset, so the complexity of the sliver removal phase
+reduces to a linear dependence on the ambient dimension $d$, while
+keeping an exponential dependence on the intrinsic dimension $k$. This
+makes the approach tractable under the common assumption that the data
+points live on a manifold with small intrinsic dimension, embedded in
+some potentially very high-dimensional space. Yet, the obtained
+complex is not the restricted Delaunay complex, and the question of
+whether the latter can be effectively retrieved remains
+open.
+
+
+\paragraph*{Enter the witness complex.}
+In light of the apparent hardness of manifold reconstruction,
+researchers have turned their focus to the somewhat easier problem of
+inferring some topological invariants of the manifold without
+explicitly reconstructing it. Their belief was that more lightweight
+data structures would be appropriate for this simpler task, and it is
+in this context that Vin de Silva introduced the {\em witness
+  complex}~\cite{vds-wdt-08}. Given a point cloud $W$, his idea was to
+carefully select a subset $L$ of landmarks on top of which the complex
+would be built, and to use the remaining data points to drive the
+complex construction. More precisely, a point $w\in W$ is called a
+{\em witness} for a simplex $\sigma \in 2^L$ if no point of $L$ is
+closer to $w$ than the vertices of $\sigma$ are, i.e. if there is a ball
+centered at $w$ that excludes the vertices of $\sigma$ from the rest
+of the points of $L$. The witness complex is then the largest abstract
+simplicial complex that can be assembled using only witnessed
+simplices. The geometric test for being a witness can be viewed
+as a simplified version of the classical Delaunay predicate, and its great
+advantage is to require a mere comparison of distances. As a result, 
+witness complexes can be built in arbitrary metric spaces, and the
+construction time is bound to the size of the input point cloud rather
+than to the dimension $d$ of the ambient space (save for distance
+computations, which depend linearly on $d$).
+
+Since its introduction, the witness complex has met a real
+success~\cite{ae-wcrd-07,bgo-mrwc-09,cidsz-lbsni-08,co-tpbr-08,cds-teuwc-04,go-ruwc-08},
+which can be explained by its close connection to the Delaunay
+triangulation and restricted Delaunay complex. In his seminal
+paper~\cite{vds-wdt-08}, de Silva showed that the witness complex is
+always a subcomplex of the Delaunay triangulation $\del(L)$, provided
+that the data points lie in some Euclidean space or more generally in
+some Riemannian manifold of constant sectional curvature. With
+applications in reconstruction in mind, Attali {\em et
+  al.}~\cite{ae-wcrd-07} and Guibas and Oudot~\cite{go-ruwc-08}
+considered the case where the data points lie on or close to some
+$k$-submanifold of $\R^d$, and they showed that the witness complex is
+equal to the restricted Delaunay complex when $k=1$, and a subset of
+it when $k=2$. Unfortunately, the case of $3$-manifolds is once again
+problematic, and it is now a well-known fact that the restricted
+Delaunay and witness complexes may differ
+significantly (no respective inclusion,  different
+  topological types, etc) when $k\geq 3$~\cite{o-ntrdwchd-07}. To overcome
+this issue, Boissonnat, Guibas and Oudot~\cite{bgo-mrwc-09} resorted
+to the sliver removal technique described above on some superset of
+the witness complex, whose construction incurs an exponential
+dependence on $d$. The state of affairs as of now is that the
+complexity of witness complex based manifold reconstruction is
+exponential in $d$, and whether it can be made only polynomial in $d$
+(while still exponential in $k$) remains an open question.
+
+
+\paragraph*{Our contributions.}
+In this paper we analyze carefully the reasons why the restricted
+Delaunay and witness complexes fail to include each other, and from there
+we derive a new set of conditions under which the two complexes are
+equal. In addition to being very natural, our conditions involve a
+small superset of the witness complex, whose construction time depends
+only linearly on $d$ while exponentially on $k$. Furthermore, they can
+be satisfied with constant probability using a random weight
+assignment process, which reduces the complexity of witness complex
+based manifold reconstruction to a polynomial dependence on $d$ and
+thereby makes it practical.
+
+Another aspect of the problem that is addressed in our analysis is the
+following: Suppose the data points have been sampled randomly from the
+manifold according to some known probability distribution. Then, what
+is the probability that the restricted Delaunay and witness complexes
+include each other? Following previous work in manifold learning from
+randomly sampled data~\cite{nsw-fhswhc-04}, we consider the case where
+the underlying probability distribution is uniform, and we show that
+in this model the restricted Delaunay complex is included in the
+witness complex with high probability. We also argue that the reverse
+inclusion may be a rare event, and to bridge the gap we show how the
+classical deterministic sliver removal technique can succeed at
+obtaining the reverse inclusion with high probability.
+
+
+============SIMPLEX TREE
+
+
+===============
+
+random simplicial complexes, smoothed analysis
+
+
+

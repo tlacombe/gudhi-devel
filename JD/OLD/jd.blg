@@ -1,0 +1,54 @@
+This is BibTeX, Version 0.99c (TeX Live 2009)
+The top-level auxiliary file: jd.aux
+The style file: abbrv.bst
+Illegal, another \bibstyle command---line 110 of file jd.aux
+ : \bibstyle
+ :          {abbrv}
+I'm skipping whatever remains of this command
+Illegal, another \bibdata command---line 111 of file jd.aux
+ : \bibdata
+ :         {erc}
+I'm skipping whatever remains of this command
+Database file #1: erc.bib
+You've used 25 entries,
+            2118 wiz_defined-function locations,
+            639 strings with 7184 characters,
+and the built_in function-call counts, 8492 in all, are:
+= -- 832
+> -- 381
+< -- 5
++ -- 151
+- -- 122
+* -- 559
+:= -- 1396
+add.period$ -- 78
+call.type$ -- 25
+change.case$ -- 131
+chr.to.int$ -- 0
+cite$ -- 25
+duplicate$ -- 342
+empty$ -- 699
+format.name$ -- 122
+if$ -- 1807
+int.to.chr$ -- 0
+int.to.str$ -- 25
+missing$ -- 27
+newline$ -- 128
+num.names$ -- 55
+pop$ -- 153
+preamble$ -- 1
+purify$ -- 109
+quote$ -- 0
+skip$ -- 236
+stack$ -- 0
+substring$ -- 530
+swap$ -- 72
+text.length$ -- 5
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 92
+warning$ -- 0
+while$ -- 84
+width$ -- 27
+write$ -- 273
+(There were 2 error messages)

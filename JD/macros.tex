@@ -1,0 +1,159 @@
+\usepackage{amsmath}
+\usepackage{graphics}
+\usepackage{epsfig}
+%\usepackage{ipe} 
+\usepackage{latexsym}
+\usepackage{amssymb}
+\usepackage{color}
+%\usepackage{here}
+\usepackage{url}
+     
+\parindent 0pt
+\parskip 3mm
+
+\setlength{\textwidth}{18cm}
+\setlength{\evensidemargin}{-1cm}
+\setlength{\oddsidemargin}{-1cm}
+
+\newcommand{\bblue}[1]{{\color{blue} #1}}
+\newcommand{\rred}[1]{{\color{red} #1}}
+\newcommand{\ggreen}[1]{{\color{green} #1}}
+      
+\newcommand{\svsp}{\vspace{3mm}}
+\newcommand{\vsp}{\vspace{5mm}}
+\newcommand{\bvsp}{\vspace{10mm}}
+\newcommand{\ind}{\mbox{}\hspace{2cm}}
+\newcommand{\sind}{\mbox{}\hspace{1cm}}
+      
+\newcommand{\B}{\condmath{I\!\!B}}    
+\newcommand{\D}{\mathbb D}              
+\newcommand{\E}{\mathbb E}            
+\newcommand{\F}{\mathbb F}            
+%\newcommand{\Id}{\condmath{I\!\!I}}                  
+\newcommand{\I}{\mathbb I}
+\newcommand{\M}{\mathbb M}
+\newcommand{\N}{\mathbb N}
+\newcommand{\Q}{\mathbb Q}
+\newcommand{\R}{\mathbb R}
+\renewcommand{\S}{\mathbb S}
+\newcommand{\Z}{\mathbb Z}
+
+
+\newcommand{\aaa}{\condmath{\cal A}}            
+\newcommand{\cc}{\condmath{\cal C}} 
+\newcommand{\e}{\condmath{\varepsilon}}   
+\newcommand{\lcal}{{\condmath{\cal L}}      }
+\newcommand{\mm}{{\condmath{\cal M}}      }
+\newcommand{\pp}{\condmath{{\cal P}}}
+\newcommand{\sss}{{\condmath{\cal S}}}
+\newcommand{\vv}{\condmath{\cal V}}            
+\newcommand{\tc}{\condmath{\cal T}}   
+
+%\newcommand{\+}{{\footnotesize +}}   
+\newcommand{\+}{\mbox{{\tiny +}}}   
+      
+\newcommand{\aff}{{\rm aff}}
+\newcommand{\aire}{{\rm aire}}
+\newcommand{\area}{\operatorname{area}}
+\newcommand{\bis}{{\rm bis}}
+\newcommand{\conv}{{\rm conv}}
+%\newcommand{\degre}{{\rm deg}}
+\newcommand{\del}{{\rm Del}} 
+\newcommand{\dels}{\del _{\sss}(E)}
+\newcommand{\delc}{{\rm DelC}}     
+\newcommand{\dist}{\mbox {dist}}  
+\newcommand{\dom}{{\rm dom}}
+\newcommand{\insphere}{{\tt in\_sphere}}
+\newcommand{\inter}{{\rm int}}
+\newcommand{\intd}{\int\!\!\int}  %integrale multiple
+\newcommand{\lag}{{\rm Lag}}
+\newcommand{\length}{\operatorname{length}}
+\newcommand{\lfs}{{\rm lfs}}
+\newcommand{\lift}{{\rm lift}}
+\newcommand{\ma}{\condmath{\cal M}}
+\newcommand{\norm}[1]{\| #1 \|}
+\newcommand{\obj}{{\condmath{\cal O}}}
+\newcommand{\orient}{{\tt orient}}
+\newcommand{\para}{{\condmath{\cal Q}}}
+\newcommand{\plan}{P}
+\newcommand{\ppv}{{\rm ppv}}
+\newcommand{\point}{{\rm point}}
+\newcommand{\power}{{\tt power\_test}}
+\newcommand{\proba}{{\rm proba}}
+% \newcommand{\proj}{\mbox {proj}} 
+\newcommand{\proj}{\pi_S} 
+\newcommand{\pts}{E}
+\newcommand{\rch}{{\rm rch}}
+\newcommand{\rips}{{\rm Rips}}
+\newcommand{\cech}{{\rm {C}ech}}
+\newcommand{\sign}{{\rm sign}}
+\newcommand{\str}{{\rm star}}
+\newcommand{\surf}{{\condmath{\cal S}}}
+\newcommand{\sym}{{\rm sym}}
+\newcommand{\tub}{\mbox {tube}}
+\newcommand{\thk}{\mbox {thick}}
+\newcommand{\vect}[1]{\,\overrightarrow{#1}}
+\newcommand{\vol}{{\rm vol}}
+\newcommand{\vor}{{\rm Vor}}
+\newcommand{\voro}{Voronoï}
+\newcommand{\vors}{\vor _{\sss}(E)}
+\newcommand{\wfs}{{\rm wfs}}
+\newcommand{\wit}{{\rm Wit}}
+\newcommand{\suwit}{{\rm SuWit}}
+            
+\newcommand{\ceil}[1]{\left\lceil #1 \right\rceil}
+\newcommand{\floor}[1]{\left\lfloor #1 \right\rfloor}
+\newcommand{\bin}[2]{\, \left( \begin{array}{c} #1 \\ #2 \end{array} \! \right)} 
+\renewcommand{\v}[1]{{\bf #1}} %vectors
+     
+\newcommand{\determinant}[4]{\, \left| \begin{array}{cc} #1 & #2 \\ #3 & #4 \end{array} \! \right|}
+\newcommand{\Det}[3]{\, \left| \begin{array}{c} #1 \\ #2 \\ #3 \end{array} \! \right|}
+\newcommand{\Determinant}[9]{\, \left| \begin{array}{ccc} #1 & #2 & #3 \\ #4 & #5 & #6 \\ #7 & #8 & #9 \end{array} \! \right|}
+\def\condmath#1{\leavevmode\ifmmode #1 \else $#1$ \fi}
+
+\newenvironment{proof}
+        {\noindent \textbf{Proof.} \hspace{0.3mm}}
+        {\hspace{0.3mm}$\square$  \smallskip}      
+     
+\newcommand{\JPdraw}[1]{
+                \begin{figure}[h]
+                \begin{center} \input{#1.ltex} \end{center}
+                \end{figure}
+                }
+      
+%\newenvironment{proof_e}
+%        {\noindent \textbf{Proof.} \hspace{0.3mm}}
+%        {\hspace{0.3mm}$\square$  \smallskip}      
+     
+
+\pagestyle{headings}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{Theorem}{Theorem}      
+\newtheorem{claim}{Claim}
+\newtheorem{corol}{Corollary}
+\newtheorem{Corol}{Corollary}
+\newtheorem{corollary}{Corollary}
+\newtheorem{defin}{Definition}
+\newtheorem{definition}{Definition}
+\newtheorem{fact}{Fact}
+\newtheorem{Fact}{Fact}
+\newtheorem{lem}{Lemma} 
+\newtheorem{lemma}{Lemma}
+\newtheorem{observation}{Observation}
+\newtheorem{property}{Property}
+\newtheorem{Property}{Property}
+\newtheorem{proposition}{Proposition}
+\newtheorem{prop}{Proposition}    
+\newtheorem{question}{Exercise}
+\newtheorem{questions}{Exercises}
+\newtheorem{quest}{Question}
+\newtheorem{remark}{Remark}  
+
+
+
+\newcommand{\cqfd}{\mbox{}\hfill $\Box$ \medskip}
+
+\parindent 0pt
+\parskip 2mm
+
