@@ -11,11 +11,58 @@ Providing robust models to infer topological and geometric
 
 
 
-\paragraph{Robust reconstruction}
+\paragraph{Robust reconstruction.}
+
+Curve and surface reconstruction has been a prominent subect of
+research in several fields including computational geometry, computer
+graphics, and medical imaging, for more than twenty
+years~\cite{dey-csr-2007}. Its challenges are now well-understood, and
+countless methods have been proposed, some of which combine
+theoretical soundness with practical robustness and efficiency.
+
+The story becomes quite different when the input data is sitting in
+higher dimensions. Existing methods fail blatantly because of two
+phenomena: the unavoidable corruption of the data, and the curse of
+dimensionality. A few timid attempts have been made to tackle these
+issues: for instance, multiscale
+reconstruction~\cite{geometrica-bgo-09} can handle data with a limited
+degree of corruption, while tangential
+complexes~\cite{geometrica-7142i} or other projection-based data
+structures can circumvent the curse of dimensionality. However, there
+is still considerable progress to be made to handle larger classes of
+shapes and more general noise models, since currently only the case of
+sampled submanifolds of Euclidean spaces with bounded Hausdorff noise
+is addressed.
+
+Reconstruction is such a demanding problem that we cannot hope to be
+able to reconstruct all sorts of compact sets within only a few
+years. A seemingly reasonable goal would be to reconstruct stratified
+manifolds, a problem that received some attention in the recent years,
+and for which several promising contributions were made.  Bendich and
+co-authors~\cite{bendich-PhD,bendich-strat1,bendich-strat2} used
+local homology to recover strata from a sampled stratified manifold:
+although not quite practical, their approach is based on a sound
+theoretical framework. More practical is the approach by Aanjaneya
+{\em et al.}~\cite{metric-graphs-reconstruction}, but it is limited to
+graphs (1-d manifolds) reconstruction. Can a compromise be made
+between generality and practical efficiency of the reconstruction?
+
+In order to handle a wider class of noise models, one made consider
+incorporating some statistical techniques into our otherwise purely
+topological or geometric approaches. A firs attempt along this line
+was made by Caillerie and Michel~\cite{claire-bertrand}, who used
+model selection to estimate the {\em most relevant} (in a statistical
+sense) scale at which to process the data in multi-scale
+reconstruction. Their criterion for measuring the quality of the
+reconstruction was oblivious to the topology, being purely based on
+the Hausdorff approximation to the underlying object. An interesting
+extension would be to incorporate topological constraints into the
+method. Another related question would be to try to understand the
+relationship that may exist between optimal geometric reconstruction
+and optimal topological reconstruction.
 
 
-
-\paragraph{Topological signatures for shapes}
+\paragraph{Topological signatures for shapes.}
 
 Shape descriptors are used in a variety of applications, including
 shape classification, shape retrieval, shape matching, shape
@@ -30,7 +77,7 @@ following: given a finite sampling of the shape, build some filtered
 simplicial complex on top of the point cloud, and use the topological
 structure of this filtration (encoded as a planar diagram called a
 {\em persistence diagram}) as a signature for the point
-cloud~\cite{ccgmo-ghsssp-09, sog-hks-09}. This construction is
+cloud~\cite{ccgmo-ghsssp-09, socg-pbsds-10}. This construction is
 well-suited for finite metric spaces, and the obtained signatures are
 known to be stable under small perturbations of the spaces in the
 Gromov-Hausdorff distance.  
@@ -40,30 +87,24 @@ construction to infinite metric spaces, and to prove the stability of
 its topological structure with respect to perturbations of the space
 in the Gromov-Hausdorff distance.
 
-%An important shortcoming of topological signatures is
-%to be scale-dependent: a scaling of the sampled shape
-%results in a scaling of the filtration and of its persistence
-%diagram. Can some ``optimal'' scaling factor minimizing the distance
-%between parsistence diagrams be found automatically? 
-
 A more fundamental question is how much information about a shape can
 be recovered from descriptors. Previous work in shape analysis only
 provides lower bounds on a shape distance (e.g. the Gromov-Hausdorff
-distance) based on descriptor distance~\cite{survey on
-  signatures?}. In other words, equivalent or closely-related shapes
-do have equal or similar signatures, but significantly different
-shapes may also have similar signatures. It is desirable to go the
-other way --- to upper bound shape similarity based on descriptor
-similarity. This objective does not seem out of reach in our case:
-thanks to the virtually infinite variety of filtrations that can be
-built on top of a shape, it is easy to enrich the pool of signatures
-used for that shape, and thus restrict the possibility of false
-positives in the shape comparison process. It is then a question of
-how large a family of filtrations is required to guarantee that
-different shapes do get different signatures. And from an algorithmic
-perspective, it is also important to identify small samplings of this
-family of filtrations that can be used as proxies for a better (if not
-perfect) assessment of the similarity between two shapes.
+distance) based on descriptor distance~\cite{survey-on-signatures}. In
+other words, equivalent or closely-related shapes do have equal or
+similar signatures, but significantly different shapes may also have
+similar signatures. It is desirable to go the other way --- to upper
+bound shape similarity based on descriptor similarity. This objective
+does not seem out of reach in our case: thanks to the virtually
+infinite variety of filtrations that can be built on top of a shape,
+it is easy to enrich the pool of signatures used for that shape, and
+thus restrict the possibility of false positives in the shape
+comparison process. It is then a question of how large a family of
+filtrations is required to guarantee that different shapes do get
+different signatures. And from an algorithmic perspective, it is also
+important to identify small samplings of this family of filtrations
+that can be used as proxies for a better (if not perfect) assessment
+of the similarity between two shapes.
 
 Finally, the difficulty of matching two shapes is
 intimately tied to matching a shape to itself --- shapes with many
