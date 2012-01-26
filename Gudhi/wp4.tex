@@ -3,25 +3,25 @@
   dimension}
 
 We intend to develop an open source  software platform that will provide a
-comprehensive and robust set of tools for geometric undertsanding in
+comprehensive and robust set of tools for geometric understanding in
 high
 dimension. 
 
 \paragraph{ The need for a software platform.}
-On one hand, we perceive the development of such a platform has 
-an abolute necessity to serve as a test bench and  evaluation process
+On one hand, we perceive the development of such a platform as 
+an absolute necessity to serve as a test bench and  evaluation process
 for any new algorithmic solution resulting  from  our theoretical work.
-On the other hand, we perceive the development of such a platform has
+On the other hand, we perceive the development of such a platform as
 a full research work. Indeed we are convinced that, as robustness
 issues triggered the development of a whole branch of theoretical
 work, known as Geometric Computing, the need for
 highly efficient implementations to turn around the curse of  
-dimentionality,  will participate in the emergence of relevant
-concepts for a new algorithmic foundations
+dimensionality,  will participate in the emergence of relevant
+concepts for new algorithmic foundations
 of  geometric understanding in high dimension.
 
 
-The term platform mean that we intend to capitalize
+The term platform means that we intend to capitalize
 upon development efforts and encourage contributions
 from researchers external to the ERC.
  At the end of this ERC,
@@ -34,7 +34,7 @@ vector for the diffusion of our algorithmic solutions
 into application domains, such as astrophysics
 or structural biology) 
  where the need for handling high dimensional
-data crucially arise.  Such a diffusion in various fields
+data crucially arises.  Such a diffusion in various fields
  will in turn provide for various bench set data 
 and user feedback.
 
@@ -42,23 +42,23 @@ and user feedback.
 
 \paragraph{ State of the art.}  
 Leaving aside the flourishing field of machine learning
-and well-known successfull software for linear algebra,
+and well-known successful software for linear algebra,
 linear and quadratic optimization,  only  few implementations handle
 geometry in high dimension. 
 Most of those software use multiscale  grid based
-data strutures,  more or less adaptive
+data structures,  more or less adaptive
  to the local  density of data.
 A typical example is the popular ANN software to compute  the approximate
 nearest-neighbor of a query point
 among a  high dimensional point cloud. 
 Only two implementations of persistent homology algorithms are
-currently available. One of them is the PLEX modulus of Matlab,
-developped by Patrice Perry and Vin de Silva. The other one is the
-library Dyonisus proposed by Dmitryi Morozov. These implementations
+currently available. One of them is the PLEX package for Matlab,
+developed by Patrice Perry and Vin de Silva. The other one is the
+library Dionysus proposed by Dmitriy Morozov. These implementations
 do not propose parallel nor in-line versions. They are known to be
-succesfull in small dimensions but inefficient as soon as the
+successful in small dimensions but inefficient as soon as the
 dimension rises.  Their  maintenance, only assumed by the very few authors
-is likely not to be perenial.
+is likely not to be perennial.
 
 
 \paragraph{ Methodology.} 
@@ -70,7 +70,7 @@ resources to be poured into the optimization, bug-fixing and interface
 design than for a single prototype.
 
  We intend to apply to the development of this software platform 
-the very  recipees that made up the success story
+the very  recipes that made up the success story
 of the CGAL library. 
 The development work will be based on a strong infrastructure
 including a web site, a svn repository and  daily running of testsuites on several  hardware architectures.
@@ -79,8 +79,8 @@ specifications of packages proposed for inclusion in the platform.
 We forecast that the platform will reach a sufficient critical mass
 to be of interest for a large community of researchers in
 computational geometry and neighboring applicative fields,
-which in turn will ensure the long range perenial maintenance
-of the sofware.
+which in turn will ensure the long range perennial maintenance
+of the software.
 
 
 
@@ -88,16 +88,16 @@ of the sofware.
 \begin{itemize}
 \item The software platform will provide tools to extract from clouds of points the
 simplicial complexes that are relevant for geometric understanding,
-Rips, Check and witnesses complexes to begin with. 
+Rips, \v Cech and witness complexes to begin with. 
 \item The platform will provide efficient data structures to handle those
-complexes. We will in particular  focus on parcimonius data
+complexes. We will in particular  focus on parsimonious data
 structures, aiming for a partially implicit representation of those simplicial
 complexes, thus avoiding the full space cost entailed by the curse of
 dimensionality. 
-\item The platform is meant to offer state of the art algoritmic tools for geometric
+\item The platform is meant to offer state of the art algorithmic tools for geometric
 understanding,
 including in particular algorithms to compute the persistent homology
-of the simplicial complexes filtration extracted from data points. 
+of the simplicial complex filtration extracted from data points. 
 \item The platform will aim at providing parallel implementations as well
 as out of core versions whenever possible to make possible the
 handling of huge data sets in high dimensions.
@@ -109,7 +109,7 @@ handling of huge data sets in high dimensions.
 % complexes, that are relavant for data analysis and topological feature
 % extraction. It will provide data structures to handle those simplicial
 % complexes.
-% We will focus on parcimonius data structures that will contribute
+% We will focus on parsimonious data structures that will contribute
 % to turn around the curse of dimensionality. Particularly promising
 % are data structure involving a  partial implicit representation of those simplicial
 % complexes. The platform will also offer 
