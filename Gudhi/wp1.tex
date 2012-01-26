@@ -1,0 +1,114 @@
+% -*- LaTeX -*-
+% wp1.tex
+%
+
+\newcommand{\man}{\mathcal{M}}
+\newcommand{\reel}{\mathbb{R}}
+\newcommand{\rdee}{\reel^d}
+\renewcommand{\pts}{P}
+\newcommand{\mesh}{\hat{M}}
+
+\newcommand{\ramsay}[1]{\rred{[[#1]]}}
+
+\section*{WP1: Triangulation of manifolds}
+
+We aim to construct simplicial complexes to represent
+geometric spaces of interest. As an example of a space of interest we
+can consider a model for the space of possible valid data points for a
+system which produces data with a much higher apparent dimension than
+the number of degrees of freedom  the system provides. Thus we are
+considering a space of much lower intrinsic dimension than the ambient
+Euclidean space which implicitly hosts the data. It is hoped that the
+space of interest can be modeled as a manifold, or at least may be
+decomposed into manifold parts. 
+
+The appropriate simplicial representation will depend on the geometric
+or topological information that is of interest in the model geometric
+structure. Homological information can be extracted from easily
+constructed, but very large complexes, or filtrations of complexes,
+built from the raw input data, whereas a homeomorphic complex that
+accurately captures the geometry of the underlying space requires
+strong conditions on the input data, and intricate construction.
+
+
+\subsection*{Geometric structures of interest}
+
+\paragraph{Model spaces.} 
+% Riemannian manifolds
+The basic spaces of interest are Riemannian manifolds. These may be
+given as submanifolds of an ambient Euclidean space, or they may be
+manifest by data given purely in the form of inter-point distances, so
+that there is no implicit ambient space.  
+% Non-smooth manifolds
+A natural extension of this basic model is given by a manifold endowed
+with a metric that is not necessarily smooth. 
+
+% manifolds with boundary
+% stratified spaces
+In the simplest case the manifold is compact and has no boundary,
+however the case of manifolds with boundary will be an important one
+to handle in preparation for dealing with more complicated composite
+structures such as stratified spaces. Stratified spaces can be
+decomposed into a sequence of manifolds of increasing
+dimension. Although work has been done in extracting homological
+information from such spaces~\cite{bendich2007,bendich2010}, there are
+no proposed algorithms for more detailed simplicial representations.
+
+% statistical manifolds
+Another case of interest involves models where the manifold is endowed
+with a geometric structure that is not necessarily defined by a
+metric. Such is the case with the so-called statistical manifolds
+which represent the parameter space of a family of probability
+distributions. Here, a distance-like function called a divergence
+takes the place of a true metric.  Voronoi diagrams and Delaunay
+complexes can be defined on such
+spaces~\cite{onishi1998,boissonnat2010bregvor}, but ...
+
+\paragraph{Simplicial representations.} 
+% homeomorphic representations
+The 
+
+cocone homeo -- not satisfactory
+incomplete homeo \cite{cairns1961,cheng2005}
+complexity of construction 
+
+tan cplx improves the situation on both counts
+ \cite{boissonnat2010tan-socg}
+tan cplx homeo \cite{boissonnat2011tancplx}
+
+wit cplx potential for further improvement in construction cost
+witness \cite{boissonnat2011cgl}
+
+Intrinsic Delaunay triangulation
+bad intr \cite{leibon2000}
+stab \cite{boissonnat2012stab}
+tie with
+witness complex (intrinsic/extrinsic)
+
+% looser topological and geometric representations
+
+supercomplexes (Rips/\v{C}ech complex)
+
+graphs (Delaunay/Gabriel)
+
+\subsection*{Algorithmic considerations}
+
+\paragraph{Mesh generation and simplification} .\\
+
+Delaunay refinement 
+
+landmark selection (witness cplx) ;  controlled perturbation
+
+other simplification techniques
+
+\paragraph{Quality considerations} .\\
+
+sampling conditions
+
+topological quality
+
+geometric quality
+
+complexity
+
+
