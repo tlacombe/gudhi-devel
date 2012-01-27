@@ -142,9 +142,44 @@ for this structure also.
 
 \subsection*{Algorithmic considerations}
 
-\paragraph{Mesh generation and simplification} .\\
+\paragraph{Mesh generation and simplification.}
+% homeomorphic meshes
+The construction of the tangential Delaunay complex associated to a
+sampled, but otherwise unknown, $k$-dimensional manifold demands that
+at each sample point a $k$-dimensional weighted Delaunay triangulation
+be created in an estimate of the tangent space. The weighting scheme
+ensures that the local triangulations fit together coherently. The
+same idea can also be used in the context of a Delaunay refinement
+algorithm that simultaneously samples a known manifold and constructs
+the associated tangential Delaunay complex. 
 
-Delaunay refinement 
+In fact, the distinction between the reconstruction problem, where a
+manifold is known only through a dense set of sample points, and the
+meshing problem, where the manifold is known through an oracle, and
+the sample points must be chosen, becomes blurred when the output mesh
+is not required to interpolate all the sample points, as is the case
+with witness complex reconstruction. Indeed, the dense sample set
+itself can be viewed as an oracle that presents the manifold as a
+probability measure, and conversely an oracle provides the ability to
+simulate such a sample set. Algorithms based on the witness complex
+can be versatile, and they have the potential to avoid expensive
+geometric predicates.
+
+Homeomorphism guarantees for the witness complex can be acheived
+through establishing its equivalence with other Delaunay structures,
+but this requires that the landmarks, i.e., the selected vertices of
+the witness complex, satisfy sampling conditions that ensure that they
+are not near to a degenerate configuration
+\cite{boissonnat2011cgl,boissonnat2012stab}.  The condition demands
+that points which do not define a witness complex simplex are not to
+close to being cospherical. This is exactly the kind of condition that
+is avoided by the use of controlled perturbation in  guarded
+algorithms for planar Delaunay triangulations~\cite{funke2005cp}. It
+seems likely that
+
+
+
+
 
 landmark selection (witness cplx) ;  controlled perturbation
 (predicates exponential in $k$?)
@@ -154,8 +189,10 @@ other simplification techniques
 \paragraph{Quality considerations} .\\
 
 sampling conditions
+const density
 
 topological quality
+
 
 geometric quality
 
