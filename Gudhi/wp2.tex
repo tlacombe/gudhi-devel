@@ -1,104 +1,257 @@
-\subsection*{WP 2:  Dimension-sensitive algorithms and data structures} 
+% -*- LaTeX -*-
+% wp1.tex
+%
 
-Central to the techniques we intend to develop is the construction of simplicial complexes which
-allow to represent and process complicated shapes of arbitrary dimension and topology.
-%recent developments have shown that simplicial complexes computed on top of point clouds are primary tools to capture the topology of the underlying space of the data. 
-%A graph is an example of a 1-dimensional simplicial complex but higher-dimensional simplicial %complexes are required to approximate complicated shapes of arbitrary dimension and topology. 
+\newcommand{\man}{\mathcal{M}}
+\newcommand{\reel}{\mathbb{R}}
+\newcommand{\rdee}{\reel^d}
+\renewcommand{\pts}{P}
+\newcommand{\mesh}{\hat{M}}
 
-In 3-dimensions, 2 and 3-dimensional simplicial complexes of surfaces and volumes are widely used in graphics, scientific computing and manufacturing. Because of its numerous interesting properties and of the existence of extremely efficient algorithms fot its construction, the Delaunay triangulation has become one of the most famous and widely used geometric data structures, spread out accross all sciences. The algorithms we have implemented in CGAL are among the most reliable and fast algorithms. They have been included in the heart of MATLAB. 
+\newcommand{\ramsay}[1]{\rred{[[#1]]}}
 
-The Delaunay triangulation can be defined in any dimension but its complexity grows exponentially with the dimension which makes it useless for real applications beyond say dimension 6~\cite{avis,hornus}.  In order for algorithms and implementations to scale with the dimension, we need to define and compute simplicial complexes that exploit (hidden) structure of the data and to design dimension-sensitive algorithms for their construction.
+\section*{WP2: Triangulation of manifolds}
 
-% our focus is not on worst-case complexity, but on (provably) good performance under some given structural properties of the input. These properties may be of statistical nature (when we are dealing with noise, for example), or of geometric nature (when data is of low intrinsic dimension, say). Related to this, we are also aiming at output-sensitive algorithms.
+We aim to construct simplicial complexes to represent
+geometric spaces of interest. As an example of a space of interest we
+can consider a model for the space of possible valid data points for a
+system which produces data with a much higher apparent dimension than
+the number of degrees of freedom  the system provides. Thus we are
+considering a space of much lower intrinsic dimension than the ambient
+Euclidean space which implicitly hosts the data. It is hoped that the
+space of interest can be modeled as a manifold, or at least may be
+decomposed into manifold parts. 
 
-\paragraph{Design of small yet faithfull simplicial complexes.} 
-Given a set of points $V$ in $\R ^d$, a number of simplicial complexes with vertex set $V$ have been proposed. A first class of simplicial complexes uses a parameter $\alpha$ which can be used to define a nested sequence of simplicial complexes (called a filtration). Filtrations are an essential ingredient to study the persistence of homology classes. 
-
-The \u{C}ech complex is the nerve of the set $B_{\alpha}$ of balls of
-radius $\alpha$ centered at the points of $V$. The nerve of
-$B_{\alpha}$  is a simplicial complex that associates a
-$i$-simplex to any subset of $i+1$ balls that have a common
-intersection. Remarkably, this simplicial
-complex  has the same homotopy type as the $\alpha$-offset (nerve theorem) which allows,  under mild sampling conditions, to compute the homology of the underlying space. However,
-the \u{C}ech complex is in general not embeddable in $\R ^d$. Moreover, it is usually very big and
-difficult to compute since it requires to detect whether a subset of
-balls of  $\R ^d$ intersect. 
-
-A simpler to compute simplicial complex is the Rips complex whose edges are the same as for the \u{C}ech complex. The higher dimensional simplices of the Rips complex are obtained by computing all the cliques in the graph of the edges. This simplicial complex is much easier to compute than the \u{C}ech complex and it has the remarkable property that it can be constructed in a purely combinatorial way from its 1-skeleton.  Such a simplicial complex is called a {\em flag
-  complex}. Nevertheless, the Rips complex is not embedded in $\R ^d$
-and may have a dimension much higher than the dimension of the underlying structure
-of the data.
-
-
-Various simplicial complexes have been derived from the Delaunay
-triangulation of the vertices. The $\alpha$-complex is the nerve of
-the restriction of the Delaunay triangulation to the union of the
-balls of $B_{\alpha}$. This complex is embedded in $\R^d$ (provided
-that the vertices are in general position) but very difficult to
-compute in high dimensions for the same reason as the \u{C}ech complex.
-
-Other simplicial complexes derived from the Delaunay triangulation do
-not involve any parameter, most notably the restricted Delaunay
-triangulation, the tangential Delaunay complex and the witness
-complex. Those complexes are
-especially designed for the case where $V$ samples a topological space
-of small dimension $k$, the central hypothesis in Manifold
-Learning. Both the restricted and the tangential Delaunay complexes are embedded in $\R^d$, have dimension $k$
-(under a mild general position assumption). Still, these simplicial
-complexes are limited to small $k$.  The witness complex is
-another variant of the Delaunay triangulation introduced by
-Carlsson and de Silva. The witness complex is embedded in $\R ^d$
-and is remarkably easy to compute in any dimension
-since the only numerical operations involved in its construction are
-comparisons of distances. Hence, it can be computed in any discrete metric
-space as the  Rips complex.
-
- Currently no code allows to manipulate simplicial complexes of arbitrary dimension in a routine way as is possible for 2 and 3-dimensional triangulations of $\R ^3$.
-% \cite{springerflo,DBLP:journals/tog/PaoluzziBCF93,svy-crm-99}. 
-
-We identify four main research topics~:
-\begin{enumerate}
-\item Classification of simplicial complexes
-\item Combinatorial and algorithmic complexity 
-\item Compact representation
-\item New types of simplicial complexes
-\end{enumerate}
-
-\paragraph{Classifying simplicial complexes.}
-Some equivalences between the various types of simplicial complexes are known. For example,
-the Rips and the \u{C}ech complexes are identical for the $L_{\infty}$ norm and for the Euclidean norm, we have $ \cech ({\alpha}/{2}) \subset \rips (\alpha) \subset \cech (\alpha)$. Similar inclusion properties have been established for other types of simplicial complexes, which appear to be of primary importance to infer the homology of manifolds~\cite{}.
-Recently, we have established conditions under which the witness complex, the restricted Delaunay triangulation and the tangential complex are identical~\cite{}. A more complete classification is required to better understand these structures and their properties and to design
-more efficient algorithms.
+The appropriate simplicial representation will depend on the geometric
+or topological information that is of interest in the model geometric
+structure. Homological information can be extracted from easily
+constructed, but very large complexes, or filtrations of complexes,
+built from the raw input data, whereas a homeomorphic complex that
+accurately captures the geometry of the underlying space requires
+strong conditions on the input data, and intricate construction.
 
 
+\subsection*{Geometric structures of interest}
+
+\paragraph{Model spaces.} 
+% Riemannian manifolds
+The basic spaces of interest are Riemannian manifolds. These may be
+given as submanifolds of an ambient Euclidean space, or they may be
+manifest by data given purely in the form of inter-point distances, so
+that there is no implicit ambient space.  
+% Non-smooth manifolds
+A natural extension of this basic model is given by a manifold endowed
+with a metric that is not necessarily smooth. 
+
+% manifolds with boundary
+% stratified spaces
+In the simplest case the manifold is compact and has no boundary,
+however the case of manifolds with boundary will be an important one
+to handle in preparation for dealing with more complicated composite
+structures such as stratified spaces. Stratified spaces can be
+decomposed into a sequence of manifolds of increasing
+dimension. Although work has been done in extracting homological
+information from such spaces~\cite{bendich2007,bendich2010}, there are
+no proposed algorithms for more detailed simplicial representations.
+
+% statistical manifolds
+Another case of interest involves models where the manifold is endowed
+with a geometric structure that is not necessarily defined by a
+metric. Such is the case with the so-called statistical manifolds
+which represent the parameter space of a family of probability
+distributions. Here, a distance-like function called a divergence
+takes the place of a true metric.  Voronoi diagrams and Delaunay
+complexes can be defined on such
+spaces~\cite{onishi1998,boissonnat2010bregvor}, but ...
+
+\paragraph{Simplicial representations.} 
+% homeomorphic representations
+The Delaunay paradigm has been prominent in efforts to design
+simplical complexes provably homeomorphic to a smooth manifold.
+Methods developed for surface reconstruction were extended to
+manifolds of higher dimension~\cite{cheng2005}, producing a simplicial
+complex that is a substructure of the Delaunay triangulation of the
+ambient space. The principal difficulty encountered was the need to
+ensure that the simplicies of the resulting structure were
+sufficiently fat, i.e. had sufficiently large volume relative to their
+edge lengths. This problem was addressed through the use of weighted
+Delaunay triangulations. Although a sketch of a proof of sufficient
+conditions for which the resulting structure is homeomorphic to the
+underlying manifold has been provided \cite{cairns1961,cheng2005}, the
+algorithm is not satisfactory because its complexity is exponential in
+the ambient dimension.
+
+The tangential complex~\cite{boissonnat2010tan-socg} was introduced in
+order to circumvent the dependence on the ambient Delaunay
+structure. Although the tangential complex is also a substructure of
+the ambient Delaunay triangulation, its can be constructed without
+constructing the latter structure; the resulting algorithm is
+exponential in the dimension of the manifold, but only linear in the
+ambient dimension, and it is demonstrated to be homeomorphic to the
+underlying manifold under sufficiently dense sampling
+conditions~\cite{boissonnat2011tancplx}.
+
+The tangential complex brings medium dimensional manifold
+reconstruction potentially within the reach of practical
+implementation, but the construction still involves a costly weighting
+scheme, and the Delaunay condition for each potential simplex must be
+checked by a geometric predicate that is exponential in the dimension
+of the manifold. A possible means to circumvent these problems lies in
+constructing a witness complex as the simplicial representation of the
+manifold. The witness complex is constructed by choosing as vertices a
+relatively small subset of a dense cloud of sample points. The other
+sample points serve to guide the selection of simplicies for the
+witness complex, which are chosen based on predicates that only
+evaluate squared distances. Recently sampling conditions have been
+presented which yield a guarantee that the witness complex is the same
+as the tangential Delaunay complex
+\cite{boissonnat2011cgl,boissonnat2012stab}. What remains to be
+developed is a practical algorithm that can guarantee these sampling
+conditions. 
+
+Another structure of interest is the Delaunay complex defined by
+intrinsic distances on the manifold. Such a structure is of interest
+as a theoretical model for anisotropic meshing algorithms, and also as
+a target complex for data that is given in terms of interpoint
+distances, without a natural isometric embedding into an ambient
+Euclidean space. Previously announced sampling conditions
+\cite{leibon2000} for guaranteeing that the intrinsic Delaunay complex
+is a triangulation of the manifold have been shown to be insufficient
+\cite{boissonnat2012stab}. Although sampling conditions were
+demonstrated which guarantee that the intrinsic Delaunay complex
+coincides with the tangential Delaunay complex when the manifold is
+embedded in Euclidean space, these conditions are extrinsic and do not
+address the situation where no such embedding is given. We aim to
+develop purely intrinsic sampling conditions which guarantee that the
+intrinsic Deluany complex is homeomorphic to the underlying
+manifold. The witness complex is also easily defined with respect to
+intrinsic distances, and we expect to acheive homeomorphism guarantees
+for this structure also.
+
+% % looser topological and geometric representations
+% Taking a more relaxed interpretation of ``triangulation'', there are
+% many other simplicial structures which are of interest for
+% representing manifolds. For topological inference, structures
+% such as the Rips-Vietoris and \v{C}hech complexes are popular. However
+% these tend to be very large and of much higher dimension than the
+% underlying manifold. 
+
+% supercomplexes (Rips/\v{C}ech complex)
+
+% graphs (Delaunay/Gabriel)
+
+\subsection*{Algorithmic considerations}
+
+\paragraph{Mesh generation and simplification.}
+% homeomorphic meshes
+The construction of the tangential Delaunay complex associated to a
+sampled, but otherwise unknown, $k$-dimensional manifold demands that
+at each sample point a $k$-dimensional weighted Delaunay triangulation
+be created in an estimate of the tangent space. The weighting scheme
+ensures that the local triangulations fit together coherently. The
+same idea can also be used in the context of a Delaunay refinement
+algorithm that simultaneously samples a known manifold and constructs
+the associated tangential Delaunay complex. 
+
+In fact, the distinction between the reconstruction problem, where a
+manifold is known only through a dense set of sample points, and the
+meshing problem, where the manifold is known through an oracle, and
+the sample points must be chosen, becomes blurred when the output mesh
+is not required to interpolate all the sample points, as is the case
+with witness complex reconstruction. Indeed, the dense sample set
+itself can be viewed as an oracle that presents the manifold as a
+probability measure, and conversely an oracle provides the ability to
+simulate such a sample set. Algorithms based on the witness complex
+can be versatile, and they have the potential to avoid expensive
+geometric predicates.
+
+Homeomorphism guarantees for the witness complex can be acheived
+through establishing its equivalence with other Delaunay structures,
+but this requires that the landmarks, i.e., the selected vertices of
+the witness complex, satisfy sampling conditions that ensure that they
+are not near to a degenerate configuration
+\cite{boissonnat2011cgl,boissonnat2012stab}.  The condition demands
+that points which do not define a witness complex simplex are not to
+close to being cospherical. This is exactly the kind of condition that
+is avoided by the use of controlled perturbation in guarded algorithms
+for planar Delaunay triangulations~\cite{funke2005cp}. By allowing
+small perturbations either restricted to, or tangential to the
+manifold, it seems likely that the contolled perturbation paradigm can
+be used to construct a homeomorphic witness complex. Since the
+resulting sampling can guarantee a quality measure on the simplices
+\cite{boissonnat2012stab}, there would be no need for a weighting
+scheme.  A principal challenge will be to acheive such an algorithm
+without introducing expensive geometric predicates.
+
+The theoretical sampling density required for homeomorphic
+reconstructions is higher than desired for practical
+implementations. An important challenge we would like to address is to
+introduce methods of simplifying the output mesh while still
+maintaining quantitative quarantees on the quality of the output
+representation. 
 
 
-\paragraph{Combinatorial and algorithmic complexity.}
-A main limitation to the use of simplicial complexes is their combinatorial and algorithmic complexity.  Differently from polytopes, very few results are known. The flag random complex is a noticeable exception~\cite{}. Other types of random abstract complexes have to be studied from a combinatorial point of view. Geometric simplicial complexes should also be considered.  An especially important question is to obtain complexity bounds for simplicial complexes of well sampled substructures (e.g. submanifolds).  We intend to measure the effect of perturbations (either noise or computed perturbations) on the mathematical properties and combinatorial complexity of those structures, and to develop probabilistic analyses. In addition to their combinatorial complexity, the complexity of the construction of the simplicial complexes is to be analyzed.  Parallel and out-of-core algorithms will be also developed.
+\paragraph{Robust reconstruction.}
+
+Curve and surface reconstruction has been a prominent subect of
+research in several fields including computational geometry, computer
+graphics, and medical imaging, for more than twenty
+years~\cite{dey-csr-2007}. Its challenges are now well-understood, and
+countless methods have been proposed, some of which combine
+theoretical soundness with practical robustness and efficiency.
+
+The story becomes quite different when the input data is sitting in
+higher dimensions. Existing methods fail blatantly because of two
+phenomena: the unavoidable corruption of the data, and the curse of
+dimensionality. A few timid attempts have been made to tackle these
+issues: for instance, multiscale
+reconstruction~\cite{geometrica-bgo-09} can handle data with a limited
+degree of corruption, while tangential
+complexes~\cite{geometrica-7142i} or other projection-based data
+structures can circumvent the curse of dimensionality. However, there
+is still considerable progress to be made to handle larger classes of
+shapes and more general noise models, since currently only the case of
+sampled submanifolds of Euclidean spaces with bounded Hausdorff noise
+is addressed.
+
+Reconstruction is such a demanding problem that we cannot hope to be
+able to reconstruct all sorts of compact sets within only a few
+years. A seemingly reasonable goal would be to reconstruct stratified
+manifolds, a problem that received some attention in the recent years,
+and for which several promising contributions were made.  Bendich and
+co-authors~\cite{bendich-PhD,bendich-strat1,bendich-strat2} used
+local homology to recover strata from a sampled stratified manifold:
+although not quite practical, their approach is based on a sound
+theoretical framework. More practical is the approach by Aanjaneya
+{\em et al.}~\cite{metric-graphs-reconstruction}, but it is limited to
+graphs (1-d manifolds) reconstruction. Can a compromise be made
+between generality and practical efficiency of the reconstruction?
+
+%In order to handle a wider class of noise models, one may consider
+%incorporating some statistical techniques into our otherwise purely
+%topological or geometric approaches. A firs attempt along this line
+%was made by Caillerie and Michel~\cite{claire-bertrand}, who used
+%model selection to estimate the {\em most relevant} (in a statistical
+%sense) scale at which to process the data in multi-scale
+%reconstruction. Their criterion for measuring the quality of the
+%reconstruction was oblivious to the topology, being purely based on
+%the Hausdorff approximation to the underlying object. An interesting
+%extension would be to incorporate topological constraints into the
+%method. Another related question would be to try to understand the
+%relationship that may exist between optimal geometric reconstruction
+%and optimal topological reconstruction.
 
 
-\paragraph{Compact representation of simplicial complexes.} We are aware of only a few works on the design of data structures for general simplicial complexes. Brisson~\cite{Brisson:1989:RGS:73833.73858} and Lienhardt~\cite{DBLP:journals/ijcga/Lienhardt94} have introduced data structures to represent $d$-dimensional cell complexes, most notably subdivided manifolds. While those data structures have nice algebraic properties, they are very redundant and do not scale to large data sets or high dimensions. More recently, Attali et al.~\cite{Attali2011} have proposed an efficient data structure to represent and simplify flag complexes, a special family of simplicial complexes including the Rips complex. 
-Recently, we have experimented with a tree representation for general simplicial
-complexes that seems to outperform previous solutions. Simplicial complexes of 500 millions of simplices have been constructed and stored on a laptop~\cite{}. 
-Theoretical guarantees and experiments on a large scale are mandatory. In
-addition, more compact storage could be further obtained by using
-succinct representations of trees~\cite{10.1109/SFCS.1989.63533,Munro:2002:SRB:586840.586885,Ferragina:2005:SLT:1097112.1097456,DBLP:conf/icalp/2003}. The problem of finding minimal representations of simplicial complexes is widely open beyond the planar case.
+\paragraph{Quality considerations.}
+Our goal is to produce simplicial complexes representing manifolds and
+more general geometric objects composed of manifolds, and to be able
+to quantitatively certify the quality of the representation. The best
+that can be hoped for is the guarantee of a homeomorphism that is
+almost an isometry. However, such guarantees require strong sampling
+conditions and potentially costly construction algorithms. The current
+algorithms assume a constant sampling density based on the finest
+structure found on the manifold. The development of adaptive sampling
+conditions is a natural way to relax the required density. 
 
-
-\paragraph{New types of simplicial complexes.}
-Among the simplicial complexes discussed above, only the Rips and the witness complexes can be constructed on a discrete metric space where only the distances between points are known. 
-Replacing the Euclidean distance in the embedding space by the geodesic distance on the object of interest would result in smaller complexes while still keeping good approximation properties.
-Delaunay-like simplicial complexes are more complicated since they require to compute critical points of the  distance function. Replacing the Euclidean distance by  the geodesic distance would lead to intrinsic Delaunay simplicial complexes. First encouraging results in this direction can be found in \cite{}. Other distance functions are also of interest.
-
-
-\paragraph{Validation.} \framebox{in WP 4?}
-We intend to {\em implement} those structures, experiment with them and see how they behave under realistic conditions. We will use known datasets such as the UCI repository \cite{} and also propose new benchmarks that we will make publicly available with the hope that they will be used to compare data structures and algorithms.
-
-\paragraph{Dimension-sensitive algorithms and data structures} \framebox{WP1?}
-
-
-
-
-
-
-
+Another option is to relax the required quarantees on the output. That
+leads into WP3?
