@@ -173,29 +173,34 @@ are not near to a degenerate configuration
 \cite{boissonnat2011cgl,boissonnat2012stab}.  The condition demands
 that points which do not define a witness complex simplex are not to
 close to being cospherical. This is exactly the kind of condition that
-is avoided by the use of controlled perturbation in  guarded
-algorithms for planar Delaunay triangulations~\cite{funke2005cp}. It
-seems likely that
+is avoided by the use of controlled perturbation in guarded algorithms
+for planar Delaunay triangulations~\cite{funke2005cp}. By allowing
+small perturbations either restricted to, or tangential to the
+manifold, it seems likely that the contolled perturbation paradigm can
+be used to construct a homeomorphic witness complex. Since the
+resulting sampling can guarantee a quality measure on the simplices
+\cite{boissonnat2012stab}, there would be no need for a weighting
+scheme.  A principal challenge will be to acheive such an algorithm
+without introducing expensive geometric predicates.
+
+The theoretical sampling density required for homeomorphic
+reconstructions is higher than desired for practical
+implementations. An important challenge we would like to address is to
+introduce methods of simplifying the output mesh while still
+maintaining quantitative quarantees on the quality of the output
+representation. 
 
 
+\paragraph{Quality considerations.}
+Our goal is to produce simplicial complexes representing manifolds and
+more general geometric objects composed of manifolds, and to be able
+to quantitatively certify the quality of the representation. The best
+that can be hoped for is the guarantee of a homeomorphism that is
+almost an isometry. However, such guarantees require strong sampling
+conditions and potentially costly construction algorithms. The current
+algorithms assume a constant sampling density based on the finest
+structure found on the manifold. The development of adaptive sampling
+conditions is a natural way to relax the required density. 
 
-
-
-landmark selection (witness cplx) ;  controlled perturbation
-(predicates exponential in $k$?)
-
-other simplification techniques
-
-\paragraph{Quality considerations} .\\
-
-sampling conditions
-const density
-
-topological quality
-
-
-geometric quality
-
-complexity
-
-
+Another option is to relax the required quarantees on the output. That
+leads into WP3?
