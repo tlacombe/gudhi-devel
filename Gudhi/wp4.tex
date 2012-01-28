@@ -60,6 +60,8 @@ successful in small dimensions but inefficient as soon as the
 dimension rises.  Their  maintenance, only assumed by the very few authors
 is likely not to be perennial.
 
+\framebox{Continuation methods : Multifario http://www.research.ibm.com/people/h/henderson/Continuation/ContinuationMethods.html}
+
 
 \paragraph{ Methodology.} 
 Two key requirements in the development of this platform will be
@@ -88,7 +90,7 @@ of the software.
 \begin{itemize}
 \item The software platform will provide tools to extract from clouds of points the
 simplicial complexes that are relevant for geometric understanding,
-Rips, \v Cech and witness complexes to begin with. 
+Rips, tangential Delaunay  and witness complexes to begin with. 
 \item The platform will provide efficient data structures to handle those
 complexes. We will in particular  focus on parsimonious data
 structures, aiming for a partially implicit representation of those simplicial
@@ -96,8 +98,13 @@ complexes, thus avoiding the full space cost entailed by the curse of
 dimensionality. 
 \item The platform is meant to offer state of the art algorithmic tools for geometric
 understanding,
-including in particular algorithms to compute the persistent homology
-of the simplicial complex filtration extracted from data points. 
+including in particular algorithms to
+\begin{itemize}
+\item  mesh or reconstruct manifolds
+\item  compute the persistent homology of a simplicial complex filtration 
+\item cluster data
+\item compute signatures of shapes
+\end{itemize}
 \item The platform will aim at providing parallel implementations as well
 as out of core versions whenever possible to make possible the
 handling of huge data sets in high dimensions.
