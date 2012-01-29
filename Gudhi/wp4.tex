@@ -51,6 +51,20 @@ data structures,  more or less adaptive
 A typical example is the popular ANN software to compute  the approximate
 nearest-neighbor of a query point
 among a  high dimensional point cloud. 
+Qhull is a software that can compute convex hulls and Delaunay
+triangulations in dimensions larger than 3, but it doesn't see much
+development anymore, and as the authors prominently announce on the
+webpage: ``Qhull does not support triangulation of non-convex surfaces,
+mesh generation of non-convex objects, medium-sized inputs in 9-D and
+higher, alpha shapes''. The polymake framework has many features,
+it can handle several types of complexes, build Voronoi diagrams and
+compute advanced topological characteristics of objects like a finite
+representation of the fundamental group. However, it is strongly
+oriented towards an interactive use for mathematical experimentation on
+a given object and not automated, fast and robust data processing.
+% C'est l'impression que j'en ai apres avoir un peu surfe sur differents
+% sites, mais je n'ai pas une confiance absolue dans ce que je dis
+% ci-dessus.
 Only two implementations of persistent homology algorithms are
 currently available. One of them is the PLEX package for Matlab,
 developed by Patrice Perry and Vin de Silva. The other one is the
