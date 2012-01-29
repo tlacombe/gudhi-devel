@@ -3,7 +3,7 @@
 \subsection{State-of-the-art and objectives}
 
 Geometric modeling has undergone huge progress during the past decades. The pressing needs
-of multimedia, video games, numerical simulations, manufacturing, computer-aided medicine, culturage heritage and other applications asked for techniques to respresent, process and analyze
+of multimedia, video games, numerical simulations, manufacturing, computer-aided medicine, culturage heritage and other applications asked for techniques to represent, process and analyze
 {\em 3D} shapes.  Progress has been contributed by  varied disciplines, most notably computer graphics, geometry processing, computer-aided design, computational geometry and topology, scientific computing. This considerable research effort resulted in settling theoretical and algorithmic foundations of 3D geometric modeling, and providing efficient algorithms and codes for applications such as surface reconstruction, mesh generation and point cloud processing~\cite{geometrica-bcmrv-ms-06,dey-csr-2007}.  
 The situation is very different and much less has been done for higher dimensional shapes.%   are much more difficult to handle than surfaces in 3-space for two main reasons~: the curse of dimensionality and the unafordable presence of noise.
 
@@ -12,7 +12,7 @@ The situation is very different and much less has been done for higher dimension
 one of the most popular approaches to high-dimensional data analysis. {\em Dimensionality reduction} consists in mapping the data points down to a linear subspace, whose dimension supposedly coincides with the intrinsic dimension of the data. This approach is elegant in that it helps detect the intrinsic parameters of the data, and by doing so it also reduces the complexity of the problem. Dimensionality reduction techniques fall into two classes: linear methods, e.g. principal component analysis (PCA) or multi-dimensional scaling (MDS), and non-linear methods, e.g. isomap or locally-linear embedding (LLE). The second class of algorithms is more powerful in that it computes more general (in fact, non-linear) mappings. On the whole, dimensionality reduction works well on data sets sampled from manifolds with low curvature and trivial topology. Although the condition on the curvature is mainly a sampling issue, the condition on the topology is mandatory for the mapping onto a linear subspace to make sense. \framebox{Johnson-Lindenstrauss, Wakin}
 
 \paragraph{Simplicial complex approximations.}
-In many problems \framebox{examples?}, a linear subspace or a union of linear subspaces is a too crude model and we need to represent nonlinear geometries like a $k$-dimensional submanifold of $\R^d$.  To deal with such complicated geometries, a route is to approximate shapes by simplicial complexes.  Simplicial complexes have been introduced by Poincar\'e in the early days of algebraic topology. Their importance in low dimensions cannot be overerestimated~: 1-dimensional simplicial complexes, better known as graphs or networks, can be found everywhere, 2-dimensional simplicial complexes are the standard representations for surfaces in computer graphics and 3-dimensional simplicial complexes are the representation of choice for scientific computing and numerical simulation when complicated domains are involved. Simplicial complexes can be defined in any dimension and can be used to construct a piecewise linear approximation of a shape with the right topological type (see WP2) or to 
+In many problems \framebox{examples?}, a linear subspace or a union of linear subspaces is a too crude model and we need to represent nonlinear geometries like a $k$-dimensional submanifold of $\R^d$.  To deal with such complicated geometries, a route is to approximate shapes by simplicial complexes.  Simplicial complexes have been introduced by Poincar\'e in the early days of algebraic topology. Their importance in low dimensions cannot be overestimated~: 1-dimensional simplicial complexes, better known as graphs or networks, can be found everywhere, 2-dimensional simplicial complexes are the standard representations for surfaces in computer graphics and 3-dimensional simplicial complexes are the representation of choice for scientific computing and numerical simulation when complicated domains are involved. Simplicial complexes can be defined in any dimension and can be used to construct a piecewise linear approximation of a shape with the right topological type (see WP2) or to 
 compute the homology of the shape (see WP 3). The main bottleneck in using simplicial complexes in higher dimensions is of a computational nature~:  in high dimensions, simplicial complexes can be huge and very difficult to compute, which limits their current use to low dimensions.
 
 \paragraph{Computational issues.}
@@ -73,11 +73,11 @@ Time has come...
 To reach our overall goal of settling firm algorithmic foundations for geometry understanding in higher dimensions, we will follow the principles that have been guiding my group for more than 10 years and will simultaneously develop
 {\em mathematical approaches} providing guarantees even in the presence of noise or outliers,
 {\em effective algorithms} that are amenable to theoretical analysis and fully validated experimentally,
-and {\em perenial software} development.
+and {\em perennial software} development.
 
 The proposal is structured into the following four workpackages:
 {\bf WP 1}:  {\em Dimension-sensitive data  structures} will extend current knowledge about simplicial complexes, and  provide efficient data structures and basic algorithms for their representation, construction and manipulation. 
-  {\bf WP 2}:  {\em Triangulating non Euclidean geometric spaces} will develop effective algorithms to mesh or reconstruct manifolds and other spaces equiped with various metrics.   {\bf WP 3}: {\em Robust models for geometric inference, comparison and  clustering} will provide the crucial  algorithms for topological data analysis.
+  {\bf WP 2}:  {\em Triangulating non Euclidean geometric spaces} will develop effective algorithms to mesh or reconstruct manifolds and other spaces equipped with various metrics.   {\bf WP 3}: {\em Robust models for geometric inference, comparison and  clustering} will provide the crucial  algorithms for topological data analysis.
  {\bf WP 4}:  {\em  Software platform for geometric understanding in high dimensions} will provide the software environment for experimenting with our new data structures and algorithms, for integrating them in a coherent library of interoperable modules, and for diffusing our results to applied fields. We now describe in more detail each of these workpackages.
 
 
@@ -90,7 +90,7 @@ The proposal is structured into the following four workpackages:
 \bibliographystyle{abbrv}
 \bibliography{erc}
 
-\section{Ressources}
+\section{Resources}
 
 I will devote 70\% of my time to this project, and I will dedicate all my expertise and efforts to conduct and supervise the research work. To this end, I will receive the precious help of 2 permanent researchers of the Geometrica team : Fr\'ed\'eric Chazal who is a  leading researcher in geometric inference and computational topology and Mariette Yvinec who is an expert in geometric computing and a member of the CGAL Editorial Board. They will devote 20\% of their time to this project to co-supervise with me the research and implementation work of the students, postdocs and engineers to be engaged in this project. Other members of Geometrica,
 not financially supported by this project, will also collaborate to the project.
