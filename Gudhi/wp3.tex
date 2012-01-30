@@ -20,7 +20,7 @@ This a goal we set to ourselves in this project for three different central prob
 
 
 \paragraph{Homology inference.}
-Building on the distance function approach efficient and guaranteed algorithms have been developed to infer the homology of general shapes from Cech or Rips complexes built on top of the data \framebox{ref to WP2}  when they are sampled at a small Hausdorff distance of the considered shape \cite{co-tpr-2008}. These algorithms rely on  the idea that the topology of the shape is carried  by the topology of some  unions of balls centered on the data (i.e. the sublevel sets of the distance function to the data)  that can itself be related to the topology of the  alpha-shape and Rips complexes.
+Building on the distance function approach efficient and guaranteed algorithms have been developed to infer the homology of general shapes from \v{C}ech or Rips complexes built on top of the data when they are sampled at a small Hausdorff distance of the considered shape \cite{co-tpr-2008}. These algorithms rely on  the idea that the topology of the shape is carried  by the topology of some  unions of balls centered on the data (i.e. the sublevel sets of the distance function to the data)  that can itself be related to the topology of the  alpha-shape and Rips complexes.
 To comply with the presence of noise and outliers in the data we will to explore different approaches inspired from these algorithms. 
 We will in particular focus on a new paradigm for point cloud data analysis that has emerged recently, where point clouds are no
 longer treated as mere compact sets but rather as empirical measures. A notion of distance to
@@ -38,7 +38,7 @@ a measure. Our first goal will be to work out such equivalents that will allow t
 %medium dimensions and use a variant of the mesh-based inference algorithm [14] to approximate
 %the sublevel-sets of the distance to a measure and get an idea of their topological structure.
 
-\paragraph{Clustering with a geometric prior.}
+\paragraph{Clustering with a geometric prior.} \framebox{add ref}
 Clustering may be viewed as the most basic homology inference problem, since it consists in inferring the connected components in the data set. Typical methods for clustering data sets in high dimensions, {\it e.g.} spectral clustering, work well under three specific assumptions. First, the clusters should be sufficiently connected, for example, the second eigenvalue of their graph Laplacian should be large enough. Second, they should be well separated, that is, the interpoint distances between different clusters should be large enough on average. Third, the clusters should be balanced enough. We intend to develop methods that would take advantage of situations where the clusters have additional properties, such as being nearly convex or smooth, which seems reasonable in the large number of cases where manifold learning techniques apply. A promising strategy would be to use geometric regularity measures stemming from the geometric sampling theory recently introduced in \cite{geometrica-ccl09}. One challenge is to design these regularity measures in such a way that they are both easy to compute and amenable to classical clustering strategies. We expect the resulting clustering schemes to outperform classical spectral clustering when the data exhibit some form of geometric regularity. Byproducts of this effort could also lead to efficient algorithms for assessing the degree of geometric regularity present in real data. 
 
 
@@ -85,11 +85,11 @@ different shapes do get different signatures. From an algorithmic
 perspective, the problem comes down to identifying small samplings of this
 family of filtrations that can be used as proxies for a better (if not
 perfect) assessment of the similarity between two shapes.  As we
-intend to consider our signatures on large sets of shapes or it will
+intend to consider our signatures on large sets of shapes, it will
 also be important to design algorithms to efficiently compute these
-signatures and compare them. \framebox{shall we put a ref to
-  another WP where fast bottleneck distance computation/approximation
-  would be considered?}
+signatures and compare them.% \framebox{shall we put a ref to
+%  another WP where fast bottleneck distance computation/approximation
+%  would be considered?}
 
 Finally, the difficulty of matching two shapes is
 intimately tied to matching a shape to itself --- shapes with many

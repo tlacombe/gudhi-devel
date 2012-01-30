@@ -7,7 +7,7 @@ comprehensive and robust set of tools for geometric understanding in
 high
 dimension. 
 
-\paragraph{ The need for a software platform.}
+\paragraph{The need for a software platform.}
 On one hand, we perceive the development of such a platform as 
 an absolute necessity to serve as a test bench and  evaluation process
 for any new algorithmic solution resulting  from  our theoretical work.
@@ -21,13 +21,11 @@ concepts for new algorithmic foundations
 of  geometric understanding in high dimension.
 
 
-The term platform means that we intend to capitalize
-upon development efforts and encourage contributions
-from researchers external to the ERC.
- At the end of this ERC,
-the platform will offer 
-a comprehensive and robust set of algorithmic tools
-for high dimension data analysis.
+The term platform means that we intend to capitalize upon development
+efforts and encourage contributions from researchers external to the
+project.  At the end of this project, the platform will offer a
+comprehensive and robust set of algorithmic tools for geometry
+processing and analysis in higher dimensional spaces.
 
 We also think about this platform as the choice
 vector for the diffusion of our algorithmic solutions 
@@ -40,13 +38,13 @@ and user feedback.
 
 
 
-\paragraph{ State of the art.}  
+\paragraph{State of the art.}  
 Leaving aside the flourishing field of machine learning
 and well-known successful software for linear algebra,
 linear and quadratic optimization,  only  few implementations handle
 geometry in high dimension. 
-Most of those software use multiscale  grid based
-data structures,  more or less adaptive
+Most of those software use multiscale  grids based
+data structures that somehow adapt
  to the local  density of data.
 A typical example is the popular ANN software to compute  the approximate
 nearest-neighbor of a query point
@@ -69,15 +67,16 @@ Only two implementations of persistent homology algorithms are
 currently available. One of them is the PLEX package for Matlab,
 developed by Patrice Perry and Vin de Silva. The other one is the
 library Dionysus proposed by Dmitriy Morozov. These implementations
-do not propose parallel nor out-of-core versions. They are known to be
+%do not propose parallel nor out-of-core versions. They 
+are known to be
 successful in small dimensions but inefficient as soon as the
 dimension rises.  Their  maintenance, only assumed by the very few authors
 is likely not to be perennial.
 
-\framebox{Continuation methods : Multifario http://www.research.ibm.com/people/h/henderson/Continuation/ContinuationMethods.html}
+%\framebox{Continuation methods : Multifario http://www.research.ibm.com/people/h/henderson/Continuation/ContinuationMethods.html}
 
 
-\paragraph{ Methodology.} 
+\paragraph{Methodology.} 
 Two key requirements in the development of this platform will be
 efficiency and theoretical guarantees, including handling of
 robustness issues. A common
@@ -118,11 +117,16 @@ including in particular algorithms to
 \item  compute the persistent homology of a simplicial complex filtration 
 \item cluster data
 \item compute signatures of shapes
+\item visualization tools \framebox{?}
 \end{itemize}
 \item The platform will aim at providing parallel implementations as well
 as out-of-core versions whenever possible to make possible the
 handling of huge data sets in high dimensions.
 \end{itemize}
+
+\framebox{Datasets}
+
+\framebox{Diffusion}
 
 %  It will namely include tools to extract from
 % point clouds various simplicial complexes and filtrations,
