@@ -61,7 +61,7 @@ Attempts to analyze higher dimensional shapes led to the development of beautifu
 Although of a fundamental nature, these advances 
 attracted  interest in several fields like data analysis, computer vision and sensor networks.
 
-\paragraph{The computational bottleneck.}
+\paragraph{Settling the algorithmic foundations.}
 
  % Although there is a crucial need for geometric modeling tools in higher dimensions, the theoretical results obtained so far  only led to prototype codes, and applications have been limited to low dimensions or to rather crude techniques. 
 
@@ -74,7 +74,7 @@ However, the current theory has not demonstrated its scalability to real problem
 Breaking the computational bottleneck is now the main issue.  Settling the {\em algorithmic foundations} of geometry understanding in
 higher dimensions
 %al geometric modeling 
-is a grand challenge of great theoretical and practical significance. 
+is a grand challenge of great theoretical and practical significance.
 
 
 The tenet of this proposal is that, to take up the challenge, we need a global approach involving
@@ -131,7 +131,7 @@ First investigations led to very promising results, such as the design of new si
 When dealing with approximation and samples, one needs stability results to ensure that the quantities that are computed are good approximations of the real ones. This is especially true in higher-dimensions where data are usually corrupted by various types of noise.  When the noise is of small amplitude, methods have been proposed to robustly estimate topological and geometric properties of shapes~\cite{geometrica-ccl09,nsw-tvu-2011}. 
  The recent and fast developing theory of {\em persistent homology} provides a powerful tool to study  the homology of sampled spaces~\cite{eh-ph-2008}.
 However, in  many applications the noise is non local and the previous methods fail.
-Recently,  larger families of noise models  have been considered and statistical approaches  have been proposed to approximate shape under  those models~\cite{gpvw-mme-2011}. These methods however do not provide topological guarantees on the approximation and do not always provide explicit estimates. A major challenge is thus to design  unifying frameworks that embrace statistical approaches and deterministic methods, and offer topological guarantees.   
+Recently,  larger families of noise models  have been considered and statistical approaches  have been proposed to approximate shape under  those models~\cite{gpvw-mme-2011}. These methods however do not provide topological guarantees on the approximation and do not always provide explicit estimates. A major challenge is thus to design  unifying frameworks that embrace statistical approaches and deterministic methods, and offer topological guarantees.   Statistical techniques are also needed to automatically select the relevant scales at which the geometry of data should be considered.
 
 %A number of groundbreaking new approaches appeared recently. % Given a point cloud in Euclidean space, the approach consists in building a simplicial complex whose elements are filtered by some user-defined function. Under reasonable conditions on the input point cloud, and modulo a right choice of filter, the most persistent invariants in the filtration correspond to invariants of the space underlying the data~\cite{geometrica-cseh-07}. Thus, the persistence algorithm allow to recover global information from noisy data.
 % {\em Non-local noise} and outliers can also be considered as empirical measures. A notion of distance to such measures has been defined and shown to be stable with respect to perturbations of the measure \cite{ccsm-gipm-2011}. A big challenge is to find efficient algorithms in arbitrary dimensions to compute or approximate the topological structure of the sublevel-sets of the distance to a measure. Such algorithms would naturally find applications in topological inference in the presence of significant noise and outliers, but also in other less obvious contexts such as stable clustering. 
@@ -142,7 +142,7 @@ Recently,  larger families of noise models  have been considered and statistical
 
 
 \paragraph{Scientific challenge 4 : Turning theory into practice.}%Building up the reference platform for high-dimensional geometric modeling.}
-A major challenge, if not the most important, is to develop theory that is of practical significance for applications.   To take up the challenge, we will foster a symbiotic relationship between theory and practice, and  undertake the development of a software platform in the spirit of the CGAL project. We consider such a platform as central in our research  for three main reasons.  {\em First}, the software platform will allow experimentation at a large scale, which is mandatory to design the right models and data structures. We believe that this will revitalize the current theory and open new vistas for research, both of a practical and a theoretical nature, leading towards a virtuous circle between theory and experimental research. This has proven to be of utmost importance when developing the CGAL library and will be even truer in high dimensional geometry.
+A major challenge, if not the most important, is to develop theory that is of practical significance for applications.   To take up the challenge, we will foster a symbiotic relationship between theory and practice, and  undertake the development of a software platform in the spirit of the CGAL project. We consider such a platform as central to our research  for three main reasons.  {\em First}, the software platform will allow experimentation at a large scale, which is mandatory to design the right models and data structures. We believe that this will revitalize the current theory and open new vistas for research, both of a practical and a theoretical nature, leading towards a virtuous circle between theory and experimental research. This has proven to be of utmost importance when developing the CGAL library and will be even truer in high dimensional geometry.
 
 {\em Second}, maintaining such a platform will help further effort and consolidation in the long run.  Having a library with interoperable modules will allow us to incrementally add more and more sophisticated tools based on solid foundations.  This is consistent with our long-term vision and our conviction that it is only through such a long standing effort that true impact, both theoretical and applied, can be gained.
 
