@@ -5,7 +5,7 @@
 
 papers= B1 B2
 
-default: B2.bbl
+default: bib
 
 B2: B2.pdf
 B1: B1.pdf
