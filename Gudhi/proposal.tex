@@ -1,36 +1,60 @@
 \section{Research proposal (15p.)}
 
-\subsection{State-of-the-art and objectives}
+\subsection{State-of-the-art}%and objectives}
 
-Geometry understanding has undergone huge progress during the past decades. The pressing needs
-of multimedia, video games, numerical simulations, manufacturing, computer-aided medicine, cultural heritage and other applications asked for techniques to represent, process and analyze
-{\em 3D} shapes.  Progress has been contributed by  varied disciplines, most notably computer graphics, geometry processing, computer-aided design, computational geometry and topology, scientific computing. This considerable research effort resulted in solid theoretical and algorithmic foundations for 3D geometry understanding, and efficient algorithms and codes for applications such as surface reconstruction, mesh generation and point cloud processing~\cite{he-gtmg-2001,geometrica-bcmrv-ms-06,dey-csr-2007}.  
-The situation is very different and much less has been done for higher dimensional shapes.%   are much more difficult to handle than surfaces in 3-space for two main reasons~: the curse of dimensionality and the unafordable presence of noise.
+% Geometry understanding has undergone huge progress during the past decades. The pressing needs
+% of multimedia, video games, numerical simulations, manufacturing, computer-aided medicine, cultural heritage and other applications asked for techniques to represent, process and analyze
+% {\em 3D} shapes.  Progress has been contributed by  varied disciplines, most notably computer graphics, geometry processing, computer-aided design, computational geometry and topology, scientific computing. This considerable research effort resulted in solid theoretical and algorithmic foundations for 3D geometry understanding, and efficient algorithms and codes for applications such as surface reconstruction, mesh generation and point cloud processing~\cite{he-gtmg-2001,geometrica-bcmrv-ms-06,dey-csr-2007}.  
+% The situation is very different and much less has been done for higher dimensional shapes.%   are much more difficult to handle than surfaces in 3-space for two main reasons~: the curse of dimensionality and the unafordable presence of noise.
+
+The last decade has seen tremendous progress in the understanding of geometry in high-dimensional spaces. In this section, we discuss the models that have been used, their representation, the basic problems that have been identified, and how far the solutions stand from practical applications.
+
+% highly accurate and efficient algorithms that capture and exploit the inherent structure of the model
+
+% In robotics~\cite{sml-pa-2006}, randomized techniques have been proposed to capture the topology of configuration spaces and to search paths. In signal and image processing, and in machine learning, a variety of techniques have been proposed to reduce the dimension of data, learn nonlinear manifolds and cluster data~\cite{hs-fmmds-2006}. % In computational geometry, new approaches have been proposed to solve basic problems like searching nearest neighbours, computing smallest enclosing ellipsoids or approximating convex sets~\cite{hp-gaa-2011}.
+% Most  of these methods have limited guarantees and 
+% %address elementary questions (which may be very hard to solve though) and 
+% impose strong constraints on the dimension or the topology of the shapes they can successfully handle. 
+
+\paragraph{Models and representation.} 
+In  many applications in scientific computing and in data analysis,  the objects of
+interest can be modeled as {\em low-dimensional manifolds}. This powerful assumption is supported by the fact that high-dimensional data are most of the time associated with physical systems that have few parameters and by deep mathematical results such as the Johnson-Lidenstrauss lemma and its variations~\cite{}.  Linear manifolds are the simplest and best studied types of geometric models, and the most popular in high-dimensional data analysis~\cite{hs-fmmds-2006,lv-nldr-2007}. {\em Spectral methods for dimensionality reduction} consists in mapping the data points down to a linear subspace, whose dimension supposedly coincides with the intrinsic dimension of the data. The mapping is obtained by computing an eigendecomposion of some matrix. This approach is elegant in that it helps detect the intrinsic parameters of the data, and by doing so it also reduces the complexity of the problem. Dimensionality reduction techniques fall into two classes: linear methods, e.g. principal component analysis (PCA) or multi-dimensional scaling (MDS), and non-linear methods, e.g. isomap or locally-linear embedding (LLE). The second class of algorithms is more powerful in that it computes more general (in fact, non-linear) mappings. On the whole, dimensionality reduction works well on data sets sampled from manifolds with low curvature and trivial topology. % Although the condition on the curvature is mainly a sampling issue, the condition on the topology is mandatory for the mapping onto a linear subspace to make sense. 
+
+ To deal with highly complicated and nonlinear geometries, another route is to approximate shapes by {\em simplicial complexes}~\cite{hh-ct-2010}.  Simplicial complexes have been introduced by Poincar\'e in the early days of algebraic topology. Their importance in low dimensions cannot be overestimated~: 1-dimensional simplicial complexes, better known as graphs or networks, can be found everywhere,  2-dimensional simplicial complexes are the standard representations for surfaces in computer graphics and 3-dimensional simplicial complexes are the representation of choice for scientific computing and numerical simulation when complicated domains are involved. Simplicial complexes can be defined in any dimension and can be used to construct a piecewise linear approximation of a shape with the right topological type~\cite{geometrica-7142i} or to 
+compute the homology of the shape~\cite{hh-ct-2010}. 
+The main bottleneck in using simplicial complexes in higher dimensions is of a computational nature~:  in high dimensions, simplicial complexes can be huge and very difficult to compute, which limits their current use to low dimensions.
 
 
-\paragraph{Dimension reduction.} A first route towards geometry processing in higher dimensional spaces is to try to reduce the dimension. This is 
-one of the most popular approaches to high-dimensional data analysis~\cite{hs-fmmds-2006,lv-nldr-2007}. {\em Dimensionality reduction} consists in mapping the data points down to a linear subspace, whose dimension supposedly coincides with the intrinsic dimension of the data. This approach is elegant in that it helps detect the intrinsic parameters of the data, and by doing so it also reduces the complexity of the problem. Dimensionality reduction techniques fall into two classes: linear methods, e.g. principal component analysis (PCA) or multi-dimensional scaling (MDS), and non-linear methods, e.g. isomap or locally-linear embedding (LLE). The second class of algorithms is more powerful in that it computes more general (in fact, non-linear) mappings. On the whole, dimensionality reduction works well on data sets sampled from manifolds with low curvature and trivial topology. Although the condition on the curvature is mainly a sampling issue, the condition on the topology is mandatory for the mapping onto a linear subspace to make sense. \framebox{Johnson-Lindenstrauss, Wakin}
+% \paragraph{What representation?} %Simplicial complex approximations.}models.}
+% The high computational cost of simplicial complexes can be balanced in two ways. First, simplicial complexes are flexible enough to approximate subspaces with a complexity that scales up with the complexity of the subspace. Typically, the subspaces of interest 
+%  in learning theory, data analysis or dynamical systems have a moderate  intrinsic dimension.
 
-\paragraph{Simplicial complex approximations.}
-In many problems \framebox{examples?}, a linear subspace or a union of linear subspaces is a too crude model and we need to represent nonlinear geometries like a $k$-dimensional submanifold of $\R^d$.  To deal with such complicated geometries, dimensionality reduction techniques are not sufficient. Another route is to approximate shapes by {\em simplicial complexes}~\cite{hh-ct-2010}.  Simplicial complexes have been introduced by Poincar\'e in the early days of algebraic topology. Their importance in low dimensions cannot be overestimated~: 1-dimensional simplicial complexes, better known as graphs or networks, can be found everywhere, 2-dimensional simplicial complexes are the standard representations for surfaces in computer graphics and 3-dimensional simplicial complexes are the representation of choice for scientific computing and numerical simulation when complicated domains are involved. Simplicial complexes can be defined in any dimension and can be used to construct a piecewise linear approximation of a shape with the right topological type~\cite{geometrica-7142i} or to 
-compute the homology of the shape~\cite{hh-ct-2010}. The main bottleneck in using simplicial complexes in higher dimensions is of a computational nature~:  in high dimensions, simplicial complexes can be huge and very difficult to compute, which limits their current use to low dimensions.
+% The second reason is that coarse topological features such as the homology groups or the Betti numbers (that are invariant under homotopy equivalence) can be estimated from simplicial complexes of a much smaller size than what is needed to reconstruct a homeomorphic approximation~\cite{co-tpr-2008}. Hence, simplicial complexes may be used to recover important information even if an accurate representation of the data is out of reach.
 
-\paragraph{Manifold models.}
-The high computational cost of simplicial complexes can be balanced in two ways. First, simplicial complexes are flexible enough to approximate subspaces with a complexity that scales with the complexity of the subspace, not of the ambient space. Typically, the subspaces of interest 
- in learning theory, data analysis or dynamical systems have a moderate  intrinsic dimension.
-
-The second reason is that coarse topological features such as the homology groups or the Betti numbers (that are invariant under homotopy equivalence) can be estimated from simplicial complexes of a much smaller size than what is needed to reconstruct a homeomorphic approximation~\cite{co-tpr-2008}. Hence, simplicial complexes may be used to recover important information even if an accurate representation of the data is out of reach.
-
-Simplicial complexes thus have the potential of being the data structure of choice for understanding geometry in high dimensional spaces. The question remains of how to define simplicial complexes that are dimension-sensitive and easy to compute.  Various types of simplicial complexes have been proposed such as the \v{C}ech and the Rips complexes, and more recent Delaunay-like complexes such as the $\alpha$-complex~\cite{eks-sspp-83,he-ubds-95}, the witness complex~\cite{deSilva2008,cds-tewc-2004} and the Delaunay tangential complex~\cite{geometrica-7142i}. They differ by their combinatorial and algorithmic complexities, and their power to approximate a shape.  The algorithmic theory of simplicial complexes is nevertheless in its infancy and much less developed than its counterpart for triangulations in small dimensions~\cite{by-ag-98,he-gtmg-2001}. In particular, little is known about efficient and compact representations of simplicial complexes and experiments have only been reported for simplicial complexes of low-dimensions up to now ~\cite{geometrica-6743i,Attali2011,rg-bptd-2008}. \framebox{true?} 
+Simplicial complexes thus have the potential of being the data structure of choice for understanding geometry in high dimensional spaces. The question remains of how to define simplicial complexes that are dimension-sensitive and easy to compute.  Various types of simplicial complexes have been proposed such as the \v{C}ech and the Rips complexes, and more recent Delaunay-like complexes such as the $\alpha$-complex~\cite{eks-sspp-83,he-ubds-95}, the witness complex~\cite{deSilva2008,cds-tewc-2004} and the Delaunay tangential complex~\cite{geometrica-7142i}. They differ by their combinatorial and algorithmic complexities, and their power to approximate a shape.  The algorithmic theory of simplicial complexes is nevertheless in its infancy and much less developed than its counterpart for triangulations in small dimensions%~\cite{by-ag-98,he-gtmg-2001}. In particular, 
+and little is known about efficient and compact representations of simplicial complexes% and,  up to now, experiments have only been %reported for simplicial complexes of low-dimensions
+~\cite{Attali2011}. \framebox{true?} 
 
 
 \paragraph{Geometry understanding.}
 
-The last decade has seen tremendous progress in processing high-dimensional shapes and spaces. In {\em robotics}, randomized techniques have been proposed to construct graphs that capture the connectivity of configuration spaces and allow to search paths~\cite{sml-pa-2006}. 
-In engineering and science, {\em dynamical systems} are often formulated as a function that satisfies some set of nonlinear equations, for example, the Navier-Stokes equations, Maxwell's equations, or Newton's law. Computing a  solution in the form of a mesh can be done using
-higher-dimensional continuation method~\cite{mh-mpc-2002}.  However, theoretical guarantees are very few~\cite{boissonnat2010meshing} and  {\em mesh generation} in high dimensional spaces is still much less developed than its counterpart in low dimensions~\cite{he-gtmg-2001,geometrica-ecg-book}.  
+A first class of problems consists in computing an approximation of a given geometric object. 
+This problem is  well-understood in low dimensions~\cite{he-gtmg-2001,geometrica-bcmrv-ms-06}. 
+ 
+In {\em robotics}, randomized techniques have been proposed to construct graphs that capture the connectivity of configuration spaces and allow to search paths~\cite{sml-pa-2006}. The motions of robots which are redundant, have loops or are subject to kinematics constraints are much more difficult to plan. In engineering and science, {\em dynamical systems} are often formulated as a function that satisfies some set of nonlinear equations, for example, the Navier-Stokes equations, Maxwell's equations, or Newton's law. Computing a  solution in the form of a mesh can be done using
+higher-dimensional continuation method~\cite{mh-mpc-2002}.  However, theoretical guarantees are not given and experiments have only been reported in low dimensions.
 
-In geometric {\em data analysis}, the tenet is that to effectively exploit datasets, one needs to identify, extract and analyze their underlying geometric structure.  In low dimensions, effective {\em reconstruction} techniques exist that can provide faithful approximations of the underlying structures from samples~\cite{dey-csr-2007}. Further processing makes it possible to study their topological and geometric properties. In high dimensions, however, the data often suffers from significant defects, including sparsity, noise, and outliers, violating sampling conditions required by extant methods. The problem is further compounded by the rapid growth in complexity of the data structures used for reconstruction as the dimensionality of the data increases, making them intractable in high dimensions. 
+The situation is similar for manifold reconstruction. The problem is by now well-understood in 3-space~\cite{dey-csr-2007}.  e-sample etc 
+
+
+The last decade has seen tremendous progress in processing high-dimensional shapes and spaces. 
+
+
+
+
+In geometric {\em data analysis}, the tenet is that to effectively exploit datasets, one needs to identify, extract and analyze their underlying geometric structure.  
+
+In low dimensions, effective {\em reconstruction} techniques exist that can provide faithful approximations of the underlying structures from samples~\cite{dey-csr-2007}. Further processing makes it possible to study their topological and geometric properties. In high dimensions, however, the data often suffers from significant defects, including sparsity, noise, and outliers, violating sampling conditions required by extant methods. The problem is further compounded by the rapid growth in complexity of the data structures used for reconstruction as the dimensionality of the data increases, making them intractable in high dimensions. 
 
 
 To face these challenges, researchers have proposed algorithmic tools that can infer some of the properties of the structures underlying the data without full reconstruction. Dimensionality reduction techniques mentionned above have been pretty successful in this vein % : they can infer the intrinsic dimensionality of the data, as well as provide structure-preserving mappings of the data into lower-dimensional spaces when such mappings exist. These techniques however are
@@ -51,7 +75,7 @@ has been very successful in shaping the field and promoting computational geomet
 % Several EC projects (CGAL, GALIA) established an outstanding research momentum and gave a leading role to Europe in this context.  They led to successful techniques and tools, most notably 
 One of the major achievements of the field has been the CGAL library that provides a well-organised, robust and efficient software environment for developing geometric applications~\cite{cgal}. CGAL is by now the standard in geometric computing, with a large diffusion worldwide and varied applications in both academia and industry.  My research group at INRIA took a leading role in the development of CGAL since its start more than 10 years ago. More recently, we seconded our basic research on 3D shape processing by practical developments in the form of fast, safe and quality-guaranteed software components for mesh generation and shape reconstruction.  Those components  are now part of the open source library CGAL  and used worldwide in academia and in industry for various applications in geometric modeling, medical imaging and geology ~\cite{cgal:rty-m3-11}.. The functionalities of CGAL in higher dimensions are quite limited. Besides, only very few prototype software have been developed for geometry understanding in higher dimensions (see http://comptop.stanford.edu/programs/).
 
-\paragraph{Objectives.} 
+\subsection{Objectives} 
 This project is of a {\em fundamental nature} and its main objective is to develop an effective theory of geometry understanding in higher dimensions. To advance the state-of-the-art, we aim at processing general geometries represented as {\em simplicial complexes}. The computational bottleneck will be bypassed by assuming that the objects of interest are of {\em moderate intrinsic} dimension even if embedded in high dimensional spaces. We intend to develop {\em practical algorithms} to mesh or reconstruct highly nonlinear manifolds, and to infer geometric and topological properties from data subject to significant {\em defects} and
  under realistic conditions. A major outcome of the project will be a high-quality open source software {\em platform} of components implementing the main results.
 
@@ -102,7 +126,7 @@ The team members who are directly involved in this proposal are the PI (J-D. Boi
 
 \paragraph{Requested resources: other direct costs.}\mbox{}\\
 -- travel \\
--- hardware : a multicore computer
+-- hardware : a multicore computer 5 KEuros
 
 The rest of the costs consists of eligible indirect costs, at the rate of 20\% of the direct costs. \framebox{?}
 The grand total amounts to ???? Euros over a period of 5 years, as detailed in the table below.
