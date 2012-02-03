@@ -5,81 +5,78 @@ to process and analyze complex shapes in higher dimensions. Given a finite set o
 if $\sigma\subset \tau$ and $\tau\in K$, then $\sigma \in K$.
 %\item if $\tau, \tau'\in K$ and $\sigma = \tau\cap \tau'\neq\emptyset$, then $\sigma\in K$.
 %\end{enumerate}
-A geometric simplicial complex is an abstract simplicial complex together with an embedding that maps each simplex to the convex hull of its vertices. The dimension of a simplicial complex is the maximal dimension of its simplices. % Simplicial complexes have been introduced by Poincar\'e in the early days of algebraic topology. Their importance in low dimensions cannot be overestimated~: 1-dimensional simplicial complexes are just graphs, 2-dimensional simplicial complexes are the standard representations for surfaces in computer graphics and 3-dimensional simplicial complexes are the representation of choice for scientific computing and numerical simulation involving complex shapes. In higher dimensions, simplicial complexes are used to mesh or reconstruct complicated shapes (WP2) and to compute topological properties such as the homology of a shape (WP3). Simplicial complexes are quite flexible. In particular, they do not necessarily fill a full-dimensional domain of the ambient space (possibly huge) but  can adapt to the intrinsic dimension of the shape they represent (presumably small).  Simplicial complexes thus appear as viable data structures to represent shapes in high dimensional spaces, outperforming  grids by orders of magnitude (as a function of the codimension of the shape). 
-%  to the techniques we intend to develop is the construction of simplicial complexes which
-% allow to represent and process complicated shapes of arbitrary dimension and topology.
-% %recent developments have shown that simplicial complexes computed on top of point clouds are primary tools to capture the topology of the underlying space of the data. 
-% %A graph is an example of a 1-dimensional simplicial complex but higher-dimensional simplicial %complexes are required to approximate complicated shapes of arbitrary dimension and topology. 
-%
-% In 3-dimensions, 2 and 3-dimensional simplicial complexes of surfaces and volumes are widely used in graphics, scientific computing and manufacturing. Because of its numerous interesting properties and of the existence of extremely efficient algorithms fot its construction, the Delaunay triangulation has become one of the most famous and widely used geometric data structures, spread out accross all sciences. The algorithms we have implemented in CGAL are among the most reliable and fast algorithms. They have been included in the heart of MATLAB. 
-%
-% The Delaunay triangulation can be defined in any dimension but its complexity grows exponentially with the dimension which makes it useless for real applications beyond say dimension 6~\cite{avis,hornus}.  In order for algorithms and implementations to scale with the dimension, we need to define and compute simplicial complexes that exploit (hidden) structure of the data and to design dimension-sensitive algorithms for their construction.
-%
-% our focus is not on worst-case complexity, but on (provably) good performance under some given structural properties of the input. These properties may be of statistical nature (when we are dealing with noise, for example), or of geometric nature (when data is of low intrinsic dimension, say). Related to this, we are also aiming at output-sensitive algorithms.
+A geometric simplicial complex is an abstract simplicial complex together with an embedding that maps each simplex to the convex hull of its vertices. %The dimension of a simplicial complex is the maximal dimension of its simplices.
+Due to their importance and versatility, a variety of simplicial complexes have been proposed.  Given a finite set of points $P$ and some specified distance $\alpha$, two simplicial complexes are defined in a natural way. Let us call $\alpha$-neighhood of $p\in P$ the ball of radius $\alpha$ that is centered at $p$, and $\alpha$-neighborhood of $P$ the union of all $\alpha$-neighborhoods of $p\in P$.  The \v{C}ech complex is the abstract simplicial complex whose $k$-simplices are the $(k+1)$-uples of points of $P$ whose $\alpha$-neighborhoods have a point of common intersection.  The Rips complex is the abstract complex whose $k$-simplices are the subsets of size $k+1$ of points of $P$ which are {\em pairwise} within distance $2\alpha$. The nerve theorem states that the \v{C}ech complex has the same homotopy type as the $\alpha$-neighborhood of $P$. If $P$ is a sample of some shape $X$ that satisfies some mild density condition and $\alpha$ is well chosen, then the homotopy type of $X$ is the same as the homotopy type of the \v{C}ech complex. This beautiful mathematical result is however of little help in practice since the \v{C}ech complex is of dimension potentially much higher than the dimension of $X$ and extremely difficult to compute in high dimensions since it requires to detect whether a subset of balls of $\R ^d$ intersect. 
 
-%\paragraph{Design of small yet faithfull simplicial complexes.} 
-Due to their importance and versatility, a variety of simplicial complexes have been proposed. A first class of simplicial complexes uses a parameter $\alpha$ which can be used to define a nested sequence of simplicial complexes (called a filtration). Filtrations are an essential ingredient to study the persistence of homology classes (see WP~3).
+The construction of the Rips complex only involves interpoint distance computations and is therefore much  simpler to compute than the \v{C}ech complex. Yet, its size is usually bigger than the size of the \v{C}ech complex and Rips complexes are of an unmanageable size when constructed from real data. 
 
-The \v{C}ech complex is the nerve of the set $B_{\alpha}$ of balls of
-radius $\alpha$ centered at the points of $V$. The nerve of
-$B_{\alpha}$  is a simplicial complex that associates a
-$i$-simplex to any subset of $i+1$ balls that have a common
-intersection. Remarkably, this simplicial
-complex  has the same homotopy type as the $\alpha$-offset (nerve theorem) which allows,  under mild sampling conditions, to compute the homology of the underlying space. However,
-the \v{C}ech complex is in general not embeddable in $\R ^d$. Moreover, it is usually very big and
-difficult to compute since it requires to detect whether a subset of
-balls of  $\R ^d$ intersect. 
+% A first class of simplicial complexes uses a parameter $\alpha$ which can be used to define a nested sequence of simplicial complexes (called a filtration). Filtrations are an essential ingredient to study the persistence of homology classes (see WP~3).
 
-A simpler to compute simplicial complex is the Rips complex whose edges are the same as for the \v{C}ech complex. The higher dimensional simplices of the Rips complex are obtained by computing all the cliques in the graph of the edges. This simplicial complex is much easier to compute than the \v{C}ech complex and it has the remarkable property that it can be constructed in a purely combinatorial way from its 1-skeleton.  Such a simplicial complex is called a {\em flag
-  complex}. Nevertheless, the Rips complex is not embedded in $\R ^d$
-and may have a dimension much higher than the dimension of the underlying structure
-of the data.
+% The \v{C}ech complex is the nerve of the set $B_{\alpha}$ of balls of
+% radius $\alpha$ centered at the points of $V$. The nerve of
+% $B_{\alpha}$  is a simplicial complex that associates a
+% $i$-simplex to any subset of $i+1$ balls that have a common
+% intersection. Remarkably, this simplicial
+% complex  has the same homotopy type as the $\alpha$-offset (nerve theorem) 
+% which allows,  under mild sampling conditions, to compute the homology of the underlying space. However,
+% the \v{C}ech complex is in general not embeddable in $\R ^d$. Moreover, it is usually very big and
 
 
-Various simplicial complexes have been derived from the Delaunay
-triangulation of the vertices. The $\alpha$-complex is the nerve of
-the restriction of the Delaunay triangulation to the union of the
-balls of $B_{\alpha}$. This complex is embedded in $\R^d$ (provided
-that the vertices are in general position) but very difficult to
-compute in high dimensions for the same reason as the \v{C}ech complex.
+% A simpler to compute simplicial complex is the Rips complex whose edges are the same as for the \v{C}ech complex. The higher dimensional simplices of the Rips complex are obtained by computing all the cliques in the graph of the edges. This simplicial complex is much easier to compute than the \v{C}ech complex and it has the remarkable property that it can be constructed in a purely combinatorial way from its 1-skeleton.  Such a simplicial complex is called a {\em flag
+%   complex}. Nevertheless, the Rips complex is not embedded in $\R ^d$
+% and may have a dimension much higher than the dimension of the underlying structure
+% of the data.
 
-Other simplicial complexes derived from the Delaunay triangulation do not involve any parameter, most notably the restricted Delaunay triangulation~\cite{he-gtmg-2001}, the tangential Delaunay complex~\cite{geometrica-7142i} and the witness complex~\cite{cds-tewc-2004}. Those complexes are especially designed for the case where $V$ samples a topological space of small dimension $k$, and are of special interest for meshing and reconstructing manifolds (WP2). Both the restricted and the tangential Delaunay complexes are embedded in $\R^d$, have dimension $k$ (under a mild general position assumption). Still, these simplicial complexes are more difficult to compute 
-than the Rips complex since they do not simply require to compute interpoint distances but also  critical points of the distance function, which involves algebraic operations whose degree depends exponentially on the dimension. Hence, they are  limited to small $k$.
-The witness complex is not subject to this limitation. It is embedded in $\R ^d$ and is remarkably easy to compute in any dimension since the only numerical operations involved in its construction are comparisons of distances. Hence, it can be computed in any discrete metric space as the Rips complex.
 
- Currently no code allows to manipulate simplicial complexes of arbitrary dimension in a routine way as is possible for 2 and 3-dimensional triangulations of $\R ^3$.
+% Various simplicial complexes have been derived from the Delaunay
+% triangulation of the vertices. The $\alpha$-complex is the nerve of
+% the restriction of the Delaunay triangulation to the union of the
+% balls of $B_{\alpha}$. This complex is embedded in $\R^d$ (provided
+% that the vertices are in general position) but very difficult to
+% compute in high dimensions for the same reason as the \v{C}ech complex.
+
+
+
+% Currently no code allows to manipulate simplicial complexes of arbitrary dimension in a routine way as is possible for 2 and 3-dimensional triangulations of $\R ^3$.
 % \cite{springerflo,DBLP:journals/tog/PaoluzziBCF93,svy-crm-99}. 
 
-We identify four main research topics~:
-\begin{enumerate}
-\item Classification of simplicial complexes
-\item Combinatorial and algorithmic complexity 
-\item Compact representation
-\item New types of simplicial complexes
-\end{enumerate}
+% We identify four main research topics~:
+% \begin{enumerate}
+% \item Classification of simplicial complexes
+% \item Combinatorial and algorithmic complexity 
+% \item Compact representation
+% \item New types of simplicial complexes
+% \end{enumerate}
 
-\paragraph{Classification of  simplicial complexes.}
-Some equivalences between the various types of simplicial complexes are known. For example,
-the Rips and the \v{C}ech complexes are identical for the $L_{\infty}$ norm and for the Euclidean norm, we have $ \cech ({\alpha}/{2}) \subset \rips (\alpha) \subset \cech (\alpha)$. Related inclusions % properties have been established for other types of simplicial complexes, which 
-have been shown to be of primary importance to infer the homology of manifolds~\cite{co-tpr-2008}.
-Recently, we have established conditions under which the witness complex, the restricted Delaunay triangulation and the tangential complex are identical~\cite{boissonnat2012stab}. A more complete classification is required to better understand these structures and their properties, and to design
-more efficient algorithms.
+\paragraph{Delaunay-like  simplicial complexes.} 
+Other simplicial complexes have been derived from the Delaunay triangulation with the intent to
+define more tractable simplicial complexes. Let us mention the restricted Delaunay triangulation~\cite{he-gtmg-2001}, the tangential Delaunay complex~\cite{geometrica-7142i} and the witness complex~\cite{cds-tewc-2004}. Both the restricted and the tangential Delaunay complexes are embedded in $\R^d$ and have dimension $k$ (under a mild general position assumption).  Hence, those complexes are especially designed for the case where $V$ samples a topological space of small dimension $k$, and are of special interest for meshing and reconstructing manifolds (WP2).  Still, these simplicial complexes are more delicate to compute 
+than the Rips complex since they do not simply require to compute interpoint distances but also  critical points of the distance function, which involves algebraic operations whose degree depends exponentially on the dimension. Hence, they are  limited to small $k$.
+The witness complex is not subject to this limitation. It is embedded in $\R ^d$ and is remarkably easy to compute in any dimension since the only numerical operations involved in its construction are comparisons of distances. Hence, it can be computed in any discrete metric space as the Rips complex. 
+
+As for the Rips complex, the penalty for its computational simplicity is that it is not clear how the witness complex captures the topology of the sampled manifold. 
+% Some equivalences between the various types of simplicial complexes are known. For example,
+% the Rips and the \v{C}ech complexes are identical for the $L_{\infty}$ norm and for the Euclidean norm, we have $ \cech ({\alpha}/{2}) \subset \rips (\alpha) \subset \cech (\alpha)$. Related inclusions % properties have been established for other types of simplicial complexes, which 
+% have been shown to be of primary importance to infer the homology of manifolds~\cite{co-tpr-2008}.
+We want to study this question and, more generally, understand the various properties of these simplicial complexes as well as their relationships. As a  first step in that direction, we established sufficient and quite strong conditions under which the witness complex, the restricted Delaunay triangulation and the tangential complex are identical~\cite{boissonnat2012stab}. 
+
+\paragraph{Non euclidean metric.}
+Among the simplicial complexes discussed above, only the Rips and the witness complexes can be constructed on a discrete metric space where only the distances between points are known. 
+Replacing the Euclidean distance in the embedding space by the geodesic distance on the object of interest results in smaller Rips complexes while keeping good approximation properties~\cite{dl-clt-2009}. We intend to study Delaunay-like simplicial complexes in the context of Riemaniann geometry. 
+As mentionned above, Delaunay-like simplicial complexes are more complicated to compute. Replacing the Euclidean distance by  the geodesic distance would lead to intrinsic Delaunay simplicial complexes. First encouraging results in this direction can be found in our work on anisotropic triangulations~\cite{bwy-luam-08} and on our recent work \cite{boissonnat2012stab}. 
 
 
+We also intend to extend to Denaulay-like simplicial complexes where the metric is replaced by a divergence measure such as the Bregman divergence or other information theoretic distortion measure which are not true distances and, in particular, are not symmetric nor satisfy the triangular inequality.
 
 
 \paragraph{Combinatorial and algorithmic complexity.}
-A main limitation to the use of simplicial complexes is their combinatorial and algorithmic complexity.  Differently from polytopes, very few results are known. The flag random complex is a noticeable exception~\cite{CambridgeJournals:2077252}. Other types of random abstract complexes as well as geometric simplicial complexes have to be studied from a combinatorial point of view. An especially important question is to obtain complexity bounds for simplicial complexes of well sampled substructures (e.g. submanifolds).  We intend to measure the effect of perturbations (either noise or computed perturbations) on the mathematical properties and combinatorial complexity of those structures, and to develop probabilistic analyses. In addition to their combinatorial complexity, the complexity of algorithms that construct the simplicial complexes is to be precisely analyzed under realistic models. In particular expected complexity and output-sensitive complexity will performed in addition to worst-case analysis. Due to the potential huge size of simplicial complexes, parallel and out-of-core algorithms will also be developed.
+A main limitation to the use of simplicial complexes is their combinatorial and algorithmic complexity.  Differently from polytopes, very few results are known. The flag random complex is a noticeable exception~\cite{CambridgeJournals:2077252}. Other types of random abstract complexes as well as geometric simplicial complexes have to be studied from a combinatorial point of view. An especially important question is to obtain complexity bounds for simplicial complexes of well sampled substructures (e.g. submanifolds).  We intend to measure the effect of perturbations (either noise or computed perturbations) on the mathematical properties and combinatorial complexity of those structures, and to develop probabilistic analyses. In addition to their combinatorial complexity, the complexity of algorithms that construct the simplicial complexes is to be precisely analyzed under realistic models. In particular expected complexity and output-sensitive complexity will performed in addition to worst-case analysis. Due to the potential huge size of simplicial complexes, parallel and out-of-core algorithms will also be developed. Efficient algorithms to simplify simplicial complexes while preserving some properties such as their topological type will also be searched.
 
 
-\paragraph{Compact representation of simplicial complexes.} We are aware of only a few works on the design of data structures for general simplicial complexes. Brisson~\cite{Brisson:1989:RGS:73833.73858} and Lienhardt~\cite{DBLP:journals/ijcga/Lienhardt94} have introduced data structures to represent $d$-dimensional cell complexes, most notably subdivided manifolds. While those data structures have nice algebraic properties, they are very redundant and do not scale to large data sets or high dimensions. More recently, Attali et al.~\cite{Attali2011} have proposed an efficient data structure to represent and simplify flag complexes, a special family of simplicial complexes including the Rips complex.  Recently, we have experimented with a tree representation for general simplicial complexes that seems to outperform previous solutions. Simplicial complexes of 500 millions of simplices have been constructed and stored on a laptop~\cite{bm-dssc-2012}.  Theoretical guarantees and experiments on a large scale are mandatory. In addition, more compact storage could be further obtained by using succinct representations of trees and graphs~\cite{Munro:2002:SRB:586840.586885,Ferragina:2005:SLT:1097112.1097456}. The problem of finding minimal representations of simplicial complexes is widely open beyond the planar case.
+\paragraph{Compact representation of simplicial complexes.} We are aware of only a few works on the design of data structures for general simplicial complexes. Brisson~\cite{Brisson:1989:RGS:73833.73858} and Lienhardt~\cite{DBLP:journals/ijcga/Lienhardt94} have introduced data structures to represent $d$-dimensional cell complexes, most notably subdivided manifolds. While those data structures have nice algebraic properties, they are very redundant and do not scale to large data sets or high dimensions. More recently, Attali et al.~\cite{Attali2011} have proposed an efficient data structure to represent and simplify flag complexes, a special family of simplicial complexes including the Rips complex.  We intend to develop a tree representation for general simplicial complexes.  Recently, we have experimented with such a data structure
+ that seems to outperform previous solutions. Simplicial complexes of 500 millions of simplices have been constructed and stored on a laptop~\cite{bm-dssc-2012}.  Theoretical guarantees and experiments on a large scale are mandatory. In addition, more compact storage could be further obtained by using succinct representations of trees and graphs~\cite{Ferragina:2005:SLT:1097112.1097456,Munro:2002:SRB:586840.586885}. The problem of finding minimal representations of simplicial complexes is widely open beyond the planar case. 
 
 
-\paragraph{New types of simplicial complexes.}
-Among the simplicial complexes discussed above, only the Rips and the witness complexes can be constructed on a discrete metric space where only the distances between points are known. 
-Replacing the Euclidean distance in the embedding space by the geodesic distance on the object of interest would result in smaller complexes while still keeping good approximation properties~\cite{dl-clt-2009}.
-As mentionned above, Delaunay-like simplicial complexes are more complicated to compute. Replacing the Euclidean distance by  the geodesic distance would lead to intrinsic Delaunay simplicial complexes. First encouraging results in this direction can be found in \cite{bwy-luam-08,boissonnat2012stab}. Other distance functions are also of interest.
-\framebox{which ones?}
 
 
 
