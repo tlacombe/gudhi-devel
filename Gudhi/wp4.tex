@@ -1,172 +1,176 @@
 
-\subsection*{WP4 : A software platform for geometric understanding in high
+\subsection*{WP4 : A software platform for geometry understanding in high
   dimension}
+\framebox{software environment, software medium?}
 
-We intend to develop an open source  software platform that will provide a
-comprehensive and robust set of tools for geometric understanding in
-high
-dimension. 
+We intend to develop an open source software platform of highest
+quality % that will provide a comprehensive \framebox{sure?} and robust
+% set of tools
+for geometric understanding in high dimension.  The goal
+is not to provide code for the numerous potential applications but
+rather to provide the central data structures and algorithms that
+underly any application in geometry understanding in higher
+dimensions.
 
-\paragraph{The need for a software platform.}
-On one hand, we perceive the development of such a platform as 
-an absolute necessity to serve as a test bench and  evaluation process
-for any new algorithmic solution resulting  from  our theoretical work.
-On the other hand, we perceive the development of such a platform as
-a full research work. Indeed we are convinced that, as robustness
-issues triggered the development of a whole branch of theoretical
-work, known as Geometric Computing, the need for
-highly efficient implementations to walk around the curse of  
-dimensionality,  will participate in the emergence of relevant
-concepts for new algorithmic foundations
-of  geometric understanding in high dimension.
-
-
-The term platform means that we intend to capitalize upon development
-efforts and encourage contributions from researchers external to the
-project.  At the end of this project, the platform will offer a
-comprehensive and robust set of algorithmic tools for geometry
-processing and analysis in higher dimensional spaces.
-
-We also think about this platform as the choice
-vector for the diffusion of our algorithmic solutions 
-into application domains, such as astrophysics
-or structural biology) 
- where the need for handling high dimensional
-data crucially arises.  Such a diffusion in various fields
- will in turn provide for various bench set data 
-and user feedback.
-
-
-
-\paragraph{State of the art.}  
-Leaving aside the flourishing field of machine learning
-and well-known successful software for linear algebra,
-linear and quadratic optimization,  only  few implementations handle
-geometry in high dimension. 
-Most of those software use multiscale  grids based
-data structures that somehow adapt
- to the local  density of data.
-A typical example is the popular ANN software to compute  the approximate
-nearest-neighbor of a query point
-among a  high dimensional point cloud. 
-Qhull is a software that can compute convex hulls and Delaunay
-triangulations in dimensions larger than 3, but it doesn't see much
-development anymore, and as the authors prominently announce on the
-webpage: ``Qhull does not support triangulation of non-convex surfaces,
-mesh generation of non-convex objects, medium-sized inputs in 9-D and
-higher, alpha shapes''. The polymake framework has many features,
-it can handle several types of complexes, build Voronoi diagrams and
-compute advanced topological characteristics of objects like a finite
-representation of the fundamental group. However, it is strongly
-oriented towards an interactive use for mathematical experimentation on
-a given object and not automated, fast and robust data processing.
-% C'est l'impression que j'en ai apres avoir un peu surfe sur differents
-% sites, mais je n'ai pas une confiance absolue dans ce que je dis
-% ci-dessus.
-Only two implementations of persistent homology algorithms are
-currently available. One of them is the PLEX package for Matlab,
-developed by the Computational Topology group at Stanford University.
-The other one is the
-library Dionysus proposed by Dmitriy Morozov. These implementations
-%do not propose parallel nor out-of-core versions. They 
-are known to be
-successful in small dimensions but inefficient as soon as the
-dimension rises.  Their  maintenance, only assumed by the very few authors
-is likely not to be perennial.
-
+The development of such a
+platform will necessitate a full research work on architecture and
+interface design, heuristics and fine-tuning optimization, robustness
+and arithmetics issues. It will also serve to benchmark and optimize any
+new algorithmic solution resulting from our theoretical work. 
+%
+% \paragraph{The need for a software platform.}
+% On one hand, we perceive the development of such a platform as 
+% an absolute necessity to serve as a test bench and  evaluation process
+% for any new algorithmic solution resulting  from  our theoretical work.
+% On the other hand, we perceive the development of such a platform as
+% a full research work. Indeed we are convinced that, as robustness
+% issues triggered the development of a whole branch of theoretical
+% work, known as Geometric Computing, the need for
+% highly efficient implementations to walk around the curse of  
+% dimensionality,  will participate in the emergence of relevant
+% concepts for new algorithmic foundations
+% of  geometric understanding in high dimension.
+%
+% The term platform means that we intend to capitalize upon development
+% efforts and encourage contributions from researchers external to the
+% project.  At the end of this project, the platform will offer a
+% comprehensive and robust set of algorithmic tools for geometry
+% processing and analysis in higher dimensional spaces.
+%
+% We also think about this platform as the choice
+% vector for the diffusion of our algorithmic solutions 
+% into application domains, such as astrophysics
+% or structural biology) 
+%  where the need for handling high dimensional
+% data crucially arises.  Such a diffusion in various fields
+%  will in turn provide for various bench set data 
+% and user feedback.
+%
+% \paragraph{State of the art.}  
+% Leaving aside the flourishing field of machine learning
+% and well-known successful software for linear algebra,
+% linear and quadratic optimization,  only  few implementations handle
+% geometry in high dimension. 
+% Most of those software use multiscale  grids based
+% data structures that somehow adapt
+%  to the local  density of data.
+% A typical example is the popular ANN software to compute  the approximate
+% nearest-neighbor of a query point
+% among a  high dimensional point cloud. 
+% Qhull is a software that can compute convex hulls and Delaunay
+% triangulations in dimensions larger than 3, but it doesn't see much
+% development anymore, and as the authors prominently announce on the
+% webpage: ``Qhull does not support triangulation of non-convex surfaces,
+% mesh generation of non-convex objects, medium-sized inputs in 9-D and
+% higher, alpha shapes''. The polymake framework has many features,
+% it can handle several types of complexes, build Voronoi diagrams and
+% compute advanced topological characteristics of objects like a finite
+% representation of the fundamental group. However, it is strongly
+% oriented towards an interactive use for mathematical experimentation on
+% a given object and not automated, fast and robust data processing.
+% % C'est l'impression que j'en ai apres avoir un peu surfe sur differents
+% % sites, mais je n'ai pas une confiance absolue dans ce que je dis
+% % ci-dessus.
+% Only two implementations of persistent homology algorithms are
+% currently available. One of them is the PLEX package for Matlab,
+% developed by the Computational Topology group at Stanford University.
+% The other one is the
+% library Dionysus proposed by Dmitriy Morozov. These implementations
+% %do not propose parallel nor out-of-core versions. They 
+% are known to be
+% successful in small dimensions but inefficient as soon as the
+% dimension rises.  Their  maintenance, only assumed by the very few authors
+% is likely not to be perennial.
+%
 %\framebox{Continuation methods : Multifario http://www.research.ibm.com/people/h/henderson/Continuation/ContinuationMethods.html}
+%
+%
+% %\paragraph{Methodology.} 
+% Two key requirements in the development of this platform will be
+% efficiency and theoretical guarantees, including handling of
+% robustness issues.
+We aim at providing  a full programming environment
+% % A common
+% % platform is ideal for these goals, as it allows for more
+% % resources to be poured into 
+% the optimization, bug-fixing and interface
+% design than for a single prototype.
+% as well as the appropriate infrastructure. This includes a
+% comprehensive documentation, a web site, a bug report mechanism and
+% communication channels towards developers inside and outside the Gudhi
+% project (mailing lists, developer workshops, etc.).
+%
+%We intend to apply to the development of this software platform the
+following the very recipes that made up the success story of the CGAL
+library.  
+
+An important aspect of the work is also to educate students and young
+researchers and to offer them a multidisciplinary expertise covering
+the mathematical, algorithmic and implementation aspects of the subject.
+
+\paragraph{Architecture design.}
+
+\paragraph{Data structures.}
+The software platform will provide tools to extract from clouds of
+points the simplicial complexes that are relevant for geometric
+understanding, Rips, tangential Delaunay and witness complexes to
+begin with.  The platform will provide efficient implementation of
+data structures to represent those complexes. In
+particular, the compact data structures developed in WP1 will be fully
+tested and benchmarked against other representations.
+
+\paragraph{Basic algorithms.}
+The platform will offer a well chosen set of basic algorithms at the
+heart of geometry understanding in higher dimensions. It will 
+include in particular algorithms to
+{\em sample},  {\em mesh} and {\em  reconstruct manifolds}, 
+ compute the {\em persistent homology} of simplicial complex filtrations,
+{\em cluster data}, compute {\em signatures of shapes}. It will also
+provide some visualization tools.
 
 
-\paragraph{Methodology.} 
-Two key requirements in the development of this platform will be
-efficiency and theoretical guarantees, including handling of
-robustness issues. A common
-platform is ideal for these goals, as it allows for more
-resources to be poured into the optimization, bug-fixing and interface
-design than for a single prototype.
-
- We intend to apply to the development of this software platform 
-the very  recipes that made up the success story
-of the CGAL library. 
-The development work will be based on a strong infrastructure
-including a web site, a svn repository and  daily running of testsuites on several  hardware architectures.
-Above all we will set up  an editorial board assuming a  serious review of the 
-specifications of packages proposed for inclusion in the platform.
-We forecast that the platform will reach a sufficient critical mass
-to be of interest for a large community of researchers in
-computational geometry and neighboring applicative fields,
-which in turn will ensure the long range perennial maintenance
-of the software.
-
-
-
-\paragraph{Planned developments} 
-\begin{itemize}
-\item The software platform will provide tools to extract from clouds of points the
-simplicial complexes that are relevant for geometric understanding,
-Rips, tangential Delaunay  and witness complexes to begin with. 
-\item The platform will provide efficient data structures to handle those
-complexes. We will in particular  focus on parsimonious data
-structures, aiming for a partially implicit representation of those simplicial
-complexes, thus avoiding the full space cost entailed by the curse of
-dimensionality. 
-\item The platform is meant to offer state of the art algorithmic tools for geometric
-understanding,
-including in particular algorithms to
-\begin{itemize}
-\item  mesh or reconstruct manifolds
-\item  compute the persistent homology of a simplicial complex filtration 
-\item cluster data
-\item compute signatures of shapes
-\item visualization tools \framebox{?}
-\end{itemize}
-\item The platform will aim at providing parallel implementations as well
+The platform will aim at providing parallel implementations as well
 as out-of-core versions whenever possible to make possible the
 handling of huge data sets in high dimensions.
-\end{itemize}
 
-\framebox{Datasets}
+\paragraph{Applications.}
+Although the Gudhi project is of a fundamental nature, our approach
+and, in particular the software platform, will be used in prototype
+applications.  This will validate our approach and tools, and bring
+novel methodologies to some critical applications. We have established
+contacts with researchers in computer vision, medical imaging,
+structural biology and dynamical systems with whom we will
+collaborate. 
 
-\framebox{Diffusion}
- Based on our experience with CGAL, we will undertake a vigorous action towards code diffusion in applied domains.
+\paragraph{Datasets.}
+To benchmark our algorithms, it is important to dispose of datasets
+that are representative of realistic tasks. Some datasets exist in the
+machine learning community (e.g. http://archive.ics.uci.edu/ml/), in
+the computer vision (...), in molecular biology
+(http://www.cs.otago.ac.nz/staff/Shawn\_Martin). We will create a
+public repository for new  datasets, including synthetic datasets with controlled
+parameters. Providing easy access to such data sets is an important service to the
+research community of geometry understanding in higher dimensions and 
+will help building a standard for benchmarking algorithms in the field.
 
-%  It will namely include tools to extract from
-% point clouds various simplicial complexes and filtrations,
-%  like Rips, Cech or witness
-% complexes, that are relavant for data analysis and topological feature
-% extraction. It will provide data structures to handle those simplicial
-% complexes.
-% We will focus on parsimonious data structures that will contribute
-% to turn around the curse of dimensionality. Particularly promising
-% are data structure involving a  partial implicit representation of those simplicial
-% complexes. The platform will also offer 
-% robust and efficient implementations for persistent homology algorithms
-% and other state of the art algorithms arising from
-% work in this ERC and from neighboring groups. 
 
-% \thispagestyle{empty}
-% \pagestyle{myheadings}
-% \markboth{\tcg{Titre ou acronyme de l'ADT}}{\tcg{Titre ou acronyme de l'ADT}}
+\paragraph{Infrastructure and diffusion.}
+The development infrastructure will include a web site, a
+comprehensive documentation, a svn repository, and daily running of
+testsuites on several hardware architectures.  We will set up an
+editorial board to be in charge of the review of new packages
+submitted for inclusion in the platform.  One strategic goal is to
+give to the platform sufficient momentum so that it will be attract
+interest of a large community of researchers in computational geometry
+and various applicative fields, and serve as a standard for
+experimental research. This is important for the development of new
+tools as well as for the perennial maintenance of the software. In
+addition to a vigorous effort towards code diffusion, we will set up
+appropriate communication channels towards developers inside and
+outside the Gudhi project, including mailing lists, developer
+workshops, publications and talks at conferences in applied domains.
 
-% %\renewcommand{\thefootnote}{\fnsymbol{footnote}}
-% %\setcounter{footnote}{1}
-% %\renewcommand{\thefootnote}{\arabic{footnote}}
-% %\setcounter{footnote}{0}
 
-% \begin{center}
-% {\LARGE\bf
-% \tcg{Titre de l'ADT\footnote{
-% Tout ce qui est en \tcg{vert} explique ce qui est attendu et est \`a remplacer
-% par le texte appropri\'e \`a votre ADT. {\bf Merci d'enlever tout le \tcg{vert} au
-% moment de la soumission.}
-% }
-% }}\\[1ex]
-% \Large\bf
-% Campagne ADT 2012\\
-% \end{center}
-
-% \renewcommand{\thefootnote}{\arabic{footnote}}
-% %\setcounter{footnote}{0}
 
 
 
