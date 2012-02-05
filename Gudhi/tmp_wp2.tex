@@ -1,0 +1,77 @@
+% -*- LaTeX -*-
+%
+% 20120205
+%
+
+
+% intrinsic Dts
+%
+
+The Delaunay paradigm has proven to be central to the development and
+understanding of meshing algorithms, whether the domain of interst is
+a full dimensional subset of $\rdee$, or a more general manifold. In
+order strengthen the theoretical foundations of anisotropic meshing of
+Euclidean domains, and of meshing general Riemannian manifolds, we
+believe it is important to develop a deeper understanding of the
+Delaunay complex defined by a Riemannian metric. 
+
+We now know that sampling conditions exist which can guarantee that
+the intrinsic Delaunay complex is a triangulation of a compact
+manifold, and that these conditions depend not just on the sampling
+density, but also on a genericity condition. However, these conditions
+have only been developed with respect to extrinsic criteria, when the
+manifold is supposed to be embedded in $\rdee$. Specifically, the
+sampling density condition relates extrinsic distances to the
+\emph{reach} of the manifold, a quantity that has no meaning in an
+intrinsic context, and the genericity condition relies on an
+orthogonal projection onto the tangent space. 
+
+We aim to develop purely intrinsic sampling criteria. We have shown
+that if the Delaunay balls are sufficiently \emph{protected}, with
+respect to the Euclidean metric, then locally the Delaunay
+triangulation will be the same if the Riemenannian metric is close to
+the Euclidean one, where the closeness is defined with respect to the
+scale of the sampling. This means in particular that the intrinsic
+Delaunay triangulation is locally a triangulation. However, the result
+does not hold if we instead define the protection directly in terms of
+the intrinsic Riemannian metric. It is a significant gap in our
+understanding that we cannot express the required genericity condition
+in terms of the intrinsic metric. It makes the required sampling
+condtions awkward, and it unnaturally constrains our sampling density
+requirements: we would require that the density is bounded with
+respect to the absolute value of the sectional curvatures (in order to
+obtain small metric distortion between local Euclidean metrics),
+whereas we expect that a sampling density bounded by the strong
+convexity radius should be possible.
+
+After establishing the local criteria we need for correctness, we will
+demonstrate that the resulting simplicial complex is homeomorphic to
+the manifold. For this we cannot use the established techniques
+developed for embedded manifolds, nor arguments based on the Voronoi
+diagram itself, since the genericity criteria do not imply that the
+closed ball property will be met. Instead we will build from techniques
+described by Munkres and Cheeger. The resulting homeomorphism theorem
+should be general enough to be used in other contexts.
+
+Finally, we will develop a meshing algorithm based on these
+results. This will likely use ideas from controlled perturbation, as
+well as the witness complex. The intrinsic Delaunay triangulation is
+an abstract simplicial complex. In order to turn it into a mesh, we
+need to endow the simplices with a Euclidean structure. The obvious
+thing to do is to give the edges the lengths of the geodesics between
+the corresponding vertices. We will need to establish that our
+genericity conditions are sufficient to ensure that the Cayley-Menger
+determinant of the resulting simplices is positive, and thus that the
+edge lengths do describe well-defined Euclidean simplices.
+
+
+% witness cplx algoritms
+%
+
+evaluation of a polynomial of degree $m$, vs distance comparisons
+
+
+
+
+
+% sparse sampling
