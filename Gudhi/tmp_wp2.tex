@@ -68,10 +68,80 @@ edge lengths do describe well-defined Euclidean simplices.
 % witness cplx algoritms
 %
 
-evaluation of a polynomial of degree $m$, vs distance comparisons
+For the construction of Delaunay-type structures, the witness complex
+has appeal because the complex is built from only a subset of the
+sample points, and the required geometric predicates involve only
+distance comparisons, rather than the evaluation of polynomials whose
+degree depends on the dimension of the space. 
 
+However, a more careful argument is required if we are to establish
+that either of these points represent a true benefit. For
+triangulating manifolds, the sampling density of the \emph{landmarks}
+will be required to be at least as high as the required sampling
+density for other Delaunay based triangulation methods. So the fact
+that only a subset of the points need be chosen, is more a reflection
+that an extremely dense set of witnesses is required.
 
+This leads to the other point: The geometric predicate in the Delaunay
+triangulation is a determinant, a polynomial whose degree depends on
+the dimension of the space. This must be evaluated every time a
+simplex is selected for consideration. So how many times is that in a
+randomized incremental Delaunay construction? By contrast the witness
+complex only requires comparisons of distances, but how many times?
 
+We have established that if the landmarks are chosen such that they
+are $\delta$-generic, then there is a sampling density for the
+witnesses that guarantees that every Delaunay simplex must be
+witnessed. If the efficiency of construction is the primary motivation
+for the witness complex in the context of manifold reconstruction from
+dense point clouds, then this efficiency should be demonstrable in the
+context of constructing Delaunay triangulations of Euclidean domains.
 
+Specifically, given a set $\pts \subset \rdee$, satisfying a sampling
+radius of $\epsilon$, we can describe a
+controlled perturbation implementation of a randomized incremental
+Delaunay triangulation algorithm, that will guarantee that the output
+is a $\delta$-generic Delaunay triangulation of a point set
+$\tilde{\pts}$ that is $\eta$-close to $\pts$ in the Hausdorff sense,
+for some very small $\eta$. 
+
+So the question is: can it possibly be more efficient to construct
+this same complex $\text{Del}(\tilde{\pts}}$ as a witness complex. We
+know that for a sufficient density of witnesses, the witness complex
+and the Delaunay complex will coincide. The witnesses can be supposed
+to lie on cartesian grid points, for a sufficiently fine grid. Will
+the number of distance comparisons required scale favorably with the
+number of operations required for the incremental Delaunay
+triangulation algorithm?
+
+If this can be competitive, this algorithm can presumably be adapted
+to the case of manifold reconstruction.
 
 % sparse sampling
+%
+
+The reconstruction algorithms we consider require a sampling density
+so extreme, that they might be better considered to be meshing
+algorithms: the required point cloud needs to be sufficiently dense
+that it can already be considered to be a representation of the
+manifold.
+
+In practice, we will wish to reconstruct manifolds from input point
+sets that are so sparse that homeomorphism guarantees will be
+impossible without additional prior knowledge of the unknown
+manifold. 
+
+This points to two research directions. First, is there a reasonable
+set of priors that can allow us to recover homeomorphism guarantees
+for much looser conditions on the sampling? In other words, can we
+find a restricted class of Riemannian manifolds, that are
+representative of many applications, but for which it is much easier
+to distinguish between the isometry classes?
+
+Second, in the absence of such restrictive assumpions on the input
+manifold, can we establish alternative quantative quality measures for
+the approximation quality of the output reconstruction that are still
+informative? Estimates of the homology groups of the manifold is one
+direction that has been taken, although it is not entirely clear that
+the required sampling conditions are significantly less
+restrictive. Ideas based on mass-transport appear interesting.
