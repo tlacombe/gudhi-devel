@@ -1,33 +1,33 @@
 \section{Extended synopsis of the project}
 
-\paragraph{The need to understand higher-dimensional spaces and shapes}
-% 3D shapes are now ubiquitous and there is no need to motivate 
-%  % with applications ranging from numerical simulations, visualization, reverse engineering, and in so many fields
-% % medical imaging, cultural heritage, 
-% that it may be considered strange that the huge amount of techniques developed for modeling 3D
-% shapes has not yet found extensions to higher dimensions. This project is built on the conviction that it is time to remedy to this state of affairs.
+% \paragraph{The need to understand higher-dimensional spaces and shapes}
+% is ubiquitous in science.  Physicists are used to combining space and time into a single 4-dimensional {\em space-time} continuum.  In particle physics, the {\em phase space} consists of all possible values of position and momentum variables and is $6N$-dimensional.  {\em Configuration spaces} of mechanical systems, {\em conformational spaces} of macromolecules are other examples of common high-dimensional geometric objects.  Other examples can be found in the analysis of  dynamical systems. Although their needs may be very different, scientific computing, motion planning, molecular docking are among celebrated applications where approximating and processing high-dimensional objects is a central issue. 
 
-% Geometric modeling refers to the construction and the manipulation of computerized representations of shapes. Since shape is the first and foremost attribute of 
-% our familiar 3D world, geometric modeling has been and still is a core discipline with a vast array of applications ranging from multimedia to engineering through computer-aided medicine. It has been  on the research agenda of several communities like  computer-aided design, computer graphics, computer vision, computational geometry, geometry processing and numerical analysis.
+% A maybe less intuitive place where one needs to understand  high-dimensional geometry is in {\em data analysis}. Natural and artificial systems like biological or sensor networks are often described by a large number of real parameters; a collection of text documents can be represented as a set of term frequency vectors in Euclidean space; similar interpretations can be given for image and video data~\cite{sl-mwp-2000}.  Data analysis can then be turned into a geometric problem by encoding those heterogeneous data as clouds of points in high dimensional spaces equipped with some appropriate metric. Usually those points are not distributed in the whole embedding space but, due to the very nature of the system that produced those data, lie close to some subset of much smaller intrinsic dimension. Hence, the data conveys some geometric structure whose extraction and analysis are key to understanding the underlying system.
+% Since data are produced at an unprecedented rate in all sciences, 
+% %modeling complex high-dimensional shapes and extracting geometric information from point clouds in high-dimensional spaces have become core tasks in science and engineering. 
+% understanding the geometry of high-dimensional point clouds has become a core task in science and engineering. 
 
-% Until now, most of the work on geometric modeling has been restricted to 3D shapes. However, 
-%The need to represent higher-dimensional spaces and shapes 
-is ubiquitous in science.  Physicists are used to combining space and time into a single 4-dimensional {\em space-time} continuum.  In particle physics, the {\em phase space} consists of all possible values of position and momentum variables and is $6N$-dimensional.  {\em Configuration spaces} of mechanical systems, {\em conformational spaces} of macromolecules are other examples of common high-dimensional geometric objects.  Other examples can be found in the analysis of  dynamical systems. Although their needs may be very different, scientific computing, motion planning, molecular docking are among celebrated applications where approximating and processing high-dimensional objects is a central issue. 
+\paragraph{Understanding higher-dimensional spaces and shapes.} 
+The need to approximate, process and analyze the geometry of objects, which we refer to as {\em geometry understanding}, is ubiquitous in science and has become an essential part of scientific computing and data analysis. Geometry understanding is by no means limited to 3-dimensions and many applications in physics, robotics, biology and engineering require a keen understanding of  the geometry of a variety of  higher dimensional spaces. Let us mention phase space in particle physics, invariant manifolds in dynamical systems, configuration spaces of mechanical systems,
+ conformational spaces of molecules, images manifolds, to name a few. 
 
-A maybe less intuitive place where one needs to understand  high-dimensional geometry is in {\em data analysis}. Natural and artificial systems like biological or sensor networks are often described by a large number of real parameters; a collection of text documents can be represented as a set of term frequency vectors in Euclidean space; similar interpretations can be given for image and video data~\cite{sl-mwp-2000}.  Data analysis can then be turned into a geometric problem by encoding those heterogeneous data as clouds of points in high dimensional spaces equipped with some appropriate metric. Usually those points are not distributed in the whole embedding space but, due to the very nature of the system that produced those data, lie close to some subset of much smaller intrinsic dimension. Hence, the data conveys some geometric structure whose extraction and analysis are key to understanding the underlying system.
-Since data are produced at an unprecedented rate in all sciences, 
-%modeling complex high-dimensional shapes and extracting geometric information from point clouds in high-dimensional spaces have become core tasks in science and engineering. 
-understanding the geometry of high-dimensional point clouds has become a core task in science and engineering. 
+Let us single out a paradigmatic example~: understanding energy landscapes, which is a major challenge in chemistry and biology.  Despite a lot of efforts and a wide variety of approaches, little is understood about the actual mathematical structures underlying such landscapes. The case of cyclo-octane $C_8H_{16}$, a cyclic alkane used in manufacture of plastics, is instructive. This relatively simple molecule has been studied in chemistry for over 40 years but it is only very recently that its conformational space has only been fully understood. By analyzing a dataset of 1M points in $\R^{72}$, each describing a cyclo-octane conformation, it has been shown that the conformation space of cyclo-octane is a multi-sheeted surface composed of a sphere and a Klein bottle, intersecting in two rings~\cite{}. Unveiling such an unexpected geometry is a far reaching discovery of theoretical and practical significance, leading to new approaches and more efficient algorithms in molecular simulation.  The next scientific challenge is to extend such a result to large molecules, in particular proteins. The crux is to dispose of efficient geometric data structures and algorithms to make this challenge a reality. This is the overall goal of this proposal.
+
+\framebox{other example}
 
 
 \paragraph{The curses of higher-dimensional geometry.} 
+Many difficulties have to be faced when processing and analyzing
+high-dimensional geometries. First, the dimensionality severely restricts our intuition and ability to visualize the data. Hence,  understanding higher dimensional shapes must rely on automated and certified tools able to robustly extract useful qualitative and quantitative information from the input high-dimensional data. 
 
-High-dimensional geometries are much more difficult to process and analyse than 3D shapes. The dimensionality severely restricts our intuition and ability to visualize the data. Hence  understanding higher dimensional shapes must rely on automated tools able to extract useful qualitative and quantitative information from the input high-dimensional data.
-
-Moreover, the complexity of the data structures and of the algorithms used to  approximate shapes  rapidly grows as the dimensionality increases, which makes them intractable in high dimensions.  This curse of {\em dimensionality} is exemplified by the size of one of the simplest representations of a point set, namely its convex hull, whose complexity depends exponentially on the dimension. 
+Moreover, the complexity of the data structures and of the algorithms used to  approximate shapes  rapidly grows as the dimensionality increases, which makes them intractable in high dimensions.  This phenomenon, known as the curse of {\em dimensionality}, 
+is exemplified by the size of one of the simplest representations of a point set, namely its convex hull, whose complexity depends exponentially on the dimension. 
 %last sentence can be removed
 
 In addition, high-dimensional data often suffer from significant {\em defects}, including sparsity, noise, and outliers  which make them much more difficult to process than the 3D data routinely provided by scanning devices. This is particularly so in the case of biological data, such as high throughput data from microarray or other sources. Moreover, the structure and occurrence of geometric features in the data may depend on the {\em scale} at which it is considered, thus requiring the analysis process to be multiscale.  
+
+These issues have been considered in the statistical community but not so much in a geometric framework. In the cyclo-octane example mentionned above, the algorithm was limited to 2-dimensional surfaces and, according to the authors, the algorithm ``offers no theoretical guarantees of accuracy or correctness'' and dataset error and unusual distribution of data were not considered.
 
 \paragraph{The emergence of computational topology.}
 The last decade has seen tremendous progress in  the understanding of geometry in high-dimensional spaces. In robotics~\cite{sml-pa-2006}, randomized techniques have been proposed to capture the topology of configuration spaces and to search paths. In signal and image processing, and in machine learning, a variety of techniques have been proposed to reduce the dimension of data, learn nonlinear manifolds and cluster data~\cite{hs-fmmds-2006}. % In computational geometry, new approaches have been proposed to solve basic problems like searching nearest neighbours, computing smallest enclosing ellipsoids or approximating convex sets~\cite{hp-gaa-2011}.
@@ -50,7 +50,7 @@ attracted  interest in several fields like data analysis, computer vision and se
 % This project is intended to remedy to this situation by proposing  a long-standing alliance between mathematical developments, algorithmic design and advanced programming.
 
 
-However, the current theory has not demonstrated its scalability to real problems and, up to now, it has only been applied to rather simple cases and in low dimensions. This is  due to the lack of satisfactory algorithmic solutions in high-dimensional spaces.
+However, the current theory has not demonstrated its scalability to real problems and, up to now, it has only been applied to rather simple cases and in low dimensions such as the $C_8H_{16}$ example. This is  due to the lack of satisfactory algorithmic solutions in high-dimensional spaces.
 Breaking the computational bottleneck is now the main issue.  Settling the {\em algorithmic foundations} of geometry understanding in
 higher dimensions
 %al geometric modeling 
