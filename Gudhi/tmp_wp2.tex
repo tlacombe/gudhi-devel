@@ -4,6 +4,189 @@
 %
 
 
+
+% -*- LaTeX -*-
+% wp1.tex
+%
+
+
+\section*{OLD WP2: Triangulation of non Euclidean geometric spaces}
+
+We aim to construct simplicial complexes to represent
+geometric spaces of interest. As an example of a space of interest we
+can consider a model for the space of possible valid data points for a
+system which produces data with a much higher apparent dimension than
+the number of degrees of freedom  the system provides. Thus we are
+considering a space of much lower intrinsic dimension than the ambient
+Euclidean space which implicitly hosts the data. It is hoped that the
+space of interest can be modeled as a manifold, or at least may be
+decomposed into manifold parts. 
+
+The appropriate simplicial representation will depend on the geometric
+or topological information that is of interest in the model geometric
+structure. For the purposes of meshing or reconstruction, we want to
+build complexes of the same dimension as the model space and which
+accurately approximate the topology and geometry. In this context
+Delaunay-like complexes have proven effective in fulfilling this role
+for manifold model spaces.
+
+
+\paragraph{Model spaces.} 
+% Riemannian manifolds
+The basic spaces of interest are Riemannian manifolds. These may be
+given as submanifolds of an ambient Euclidean space, or they may be
+manifest by data given purely in the form of inter-point distances, so
+that there is no implicit ambient space.  
+% Non-smooth manifolds
+A natural extension of this basic model is given by a manifold endowed
+with a metric that is not necessarily smooth. \framebox{hint?}
+
+% manifolds with boundary
+% stratified spaces
+In the simplest case the manifold is compact and has no boundary,
+however the case of manifolds with boundary will be an important one
+to handle in preparation for dealing with more complicated composite
+structures such as stratified spaces. Stratified spaces can be
+decomposed into a sequence of manifolds of increasing dimension.  It
+is hoped that such spaces are sufficiently general to serve as good
+models for most spaces that may be encountered in practice, while
+still being structured enough to be amenable to meshing and
+reconstruction algorithms in the near future.  Stratified spaces have
+received some attention in recent years, and several promising
+contributions have been made.  Bendich and
+co-authors~\cite{bendich-PhD,bendich-strat1,bendich-strat2} used local
+homology to recover strata from a sampled stratified manifold:
+although not quite practical, their approach is based on a sound
+theoretical framework. More practical is the approach by Aanjaneya
+{\em et al.}~\cite{metric-graphs-reconstruction}, but it is limited to
+graph reconstruction (i.e., one dimensional stratified spaces). 
+
+% statistical manifolds
+Another case of interest involves models where the manifold is endowed
+with a geometric structure that is not necessarily directly defined by
+a metric. Such is the case with the so-called statistical manifolds
+which represent the parameter space of a family of probability
+distributions. Here, a distance-like function called a divergence
+takes the place of a true metric.  Voronoi diagrams and Delaunay
+complexes can be defined on such
+spaces~\cite{onishi1998,boissonnat2010bregvor}, but ... \ramsay{what?}
+
+
+\paragraph{Quality considerations.}
+\ramsay{Somebody else should address the weakness here.}
+Our goal is to produce simplicial complexes representing manifolds and
+more general geometric objects composed of manifolds, and to be able
+to quantitatively certify the quality of the representation. The best
+that can be hoped for is the guarantee of a homeomorphism that is
+almost an isometry. However, such guarantees require strong sampling
+conditions and potentially costly construction algorithms. The current
+algorithms assume a constant sampling density based on the finest
+structure found on the manifold. The development of adaptive sampling
+conditions is a natural way to relax the required density. 
+
+Even with adaptive sampling conditions, the theoretical sampling
+density required for homeomorphic reconstructions will still be higher
+than desired for practical implementations. An important challenge we
+would like to address is to introduce methods of simplifying the
+output mesh while still maintaining quantitative guarantees on the
+quality of the output representation. For example, we might sacrifice
+homeomorphism guarantees, but maintain quantified guarantees on the
+Gromov-Hausdorff distance between the model space and the output
+representation. 
+
+
+\paragraph{Meshing and reconstruction.}
+Curve and surface reconstruction has been a prominent subject of
+research in several fields including computational geometry, computer
+graphics, and medical imaging, for more than twenty
+years~\cite{dey-csr-2007}. Its challenges are now well-understood, and
+countless methods have been proposed, some of which combine
+theoretical soundness with practical robustness and efficiency.
+
+The story becomes quite different when the input data is sitting in
+higher dimensions. Existing methods fail blatantly because of two
+phenomena: the unavoidable corruption of the data, and the curse of
+dimensionality. A few timid attempts have been made to tackle these
+issues: for instance, multiscale
+reconstruction~\cite{geometrica-bgo-09} can handle data with a limited
+degree of corruption, while tangential
+complexes~\cite{geometrica-7142i} or other projection-based data
+structures can circumvent the curse of dimensionality. 
+
+Recently sampling conditions have been presented which yield a
+guarantee that the witness complex is the same as the tangential
+Delaunay complex \cite{boissonnat2011cgl,boissonnat2012stab}. What
+remains to be developed is a practical algorithm that can guarantee
+these sampling conditions.
+
+In fact, the distinction between the reconstruction problem, where a
+manifold is known only through a dense set of sample points, and the
+meshing problem, where the manifold is known through an oracle, and
+the sample points must be chosen, becomes blurred when the output mesh
+is not required to interpolate all the sample points, as is the case
+with witness complex reconstruction. Indeed, the dense sample set
+itself can be viewed as an oracle that presents the manifold as a
+probability measure, and conversely an oracle provides the ability to
+simulate such a sample set. Algorithms based on the witness complex
+can be versatile, and they have the potential to avoid expensive
+geometric predicates.
+
+Homeomorphism guarantees for the witness complex can be achieved
+through establishing its equivalence with other Delaunay structures,
+but this requires that the landmarks, i.e., the selected vertices of
+the witness complex, satisfy sampling conditions that ensure that they
+are not near to a degenerate configuration
+\cite{boissonnat2011cgl,boissonnat2012stab}.  The condition demands
+that points which do not define a witness complex simplex are not to
+close to being cospherical. This is exactly the kind of condition that
+is avoided by the use of controlled perturbation in guarded algorithms
+for planar Delaunay triangulations~\cite{funke2005cp}. By allowing
+small perturbations either restricted to, or tangential to the
+manifold, it seems likely that the controlled perturbation paradigm can
+be used to construct a homeomorphic witness complex. Since the
+resulting sampling can guarantee a quality measure on the simplices
+\cite{boissonnat2012stab}, there would be no need for a weighting
+scheme.  A principal challenge will be to achieve such an algorithm
+without introducing expensive geometric predicates.
+
+We are optimistic that in the near future we will have efficient and
+provably correct meshing and reconstruction algorithms based on the
+witness complex.  However, there is still considerable progress to be
+made to handle larger classes of shapes and more general noise models,
+since currently only the case of sampled submanifolds of Euclidean
+spaces with bounded Hausdorff noise is addressed.
+
+
+\paragraph{Delaunay structures in alternate metrics}
+We are interested in the Delaunay complex defined by intrinsic
+distances on the manifold. Such a structure is of interest as a model
+for anisotropic meshing algorithms, and in the theory of
+asymptotically optimal meshing. For example,
+Clarkson~\cite{clarkson2006} argued that the asymptotically optimal
+mesh for certain hypersurfaces is given by a Delaunay triangulation
+with respect to a Riemannian metric defined by (a convexified version
+of) the second fundamental form. The intrinsic Delaunay triangulation
+is also a natural target complex for data that is given in terms of
+interpoint distances, without a natural isometric embedding into an
+ambient Euclidean space.
+
+Previously announced sampling conditions \cite{leibon2000} for
+guaranteeing that the intrinsic Delaunay complex is a triangulation of
+the manifold have been shown to be insufficient
+\cite{boissonnat2012stab}. Although new sampling conditions were
+demonstrated which guarantee that the intrinsic Delaunay complex
+coincides with the tangential Delaunay complex when the manifold is
+embedded in Euclidean space, these conditions are extrinsic and do not
+address the situation where the metric is not induced from such an
+embedding. We aim to develop purely intrinsic sampling conditions
+which guarantee that the intrinsic Delaunay complex is homeomorphic to
+the underlying manifold. The witness complex is also easily defined
+with respect to intrinsic distances, and we expect to achieve
+homeomorphism guarantees for this structure as well.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % intrinsic Dts
 %
 
@@ -145,3 +328,127 @@ informative? Estimates of the homology groups of the manifold is one
 direction that has been taken, although it is not entirely clear that
 the required sampling conditions are significantly less
 restrictive. Ideas based on mass-transport appear interesting.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SLAG
+
+% Homological information can be extracted from easily
+% constructed, but very large complexes, or filtrations of complexes,
+% built from the raw input data, whereas a homeomorphic complex that
+% accurately captures the geometry of the underlying space requires
+% strong conditions on the input data, and intricate construction.
+
+%%%%%%%%%%%%%%
+
+% HERE
+% Reconstruction is such a demanding problem that we cannot hope to be
+% able to reconstruct all sorts of compact sets within only a few
+% years. A seemingly reasonable goal would be to reconstruct stratified
+% manifolds, a problem
+
+% Can a
+% compromise be made between generality and practical efficiency of the
+% reconstruction?
+
+%
+% Although work has been done in extracting homological
+% information from such spaces~\cite{bendich2007,bendich2010}, there are
+% no proposed algorithms for more detailed simplicial representations.
+
+%%%%%%%%%%%%%%%%%
+
+
+
+%In order to handle a wider class of noise models, one may consider
+%incorporating some statistical techniques into our otherwise purely
+%topological or geometric approaches. A firs attempt along this line
+%was made by Caillerie and Michel~\cite{claire-bertrand}, who used
+%model selection to estimate the {\em most relevant} (in a statistical
+%sense) scale at which to process the data in multi-scale
+%reconstruction. Their criterion for measuring the quality of the
+%reconstruction was oblivious to the topology, being purely based on
+%the Hausdorff approximation to the underlying object. An interesting
+%extension would be to incorporate topological constraints into the
+%method. Another related question would be to try to understand the
+%relationship that may exist between optimal geometric reconstruction
+%and optimal topological reconstruction.
+
+
+
+
+
+
+
+% \paragraph{Simplicial representations.} 
+% % homeomorphic representations
+% The Delaunay paradigm has been prominent in efforts to design
+% simplical complexes provably homeomorphic to a smooth manifold.
+% Methods developed for surface reconstruction were extended to
+% manifolds of higher dimension~\cite{cheng2005}, producing a simplicial
+% complex that is a substructure of the Delaunay triangulation of the
+% ambient space. The principal difficulty encountered was the need to
+% ensure that the simplicies of the resulting structure were
+% sufficiently fat, i.e. had sufficiently large volume relative to their
+% edge lengths. This problem was addressed through the use of weighted
+% Delaunay triangulations. Although a sketch of a proof of sufficient
+% conditions for which the resulting structure is homeomorphic to the
+% underlying manifold has been provided \cite{cairns1961,cheng2005}, the
+% algorithm is not satisfactory because its complexity is exponential in
+% the ambient dimension.
+
+% The tangential complex~\cite{boissonnat2010tan-socg} was introduced in
+% order to circumvent the dependence on the ambient Delaunay
+% structure. Although the tangential complex is also a substructure of
+% the ambient Delaunay triangulation, its can be constructed without
+% constructing the latter structure; the resulting algorithm is
+% exponential in the dimension of the manifold, but only linear in the
+% ambient dimension, and it is demonstrated to be homeomorphic to the
+% underlying manifold under sufficiently dense sampling
+% conditions~\cite{boissonnat2011tancplx}.
+
+% The tangential complex brings medium dimensional manifold
+% reconstruction potentially within the reach of practical
+% implementation, but the construction still involves a costly weighting
+% scheme, and the Delaunay condition for each potential simplex must be
+% checked by a geometric predicate that is exponential in the dimension
+% of the manifold. A possible means to circumvent these problems lies in
+% constructing a witness complex as the simplicial representation of the
+% manifold. The witness complex is constructed by choosing as vertices a
+% relatively small subset of a dense cloud of sample points. The other
+% sample points serve to guide the selection of simplicies for the
+% witness complex, which are chosen based on predicates that only
+% evaluate squared distances. 
+% Recently sampling conditions have been
+% presented which yield a guarantee that the witness complex is the same
+% as the tangential Delaunay complex
+% \cite{boissonnat2011cgl,boissonnat2012stab}. What remains to be
+% developed is a practical algorithm that can guarantee these sampling
+% conditions. 
+
+
+% % looser topological and geometric representations
+% Taking a more relaxed interpretation of ``triangulation'', there are
+% many other simplicial structures which are of interest for
+% representing manifolds. For topological inference, structures
+% such as the Rips-Vietoris and \v{C}hech complexes are popular. However
+% these tend to be very large and of much higher dimension than the
+% underlying manifold. 
+
+% supercomplexes (Rips/\v{C}ech complex)
+
+% graphs (Delaunay/Gabriel)
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% homeomorphic meshes
+% The construction of the tangential Delaunay complex associated to a
+% sampled, but otherwise unknown, $k$-dimensional manifold demands that
+% at each sample point a $k$-dimensional weighted Delaunay triangulation
+% be created in an estimate of the tangent space. The weighting scheme
+% ensures that the local triangulations fit together coherently. The
+% same idea can also be used in the context of a Delaunay refinement
+% algorithm that simultaneously samples a known manifold and constructs
+% the associated tangential Delaunay complex. 
+
