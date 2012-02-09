@@ -9,7 +9,7 @@
 % understanding the geometry of high-dimensional point clouds has become a core task in science and engineering. 
 
 \paragraph{Understanding higher-dimensional spaces and shapes.} 
-The focus of this proposal is on the computer analysis of geometric structures, which we refer to as {\em geometry understanding}.  The need for analyzing geometric structures is ubiquitous in science and has become an essential part of scientific computing and data analysis. Geometry understanding is by no means limited to 3-dimensions and many applications in physics, robotics, biology and engineering require a keen understanding of the geometry of a variety of higher dimensional spaces. Let us mention phase space in particle physics, invariant manifolds in dynamical systems, configuration spaces of mechanical systems, conformational spaces of molecules, image manifolds, shape spaces, to name a few.  In many applications, while the objects of interest live in a high-dimensional ambient space, they  can be modeled as {\em low-dimensional manifolds}. This powerful model captures the fact that, most of the time, high-dimensional data are associated with physical systems that have a moderate number of  parameters.
+The focus of this proposal is on the computer extraction, representation  and analysis of geometric structures, which we refer to as {\em geometry understanding}.  The need for analyzing geometric structures is ubiquitous in science and has become an essential part of scientific computing and data analysis. Geometry understanding is by no means limited to 3-dimensions and many applications in physics, robotics, biology and engineering require a keen understanding of the geometry of a variety of higher dimensional spaces. Let us mention phase space in particle physics, invariant manifolds in dynamical systems, configuration spaces of mechanical systems, conformational spaces of molecules, image manifolds, shape spaces, to name a few.  In many applications, while the objects of interest live in a high-dimensional ambient space, they  can be modeled as {\em low-dimensional manifolds}. This powerful model captures the fact that, most of the time, high-dimensional data are associated with physical systems that have a moderate number of  parameters.
 
 Although this proposal does not focus on a specific application,  let us illustrate our motivation and objectives on the paradigmatic example of energy landscapes. Understanding  energy landscapes is a major challenge in chemistry and biology but,  despite a lot of efforts and a wide variety of approaches, little is understood about the actual structures underlying such landscapes. The case of cyclo-octane $C_8H_{16}$, a cyclic alkane used in manufacture of plastics, is instructive. This relatively simple molecule has been studied in chemistry for over 40 years but it is only very recently that its conformational space has been fully understood. By analyzing a dataset of 1M points in $\R^{72}$, each describing a cyclo-octane conformation, it has been shown that the conformation space of cyclo-octane has the unexpected geometry of  a multi-sheeted 2-dimensional surface composed of a sphere and a Klein bottle, intersecting in two rings~\cite{mtcw-tco-2010}. Extending this type of analysis to large molecules, in particular proteins, would have tremendous implications. The crux is to dispose of efficient geometric data structures and algorithms to understand geometry in higher dimensions, which is the overall goal of the Gudhi project.
 
@@ -21,7 +21,7 @@ Many difficulties have to be faced when processing and analyzing
 high-dimensional geometries. First, the dimensionality severely restricts our intuition and ability to visualize the data. Hence,  understanding higher dimensional shapes must rely on automated and robust tools that produce provably correct results.
 
 A second difficulty comes from the fact that the complexity of data structures and algorithms used to  approximate shapes  rapidly grows as the dimensionality increases, which makes them intractable in high dimensions.  This phenomenon, known as the curse of {\em dimensionality}, 
-in particular forbids to subdivide the ambient space, as is usually done in 3-space, since the size of any such subdivision depends exponentially on the ambient dimension.  Hence, any practical method must be sensitive to the intrinsic dimension (usually hidden) of the shape one wants to analyze, which is usually much lower than the dimension of the ambient space according to the 
+in particular forbids to subdivide the ambient space, as is usually done in 3-space, since the size of any such subdivision depends exponentially on the ambient dimension.  Hence, any practical method must be sensitive to the intrinsic dimension (usually unknown) of the shape one wants to analyze, which is usually much lower than the dimension of the ambient space according to the 
 manifold model mentionned above.
 
 In addition, high-dimensional data often suffer from significant {\em defects}, including sparsity, noise, and outliers that may hide the intrinsic dimension of the underlying structure. This is particularly so in the case of biological data, such as high throughput data from microarray or other sources. Moreover, the structure and occurrence of geometric features in the data may depend on the {\em scale} at which it is considered, thus requiring the analysis process to be multiscale.  
@@ -29,11 +29,13 @@ In addition, high-dimensional data often suffer from significant {\em defects}, 
 These issues have been considered in the statistical community but not so much in a geometric framework. In the cyclo-octane example mentionned above, the algorithm was limited to 2-dimensional surfaces and, according to the authors, the algorithm ``offers no theoretical guarantees of accuracy or correctness'' and dataset error and unusual distribution of data were not considered.
 
 \paragraph{The emergence of geometry understanding in higher dimensions.}
-The last decade has seen tremendous progress in  the understanding of geometry in high-dimensional spaces. In robotics~\cite{sml-pa-2006}, randomized techniques have been proposed to capture the topology of configuration spaces and to search paths. In signal and image processing, and in machine learning, a variety of techniques have been proposed to reduce the dimension of data, learn nonlinear manifolds and cluster data~\cite{hs-fmmds-2006}. % In computational geometry, new approaches have been proposed to solve basic problems like searching nearest neighbours, computing smallest enclosing ellipsoids or approximating convex sets~\cite{hp-gaa-2011}.
+The last decade has seen tremendous progress in  the understanding of geometry in high-dimensional spaces. In robotics~\cite{sml-pa-2006}, randomized techniques have been proposed to capture the topology of configuration spaces and to search paths. In signal and image processing, and in machine learning, a variety of techniques, known as {\em dimensionality reduction} and {\em manifold learning} have been proposed to reduce the dimension of data, learn nonlinear manifolds and cluster data~\cite{hs-fmmds-2006}. % In computational geometry, new approaches have been proposed to solve basic problems like searching nearest neighbours, computing smallest enclosing ellipsoids or approximating convex sets~\cite{hp-gaa-2011}.
 Such techniques are widely used but have limited guarantees and 
 %address elementary questions (which may be very hard to solve though) and 
-impose strong constraints on the dimension or the topology of the shapes they can successfully handle. The techniques developed in computational geometry and topology are complementary  and aim at processing and analyzing shapes with non trivial geometry and topology~\cite{hh-ct-2010}. 
-Emblematic problems like mesh generation and surface reconstruction in 3-dimensions are now well-understood and there exist provably correct and highly efficient solutions~\cite{geometrica-ecg-book}. 
+impose strong constraints on the dimension or the topology of the shapes they can successfully handle. 
+
+The techniques developed in {\em computational geometry and topology}  are complementary. They aim at processing and analyzing shapes with non trivial geometry and topology~\cite{hh-ct-2010}. 
+Emblematic problems like mesh generation and surface reconstruction in 3-dimensions are now well-understood and several provably correct and highly efficient solutions are now available~\cite{geometrica-ecg-book}. 
 %The concepts of $\varepsilon$-samples, restricted Delaunay triangulation, anisotropic meshes %emerged together with the first efficient and provably correct algorithms for 
 
 Attempts to analyze higher dimensional shapes led to the development of beautiful pieces of theory with deep roots in various areas of mathematics like Riemannian geometry, geometric measure theory, differential and algebraic topology. Let us mention  the emergence of a sampling theory of geometric objects and of geometric inference~\cite{geometrica-ccl09}, and the groundbreaking invention and rapid growth of persistent homology~\cite{eh-ph-2008}.
@@ -54,7 +56,7 @@ This is  due to the lack of satisfactory algorithmic solutions in high-dimension
 Breaking the computational bottleneck is now the main issue.  Settling the {\em algorithmic foundations} of geometry understanding in
 higher dimensions
 %al geometric modeling 
-is a grand challenge of great theoretical and practical significance.
+vis a grand challenge of great theoretical and practical significance.
 
 
 The tenet of this proposal is that, to take up the challenge, we need a global approach involving
@@ -79,13 +81,10 @@ We strongly believe that this ambitious objective is realistic and can be reache
 
 As discussed above, dimensionality reduction techniques cannot provide precise approximation of complicated shapes (as required in scientific computing) nor compute essential features of a shape like its topological invariants.
 % In the last decades, a set of new geometric methods, known as manifold learning, have been developed with the intent of parametrizing nonlinear shapes embedded in high-dimensional spaces. Although widely used, those methods  assume very restrictive hypotheses on the geometry of the manifolds sampled by the datapoints to ensure correctness. 
-More expressive representations of  highly nonlinear shapes are provided % , inspired by what has been done in 3-dimensions, consists in approximating
+More expressive representations of shapes are provided % , inspired by what has been done in 3-dimensions, consists in approximating
 by {\em simplicial complexes}, the analogue of triangulations in higher dimensions.
 %Progress in higher-dimensions so far has been mostly theoretical and a  huge gap  remains to be %filled before  having at one's disposal fully satisfactory solutions of practical significance.% One research direction is to invent simplicial complexes of small complexity and easy to compute that still capture the main features of the underlying shape. see Attali and Carlsson. 
-Many types of simplicial complexes can be used. They differ by their combinatorial and algorithmic complexities, and their power to approximate a shape.
-
- Recent research has exhibited sampling conditions under which some types of simplicial complexes allow to infer topological, geometric or differential properties
- of the sampled shape, or even to reconstruct  a full approximation of the shape~\cite{geometrica-7142i,geometrica-ccl09,nsw-fhm-2008}. 
+Many types of simplicial complexes can be used. They differ by their combinatorial and algorithmic complexities, and their power to approximate a shape.  Simplicial complexes can be used to produce fine meshes well suited for scientific purposes, or much coarser approximations useful to infer some important features of shapes such as their homology or more local geometric properties~\cite{geometrica-7142i,geometrica-ccl09,nsw-fhm-2008}. 
 \framebox{still open questions}
 
 
@@ -104,7 +103,7 @@ These divergences are usually not true distances (they may not be symmetric nor 
 
 
 \paragraph{Scientific challenge 2 :  Bypassing the curse of dimensionality.} 
-Simplicial complexes have been known and studied for a long time in mathematics.  Still the simplicial complexes required to approximate complicated shapes in high dimensions are huge objects and their construction is problematic. In fact, the complexity of many geometric algorithms and data structures grows exponentially with increasing dimension. %This behavior is commonly called the curse of dimensionality after Bellman.  An immediate consequence is that it is no longer possible to partition a high dimensional space.
+Simplicial complexes have been known and studied for a long time in mathematics.  Still, the simplicial complexes required to approximate complicated shapes in high dimensions are huge objects and their construction is problematic. In fact, the complexity of many geometric algorithms and data structures grows exponentially with increasing dimension. %This behavior is commonly called the curse of dimensionality after Bellman.  An immediate consequence is that it is no longer possible to partition a high dimensional space.
 This rules out most, if not all, geometric algorithms developed in low dimensions.  Hence, extending computational geometry in high dimensions cannot be done in a straightforward manner and one has to take advantage of additional structure in the problem or restrict attention to approximations. This motivated a number of new concepts (e.g. core sets), new algorithmic paradigms (e.g. locality-sensitive hashing) and new analyses (e.g. smoothed analysis).  In this project, we will address the curse of dimensionality by focusing on the inherent structure in the data which we assume to be of low intrinsic dimension.  We will put the emphasis on output-sensitive algorithms and average-case analysis.  First investigations led to very promising results, such as the design of new simplicial complexes with good complexity and approximation algorithms that scale well with the dimension \cite{geometrica-7142i,cds-tewc-2004}.
 
 
@@ -120,7 +119,7 @@ This rules out most, if not all, geometric algorithms developed in low dimension
 When dealing with approximation and samples, one needs stability results to ensure that the quantities that are computed are good approximations of the real ones. This is especially true in higher-dimensions where data are usually corrupted by various types of noise.  When the noise is of small amplitude, methods have been proposed to robustly estimate topological and geometric properties of shapes~\cite{geometrica-ccl09,nsw-tvu-2011}. 
  The recent and fast developing theory of {\em persistent homology} provides a powerful tool to study  the homology of sampled spaces~\cite{eh-ph-2008}.
 However, in  many applications the noise is non local and the previous methods fail.
-Recently,  larger families of noise models  have been considered and statistical approaches  have been proposed to approximate shape under  those models~\cite{gpvw-mme-2011}. These methods however do not provide topological guarantees on the approximation and do not always provide explicit estimates \framebox{check} . A major challenge is thus to design  unifying frameworks that embrace statistical approaches and deterministic methods, and offer topological guarantees.   Statistical techniques are also needed to automatically select the relevant scales at which the geometry of data should be considered. \framebox{un peu sec}
+Recently,  larger families of noise models  have been considered and statistical approaches  have been proposed to provide shape approximations that are stable with respect to   those types of noise~\cite{gpvw-mme-2011}. These methods however do not provide topological guarantees on the approximation and do not always provide explicit estimates \framebox{check} . A major challenge is thus to design  unifying frameworks that embrace statistical approaches and deterministic methods, and offer topological guarantees.   Statistical techniques are also needed to automatically select the relevant scales at which the geometry of data should be considered. \framebox{un peu sec}
 
 %A number of groundbreaking new approaches appeared recently. % Given a point cloud in Euclidean space, the approach consists in building a simplicial complex whose elements are filtered by some user-defined function. Under reasonable conditions on the input point cloud, and modulo a right choice of filter, the most persistent invariants in the filtration correspond to invariants of the space underlying the data~\cite{geometrica-cseh-07}. Thus, the persistence algorithm allow to recover global information from noisy data.
 % {\em Non-local noise} and outliers can also be considered as empirical measures. A notion of distance to such measures has been defined and shown to be stable with respect to perturbations of the measure \cite{ccsm-gipm-2011}. A big challenge is to find efficient algorithms in arbitrary dimensions to compute or approximate the topological structure of the sublevel-sets of the distance to a measure. Such algorithms would naturally find applications in topological inference in the presence of significant noise and outliers, but also in other less obvious contexts such as stable clustering. 
@@ -142,18 +141,16 @@ when developing the CGAL library and will be even truer in high dimensional geom
  In return, we will get feedback from practitioners which will help shape the theoretical models and the software platform.
 
 \paragraph{Objectives and research roadmap.}
-The central goal of this proposal is to settle the {\em algorithmic foundations of geometry understanding in higher dimensions}.  We aim at processing general highly nonlinear geometries with nontrivial topologies that can be modeled as  {\em low-dimensional manifolds} embedded in possibly high-dimensional spaces.  Approximation of such manifolds will be in the form of
-{\em simplicial complexes}.  We intend to bypass the computational bottleneck by exploiting the {\em intrinsic properties} of the objects and to design data structures and algorithms that scale with the intrinsic dimension of the objects of interest rather than with the ambient dimension. We intend to develop {\em practical algorithms} to mesh or reconstruct highly nonlinear manifolds, and to infer geometric and topological properties from data subject to significant {\em defects} and under {\em realistic conditions}. 
-
+The central goal of this proposal is to settle the {\em algorithmic foundations of geometry understanding in higher dimensions}.  We aim at processing general highly nonlinear geometries with nontrivial topologies that can be modeled as  {\em low-dimensional manifolds} embedded in possibly high-dimensional spaces. %  Approximation of such manifolds will be in the form of
+% {\em simplicial complexes}.  We intend to bypass the computational bottleneck by exploiting the {\em intrinsic properties} of the objects and to design data structures and algorithms that scale with the intrinsic dimension of the objects of interest rather than with the ambient dimension. We intend to develop {\em practical algorithms} to mesh or reconstruct highly nonlinear manifolds, and to infer geometric and topological properties from data subject to significant {\em defects} and under {\em realistic conditions}. 
 This proposal addresses {\em fundamental
   research} issues, but its results are expected to serve as a basis
 for groundbreaking advances for {\em applications in scientific computing
-and data analysis}.  A major outcome of the project will be a
-high-quality open source software {\em platform} of components
-implementing the main results. 
-
-To reach these objectives, I will follow the principles that have been
-guiding my research for more than 15 years and will simultaneously
+and data analysis}.  % A major outcome of the project will be a
+% high-quality open source software {\em platform} of components
+% implementing the main results. 
+%
+To reach these objectives, the guiding principle  will be to simultaneously
 develop {\em mathematical approaches} providing theoretical
 guarantees, {\em effective algorithms} that are amenable to
 theoretical analysis and fully validated experimentally, and {\em
@@ -190,7 +187,7 @@ This new project will further strengthen the leadership of Europe  in Geometric 
 It will also provide an open platform with no equivalent in USA or Asia.
 We foresee the project becoming a catalyst for research in high-dimensional geometry inside and outside of the project.  
 By implementing the most effective techniques in a  reliable and scalable way, the platform will
-open the way to groundbreaking technological advances in scientific computing and data analysis for applications as varied as numerical simulation, computer vision, robotics or molecular biology. We will keep close contacts with research groups working in those domains and leap on opportunities arising from our new results and tools.
+open the way to groundbreaking technological advances in scientific computing and data analysis for applications as varied as numerical simulation, neurosciences, astrophysics and molecular biology. We will keep close contacts with research groups working in those domains and leap on opportunities arising from our new results and tools. Part of the resources will be devoted to applications, most notably in molecular biology.
 
 {\footnotesize
 \bibliographystyle{abbrv}
