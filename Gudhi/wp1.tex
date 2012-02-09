@@ -1,7 +1,7 @@
 \subsection*{Focus Area 1:  Dimension-sensitive data structures} 
 
 A central tenet in this project is that simplicial complexes are the appropriate data structure for geometry understanding in higher dimensions. However,
-the algorithmic theory of simplicial complexes is in its infancy and a vigorous effort has to be undertaken to dispose of small simplicial complexes with good properties.
+the algorithmic theory of simplicial complexes is in its infancy and a vigorous effort has to be undertaken to dispose of small simplicial complexes with good approximation properties.
 We will work along the following directions.
 
 
@@ -9,7 +9,7 @@ We will work along the following directions.
 \paragraph{Delaunay-like  simplicial complexes.} 
 Simplicial complexes have recently been derived from the Delaunay triangulation with the intent to
 define more tractable simplicial complexes. Let us mention the restricted Delaunay triangulation~\cite{he-gtmg-2001}, the tangential Delaunay complex~\cite{geometrica-7142i} and the witness complex~\cite{cds-tewc-2004}. %Both the restricted and the tangential Delaunay 
-If the data live on a $k$-dimensional manifold of $\R ^d$, these complexes are embedded in the ambient space $\R^d$ and their dimension is $k$, the dimension of the manifold.  Hence, those complexes are of special interest for meshing and reconstructing manifolds (A2).  To compute the restricted Delaunay complex, one needs to compute first a $d$-dimensional Delaunay triangulation, resulting in an algorithm whose complexity is exponential in $d$. The tangential Delaunay is much easier to compute 
+If the data live on a $k$-dimensional manifold of $\R ^d$, these complexes are embedded in the ambient space $\R^d$ and their dimension is $k$, the intrinsic dimension of the manifold.  Hence, those complexes are of special interest for meshing and reconstructing manifolds (A2).  The only known way to compute the restricted Delaunay complex of general shapes is to compute first a $d$-dimensional Delaunay triangulation, which results in an algorithm whose complexity is exponential in $d$. The tangential Delaunay is much easier to compute 
 since its construction requires to compute $k$-dimensional Delaunay simplices.
 The witness complex is even easier to to compute since only comparisons of interpoint distances are needed. Hence the witness complex can be computed in any discrete metric space as the Rips complex. 
 As for the Rips complex, the penalty for its computational simplicity is that it is not clear how the witness complex captures the topology of the sampled manifold. 
@@ -19,7 +19,7 @@ As for the Rips complex, the penalty for its computational simplicity is that it
 
 We want to study this question and, more generally, understand the various properties of Delaunay-based simplicial complexes as well as their relationships. As a  first step in that direction, we established sufficient (but unfortunately quite strong) conditions under which the witness complex, the restricted Delaunay triangulation and the tangential complex are identical~\cite{boissonnat2012stab}. 
 
-\paragraph{Non euclidean metric.}
+\paragraph{Non Euclidean metric.}
 % Among the simplicial complexes discussed above, only the Rips and the witness complexes can be constructed on a discrete metric space where only the distances between points are known. 
 Replacing the Euclidean distance in the embedding space by the geodesic distance on the object of interest results in smaller Rips complexes while keeping good approximation properties~\cite{dl-clt-2009}. We intend to study Delaunay-like simplicial complexes in the context of Riemaniann geometry. 
 As mentionned above, Delaunay-like simplicial complexes are more complicated to compute. Replacing the Euclidean distance by  the geodesic distance would lead to intrinsic Delaunay simplicial complexes. First encouraging results in this direction can be found in our work on anisotropic triangulations~\cite{bwy-luam-08} and in our recent work on Delaunay triangulations on Riemannian manifolds~\cite{boissonnat2012stab}. 

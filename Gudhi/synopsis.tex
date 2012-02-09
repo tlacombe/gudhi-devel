@@ -9,12 +9,15 @@
 % understanding the geometry of high-dimensional point clouds has become a core task in science and engineering. 
 
 \paragraph{Understanding higher-dimensional spaces and shapes.} 
-The focus of this proposal is on the computer extraction, representation  and analysis of geometric structures, which we refer to as {\em geometry understanding}.  The need for analyzing geometric structures is ubiquitous in science and has become an essential part of scientific computing and data analysis. Geometry understanding is by no means limited to 3-dimensions and many applications in physics, robotics, biology and engineering require a keen understanding of the geometry of a variety of higher dimensional spaces. Let us mention phase space in particle physics, invariant manifolds in dynamical systems, configuration spaces of mechanical systems, conformational spaces of molecules, image manifolds, shape spaces, to name a few.  In many applications, while the objects of interest live in a high-dimensional ambient space, they  can be modeled as {\em low-dimensional manifolds}. This powerful model captures the fact that, most of the time, high-dimensional data are associated with physical systems that have a moderate number of  parameters.
+The central focus of this proposal is  the computer %extraction, representation  and 
+analysis of geometric structures, which we refer to as {\em geometry understanding}.  The need for analyzing geometric structures is ubiquitous in science and has become an essential part of scientific computing and data analysis. Geometry understanding is by no means limited to 3-dimensions and many applications in physics, biology and engineering require a keen understanding of the geometry of a variety of higher dimensional spaces. Let us mention phase space in particle physics, invariant manifolds in dynamical systems, configuration spaces of mechanical systems, conformational spaces of molecules, image manifolds, shape spaces, to name a few. Another place where one needs to understand
+high-dimensional geometry is in {\em data analysis} where one wants to
+capture concise information from the underlying structure of the data. 
 
-Although this proposal does not focus on a specific application,  let us illustrate our motivation and objectives on the paradigmatic example of energy landscapes. Understanding  energy landscapes is a major challenge in chemistry and biology but,  despite a lot of efforts and a wide variety of approaches, little is understood about the actual structures underlying such landscapes. The case of cyclo-octane $C_8H_{16}$, a cyclic alkane used in manufacture of plastics, is instructive. This relatively simple molecule has been studied in chemistry for over 40 years but it is only very recently that its conformational space has been fully understood. By analyzing a dataset of 1M points in $\R^{72}$, each describing a cyclo-octane conformation, it has been shown that the conformation space of cyclo-octane has the unexpected geometry of  a multi-sheeted 2-dimensional surface composed of a sphere and a Klein bottle, intersecting in two rings~\cite{mtcw-tco-2010}. Extending this type of analysis to large molecules, in particular proteins, would have tremendous implications. The crux is to dispose of efficient geometric data structures and algorithms to understand geometry in higher dimensions, which is the overall goal of the Gudhi project.
+Although this proposal does not focus on a specific application,  let us illustrate our motivation and objectives on the paradigmatic example of energy landscapes. Understanding  energy landscapes is a major challenge in chemistry and biology but,  despite a lot of efforts and a wide variety of approaches, little is understood about the actual structures underlying such landscapes. The case of cyclo-octane $C_8H_{16}$, a cyclic alkane used in manufacture of plastics, is instructive. This relatively simple molecule has been studied in chemistry for over 40 years but it is only very recently that its conformational space has been fully understood. By analyzing a dataset of 1M points in $\R^{72}$, each describing a cyclo-octane conformation, it has been shown that the conformation space of cyclo-octane has the unexpected geometry of  a multi-sheeted 2-dimensional surface composed of a sphere and a Klein bottle, intersecting in two rings~\cite{mtcw-tco-2010}. \framebox{add a sentence} Extending this type of analysis to large molecules, in particular proteins, would have tremendous implications. The crux is to dispose of efficient geometric data structures and algorithms to understand geometry in higher dimensions, which is the overall goal of the Gudhi project.
+% Similar examples could be found in neurosciences~\cite{} and image understanding~\cite{cids-lbsni-2008}. 
 
-Similar examples could be found in neurosciences~\cite{} and image understanding~\cite{}. \framebox{?}
-
+It should be observed in this example  that the object of interest, which lives in a high-dimensional ambient space,  can be modeled as a {\em low-dimensional manifold}\footnote{More exactly, a stratified manifold.}. This is a common assumption  in many applications  that captures the fact that, most of the time, high-dimensional data are associated with physical systems that have a moderate number of  parameters.
 
 \paragraph{The curses of higher-dimensional geometry.} 
 Many difficulties have to be faced when processing and analyzing
@@ -84,7 +87,7 @@ As discussed above, dimensionality reduction techniques cannot provide precise a
 More expressive representations of shapes are provided % , inspired by what has been done in 3-dimensions, consists in approximating
 by {\em simplicial complexes}, the analogue of triangulations in higher dimensions.
 %Progress in higher-dimensions so far has been mostly theoretical and a  huge gap  remains to be %filled before  having at one's disposal fully satisfactory solutions of practical significance.% One research direction is to invent simplicial complexes of small complexity and easy to compute that still capture the main features of the underlying shape. see Attali and Carlsson. 
-Many types of simplicial complexes can be used. They differ by their combinatorial and algorithmic complexities, and their power to approximate a shape.  Simplicial complexes can be used to produce fine meshes well suited for scientific purposes, or much coarser approximations useful to infer some important features of shapes such as their homology or more local geometric properties~\cite{geometrica-7142i,geometrica-ccl09,nsw-fhm-2008}. 
+Many types of simplicial complexes can be used. They differ by their combinatorial and algorithmic complexities, and their power to approximate a shape.  Simplicial complexes can be used to produce fine meshes well suited for scientific purposes, or much coarser approximations useful to infer some important features of shapes such as their homology or local geometric properties~\cite{geometrica-7142i,geometrica-ccl09,nsw-fhm-2008}. 
 \framebox{still open questions}
 
 
@@ -158,9 +161,9 @@ theoretical analysis and fully validated experimentally, and {\em
 
 
 The proposal is structured into the following four {\em focus areas}  that address the four scientific challenges above~:
-{\bf FA1}:  {\em Dimension-sensitive data  structures} will address Challenges 1 and 2 by extending current knowledge on simplicial complexes, and  providing efficient data structures and basic algorithms for their representation, construction and manipulation. 
-  {\bf FA2}:  {\em Triangulation of non Euclidean geometric spaces} will address Challenges 1 and 2 by developing effective algorithms to mesh or reconstruct manifolds equipped with various metrics.   {\bf FA3}: {\em Robust models for homology inference, comparison and  clustering} will address Challenge 3 by providing the crucial  algorithms for topological data analysis.
- {\bf FA4}:  {\em  Software platform for geometric understanding in high dimensions} will address Challenge 4 by providing the software environment for experimenting with our new data structures and algorithms, for integrating them in a coherent library of interoperable modules, and for diffusing our results to applied fields. 
+{\bf A1}:  {\em Dimension-sensitive data  structures} will address Challenges 1 and 2 by extending current knowledge on simplicial complexes, and  providing efficient data structures and basic algorithms for their representation, construction and manipulation. 
+  {\bf A2}:  {\em Triangulation of non Euclidean geometric spaces} will address Challenges 1 and 2 by developing effective algorithms to mesh or reconstruct manifolds equipped with various metrics.   {\bf A3}: {\em Robust models for homology inference, comparison and  clustering} will address Challenge 3 by providing the crucial  algorithms for topological data analysis.
+ {\bf A4}:  {\em  Software platform for geometric understanding in high dimensions} will address Challenge 4 by providing the software environment for experimenting with our new data structures and algorithms, for integrating them in a coherent library of interoperable modules, and for diffusing our results to applied fields. 
 
 \paragraph{Risks and feasibility of the project.} 
 Simultaneously pursuing basic research at the best international level and developing software of the highest quality is not without risks. % On one side, there is a risk to stick to heuristics solutions and software with no guarantees. The opposite pitfall would be to develop beautiful theoretical techniques with little impact outside of academic circles. 
@@ -187,11 +190,11 @@ This new project will further strengthen the leadership of Europe  in Geometric 
 It will also provide an open platform with no equivalent in USA or Asia.
 We foresee the project becoming a catalyst for research in high-dimensional geometry inside and outside of the project.  
 By implementing the most effective techniques in a  reliable and scalable way, the platform will
-open the way to groundbreaking technological advances in scientific computing and data analysis for applications as varied as numerical simulation, neurosciences, astrophysics and molecular biology. We will keep close contacts with research groups working in those domains and leap on opportunities arising from our new results and tools. Part of the resources will be devoted to applications, most notably in molecular biology.
+open the way to groundbreaking technological advances in scientific computing and data analysis for applications as varied as numerical simulation, neurosciences, astrophysics and molecular biology. We will keep close contacts with research groups working in those domains and leap on opportunities arising from our new results and tools. Part of the resources of Gudhi will be devoted to applications, most notably in molecular biology.
 
-{\footnotesize
-\bibliographystyle{abbrv}
-\bibliography{erc}
-}
+% {\footnotesize
+% \bibliographystyle{abbrv}
+% \bibliography{erc}
+% }
 
 
