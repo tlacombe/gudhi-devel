@@ -13,7 +13,18 @@
 
 \section*{Focus Area 2: Triangulation of non Euclidean geometric spaces}
 
-\paragraph{Delaunay-like triangulations of Riemaniann manifolds.}
+Geometric spaces, such as the space of solutions associated with a
+nonlinear system, frequently appear as a structure of interest
+associated with a problem.  A detailed and accurate discrete model of
+such a space is the best representation possible for computational
+purposes. A simplicial complex can fill that role; the challenge is to
+develop alogrithms that can construct such complexes for manifolds and
+spaces which cannot be represented as subsets of three dimensional
+Euclidean space, and to do this efficiently and with guarantees on the
+approximation qualities of the output. Our experience leaves us
+uniquely positioned to take up this challenge.
+
+\paragraph{Intrinsic Delaunay triangulations of Riemaniann manifolds.}
 
 % 1. why is it important
 % -- submanifolds 
@@ -25,7 +36,7 @@ a full dimensional subset of $\rdee$, or a more general manifold. In
 order strengthen the theoretical foundations of anisotropic meshing of
 Euclidean domains, and of meshing general Riemannian manifolds, we
 believe it is important to develop a deeper understanding of the
-Delaunay complex defined by a Riemannian metric. %\ramsay{applications}
+Delaunay complex defined by a Riemannian metric.
 %
 % 2. what is known
 % -- anisotropic meshes
@@ -58,13 +69,21 @@ as required in previous algorithms. We expect that these results will
 lead to insight into the meshing of spaces equipped with more general
 distance-like measures such as the Bregman divergence.
 
-\paragraph{Witness complex.}
+\paragraph{Witness complex and other Delaunay-like structures.}
 
 % 1. why is it important
 % -- alternative to DT
 % -- no need for higher arithmetics
 % -- usable in any discrete metric space
 % -- landmark selection
+The tangential complex~\cite{geometrica-7142i} paved the way for a
+manifold reconstruction algorithm that does not depend exponentially
+on the ambient dimension. However the algorithm is still bound to
+evaluate Delaunay triangulations of the dimension of the manifold, so
+geometric predicates involving polynomials whose degree is that of the
+manifold severely limit the dimension of the manifolds that can be
+handled.
+%
 The witness complex~\cite{deSilva2008} is showing potential to be an
 effective route to computationally efficient and conceptually simple
 Delaunay meshing and reconstruction. Its computation depends on the
@@ -80,11 +99,13 @@ The witness complex is built on a set $L$ of landmarks, through
 consultation with a set $W$ of witnesses. If the set $W$ is taken to
 be all of $\rdee$, then it is known~\cite{deSilva2008}, that the
 witness complex is equal to the Delaunay complex on $L$. However, in
-practice $W$ is taken to be a dense finite set. Whereas the Delaunay
-complex has a complexity of $\mathcal{O}(L^d)$, current algorithms for
-the construction of the witness complex have a complexity of
-$\mathcal{O}(W+L^d)$, \ramsay{?? a surcharge that we hope will be offset
-  by the simplicity of the geometric predicates involved.}  It has
+practice $W$ is taken to be a dense finite set. 
+%
+Simple distance comparisons between points in $W$ and points in $L$
+are employed instead of the expensive determinant evaluations required
+by traditional Delaunay algorithms.
+%
+It has
 recently been shown~\cite{boissonnat2011cgl} that if $W$ is a finite
 set sufficiently Hausdorff close to a compact smooth manifold $\man
 \subset \rdee$, then sampling conditions for $L$ exist which ensure
@@ -97,15 +118,18 @@ to $\man$.
 % -- sampling strategy for selecting witnesses
 We will develop an algorithm for reconstructing a witness complex
 homeomorphic to a manifold, that is presented only as a dense point
-cloud $W \subset \rdee$. The challenge is to develop a strategy for
-selecting landmark sites so that the required genericity conditions
-are met, and to do this in a way that does not introduce expensive
-geometric predicates. The complexity of the algorith should depend
-exponentially on the dimension of the manifold, but only linearly in
-the ambient dimension. Using insights developed from investigations of
-intrinsic Delaunay triangulations, we will also develop algorithms and
-guarantees for witness complexes representing manifolds that are
-presented only as a discrete metric space.
+cloud $W \subset \rdee$. 
+% The challenge is to develop a strategy for
+% selecting landmark sites so that the required genericity conditions
+% are met, and to do this in a way that does not introduce expensive
+% geometric predicates. 
+Borrowing ideas from the tangential complex, the complexity of the
+algorithm will depend exponentially on the dimension of the
+manifold, but only linearly on the ambient dimension. Using insights
+developed from investigations of intrinsic Delaunay triangulations, we
+will also develop algorithms and guarantees for witness complexes
+representing manifolds that are presented only as a discrete metric
+space.
 
 \paragraph{Crude models.}
 
@@ -134,15 +158,20 @@ meaningful guarantees, satisfactory compromises must be found.
 % structures, but I am not sure that is the issue -- the issue I see
 % is how to meaninfully measure the quality of the output
 % representation, given the input quality?
-One approach has been to forego a full representation of the manifold,
-and instead strive to obtain the associated homology groups. The
-guarantees on the output are then probabilistic, depending on the
-sampling density~\cite{nsw-fhm-2008}, which must nonetheless be high.
+%
+% One approach has been to forego a full representation of the manifold,
+% and instead strive to obtain the associated homology groups. The
+% guarantees on the output are then probabilistic, depending on the
+% sampling density~\cite{nsw-fhm-2008}, which must nonetheless be high.
+This is the challenging problem at the heart of our proposal: finding
+quality measures that enable some kind of theoretical guarantees even
+in the face of corrupt and insufficient data. \ramsay{what has been
+  done really? statistical stuff: sparse representations ...}
 
 % 3. workplan
 % -- transport distance
 % -- ??
-We plan to explore two avenues to address this situation. On the one
+We plan to explore two avenues to address the problem. On the one
 hand we will strive to attain relaxed, parameterisable, approximation quality
 measures that yield a meaningful comparison between the algorithmic
 output and the true manifold, given the input data. In the case where
@@ -165,12 +194,11 @@ space of manifolds.
 While manifold triangulation and reconstruction in higher dimensions
 already represents a challenge for effective practical algorithms,
 there is a need to progress to more complicated spaces than
-manifolds. Stratified manifolds represent a potentially tractable
-yet flexible generalisation 
-that can model many known naturally occurring structures. Examples
-include conformation spaces of molecules, such as that discovered for
-cyclo-octane, and also the invariant sets that appear in dynamical
-systems. 
+manifolds. Stratified manifolds represent a potentially tractable yet
+flexible generalisation that can model many known naturally occurring
+structures. Examples include conformation spaces of molecules, such as
+that discovered for cyclo-octane, and also the invariant sets that
+appear in dynamical systems.
 %
 % 2. what is known
 % -- surfaces, protecting balls

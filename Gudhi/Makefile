@@ -5,12 +5,12 @@
 
 papers= B1 B2
 
-default: bib
+default: B2
 
-B2: B2.pdf
+B2: B2.bbl
 B1: B1.pdf
 
-complete: bib
+complete: B1 B2
 
 
 all: $(addsuffix .pdf,$(basename ${papers}))
