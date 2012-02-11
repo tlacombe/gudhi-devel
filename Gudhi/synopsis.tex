@@ -139,24 +139,58 @@ when developing the CGAL library and will be even more true in high dimensional 
  In return, we will get feedback from practitioners which will help shape the theoretical models and the software platform.
 
 \paragraph{Objectives and research roadmap.}
-The central goal of this proposal is to settle the {\em algorithmic foundations of geometry understanding in higher dimensions}.  We aim at processing general highly nonlinear geometries with nontrivial topologies that can be modeled as  {\em low-dimensional manifolds} embedded in possibly high-dimensional spaces. %  Approximation of such manifolds will be in the form of
-% {\em simplicial complexes}.  We intend to bypass the computational bottleneck by exploiting the {\em intrinsic properties} of the objects and to design data structures and algorithms that scale with the intrinsic dimension of the objects of interest rather than with the ambient dimension. We intend to develop {\em practical algorithms} to mesh or reconstruct highly nonlinear manifolds, and to infer geometric and topological properties from data subject to significant {\em defects} and under {\em realistic conditions}. 
-This proposal addresses {\em fundamental
-  research} issues, and its results are expected to serve as a basis
-for groundbreaking advances for {\em applications in scientific computing
-and data analysis}.  % A major outcome of the project will be a
-% high-quality open source software {\em platform} of components
-% implementing the main results. 
+The ambition of this proposal is to settle the {\em algorithmic
+foundations} of geometry understanding in {\em dimensions higher than
+3}.  We intend to develop {\em scalable representations} and {\em
+practical algorithms} to approximate highly nonlinear shapes, and to
+infer geometric and topological properties from data subject to
+significant {\em defects} and under {\em realistic conditions}.
 %
-To reach these objectives, the guiding principle  will be to simultaneously
-develop {\em mathematical approaches} providing theoretical
-guarantees, {\em effective algorithms} that are amenable to both
-theoretical analysis and rigorous experimental validation, and {\em
-  perennial software} development.
+% We aim at processing general highly nonlinear manifolds % with
+% nontrivial topologies, to approximate  highly nonlinear manifolds,
+% and to infer geometric and topological  properties from data subject
+% to significant {\em defects} and under  {\em realistic conditions}.
+As is common in many applications across science and engineering, we
+will assume that the objects of interest can be modeled as {\em
+  low-dimensional manifolds} embedded in possibly high-dimensional
+spaces. By exploiting the {\em intrinsic properties} of the objects,
+we will produce intrinsic dimension-sensitive data structures and algorithms
+that will break the current computational
+bottleneck.  %models in the form of {\em simplicial complexes}.
+
+% % interest which can be modeled as {\em low-dimensional manifolds} in
+% % many applications.  % We % intend to develop {\em practical
+% algorithms to approximate % highly nonlinear manifolds, and to infer
+% geometric and topological % properties from data subject to
+% significant {\em defects} and under % {\em realistic conditions}.  
+To reach these objectives, the guiding principle will be to foster a
+symbiotic relationship between theory and practice, and to address
+{\em fundamental research} issues along three parallel advancing
+fronts. We will simultaneously develop {\em mathematical approaches}
+providing theoretical guarantees, {\em effective algorithms} that are
+amenable to theoretical analysis and rigorous experimental validation,
+and {\em perennial software} development. %  We will undertake the
+% development of a high-quality open source {\em software platform} to
+% implement the most important geometric data structures and algorithms
+% at the heart of geometry understanding in higher dimensions. 
+ % The central goal of this proposal is to settle the {\em algorithmic foundations of geometry understanding in higher dimensions}.  We aim at processing general highly nonlinear geometries with nontrivial topologies that can be modeled as  {\em low-dimensional manifolds} embedded in possibly high-dimensional spaces. %  Approximation of such manifolds will be in the form of
+% % {\em simplicial complexes}.  We intend to bypass the computational bottleneck by exploiting the {\em intrinsic properties} of the objects and to design data structures and algorithms that scale with the intrinsic dimension of the objects of interest rather than with the ambient dimension. We intend to develop {\em practical algorithms} to mesh or reconstruct highly nonlinear manifolds, and to infer geometric and topological properties from data subject to significant {\em defects} and under {\em realistic conditions}. 
+% This proposal addresses {\em fundamental
+%   research} issues, and its results are expected to serve as a basis
+% for groundbreaking advances for {\em applications in scientific computing
+% and data analysis}.  % A major outcome of the project will be a
+% % high-quality open source software {\em platform} of components
+% % implementing the main results. 
+% %
+% To reach these objectives, the guiding principle  will be to simultaneously
+% develop {\em mathematical approaches} providing theoretical
+% guarantees, {\em effective algorithms} that are amenable to both
+% theoretical analysis and rigorous experimental validation, and {\em
+%   perennial software} development.
 
 
 The proposal is structured into the following four {\em focus areas}  that address the four scientific challenges listed above~:
-{\bf A1}:  {\em Dimension-sensitive data  structures} will address Challenges 1 and 2 by extending current knowledge on the combinatorial and algorithmic properties of simplicial complexes. 
+{\bf A1}:  {\em Intrinsic dimension-sensitive data  structures} will address Challenges 1 and 2 by extending current knowledge on the combinatorial and algorithmic properties of simplicial complexes. 
   {\bf A2}:  {\em Triangulation of non Euclidean geometric spaces} will address Challenges 1 and 2 by developing effective algorithms to mesh or reconstruct manifolds equipped with various metrics.   {\bf A3}: {\em Robust models for homology inference, comparison and  clustering} will address Challenge 3 by providing the crucial  algorithms for topological data analysis.
  {\bf A4}:  {\em  Software platform for geometric understanding in high dimensions} will address Challenge~4 by providing the software environment for experimenting with our new data structures and algorithms, for integrating them in a coherent library of interoperable modules, and for diffusing our results to applied fields. 
 

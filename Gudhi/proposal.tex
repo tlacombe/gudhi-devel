@@ -1,3 +1,20 @@
+\thispagestyle{empty}
+
+\mbox{}\vspace{-3.5cm}
+
+\begin{center}
+{\Large
+{\bf ERC Advanced Grant 2012 \\ research proposal (PART B2)}}
+\vspace{1cm}
+
+{\LARGE {\bf  Algorithmic Foundations \\ of 
+Geometry Understanding in Higher Dimensions}
+
+\vspace{3mm} 
+
+%{\bf (GUDHI)}
+}
+\end{center}
 \section{Research proposal}
 
 The central goal of this proposal is to settle the {\em algorithmic foundations of geometry understanding in higher dimensions}.  We aim at processing general highly nonlinear geometries with nontrivial topologies that can be modeled as  {\em low-dimensional manifolds} embedded in possibly high-dimensional spaces. 
@@ -19,6 +36,11 @@ Such representations have been extensively used in $\R ^3$ where surfaces or vol
 Various types of simplicial complexes have been proposed such as the \v{C}ech and the Rips complexes, and more recent Delaunay-like complexes such as the $\alpha$-complex~\cite{he-ubds-95}, the witness complex~\cite{cds-tewc-2004} and the Delaunay tangential complex~\cite{geometrica-7142i}. These simplicial complexes differ by their power to approximate the geometry or the topology of a shape, its dimension, its homotopy type or its differential properties. Some simplicial complexes are embedded in the ambient space (such as the Delaunay-like simplicial complexes mentionned above) while others, such as the \v{C}ech and the Rips complexes, are not. They also differ by their combinatorial and algorithmic complexities. % Nevertheless, the simplicial complexes required to approximate complicated shapes in high dimensions are huge and their construction is problematic.
 Some simplicial complexes like the \v{C}ech and the $\alpha$-complexes are extremely difficult to compute even in moderate dimensions while others like the Rips complex are easy to compute but their size is so big that they can be constructed from real high-dimensional data.  The recent Delaunay-like simplicial complexes offer interesting new compromises between complexity and approximation quality \cite{geometrica-7142i,cds-tewc-2004}.
 %  First investigations led to very promising results, such as the design of new simplicial complexes with good complexity and approximation algorithms that scale well with the dimension 
+Apart for some very special cases such as the random flag (abstract) complex~\cite{CambridgeJournals:2077252}, the combinatorics of simplicial complexes are not well known. 
+
+Another issue is the {\em computer representation} of simplicial complexes. 
+Little work has been done on the design of data structures for general simplicial complexes. Brisson~\cite{Brisson:1989:RGS:73833.73858} and Lienhardt~\cite{DBLP:journals/ijcga/Lienhardt94} have introduced data structures to represent $d$-dimensional cell complexes, most notably subdivided manifolds. While those data structures have nice algebraic properties, they are very redundant and do not scale to large data sets in high dimensions.  Flag complexes are attractive since the full combinatorial structure is entirely determined by its 1-skeleton. This saves memory space at the penalty of having to reconstruct the full complex when needed, e.g., to store a filtration. Recently, Attali et al.~\cite{Attali2011} have proposed an efficient data structure to represent simplicial complexes that are close to flag complexes.
+
 
 {\bf Objective 1}:  to extend  current knowledge on simplicial complexes, most notably on their combinatorial and algorithmic properties, and   to design new  {\em intrinsic dimension-sensitive data  structures} to construct and store such simplicial complexes.
 
@@ -71,7 +93,7 @@ Zigzag persistent homology).
 %Dionysus constructs $\alpha$-shapes, Cech and Rips complexes. Various options to compromize between memory and efficiency
 %Plex : rips, landmark selection , ex k=1, d=25
 
-{\bf Objective 4 :}   to develop a {\em  software platform for geometric understanding in high dimensions} that will provide the software environment for experimenting with our new data structures and algorithms, to integrate them in a coherent library of interoperable modules, and to diffuse our results to applied fields. 
+{\bf Objective 4 :}   to develop an open source {\em  software platform for geometric understanding in high dimensions} that will provide the software environment for experimenting with our new data structures and algorithms, to integrate them in a coherent library of interoperable modules, and to diffuse our results to applied fields. 
 
 \subsection{Research roadmap} 
 
