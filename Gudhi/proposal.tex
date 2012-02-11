@@ -3,23 +3,29 @@
 \subsection{State-of-the-art}
 %The last decade has seen tremendous progress in the understanding of geometry in high-dimensional spaces. 
 
-\paragraph{Dimensionality reduction.} A widely accepted assumption in scientific computing and data analysis is that the objects of interest can be modeled as {\em low-dimensional manifolds}, even if they are embedded in high-dimensional ambient spaces. Low here is to be understood with respect to the ambient dimension and may be significantly more than 3. This powerful assumption is supported by the fact that data are most of the time associated with physical systems that have few parameters.  Examples can be found in fields as varied as chemistry~\cite{mtcw-tco-2010}, neurosciences~\cite{} and  image processing~\cite{cids-lbsni-2008}.
+\paragraph{Dimensionality reduction.} A widely accepted assumption in scientific computing and data analysis is that the objects of interest can be modeled as {\em low-dimensional manifolds}, even if they are embedded in high-dimensional ambient spaces. Low here is to be understood with respect to the ambient dimension and may be significantly higher than 3. This powerful assumption is supported by the fact that data are most of the time associated with physical systems that have relatively few parameters.  This assumption is valid accross science and engineering and is at the heart of dimensionality reduction and manifold learning.
+%Examples can be found in fields as varied as chemistry~\cite{mtcw-tco-2010}, %neurosciences~\cite{} and  image processing~\cite{cids-lbsni-2008}.
 
- {\em Dimensionality reduction} techniques intend to take advantage of this assumption~\cite{lv-nldr-2007}.
-They can infer the intrinsic dimensionality of the data, as well as provide structure-preserving mappings of the data  into lower-dimensional spaces. Dimensionality reduction techniques are widely used in data analysis. However, they are only guaranteed to work  on data sets sampled from manifolds with low curvature and trivial topology.
+{\em Dimensionality reduction} techniques intend to infer the intrinsic dimensionality of the data, as well as to provide structure-preserving mappings of the data into lower-dimensional spaces. Nonlinear dimensionality reduction techniques~\cite{lv-nldr-2007} are capable of discovering nonlinear structures in the data and have been successfully applied to analyze data in a wide number of applications.
+ Nevertheless, the methods
+come with no or very limited guarantees. For example, Isomap~\cite{tsl-isomap-2000}  provides
+a correct embedding only if the manifold is isometric to a convex open set of
+$\R ^k$, where $k$ is the estimated dimension of the manifold,  and LLE~\cite{rs-lle-2000} can only reconstruct topological balls. {\em Topological methods} are intended to 
+better approximate the sampled manifold,  by constructing  piecewise linear (PL)
+approximation of the manifold.
 
-\paragraph{Simplicial complexes.} To bypass this limitation, another route is to approximate shapes by {\em simplicial complexes}~\cite{hh-ct-2010}. Simplicial complexes can be defined in any dimension and can be used as piecewise linear approximations of general shapes.
+%However, they are only guaranteed to work on data sets sampled from manifolds with low curvature and trivial topology.
+
+\paragraph{Simplicial complexes.}  The simplest and most widely used PL approximations
+are  the {\em simplicial complexes}~\cite{hh-ct-2010}. Simplicial complexes can be defined in any dimension and can be used as piecewise linear approximations of general shapes.
 Such representations have been extensively used in $\R ^3$ where surfaces or volumes are approximated by 2-dimensional or 3-dimensional simplicial complexes~\cite{geometrica-ecg-book}. 
 
-Various types of simplicial complexes have been proposed such as the \v{C}ech and the Rips complexes, and more recent Delaunay-like complexes such as the $\alpha$-complex~\cite{he-ubds-95}, the witness complex~\cite{cds-tewc-2004} and the Delaunay tangential complex~\cite{geometrica-7142i}. These simplicial complexes differ by their power to approximate the geometry or the topology of a shape, its dimension, its homotopy type, its differential properties. Some simplicial complexes are embedded in the ambient space (such as the Delaunay-like simplicial complexes) while others, such as the \v{C}ech and the Rips complexes, are not. They also differ by their combinatorial and algorithmic complexities. % Nevertheless, the simplicial complexes required to approximate complicated shapes in high dimensions are huge and their construction is problematic. 
-Some simplicial complexes like the \v{C}ech and the $\alpha$-complexes are extremely difficult to compute
-even in moderate dimensions while others like the Rips complex are easy to compute but too big
-to be constructed from real high-dimensional data.  The recent Delaunay-like simplicial complexes
-offer good complexity and approximation quality \cite{geometrica-7142i,cds-tewc-2004}.
+Various types of simplicial complexes have been proposed such as the \v{C}ech and the Rips complexes, and more recent Delaunay-like complexes such as the $\alpha$-complex~\cite{he-ubds-95}, the witness complex~\cite{cds-tewc-2004} and the Delaunay tangential complex~\cite{geometrica-7142i}. These simplicial complexes differ by their power to approximate the geometry or the topology of a shape, its dimension, its homotopy type or its differential properties. Some simplicial complexes are embedded in the ambient space (such as the Delaunay-like simplicial complexes mentionned above) while others, such as the \v{C}ech and the Rips complexes, are not. They also differ by their combinatorial and algorithmic complexities. % Nevertheless, the simplicial complexes required to approximate complicated shapes in high dimensions are huge and their construction is problematic.
+Some simplicial complexes like the \v{C}ech and the $\alpha$-complexes are extremely difficult to compute even in moderate dimensions while others like the Rips complex are easy to compute but their size is so big that they can be constructed from real high-dimensional data.  The recent Delaunay-like simplicial complexes offer interesting new compromises between complexity and approximation quality \cite{geometrica-7142i,cds-tewc-2004}.
 %  First investigations led to very promising results, such as the design of new simplicial complexes with good complexity and approximation algorithms that scale well with the dimension 
 
 \paragraph{Geometric approximation.}
-In low dimensions, computing an approximation of a given geometric object is a well-understood problem and good approximations can be efficiently constructed~\cite{geometrica-bcmrv-ms-06,he-gtmg-2001}.  The situation is quite different in higher dimensions.  Although the mathematical literature on triangulation of manifolds is abundant, few effective algorithms have been proposed and tested.  To analyze {dynamical systems} in science or engineering, higher-dimensional {\em continuation methods} have been proposed to mesh solution manifolds~\cite{mh-mpc-2002}. These methods are however lacking guarantees and restricted in practice to low dimensional manifolds. 
+In low dimensions, computing an approximation of a given geometric object is a well-understood problem and good approximations can be efficiently constructed~\cite{geometrica-bcmrv-ms-06,he-gtmg-2001}.  The situation is quite different in higher dimensions.  Although the mathematical literature on triangulation of manifolds is abundant, few effective algorithms have been proposed and tested.  To analyze {dynamical systems} in science or engineering, higher-dimensional {\em continuation methods} have been proposed to mesh solution manifolds~\cite{mh-mpc-2002}. These methods are however lacking guarantees and are restricted in practice to low dimensional manifolds. 
 We made recently some progress and proposed a provably correct algorithm to mesh smooth submanifolds~\cite{boissonnat2010meshing}.
 
 Another fundamental problem is {\em manifold reconstruction}.  In low dimensions, effective reconstruction techniques exist that can provide a faithful approximation of a geometric structure from point samples~\cite{dey-csr-2007}. % Further processing makes it possible to study their topological and geometric properties.
@@ -34,7 +40,7 @@ that can still  uncover some of the properties of the structures underlying the 
 % In {\em robotics}, the goal is to capture the connectivity of configuration spaces and to search paths. Randomized techniques have been proved to be quite successful in constructing graphs to approximate the space of free configurations of robots~\cite{sml-pa-2006}. Those techniques are however limited to simple mechanical systems with no redundancy, no loop nor kinematic constraints. \framebox{check}
 %In {\em topological data analysis}, 
 %
-A prominent example is homology that can be computed  without a full reconstruction and under less restrictive conditions~\cite{geometrica-ccl09,nsw-fhm-2008}. The rapidly growing theory of {\em persistent homology}~\cite{eh-ph-2008,rg-bptd-2008} was recently introduced as a powerful tool for the study of the topological invariants of sampled shapes. The approach consists of building a simplicial complex whose elements are filtered by some user-defined function. The filtration is then used to remove topological noise and to report the stable topological features.  These advances in computational topology attracted interest in the mathematical community and in several fields like neurosciences, computer vision or sensor networks~\cite{cids-lbsni-2008,rg-bptd-2008}. Again, the bottleneck that still prevents applications to benefit from the full potential of these new methods is the lack of efficient data structures and algorithms to construct simplicial complexes and filtrations in high dimensions, and the lack of methods that are provably stable with respect to  noisy and defect-laden inputs.
+A prominent example is homology that can be computed  without a precise reconstruction and under less restrictive conditions~\cite{geometrica-ccl09,nsw-fhm-2008}. The rapidly growing theory of {\em persistent homology}~\cite{eh-ph-2008,rg-bptd-2008} was recently introduced as a powerful tool for the study of the topological invariants of sampled shapes. The approach consists of building a simplicial complex whose elements are filtered by some user-defined function. The filtration is then used to remove topological noise and to report the stable topological features.  These advances in computational topology attracted interest in the mathematical community and in several fields like neurosciences, computer vision or sensor networks~\cite{cids-lbsni-2008,rg-bptd-2008}. Again, the bottleneck that still prevents applications from benefiting of the full potential of these new methods is the lack of efficient data structures and algorithms to construct simplicial complexes and filtrations in high dimensions, and the lack of methods that are provably stable with respect to  noisy and defect-laden inputs.
 
 
 % \paragraph{Stable models.} 
@@ -44,28 +50,25 @@ A prominent example is homology that can be computed  without a full reconstruct
 % Recently,  larger families of noise models  have been considered and statistical approaches  have been proposed to approximate shape under  those models~\cite{gpvw-mme-2011}. These methods however do not provide topological guarantees on the approximation and do not always provide explicit estimates \framebox{check} . A major challenge is thus to design  unifying frameworks that embrace statistical approaches and deterministic methods, and offer topological guarantees.   Statistical techniques are also needed to automatically select the relevant scales at which the geometry of data should be considered. \framebox{un peu sec}
 
 \paragraph{Theory versus practice.} 
-Topological methods are well behind dimensionality reduction techniques in terms of 
-software development and applications.  Due to the lack of satisfactory algorithmic solutions in high-dimensional spaces, they have not demonstrated their scalability to real problems and, up to now, they have only been applied to rather simple cases and in low dimensions.  
+Geometric and topological methods are well behind dimensionality reduction techniques in terms of 
+software development and applications.  
 %
 % Breaking the computational bottleneck is now the main issue.  Settling the {\em algorithmic foundations} of geometry understanding in
 % higher dimensions is a grand challenge of great theoretical and practical significance.
 %
-Only a few available software are able to compute simplicial complexes.
-
-{\em Qhull} can compute convex hulls and Delaunay triangulations in dimensions greater than 3, but does not support triangulation of non-convex surfaces, mesh generation of non-convex objects, medium-sized inputs in 9-D and higher.
-
- {\em Polymake} can handle several types of complexes, build Voronoi diagrams and compute advanced topological characteristics of objects like a finite representation of the fundamental group. It is however more oriented towards an interactive use for mathematical experimentation 
-% on a given object 
-than to an automated use at large scale.%, fast and robust data processing.
+To go beyong these low-dimensional examples, one needs efficient and robust software to construct and manipulate simplicial complexes in dimensions higher than 3.  Only a very few such software exist.  {\em Qhull} can compute convex hulls and Delaunay triangulations in moderate dimensions, but is of little use in the context of geometry understanding since it only constructs full-dimensional triangulations. {\em Multifario} is a set of subroutines and data structures dedicated to {\em meshing} manifolds that occur in dynamical systems using a multiple parameter continuation approach. The software can approximate 2 and 3-manifolds embedded in higher dimensional spaces. No theoretical guarantees nor extensive experiments are reported.  {\em Polymake} can handle several types of complexes, build Voronoi diagrams and compute advanced topological characteristics of objects like a finite representation of the fundamental group. It is however more oriented towards an interactive use for mathematical experimentation
+rather than suited to an automated use at large scale.%, fast and robust data processing.
 % C'est l'impression que j'en ai apres avoir un peu surfe sur differents
 % sites, mais je n'ai pas une confiance absolue dans ce que je dis
 % ci-dessus.
 
-{\em Multifario} is a set of subroutines and data structures for {\em meshing} manifolds that occur in dynamical systems using a multiple parameter continuation approach. The software is limited to manifolds of low dimensions (examples are for dimensions up to 3). 
+Several libraries exist for homology computation. RedHom computes Betti numbers and torsion coefficients of cubical sets, simplicial complexes and general, regular CW complexes using geometric reductions/coreductions and discrete Morse theory (http://redhom.ii.uj.edu.pl/).
+Two implementations of {\em persistent homology} algorithms are currently available, PLEX a package for Matlab (http://comptop.stanford.edu/u/programs/jplex/), and  the Dionysus library (http://www.mrzv.org/software/dionysus/). They both offer the construction of several types of simplicial complexes. PLEX has been  successfully applied in low dimensions~\cite{fpgo-airc-2009,rg-bptd-2008,mtcw-tco-2010}. Dionysus offers advanced
+functionalities (such as persistent cohomology computation and 
+Zigzag persistent homology).
+%Dionysus constructs $\alpha$-shapes, Cech and Rips complexes. Various options to compromize between memory and efficiency
+%Plex : rips, landmark selection , ex k=1, d=25
 
-Only two implementations of {\em persistent homology} algorithms are currently available, PLEX a package for Matlab~\cite{}, and  the library Dionysus~\cite{}. These implementations are known to be successful in small dimensions but do not scale well with the dimension. %  Their maintenance, only assumed by the very few authors, is likely not to be perennial.
-\framebox{true?}
-\framebox{RedHom}
 
 \subsection{Scientific objectives and research roadmap} 
 
