@@ -13,16 +13,17 @@
 
 \section*{Focus Area 2: Triangulation of non Euclidean geometric spaces}
 
-Geometric spaces, such as the space of solutions associated with a
-nonlinear system, frequently appear as a structure of interest
-associated with a problem.  A detailed and accurate discrete model of
-such a space is the best representation possible for computational
-purposes. A simplicial complex can fill that role; the challenge is to
-develop alogrithms that can construct such complexes for manifolds and
-spaces which cannot be represented as subsets of three dimensional
-Euclidean space, and to do this efficiently and with guarantees on the
-approximation qualities of the output. Our experience leaves us
-uniquely positioned to take up this challenge.
+% Geometric spaces, such as the space of solutions associated with a
+% nonlinear system, frequently appear as a structure of interest
+% associated with a problem.  A detailed and accurate discrete model of
+% such a space is the best representation possible for computational
+% purposes. A simplicial complex can fill that role;
+The challenge is to develop alogrithms that can construct simplicial
+complexes approximating manifolds and spaces which cannot be
+represented as subsets of 3-dimensional Euclidean space, and to do
+this efficiently and with guarantees on the approximation qualities of
+the output. %Our experience leaves us uniquely positioned to take up
+%this challenge.
 
 \paragraph{Intrinsic Delaunay triangulations of Riemaniann manifolds.}
 
@@ -31,7 +32,7 @@ uniquely positioned to take up this challenge.
 % -- context where RM appear naturally without an embedding: statistical
 % manifolds? discrete metric space, shape space [Mumford] 
 The Delaunay paradigm has proven to be central to the development and
-understanding of meshing algorithms, whether the domain of interst is
+understanding of meshing algorithms, whether the domain of intere st is
 a full dimensional subset of $\rdee$, or a more general manifold. In
 order strengthen the theoretical foundations of anisotropic meshing of
 Euclidean domains, and of meshing general Riemannian manifolds, we
@@ -41,12 +42,12 @@ Delaunay complex defined by a Riemannian metric.
 % 2. what is known
 % -- anisotropic meshes
 % -- Leibon Letscher
-Previously announced sampling criteria~\cite{leibon2000} for intrinsic
-Delaunay triangulations have recently been demonstrated to be
-insufficient~\cite{boissonnat2012stab}; in addition to density
-criteria it is essential that the points be bounded away from
-degenerate configurations. Algorithms for anisotropic meshing already
-implicitly strive to achieve this condition~\cite{bwy-luam-08}.
+% Previously announced sampling criteria~\cite{leibon2000} for intrinsic
+% Delaunay triangulations have recently been demonstrated to be
+% insufficient~\cite{boissonnat2012stab}; in addition to density
+% criteria it is essential that the points be bounded away from
+% degenerate configurations. Algorithms for anisotropic meshing already
+% implicitly strive to achieve this condition~\cite{bwy-luam-08}.
 
 % 3. workplan
 % -- conditions for the existence of fully intrinsic DT on RM
@@ -76,9 +77,9 @@ distance-like measures such as the Bregman divergence.
 % -- no need for higher arithmetics
 % -- usable in any discrete metric space
 % -- landmark selection
-The tangential complex~\cite{geometrica-7142i} paved the way for a
+The tangential complex paved the way for a
 manifold reconstruction algorithm that does not depend exponentially
-on the ambient dimension. However the algorithm is still bound to
+on the ambient dimension \cite{geometrica-7142i}. However the algorithm is still bound to
 evaluate Delaunay triangulations of the dimension of the manifold, so
 geometric predicates involving polynomials whose degree is that of the
 manifold severely limit the dimension of the manifolds that can be
@@ -95,22 +96,22 @@ spaces, where the Delaunay complex lacks a natural definition.
 % -- de Silva's result
 % -- reconstruction in time exp. in d
 % -- sufficient conditions for identity with RDT
-The witness complex is built on a set $L$ of landmarks, through
-consultation with a set $W$ of witnesses. If the set $W$ is taken to
-be all of $\rdee$, then it is known~\cite{deSilva2008}, that the
-witness complex is equal to the Delaunay complex on $L$. However, in
-practice $W$ is taken to be a dense finite set. 
-%
-Simple distance comparisons between points in $W$ and points in $L$
-are employed instead of the expensive determinant evaluations required
-by traditional Delaunay algorithms.
-%
-It has
-recently been shown~\cite{boissonnat2011cgl} that if $W$ is a finite
-set sufficiently Hausdorff close to a compact smooth manifold $\man
-\subset \rdee$, then sampling conditions for $L$ exist which ensure
-that the witness complex is equal to the Delaunay complex restricted
-to $\man$.
+% The witness complex is built on a set $L$ of landmarks, through
+% consultation with a set $W$ of witnesses. If the set $W$ is taken to
+% be all of $\rdee$, then it is known~\cite{deSilva2008}, that the
+% witness complex is equal to the Delaunay complex on $L$. However, in
+% practice $W$ is taken to be a dense finite set. 
+% %
+% Simple distance comparisons between points in $W$ and points in $L$
+% are employed instead of the expensive determinant evaluations required
+% by traditional Delaunay algorithms.
+% %
+% It has
+% recently been shown~\cite{boissonnat2011cgl} that if $W$ is a finite
+% set sufficiently Hausdorff close to a compact smooth manifold $\man
+% \subset \rdee$, then sampling conditions for $L$ exist which ensure
+% that the witness complex is equal to the Delaunay complex restricted
+% to $\man$.
 
 % 3. workplan
 % -- reconstruction in time linear in k
@@ -118,7 +119,7 @@ to $\man$.
 % -- sampling strategy for selecting witnesses
 We will develop an algorithm for reconstructing a witness complex
 homeomorphic to a manifold, that is presented only as a dense point
-cloud $W \subset \rdee$. 
+cloud. %$W \subset \rdee$. 
 % The challenge is to develop a strategy for
 % selecting landmark sites so that the required genericity conditions
 % are met, and to do this in a way that does not introduce expensive
@@ -197,7 +198,7 @@ there is a need to progress to more complicated spaces than
 manifolds. Stratified manifolds represent a potentially tractable yet
 flexible generalisation that can model many known naturally occurring
 structures. Examples include conformation spaces of molecules, such as
-that discovered for cyclo-octane, and also the invariant sets that
+that discovered for cyclo-octane~\cite{mtcw-tco-2010}, and also the invariant sets that
 appear in dynamical systems.
 %
 % 2. what is known
@@ -207,7 +208,7 @@ appear in dynamical systems.
 Methods have been developed for meshing and reconstructing surfaces
 with boundaries. Also, algorithms have been proposed for separating
 the strata of stratified manifolds~\cite{bendich2007}; the resulting
-strata being manifolds with boundary.
+strata being manifolds with boundary. \framebox{so what?}
 
 % 3. workplan
 We plan to develop algorithms for meshing and reconstructing manifolds
