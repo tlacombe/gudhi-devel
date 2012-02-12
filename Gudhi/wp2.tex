@@ -62,15 +62,19 @@ in this abstract setting will require different techniques, but likely
 be more generally useful than the results so far developed for
 specific substructures of an ambient Delaunay triangulation.  We will
 then develop an algorithm to construct the intrinsic Delaunay complex.
-
-Building on these ideas, we intend to develop a high dimensional
-anisotropic meshing algorithm which constructs a mesh on a controlled
-perturbation of a given point set, rather than refining the point set
-as required in previous algorithms. We expect that these results will
+Since exact computational of geodesic distances is out of reach in
+many cases, in particular when the manifold is only known through a
+point sample, we will develop algorithms that are robust with respect to
+approximate (intrinsic) distance computations. We will take
+inspiration from our recent work on anisotropic mesh generation~\cite{bwy-luam-08}.
+% on a controlled
+% perturbation of a given point set, rather than refining the point set
+% as required in previous algorithms.
+We expect that these results will
 lead to insight into the meshing of spaces equipped with more general
 distance-like measures such as the Bregman divergence.
 
-\paragraph{Witness complex and other Delaunay-like structures.}
+\paragraph{Manifold reconstruction using Delaunay-like structures.}
 
 % 1. why is it important
 % -- alternative to DT
@@ -90,7 +94,16 @@ effective route to computationally efficient and conceptually simple
 Delaunay meshing and reconstruction. Its computation depends on the
 evaluation of much simpler geometric predicates than is required by
 the Delaunay complex, and it is well defined on discrete metric
-spaces, where the Delaunay complex lacks a natural definition. 
+spaces, where the Delaunay complex lacks a natural
+definition. However, as of now, the complexity of witness complex
+based manifold reconstruction is exponential in the ambient dimension
+$d$ , and whether it can be made only polynomial in $d$ remains an
+open question we want to address by borrowing ideas from the
+tangential complex and using insights developed from investigations of
+intrinsic Delaunay triangulations, we will also develop algorithms and
+guarantees for witness complexes representing manifolds that are
+presented only as a discrete metric space.
+
 %
 % 2. what is known
 % -- de Silva's result
@@ -117,20 +130,14 @@ spaces, where the Delaunay complex lacks a natural definition.
 % -- reconstruction in time linear in k
 % -- reconstruction in discrete metric spaces
 % -- sampling strategy for selecting witnesses
-We will develop an algorithm for reconstructing a witness complex
-homeomorphic to a manifold, that is presented only as a dense point
-cloud. %$W \subset \rdee$. 
+% We will develop an algorithm for reconstructing a witness complex
+% homeomorphic to a manifold, that is presented only as a dense point
+% cloud. %$W \subset \rdee$. 
 % The challenge is to develop a strategy for
 % selecting landmark sites so that the required genericity conditions
 % are met, and to do this in a way that does not introduce expensive
 % geometric predicates. 
-Borrowing ideas from the tangential complex, the complexity of the
-algorithm will depend exponentially on the dimension of the
-manifold, but only linearly on the ambient dimension. Using insights
-developed from investigations of intrinsic Delaunay triangulations, we
-will also develop algorithms and guarantees for witness complexes
-representing manifolds that are presented only as a discrete metric
-space.
+
 
 \paragraph{Crude models.}
 
@@ -164,16 +171,16 @@ meaningful guarantees, satisfactory compromises must be found.
 % and instead strive to obtain the associated homology groups. The
 % guarantees on the output are then probabilistic, depending on the
 % sampling density~\cite{nsw-fhm-2008}, which must nonetheless be high.
-This is the challenging problem at the heart of our proposal: finding
-quality measures that enable some kind of theoretical guarantees even
-in the face of corrupt and insufficient data. \ramsay{what has been
-  done really? statistical stuff: sparse representations ...}
+% This is the challenging problem at the heart of our proposal: finding
+% quality measures that enable some kind of theoretical guarantees even
+% in the face of corrupt and insufficient data. \ramsay{what has been
+%   done really? statistical stuff: sparse representations ...}
 
 % 3. workplan
 % -- transport distance
 % -- ??
 We plan to explore two avenues to address the problem. On the one
-hand we will strive to attain relaxed, parameterisable, approximation quality
+hand, we will strive to attain relaxed, parameterisable, approximation quality
 measures that yield a meaningful comparison between the algorithmic
 output and the true manifold, given the input data. In the case where
 the manifold is known to high precision, and only the output
@@ -208,7 +215,7 @@ appear in dynamical systems.
 Methods have been developed for meshing and reconstructing surfaces
 with boundaries. Also, algorithms have been proposed for separating
 the strata of stratified manifolds~\cite{bendich2007}; the resulting
-strata being manifolds with boundary. \framebox{so what?}
+strata being manifolds with boundary. 
 
 % 3. workplan
 We plan to develop algorithms for meshing and reconstructing manifolds
