@@ -1,4 +1,4 @@
-\subsection*{Focus Area 3:  Robust models for geometric inference, comparison and  clustering}
+\subsection*{Focus Area 3:  Robust models for geometric and topological inference}%, clustering and comparison}
 
 
 %Remarques a inserer dans l'intro generale du projet (version longue, plus eventuellement version courte):
@@ -45,12 +45,12 @@ Clustering may be viewed as the most basic homology inference problem, since it 
 
 \paragraph{Topological signatures for shapes.}
 
-Shape descriptors are used in a variety of applications, including
-shape classification, shape retrieval, shape matching, shape
-registration, and symmetry detection. In the context of this proposal,
-the word {\em shape} must be understood in a very broad sense: for
-instance, it can be a point cloud, or a
-manifold, or more generally a compact metric space.
+% Shape descriptors are used in a variety of applications, including
+% shape classification, shape retrieval, shape matching, shape
+% registration, and symmetry detection. % In the context of this proposal,
+% the word {\em shape} must be understood in a very broad sense: for
+% instance, it can be a point cloud, or a
+% manifold, or more generally a compact metric space.
 
 Using measured topological quantities to design signatures for shapes
 is a relatively new idea. The bottom line of the approach is the
@@ -62,20 +62,21 @@ cloud~\cite{ccgmo-ghsssp-09, socg-pbsds-10}. This construction is
 well-suited for finite metric spaces, and the obtained signatures are
 known to be stable under small perturbations of the spaces in the
 Gromov-Hausdorff distance.  
-
 A major remaining challenge is to extend the
-construction to infinite metric spaces, and to prove the stability of
+construction to {\em infinite metric spaces} \framebox{motivation?}, and to prove the stability of
 its topological structure with respect to perturbations of the space
 in the Gromov-Hausdorff distance.
 
 A more fundamental question is how much information about a shape can
-be recovered from descriptors. Most existing work in shape analysis
-only provides lower bounds on a shape distance (e.g. the
-Gromov-Hausdorff distance) based on descriptor distance. There are
-very few exceptions to this rule, and the upper bounds on shape
-distances these provide come with very loose guarantees on the
-error~\cite{bbk-gmds-06,ms-gh-05}. Deriving tight upper bounds is
-thus still widely open, and we intend to tackle the problem as
+be recovered from descriptors. As discussed in the state of the art,
+% Most existing work in shape analysis
+% only provides lower bounds on a shape distance (e.g. the
+% Gromov-Hausdorff distance) based on descriptor distance. There are
+% very few exceptions to this rule, and the upper bounds on shape
+% distances these provide come with very loose guarantees on the
+% error~\cite{bbk-gmds-06,ms-gh-05}. D
+deriving tight upper bounds on shape distances based on shape descriptors is
+still widely open, and we intend to tackle the problem as
 follows: thanks to the virtually infinite variety of filtrations that
 can be built on top of a shape, it is easy to enrich the pool of
 signatures used for that shape, and thus restrict the possibility of
