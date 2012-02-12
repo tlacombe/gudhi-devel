@@ -1,10 +1,19 @@
 \subsection*{Focus Area 1:  Intrinsic dimension-sensitive data structures} 
 
-A central tenet in this project is that simplicial complexes are the appropriate representation of shapes  for geometry understanding in higher dimensions. However,
-the algorithmic theory of simplicial complexes is in its infancy and a vigorous effort has to be undertaken to devise small simplicial complexes with good approximation properties.
+A central tenet in this project is that simplicial complexes are the appropriate representation of shapes  for geometry understanding in higher dimensions. 
+The challenge and a vigorous effort has to be undertaken to devise small simplicial complexes with good approximation properties.
 We will work along the following directions.
 
+=====
 
+
+
+, and more recent Delaunay-like complexes such as the $\alpha$-complex~\cite{he-ubds-95}, the witness complex~\cite{cds-tewc-2004} and the Delaunay tangential complex~\cite{geometrica-7142i}. These simplicial complexes differ by their power to approximate the geometry or the topology of a shape, its dimension, its homotopy type or its differential properties. Some simplicial complexes are embedded in the ambient space (such as the Delaunay-like simplicial complexes mentionned above) while others, such as the \v{C}ech and the Rips complexes, are not. They also differ by their combinatorial and algorithmic complexities. % Nevertheless, the simplicial complexes required to approximate complicated shapes in high dimensions are huge and their construction is problematic.
+Some simplicial complexes like the \v{C}ech and the $\alpha$-complexes are extremely difficult to compute even in moderate dimensions while others like the Rips complex are easy to compute but their size is so big that they cannot be constructed from real high-dimensional data.  The recent Delaunay-like simplicial complexes offer interesting new compromises between complexity and approximation quality \cite{geometrica-7142i,cds-tewc-2004}.
+%  First investigations led to very promising results, such as the design of new simplicial complexes with good complexity and approximation algorithms that scale well with the dimension 
+Apart for some very special cases such as the random flag (abstract) complex~\cite{CambridgeJournals:2077252}, the combinatorics of simplicial complexes are not well known. 
+
+=====
 
 \paragraph{Delaunay-like  simplicial complexes.} 
 % Simplicial complexes have recently been derived from the Delaunay triangulation with the intent to
@@ -33,9 +42,10 @@ In addition to their combinatorial complexity, the {\em complexity of algorithms
 
 
 \paragraph{Compact representation of simplicial complexes.}  We intend to develop efficient representations for {\em general} simplicial complexes. 
-A major open question is to establish bounds on the minimal size of data structures representing simplicial complexes.
- Recently, we have experimented with a tree structure that can store all the simplices of any simplicial complex in a compact way. Simplicial complexes of 500 million simplices have been constructed and stored on a laptop~\cite{bm-dssc-2012}.  Theoretical guarantees and large scale experimentations are mandatory. In addition, more compact storage will be further obtained by developing succinct representations of trees and graphs~\cite{Ferragina:2005:SLT:1097112.1097456,Munro:2002:SRB:586840.586885}. 
-\framebox{Rips filtrations?}
+Major open questions are to establish bounds on the minimal size of data structures representing simplicial complexes, and to design succint data structures
+in the spirit of what has been done for trees and graphs~\cite{Ferragina:2005:SLT:1097112.1097456,Munro:2002:SRB:586840.586885}. 
+ Theoretical guarantees and large scale experimentations on various types of simplicial complexes are mandatory. As a first encouraging step in this direction, we have experimented with a tree structure that can store all the simplices of any simplicial complex in a compact way and support fast queries. Simplicial complexes of 500 million simplices have been constructed and stored on a laptop~\cite{bm-dssc-2012}. 
+We will also consider simplifications of simplicial complexes that preserve geometric or topological properties.
 
 
 
