@@ -4,28 +4,25 @@ A central tenet in this project is that simplicial complexes are the appropriate
 The challenge and a vigorous effort has to be undertaken to devise small simplicial complexes with good approximation properties.
 We will work along the following directions.
 
-=====
+% =====
 
 
 
-, and more recent Delaunay-like complexes such as the $\alpha$-complex~\cite{he-ubds-95}, the witness complex~\cite{cds-tewc-2004} and the Delaunay tangential complex~\cite{geometrica-7142i}. These simplicial complexes differ by their power to approximate the geometry or the topology of a shape, its dimension, its homotopy type or its differential properties. Some simplicial complexes are embedded in the ambient space (such as the Delaunay-like simplicial complexes mentionned above) while others, such as the \v{C}ech and the Rips complexes, are not. They also differ by their combinatorial and algorithmic complexities. % Nevertheless, the simplicial complexes required to approximate complicated shapes in high dimensions are huge and their construction is problematic.
-Some simplicial complexes like the \v{C}ech and the $\alpha$-complexes are extremely difficult to compute even in moderate dimensions while others like the Rips complex are easy to compute but their size is so big that they cannot be constructed from real high-dimensional data.  The recent Delaunay-like simplicial complexes offer interesting new compromises between complexity and approximation quality \cite{geometrica-7142i,cds-tewc-2004}.
-%  First investigations led to very promising results, such as the design of new simplicial complexes with good complexity and approximation algorithms that scale well with the dimension 
-Apart for some very special cases such as the random flag (abstract) complex~\cite{CambridgeJournals:2077252}, the combinatorics of simplicial complexes are not well known. 
+% , and more recent Delaunay-like complexes such as the $\alpha$-complex~\cite{he-ubds-95}, the witness complex~\cite{cds-tewc-2004} and the Delaunay tangential complex~\cite{geometrica-7142i}. These simplicial complexes differ by their power to approximate the geometry or the topology of a shape, its dimension, its homotopy type or its differential properties. Some simplicial complexes are embedded in the ambient space (such as the Delaunay-like simplicial complexes mentionned above) while others, such as the \v{C}ech and the Rips complexes, are not. They also differ by their combinatorial and algorithmic complexities. % Nevertheless, the simplicial complexes required to approximate complicated shapes in high dimensions are huge and their construction is problematic.
+% Some simplicial complexes like the \v{C}ech and the $\alpha$-complexes are extremely difficult to compute even in moderate dimensions while others like the Rips complex are easy to compute but their size is so big that they cannot be constructed from real high-dimensional data.  The recent Delaunay-like simplicial complexes offer interesting new compromises between complexity and approximation quality \cite{geometrica-7142i,cds-tewc-2004}.
+% %  First investigations led to very promising results, such as the design of new simplicial complexes with good complexity and approximation algorithms that scale well with the dimension 
+% Apart for some very special cases such as the random flag (abstract) complex~\cite{CambridgeJournals:2077252}, the combinatorics of simplicial complexes are not well known. 
 
-=====
+% =====
 
 \paragraph{Delaunay-like  simplicial complexes.} 
-% Simplicial complexes have recently been derived from the Delaunay triangulation with the intent to
-% define more tractable than previously known simplicial complexes. Let us mention the restricted Delaunay triangulation~\cite{he-gtmg-2001}, the tangential Delaunay complex~\cite{geometrica-7142i} and the witness complex~\cite{cds-tewc-2004}. %Both the restricted and the tangential Delaunay 
-% If the data live on a $k$-dimensional manifold of $\R ^d$, these complexes are embedded in the ambient space $\R^d$ and their dimension is generically $k$, the intrinsic dimension of the manifold.  Hence, those complexes are of special interest for meshing and reconstructing manifolds (A2).  The only known way to compute the restricted Delaunay complex of general shapes is to first compute a $d$-dimensional Delaunay triangulation, which results in an algorithm whose complexity is exponential in $d$. The tangential Delaunay is much easier to compute 
-% since its construction requires to compute $k$-dimensional Delaunay simplices.
-The witness complex is easy to compute since only comparisons of interpoint distances are needed. Hence the witness complex can be computed in any discrete metric space as is possible for the Rips complex. 
+Simplicial complexes have recently been derived from the Delaunay triangulation with the intent to offer better compromises between complexity and approximation quality. Let us mention the witness complex~\cite{cds-tewc-2004} and the tangential Delaunay complex~\cite{geometrica-7142i}. Both complexes are embedded in the ambient space and their dimension is generically $k$, the intrinsic dimension of the manifold. Those complexes are thus of special interest for meshing and reconstructing manifolds (Focus area 2).  The tangential Delaunay complex is fairly well understood but is more difficult to compute than the witness complex since it requires to compute $k$-dimensional Delaunay triangulations where $k$ is the dimension of the manifold.  In contrast, the witness complex is easy to compute since only comparisons of interpoint distances are needed. Hence the witness complex can be computed in any discrete metric space as is possible for the Rips complex. 
 As for the Rips complex, the penalty for its computational simplicity is that it is not clear how the witness complex captures the topology of the sampled manifold. 
 % % Some equivalences between the various types of simplicial complexes are known. For example,
 % % the Rips and the \v{C}ech complexes are identical for the $L_{\infty}$ norm and for the Euclidean norm, we have $ \cech ({\alpha}/{2}) \subset \rips (\alpha) \subset \cech (\alpha)$. Related inclusions % properties have been established for other types of simplicial complexes, which 
 % % have been shown to be of primary importance to infer the homology of manifolds~\cite{co-tpr-2008}.
-We want to study this question and, more generally, understand the various properties of Delaunay-based simplicial complexes as well as their relationships. As a  first step in that direction, we established sufficient (albeit quite restrictive) conditions under which the witness complex, the restricted Delaunay triangulation and the tangential complex are identical~\cite{boissonnat2012stab}. 
+We want to study this question and, more generally, understand the various properties of Delaunay-based simplicial complexes as well as their relationships. As a  first step in that direction, we established sufficient (albeit quite restrictive) conditions under which the witness complex, the restricted Delaunay triangulation and the tangential complex are identical~\cite{boissonnat2012stab}. We will further look for new
+variants combining dimensionality reduction, landmarking and Delaunay triangulations.
 
 % \paragraph{Non Euclidean metric.}
 % % Among the simplicial complexes discussed above, only the Rips and the witness complexes can be constructed on a discrete metric space where only the distances between points are known. 
@@ -36,15 +33,17 @@ We want to study this question and, more generally, understand the various prope
 
 
 \paragraph{Combinatorial and algorithmic complexity.}
-A main limitation to the use of simplicial complexes is their combinatorial and algorithmic complexity. %  Apart for some very special cases such as the random flag (abstract) complex~\cite{CambridgeJournals:2077252}, the combinatorics of simplicial complexes are not well known. 
-We intend to study random abstract complexes as well as geometric simplicial complexes from a combinatorial and algorithmic point of view. A central question is to obtain {\em complexity bounds} for simplicial complexes of well sampled substructures (e.g. submanifolds).  We intend to measure the effect of {\em perturbations} (either noise or computed perturbations) on the mathematical properties and combinatorial complexity of those structures, and to develop {\em probabilistic analyses}. 
-In addition to their combinatorial complexity, the {\em complexity of algorithms} that construct the simplicial complexes is to be precisely analyzed under realistic models. In particular expected complexity and output-sensitive complexity will be performed in addition to worst-case analysis. Due to the potential huge size of simplicial complexes, parallel and out-of-core algorithms will also be developed. % Efficient algorithms to simplify simplicial complexes while preserving some properties such as their topological type will also be searched.
+
+Since the main limitation to using simplicial complexes is their combinatorial and algorithmic complexity, we will devote time to better understand those questions, both theoretically and experimentally.  % We intend to study random abstract complexes as well as geometric simplicial complexes from a combinatorial and an algorithmic point of view.
+A central question is to obtain {\em complexity bounds} for simplicial complexes of well sampled substructures such as submanifolds. We will consider various types of random or deterministic simplicial complexes.  We intend to measure the effect of {\em perturbations} (either noise or computed perturbations) on the mathematical properties and combinatorial complexity of those structures, and to develop {\em probabilistic analyses}.  In addition to their combinatorial complexity, the {\em complexity of algorithms} that construct the simplicial complexes is to be precisely analyzed under realistic models. In particular, expected complexity and output-sensitive complexity analyses will be performed in addition to worst-case analysis. % Due to the potential huge size of simplicial complexes,
+We will also develop parallel and out-of-core algorithms.% will also be developed. % Efficient algorithms to simplify simplicial complexes while preserving some properties such as their topological type will also be searched.
 
 
-\paragraph{Compact representation of simplicial complexes.}  We intend to develop efficient representations for {\em general} simplicial complexes. 
-Major open questions are to establish bounds on the minimal size of data structures representing simplicial complexes, and to design succint data structures
+\paragraph{Compact representation of simplicial complexes.}  We will develop efficient data structures to represent {\em general} simplicial complexes. 
+An open question is to establish bounds on the minimal size of data structures representing simplicial complexes. Another major question is to design succint data structures
 in the spirit of what has been done for trees and graphs~\cite{Ferragina:2005:SLT:1097112.1097456,Munro:2002:SRB:586840.586885}. 
  Theoretical guarantees and large scale experimentations on various types of simplicial complexes are mandatory. As a first encouraging step in this direction, we have experimented with a tree structure that can store all the simplices of any simplicial complex in a compact way and support fast queries. Simplicial complexes of 500 million simplices have been constructed and stored on a laptop~\cite{bm-dssc-2012}. 
+This data structure deserves a full analysis and fine tuning based on experiments.
 We will also consider simplifications of simplicial complexes that preserve geometric or topological properties.
 
 

@@ -101,24 +101,23 @@ software development and applications.
 % Breaking the computational bottleneck is now the main issue.  Settling the {\em algorithmic foundations} of geometry understanding in
 % higher dimensions is a grand challenge of great theoretical and practical significance.
 %
-To go beyong these low-dimensional examples, one needs efficient and robust software to construct and manipulate simplicial complexes in dimensions higher than 3.  Only a very few such software exist.  {\em Qhull} can compute convex hulls and Delaunay triangulations in moderate dimensions, but is of little use in the context of geometry understanding since it only constructs full-dimensional triangulations. {\em Multifario} is a set of subroutines and data structures dedicated to {\em meshing} manifolds that occur in dynamical systems using a multiple parameter continuation approach. The software can approximate 2 and 3-manifolds embedded in higher dimensional spaces. No theoretical guarantees nor extensive experiments are reported.  {\em Polymake} can handle several types of complexes, build Voronoi diagrams and compute advanced topological characteristics of objects like a finite representation of the fundamental group. It is however more oriented towards an interactive use for mathematical experimentation
+To go beyond these low-dimensional examples, one needs efficient and robust software to construct and manipulate simplicial complexes in dimensions higher than 3.  Only a very few such software exist.  {\em Qhull} (http://www.qhull.org/) can compute convex hulls and Delaunay triangulations in moderate dimensions, but is of little use in the context of geometry understanding since it only constructs full-dimensional triangulations. {\em Multifario} (http://multifario.sourceforge.net/) is a set of subroutines and data structures dedicated to {\em meshing} manifolds that occur in dynamical systems. The software can in principle approximate manifolds or arbitrary codimension but examples are only reported in dimensions at most 3. Interestingly, this algorithm  uses a multiple parameter continuation approach and has some similarity with our algorithm~\cite{boissonnat2010meshing}, which has theoretical guarantees and whose complexity is only linear in the ambient dimension.  {\em Polymake} can handle several types of complexes, build Voronoi diagrams and compute advanced topological characteristics of objects like a finite representation of the fundamental group. It is however more oriented towards an interactive use for mathematical experimentation
 rather than suited to an automated use at large scale.%, fast and robust data processing.
 % C'est l'impression que j'en ai apres avoir un peu surfe sur differents
 % sites, mais je n'ai pas une confiance absolue dans ce que je dis
 % ci-dessus.
 
-Several libraries exist for homology computation. RedHom computes Betti numbers and torsion coefficients of cubical sets, simplicial complexes and general, regular CW complexes using geometric reductions/coreductions and discrete Morse theory (http://redhom.ii.uj.edu.pl/).
-Two implementations of {\em persistent homology} algorithms are currently available, PLEX a package for Matlab (http://comptop.stanford.edu/u/programs/jplex/), and  the Dionysus library (http://www.mrzv.org/software/dionysus/). They both offer the construction of several types of simplicial complexes. PLEX has been  successfully applied in low dimensions~\cite{fpgo-airc-2009,rg-bptd-2008,mtcw-tco-2010}. Dionysus offers advanced
-functionalities (such as persistent cohomology computation and 
-Zigzag persistent homology).
+Several libraries exist for homology computation. RedHom computes Betti numbers and torsion coefficients of cubical sets, simplicial complexes and general, regular CW complexes (http://redhom.ii.uj.edu.pl/).
+Two implementations of {\em persistent homology} algorithms are currently available, PLEX a package for Matlab (http://comptop.stanford.edu/u/programs/jplex/), and  Dionysus (www.mrzv.org/software/dionysus/). They both offer the construction of several types of simplicial complexes. PLEX has been  successfully applied in low dimensions~\cite{fpgo-airc-2009,rg-bptd-2008,mtcw-tco-2010}. Dionysus offers advanced
+functionalities but there is no documentation and its diffusion is limited.
 %Dionysus constructs $\alpha$-shapes, Cech and Rips complexes. Various options to compromize between memory and efficiency
 %Plex : rips, landmark selection , ex k=1, d=25
 \vspace{2mm}
 
 {\bf Objective 4 :}   {\em To develop an open source {\em  software platform for geometric understanding in high dimensions}. %that will provide the software environment for experimenting with our new data structures and algorithms and to integrate them in a coherent library of interoperable modules. 
-To apply our techniques to a few key problems where they may have a huge impact. To disseminate our results to applied fields and to benchmark our results on real data.}
+To apply our techniques to a few key problems where they may have a huge impact. To disseminate our software and to benchmark our results on real data from various applied fields.}
 
-\subsection{Scientific approach and research roadmap} 
+\subsection{Research roadmap} 
 
 
 % This proposal addresses {\em fundamental
@@ -131,7 +130,8 @@ To apply our techniques to a few key problems where they may have a huge impact.
 %
 
 
-The proposal is structured into four areas that focus on the four objectives mentionned above, which we now describe in more detail. 
+The proposal is structured into four areas that focus on objectives 1-4 mentionned above.
+% which we now describe in more detail. 
 
 
 \input{wp1}
