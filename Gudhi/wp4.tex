@@ -13,8 +13,8 @@ dimensions.
 The development of such a
 platform will necessitate a full research work on architecture and
 interface design, heuristics and fine-tuning optimization, robustness
-and arithmetics issues. It will also serve to benchmark and optimize any
-new algorithmic solution resulting from our theoretical work. 
+and arithmetics issues. It will also serve to benchmark and optimize 
+new algorithmic solutions resulting from our theoretical work. 
 %
 % \paragraph{The need for a software platform.}
 % On one hand, we perceive the development of such a platform as 
@@ -114,59 +114,58 @@ points the simplicial complexes that are relevant for geometric
 understanding, Rips, tangential Delaunay and witness complexes to
 begin with.  The platform will provide efficient implementation of
 data structures to represent those complexes. In
-particular, the compact data structures developed in WP1 will be fully
+particular, the compact data structures developed in Focus Area 1 will be fully
 tested and benchmarked against other representations.
 
 \paragraph{Basic algorithms.}
 The platform will offer a well chosen set of basic algorithms at the
-heart of geometry understanding in higher dimensions. It will 
-include in particular algorithms to
-{\em sample},  {\em mesh} and {\em  reconstruct manifolds}, 
- compute the {\em persistent homology} of simplicial complex filtrations,
-{\em cluster data}, compute {\em signatures of shapes}. It will also
-provide some visualization tools.
+heart of geometry understanding in higher dimensions. It will include
+in particular algorithms to {\em sample}, {\em mesh} and {\em
+reconstruct manifolds}, compute the {\em persistent homology} of
+simplicial complex filtrations, {\em cluster data}, compute {\em
+signatures of shapes} (see Focus Areas 2 and 3). The platform will
+also provide some visualization tools.
 
 
-The platform will aim at providing parallel implementations as well
-as out-of-core versions whenever possible to make possible the
-handling of huge data sets in high dimensions.
+Parallel implementations as well as out-of-core versions of some
+critical algorithms %whenever possible will also be included so as to
+make possible the handling of huge data sets in high dimensions.
 
 \paragraph{Applications.}
 Although the Gudhi project is of a fundamental nature, our approach
-and, in particular the software platform, will be used in prototype
-applications.  This will validate our approach and tools, and bring
-novel methodologies to some critical applications. We have established
-contacts with researchers in neurosciences, medical imaging,
-astrophysics, and dynamical systems with whom we will collaborate. 
+and, in particular the software platform, will be used in a few selected  prototype
+applications in collaboration with reknown researchers in neurosciences, medical imaging,
+astrophysics, and dynamical systems.% with whom we will collaborate. 
 
-We
-will in particular establish a strong collaboration with F. Cazals in molecular
-biology. A protein or any macromolecule with $n$ atoms is a flexible
-system with 3n degrees of freedom whose dymamics is fully described by
-a point in  a 6n dimensional positions-velocities phase space. Dynamic molecular
-simulations or MonteCarlo computations are  able to provide samplings of the
-energy landscape of a molecular system in its phase space.
-Using our tools for geometric understanding,
-we planed to study the persistent homology of the level sets of those molecular
-energy landscapes. A key question being
-to derive collective coordinates describing large amplitude - low
-frequency deformations, a process reminiscent from dimensionality
-reduction, we ambition to design collective coordinates incorporating
-the homological constraints --- a topic which has not yet been addressed
-\cite{wales}.
+We will establish a strong collaboration with F. Cazals, leader of a
+research group on computational structural biology at INRIA Sophia
+Antipolis. A protein or any macromolecule with $n$ atoms is a flexible
+system with $3n$ degrees of freedom whose dynamics is fully described
+by a point in $6n$ dimensional phase space. Dynamic molecular
+simulations or Monte Carlo simulations are able to sample the energy
+landscape of a molecular system. A better understanding of the
+conformation space of the molecule is likely to improve results for
+many algorithms and help construct simplified models of the
+intramolecular energy. We also intend to study the persistent homology
+of the level sets of those molecular energy landscapes. A key question
+being to derive collective coordinates describing large amplitude -
+low frequency deformations, a process reminiscent from dimensionality
+reduction. We ambition to design collective coordinates incorporating
+the homological constraints --- a topic which has not yet been
+addressed \cite{djw-el-2003}.
 
 
 
 \paragraph{Datasets.}
 To benchmark our algorithms, it is important to dispose of datasets
 that are representative of realistic tasks. Some datasets exist in the
-machine learning community (e.g. http://archive.ics.uci.edu/ml/), in
-the computer vision (...), in molecular biology
-(http://www.cs.otago.ac.nz/staff/Shawn\_Martin). We will create a
-public repository for new  datasets, including synthetic datasets with controlled
-parameters. Providing easy access to such data sets is an important service to the
-research community of geometry understanding in higher dimensions and 
-will help building a standard for benchmarking algorithms in the field.
+machine learning community (e.g. http://archive.ics.uci.edu/ml/). We
+will create a public repository for new datasets, including synthetic
+datasets with controlled parameters that will be found useful for
+experimenting with our data structures and algorithms. Providing easy
+access to such data sets is an important service to the research
+community of geometry understanding in higher dimensions and will help
+building a standard for benchmarking algorithms in the field.
 
 
 \paragraph{Infrastructure and diffusion.}
