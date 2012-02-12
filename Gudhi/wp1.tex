@@ -14,8 +14,24 @@ A central tenet in this project is that simplicial complexes are the appropriate
 % =====
 
 \paragraph{Delaunay-like  simplicial complexes.} 
-Simplicial complexes have recently been derived from the Delaunay triangulation with the intent to offer better compromises between complexity and approximation quality. Let us mention the witness complex~\cite{cds-tewc-2004} and the tangential Delaunay complex~\cite{geometrica-7142i}. Both complexes are embedded in the ambient space and their dimension is generically $k$, the intrinsic dimension of the manifold. Those complexes are thus of special interest for meshing and reconstructing manifolds (Focus area 2).  The tangential Delaunay complex is fairly well understood but is more difficult to compute than the witness complex since it requires to compute $k$-dimensional Delaunay triangulations where $k$ is the dimension of the manifold.  In contrast, the witness complex is easy to compute since only comparisons of interpoint distances are needed. Hence the witness complex can be computed in any discrete metric space as is possible for the Rips complex. 
-As for the Rips complex, the penalty for its computational simplicity is that it is not clear how the witness complex captures the topology of the sampled manifold. 
+Simplicial complexes have recently been derived from the Delaunay
+triangulation with the intent of offering better compromises between
+complexity and approximation quality. Let us mention the witness
+complex~\cite{cds-tewc-2004}, and the tangential Delaunay
+complex~\cite{geometrica-7142i}. Both complexes are embedded in the
+ambient space and their dimension is generically $k$, the intrinsic
+dimension of the manifold. Those complexes are thus of special
+interest for meshing and reconstructing manifolds (Focus area 2).  The
+tangential Delaunay complex is fairly well understood but is more
+difficult to compute than the witness complex since it requires the
+computation of $k$-dimensional Delaunay triangulations, where $k$ is
+the dimension of the manifold.  In contrast, the witness complex is
+easy to compute since only comparisons of interpoint distances are
+needed. Hence the witness complex can be computed in any discrete
+metric space, as is possible for the Rips complex.  As for the Rips
+complex, the penalty for its computational simplicity is that it is
+not clear how the witness complex captures the topology of the sampled
+manifold.
 % % Some equivalences between the various types of simplicial complexes are known. For example,
 % % the Rips and the \v{C}ech complexes are identical for the $L_{\infty}$ norm and for the Euclidean norm, we have $ \cech ({\alpha}/{2}) \subset \rips (\alpha) \subset \cech (\alpha)$. Related inclusions % properties have been established for other types of simplicial complexes, which 
 % % have been shown to be of primary importance to infer the homology of manifolds~\cite{co-tpr-2008}.
@@ -32,7 +48,7 @@ variants combining dimensionality reduction, landmarking and Delaunay triangulat
 
 \paragraph{Combinatorial and algorithmic complexity.}
 
-Since the main limitation to using simplicial complexes is their combinatorial and algorithmic complexity, we will devote time to better understand those questions, both theoretically and experimentally.  % We intend to study random abstract complexes as well as geometric simplicial complexes from a combinatorial and an algorithmic point of view.
+Since the main limitation to using simplicial complexes is their combinatorial and algorithmic complexity, we will devote time towards better understanding those questions, both theoretically and experimentally.  % We intend to study random abstract complexes as well as geometric simplicial complexes from a combinatorial and an algorithmic point of view.
 A central question is to obtain {\em complexity bounds} for simplicial complexes of well sampled substructures such as submanifolds. We will consider various types of random or deterministic simplicial complexes.  We intend to measure the effect of {\em perturbations} (either noise or computed perturbations) on the mathematical properties and combinatorial complexity of those structures, and to develop {\em probabilistic analyses}.  In addition to their combinatorial complexity, the {\em complexity of algorithms} that construct the simplicial complexes is to be precisely analyzed under realistic models. In particular, expected complexity and output-sensitive complexity analyses will be performed in addition to worst-case analysis. % Due to the potential huge size of simplicial complexes,
 We will also develop parallel and out-of-core algorithms.% will also be developed. % Efficient algorithms to simplify simplicial complexes while preserving some properties such as their topological type will also be searched.
 
@@ -40,7 +56,11 @@ We will also develop parallel and out-of-core algorithms.% will also be develope
 \paragraph{Compact representation of simplicial complexes.}  We will develop efficient data structures to represent {\em general} simplicial complexes. 
 An open question is to establish bounds on the minimal size of data structures representing simplicial complexes. Another major question is to design succint data structures
 in the spirit of what has been done for trees and graphs~\cite{Ferragina:2005:SLT:1097112.1097456,Munro:2002:SRB:586840.586885}. 
- Theoretical guarantees and large scale experimentations on various types of simplicial complexes are mandatory. As a first encouraging step in this direction, we have experimented with a tree structure that can store all the simplices of any simplicial complex in a compact way and support fast queries. Simplicial complexes of 500 million simplices have been constructed and stored on a laptop~\cite{bm-dssc-2012}. 
+ Theoretical guarantees and large scale experimentations on various
+ types of simplicial complexes are mandatory. As a first encouraging
+ step in this direction, we have experimented with a tree structure
+ that can store all the simplices of any simplicial complex in a
+ compact way and can support fast queries. Simplicial complexes of 500 million simplices have been constructed and stored on a laptop~\cite{bm-dssc-2012}. 
 This data structure deserves a full analysis and fine tuning based on experiments.
 We will also consider simplifications of simplicial complexes that preserve geometric or topological properties.
 
