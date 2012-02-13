@@ -62,7 +62,7 @@ in this abstract setting will require different techniques, but likely
 be more generally useful than the results so far developed for
 specific substructures of an ambient Delaunay triangulation.  We will
 then develop an algorithm to construct the intrinsic Delaunay complex.
-Since exact computational of geodesic distances is out of reach in
+Since exact computation of geodesic distances is out of reach in
 many cases, in particular when the manifold is only known through a
 point sample, we will develop algorithms that are robust with respect to
 approximate (intrinsic) distance computations. We will take
@@ -84,9 +84,10 @@ distance-like measures such as the Bregman divergence.
 The tangential complex paved the way for a
 manifold reconstruction algorithm that does not depend exponentially
 on the ambient dimension \cite{geometrica-7142i}. However the algorithm is still bound to
-evaluate Delaunay triangulations of the dimension of the manifold, so
-geometric predicates involving polynomials whose degree is that of the
-manifold severely limit the dimension of the manifolds that can be
+evaluate Delaunay triangulations of dimension $k$, the dimension of the
+manifold. Hence, it requires to evaluate
+geometric predicates involving polynomials whose degree is equal to
+$k+2$, which  severely limits the dimension of the manifolds that can be
 handled.
 %
 The witness complex~\cite{deSilva2008} is showing potential to be an
@@ -97,10 +98,10 @@ the Delaunay complex, and it is well defined on discrete metric
 spaces, where the Delaunay complex lacks a natural
 definition. However, as of now, the complexity of witness complex
 based manifold reconstruction is exponential in the ambient dimension
-$d$ , and whether it can be made only polynomial in $d$ remains an
-open question we want to address by borrowing ideas from the
+$d$, and whether it can be made only polynomial in $d$ remains an
+open question. We want to address this question by borrowing ideas from the
 tangential complex and using insights developed from investigations of
-intrinsic Delaunay triangulations, we will also develop algorithms and
+intrinsic Delaunay triangulations.  We will also develop algorithms and
 guarantees for witness complexes representing manifolds that are
 presented only as a discrete metric space.
 

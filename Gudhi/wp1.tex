@@ -1,6 +1,6 @@
 \subsection*{Focus Area 1:  Intrinsic dimension-sensitive data structures} 
 
-A central tenet in this project is that simplicial complexes are the appropriate representation of shapes for geometry understanding in higher dimensions.  They will be at the heart of all the developments undertaken in this and the other focus areas.  The challenge is to devise small simplicial complexes with good approximation properties, to analyze their complexity and to propose succint representations. We will work along the following directions.
+A central tenet in this project is that simplicial complexes are the appropriate representation of shapes for geometry understanding in higher dimensions.  They will be at the heart of all the developments undertaken in all four focus areas.  The challenge is to devise small simplicial complexes with good approximation properties, to analyze their complexity and to propose succint representations. We will work along the following directions.
 
 % =====
 
@@ -16,27 +16,34 @@ A central tenet in this project is that simplicial complexes are the appropriate
 \paragraph{Delaunay-like  simplicial complexes.} 
 Simplicial complexes have recently been derived from the Delaunay
 triangulation with the intent of offering better compromises between
-complexity and approximation quality. Let us mention the witness
+complexity and approximation quality. Two such simplicial complexes are 
+of special
+interest for meshing and reconstructing manifolds in high dimensional spaces (Focus Area 2), namely
+ the witness
 complex~\cite{cds-tewc-2004}, and the tangential Delaunay
-complex~\cite{geometrica-7142i}. Both complexes are embedded in the
-ambient space and their dimension is generically $k$, the intrinsic
-dimension of the manifold. Those complexes are thus of special
-interest for meshing and reconstructing manifolds (Focus area 2).  The
+complex~\cite{geometrica-7142i}.
+% . Both complexes are embedded in the
+% ambient space and their dimension is generically $k$, the intrinsic
+% dimension of the manifold. Those complexes are thus 
+The
 tangential Delaunay complex is fairly well understood but is more
 difficult to compute than the witness complex since it requires the
 computation of $k$-dimensional Delaunay triangulations, where $k$ is
 the dimension of the manifold.  In contrast, the witness complex is
 easy to compute since only comparisons of interpoint distances are
-needed. Hence the witness complex can be computed in any discrete
-metric space, as is possible for the Rips complex.  As for the Rips
-complex, the penalty for its computational simplicity is that it is
-not clear how the witness complex captures the topology of the sampled
-manifold.
+needed. Hence, the witness complex can be computed in any discrete
+metric space, as is possible for the Rips complex. %  As for the Rips
+% complex, the penalty for its computational simplicity is that it is
+% not clear how the witness complex captures the topology of the sampled
+% manifold (see Focus Area 2). 
+
+ Both structures uses ideas that can be combined. The tangential complex constructs local triangulations in a way that is reminiscent of dimensionality reduction techniques. Since dimensionality reduction has been flourishing during the last decade, many variations of the basic idea of the tangential complex are conceivable, with the the potential of enlarging its usability. In addition to being easy to compute, the witness complex brings the idea of landmarking, which can also be used in conjonction with the tangential Delaunay complex. We will further look for new
+variants combining dimensionality reduction, landmarking and Delaunay triangulations. 
+%
 % % Some equivalences between the various types of simplicial complexes are known. For example,
 % % the Rips and the \v{C}ech complexes are identical for the $L_{\infty}$ norm and for the Euclidean norm, we have $ \cech ({\alpha}/{2}) \subset \rips (\alpha) \subset \cech (\alpha)$. Related inclusions % properties have been established for other types of simplicial complexes, which 
 % % have been shown to be of primary importance to infer the homology of manifolds~\cite{co-tpr-2008}.
-We want to study this question and, more generally, understand the various properties of Delaunay-based simplicial complexes as well as their relationships. As a  first step in that direction, we established sufficient (albeit quite restrictive) conditions under which the witness complex, the restricted Delaunay triangulation and the tangential complex are identical~\cite{boissonnat2012stab}. We will further look for new
-variants combining dimensionality reduction, landmarking and Delaunay triangulations.
+We want to understand the various properties of Delaunay-based simplicial complexes as well as their relationships. As a  first step in that direction, we established sufficient (albeit quite restrictive) conditions under which the witness complex, the restricted Delaunay triangulation and the tangential complex are identical~\cite{boissonnat2012stab}.
 
 % \paragraph{Non Euclidean metric.}
 % % Among the simplicial complexes discussed above, only the Rips and the witness complexes can be constructed on a discrete metric space where only the distances between points are known. 
@@ -60,9 +67,7 @@ in the spirit of what has been done for trees and graphs~\cite{Ferragina:2005:SL
  types of simplicial complexes are mandatory. As a first encouraging
  step in this direction, we have experimented with a tree structure
  that can store all the simplices of any simplicial complex in a
- compact way and can support fast queries. Simplicial complexes of 500 million simplices have been constructed and stored on a laptop~\cite{bm-dssc-2012}. 
-This data structure deserves a full analysis and fine tuning based on experiments.
-We will also consider simplifications of simplicial complexes that preserve geometric or topological properties.
+ compact way and can support fast queries. Simplicial complexes of 500 million simplices can be routinely constructed and stored on a laptop~\cite{bm-dssc-2012}.  This data structure deserves  full analysis and optimization before it can become the standard representation of simplicial complexes. In addition to designing compact data structures, we will also consider simplifications of simplicial complexes that preserve geometric or topological properties.
 
 
 

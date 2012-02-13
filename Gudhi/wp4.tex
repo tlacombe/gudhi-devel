@@ -4,7 +4,7 @@
 We intend to develop an open source software platform of highest
 quality % that will provide a comprehensive \framebox{sure?} and robust
 % set of tools
-for geometric understanding in high dimension.  The goal
+for geometric understanding in high dimensions.  The goal
 is not to provide code tailored to the numerous potential applications but
 rather to provide the central data structures and algorithms that
 underly any application in geometry understanding in higher
@@ -103,19 +103,21 @@ following the very recipes that made up the success story of the CGAL
 library.  
 
 An important aspect of the work is also to educate students and young
-researchers and to offer them a multidisciplinary expertise covering
-the mathematical, algorithmic and implementation aspects of the subject.
+researchers and to offer them a multidisciplinary education covering
+the mathematical, algorithmic and implementational aspects of the subject.
 
 %\paragraph{Architecture design.}
 
 \paragraph{Data structures.}
-The software platform will provide tools to extract from clouds of
-points the simplicial complexes that are relevant for geometric
-understanding, Rips, tangential Delaunay and witness complexes to
-begin with.  The platform will provide efficient implementation of
-data structures to represent those complexes. In
-particular, the compact data structures developed in Focus Area 1 will be fully
-tested and benchmarked against other representations.
+The software platform will provide tools to extract simplicial
+complexes from point clouds. We will focus our attention to simplicial
+complexes that are relevant for geometric understanding, in the first
+place Rips,
+tangential Delaunay and witness complexes.  The platform will provide
+efficient implementations of data structures to represent those
+complexes. In particular, the compact data structures developed in
+Focus Area 1 will be fully tested and benchmarked against other
+representations.
 
 \paragraph{Basic algorithms.}
 The platform will offer a well chosen set of basic algorithms at the
@@ -129,13 +131,13 @@ also provide some visualization tools.
 
 Parallel implementations as well as out-of-core versions of some
 critical algorithms %whenever possible will also be included so as to
-make possible the handling of huge data sets in high dimensions.
+will make possible the handling of huge data sets in high dimensions.
 
 \paragraph{Applications.}
 Although the Gudhi project is of a fundamental nature, our approach
 and, in particular the software platform, will be used in a few selected  prototype
 applications in collaboration with reknown researchers in neurosciences, medical imaging,
-astrophysics, and dynamical systems.% with whom we will collaborate. 
+astrophysics, and dynamical systems.% with whom we will collaborate.
 
 We will establish a strong collaboration with F. Cazals, leader of a
 research group on computational structural biology at INRIA Sophia
@@ -144,15 +146,16 @@ system with $3n$ degrees of freedom whose dynamics is fully described
 by a point in $6n$ dimensional phase space. Dynamic molecular
 simulations or Monte Carlo simulations are able to sample the energy
 landscape of a molecular system. A better understanding of the
-conformation space of the molecule is likely to improve results for
-many algorithms and help construct simplified models of the
-intramolecular energy. We also intend to study the persistent homology
+sampled conformation space of the molecule is likely to
+foster our understanding of transitions between stable states,
+whence of molecular functions.
+We also intend to study the persistent homology
 of the level sets of those molecular energy landscapes. A key question
-being to derive collective coordinates describing large amplitude -
+ is to derive collective coordinates describing large amplitude -
 low frequency deformations, a process reminiscent from dimensionality
 reduction. We ambition to design collective coordinates incorporating
 the homological constraints --- a topic which has not yet been
-addressed \cite{djw-el-2003}.
+addressed \cite{djw-el-2003}. 
 
 
 
@@ -162,7 +165,7 @@ that are representative of realistic tasks. Some datasets exist in the
 machine learning community (e.g. http://archive.ics.uci.edu/ml/). We
 will create a public repository for new datasets, including synthetic
 datasets with controlled parameters that will be found useful for
-experimenting with our data structures and algorithms. Providing easy
+benchmarking against our data structures and algorithms. Providing easy
 access to such data sets is an important service to the research
 community of geometry understanding in higher dimensions and will help
 building a standard for benchmarking algorithms in the field.
