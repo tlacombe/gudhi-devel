@@ -23,11 +23,12 @@ The goal is to infer geometric and topological properties from defect-laden data
  A major challenge is to combine  statistical approaches relying on powerful models of noise and deterministic methods coming with topological guarantees.  
 % This is a goal we set to ourselves in this project for three different central problems: homology inference, clustering, and signature design.
 
-\framebox{on ne parle plus de stat ensuite}
+%\framebox{on ne parle plus de stat ensuite}
 
 
 \paragraph{Homology inference.}
-Building on the distance function approach efficient and guaranteed algorithms have been developed to infer the homology of general shapes from \v{C}ech or Rips complexes built on top of the data when they are sampled at a small Hausdorff distance of the considered shape \cite{co-tpr-2008}. These algorithms rely on the idea that the topology of the shape is carried by the topology of some unions of balls centered on the data (i.e. the sublevel sets of the distance function to the data) that can itself be related to the topology of the $\alpha$-shape \framebox{not defined before. really needed?} and Rips complexes.  
+Building on the distance function approach efficient and guaranteed algorithms have been developed to infer the homology of general shapes from \v{C}ech or Rips complexes built on top of the data when they are sampled at a small Hausdorff distance of the considered shape \cite{co-tpr-2008}. These algorithms rely on the idea that the topology of the shape is carried by the topology of some unions of balls centered on the data (i.e. the sublevel sets of the distance function to the data) that can itself be related to the topology of the \v{C}ech and Rips complexes. 
+%$\alpha$-shape \framebox{not defined before. really needed?} and Rips complexes.  
 
 To comply with the presence of noise and outliers in the data we intend to explore different approaches inspired from these algorithms.  We will in particular focus on a new paradigm for point cloud data analysis that has emerged recently, where point clouds are no longer treated as mere compact sets but rather as empirical measures. A notion of distance to such measures has been defined and shown to be stable with respect to perturbations of the measure \cite{ccsm-gipm-2011}. This distance can easily be computed pointwise in the case of a point cloud (through averaging the squared distances to the $k$ nearest neighbors), but its sublevel-sets, which carry the geometric information about the measure (or the underlying shape if we consider a model where the data is generated from a measure on the shapes corrupted by some noise), remain hard to compute or approximate.
 
@@ -36,6 +37,8 @@ A related challenge is to find efficient algorithms to compute or approximate,  
 %medium dimensions and use a variant of the mesh-based inference algorithm [14] to approximate
 %the sublevel-sets of the distance to a measure and get an idea of their topological structure.
 
+On another hand, the measure-theoretic approach adopted to introduce and study the distance to a measure is well suited to take the statistical nature of data into account and to develop inference models that combine statistical and geometric methods. This new framework, that opens promising new research directions, has already given rise to fruitful applications in density estimation with topological guarantees on the level sets of the density estimates \cite{bccdr-wknde-11}  and  in geometric deconvolution allowing to recover topological features of shapes sampled with a huge amount of (known) noise  \cite{ccdm-dwmgi-11}.
+
 \paragraph{Clustering with a geometric prior.} \framebox{add ref}
 Clustering may be viewed as the most basic homology inference problem, since it consists in inferring the connected components in the data set. Typical methods for clustering data sets in high dimensions, {\it e.g.,} spectral clustering, work well under three specific assumptions. First, the clusters should be sufficiently connected, for example, the second eigenvalue of their graph Laplacian should be large enough. Second, they should be well separated, that is, the interpoint distances between different clusters should be large enough on average. Third, the clusters should be balanced enough. We intend to develop methods that would take advantage of situations where the clusters have additional properties, such as being nearly convex or smooth, which seems reasonable in the large number of cases where manifold learning techniques apply. A promising strategy would be to use geometric regularity measures stemming from the geometric sampling theory recently introduced in \cite{geometrica-ccl09}. One challenge is to design these regularity measures in such a way that they are both easy to compute and amenable to classical clustering strategies. We expect the resulting clustering schemes to outperform classical spectral clustering when the data exhibit some form of geometric regularity. Byproducts of this effort could also lead to efficient algorithms for assessing the degree of geometric regularity present in real data. 
 
@@ -43,7 +46,7 @@ Clustering may be viewed as the most basic homology inference problem, since it 
 
 \paragraph{Topological signatures for shapes.}
 
-% Shape descriptors are used in a variety of applications, including
+% Shape descriptors are used in a variety of applications, including 
 % shape classification, shape retrieval, shape matching, shape
 % registration, and symmetry detection. % In the context of this proposal,
 % the word {\em shape} must be understood in a very broad sense: for
@@ -60,10 +63,12 @@ cloud~\cite{ccgmo-ghsssp-09, socg-pbsds-10}. This construction is
 well-suited to finite metric spaces, and the obtained signatures are
 known to be stable under small perturbations of the spaces in the
 Gromov-Hausdorff distance.  
-A major remaining challenge is to extend the
-construction to {\em infinite metric spaces} \framebox{motivation?}, and to prove the stability of
+As in many applications data only come with a measure of similarity between the pairs of data points  (that does not satisfy the triangle equality), 
+a major remaining challenge is to extend the construction to {\em general spaces endowed with a similarity measure},
+%A major remaining challenge is to extend the construction to {\em infinite metric spaces} \framebox{motivation?}, 
+and to prove the stability of
 its topological structure with respect to perturbations of the space
-in the Gromov-Hausdorff distance.
+in some Gromov-Hausdorff-like distance.
 
 A more fundamental question is how much information about a shape can
 be recovered from descriptors. As discussed in the state of the art,
