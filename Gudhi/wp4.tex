@@ -134,18 +134,23 @@ critical algorithms %whenever possible will also be included so as to
 will make possible the handling of huge data sets in high dimensions.
 
 \paragraph{Applications.}
-Although the Gudhi project is of a fundamental nature, our approach
-and, in particular the software platform, will be used in a few selected  prototype
-applications in collaboration with renowned researchers in neurosciences, medical imaging,
-astrophysics, and dynamical systems.% with whom we will collaborate.
+The results of the Gudhi project will be used and benchmarked against
+real data. We have selected two main applications, one in molecular
+biology and the other in astrophysics, and intend to
+collaborate with reknown experts in those fields. 
+
+
+% guided by two is of a fundamental nature, our approach
+% and, in particular the software platform, will be used in a few selected  prototype
+% applications in collaboration with renowned researchers in 
 
 We will establish a strong collaboration with F. Cazals, leader of a
 research group on computational structural biology at INRIA Sophia
 Antipolis. A protein or any macromolecule with $n$ atoms is a flexible
 system with $3n$ degrees of freedom whose dynamics is fully described
 by a point in $6n$ dimensional phase space. Dynamic molecular
-simulations or Monte Carlo simulations are able to sample the energy
-landscape of a molecular system. A better understanding of the
+simulations or Monte Carlo simulations are able to sample the {\em energy
+landscape of a molecular system}. A better understanding of the
 sampled conformation space of the molecule is likely to
 foster our understanding of transitions between stable states,
 whence of molecular functions.
@@ -157,12 +162,38 @@ reduction. We ambition to design collective coordinates incorporating
 the homological constraints --- a topic which has not yet been
 addressed \cite{djw-el-2003}. 
 
+We will also collaborate with R. van Weijgaert, an astrophysicist from
+Gronningen University, aiming at understanding the  phase space
+dynamics of {\em cosmic structure formation}. 
+In principle the $n$-body simulations are $6D$ datasets: each particle has 3 spatial
+coordinates and 3 velocity components. Thus, indeed $6D$ phase space.
+In fact, lately the interest in phase-space structure of cosmological
+datasets has risen strongly. The idea is that
+matter of evolving cosmic structure is not evenly distributed but
+defines matter streams which define ever more complex $6$-dimensional
+manifolds. At any location in space, there may be far more
+than 1 stream, and this can be far better understood by looking
+at $6$-dimensional phase space. This is of high interest in the search for
+dark matter. 
+Currently, the observational datasets -- the galaxy surveys -- do
+only provide $3D$ information.
+A very interesting higher dimensional dataset will be produced by
+the Gaia satellite in some 5 years time: this satellite will make
+an unprecedented accurate map of the Galaxy.
+
+In addition to these two major applications, we forsee other
+applications in neurosciences, medical imaging and dynamical
+systems. We will leap on opportunities arising from our new results
+and tools.
+
+
 
 
 \paragraph{Datasets.}
 To benchmark our algorithms, it is important to dispose of datasets
 that are representative of realistic tasks. Some datasets exist in the
 machine learning community (e.g. http://archive.ics.uci.edu/ml/). We
+will also use datasets from molecular biology and astrophysics  We
 will create a public repository for new datasets, including synthetic
 datasets with controlled parameters that will be found useful for
 benchmarking against our data structures and algorithms. Providing easy
