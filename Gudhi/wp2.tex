@@ -11,7 +11,7 @@
 
 \newcommand{\ramsay}[1]{\framebox{#1}}%{\rred{[[#1]]}}
 
-\section*{Focus Area 2: Triangulation of non Euclidean geometric spaces}
+\section*{Focus Area 2: Triangulation of non Euclidean metric spaces}
 
 % Geometric spaces, such as the space of solutions associated with a
 % nonlinear system, frequently appear as a structure of interest
@@ -22,8 +22,10 @@ The challenge is to develop algorithms that can construct simplicial
 complexes approximating manifolds and spaces which cannot be
 represented as subsets of 3-dimensional Euclidean space, and to do
 this efficiently and with guarantees on the approximation qualities of
-the output. %Our experience leaves us uniquely positioned to take up
-%this challenge.
+the output.
+%
+An example of a traditionally desired guarantee is the requirement
+that the constructed complex be homeomorphic to the original space.
 
 \paragraph{Intrinsic Delaunay triangulations of Riemannian manifolds.}
 
@@ -45,12 +47,10 @@ whole. This issue is tackled by manipulating the complex either
 through strategic refinement or perturbation of weights defining the
 neighbour relations. 
 
-The underlying problem is that the metric definining the triangulation
-is not Euclidean.  In order to strengthen the theoretical
-foundations for tackling  these issues,
-% foundations of anisotropic meshing of
-% Euclidean domains, and of meshing general Riemannian manifolds, 
-we intend to develop a deeper understanding of the Delaunay complex
+The underlying problem is that the Delaunay paradigm is being applied
+where the underlying metric is not Euclidean.  In order to strengthen
+the theoretical foundations for tackling these issues, we intend to
+develop a deeper understanding of the intrinsic Delaunay complex
 defined by a Riemannian metric.
 %
 % 2. what is known
@@ -68,25 +68,26 @@ defined by a Riemannian metric.
 % -- algorithms to construct DT on RM
 % -- anisotropic meshes 
 % -- meshes for Bregman manifolds,
-The conditions for intrinsic Delaunay triangulations have so far only
-been established through extrinsic measures on manifolds embedded in
-Euclidean space. We plan to establish sampling criteria based only on
-intrinsic properties of the manifold. The homeomorphism demonstration
-in this abstract setting will require different techniques, but likely
-be more generally useful than the results so far developed for
-specific substructures of an ambient Delaunay triangulation.  We will
-then develop an algorithm to construct the intrinsic Delaunay complex.
-Since exact computation of geodesic distances is out of reach in
-many cases, in particular when the manifold is only known through a
-point sample, we will develop algorithms that are robust with respect to
-approximate (intrinsic) distance computations. We will take
-inspiration from our recent work on anisotropic mesh generation~\cite{bwy-luam-08}.
+The conditions for such intrinsic Delaunay triangulations have so far
+only been established through extrinsic criteria related to manifolds
+embedded in Euclidean space. We plan to establish sampling criteria
+based only on intrinsic properties of the manifold. In this abstract
+setting, the techniques required to demonstrate a homeomorphism with
+the original manifold will be different, but likely more generally
+useful, than those so far developed for specific substructures of an
+ambient Delaunay triangulation.  We will then develop an algorithm to
+construct the intrinsic Delaunay complex.  Since exact computation of
+geodesic distances is out of reach in many cases, in particular when
+the manifold is only known through a point sample, we will develop
+algorithms that are robust with respect to approximate intrinsic
+distance computations. We will take inspiration from our recent work
+on anisotropic mesh generation~\cite{bwy-luam-08}.
 % on a controlled
 % perturbation of a given point set, rather than refining the point set
 % as required in previous algorithms.
-We expect that these results will
-lead to insight into the meshing of spaces equipped with more general
-distance-like measures such as the Bregman divergence.
+We expect that these results will lead to insight into the meshing of
+manifolds equipped with alternatives to a metric, such as Bregman
+divergences with locally defined potential functions.
 
 \paragraph{Manifold reconstruction using Delaunay-like structures.}
 
@@ -122,7 +123,7 @@ $d$.
 % guarantees for witness complexes representing manifolds that are
 % presented only as a discrete metric space.
 As a first step in that direction, we established sufficient (albeit
-quite restrictive) conditions under which the witness complex, the
+quite restrictive) conditions under which the witness complex, and the
 restricted Delaunay triangulation are
 identical~\cite{boissonnat2011cgl}.
 %
@@ -181,10 +182,10 @@ the ambient dimension.
 % -- simplicial complexes too heavy
 % -- find a compromise between dimension reduction techniques and
 % topological methods 
-The homeomorphism guarantees obtained for reconstructing and
-triangulating manifold still generally demand sampling criteria which
-are not realistic in practice. Even if the manifold is known to
-sufficient precision, more light-weight representations may be
+The homeomorphism guarantees obtained for triangulating a manifold
+still generally demand sampling criteria which are not realistic in
+practice. Even if the manifold is known to sufficient precision to
+permit such sampling, more light-weight representations may be
 preferred in some applications.  In order to progress towards
 practical algorithms with meaningful guarantees, satisfactory
 compromises must be found.
@@ -216,18 +217,20 @@ compromises must be found.
 % -- transport distance
 % -- ??
 We plan to explore two avenues to address the problem. On the one
-hand, we will strive to attain relaxed, parameterisable, approximation quality
-measures that yield a meaningful comparison between the algorithmic
-output and the true manifold, given the input data. In the case where
-the manifold is known to high precision, and only the output
-representation is crude, evaluations based on Gromov-Hausdorff
-distance, or Wasserstein-type distances will be investigated.
+hand, we will strive to attain relaxed, parameterisable, approximation
+quality measures that yield a meaningful comparison between the
+algorithmic output and the underlying manifold represented by the
+given input data. This approach is applicable in the case where the
+manifold is known to high precision, and only the output
+representation is crude, due to a fixed vertex budget, for
+example. Evaluations based on Gromov-Hausdorff distance,
+or Wasserstein-type distances will be investigated.
 
-Another approach, appropriate when crude input data is the only
-explicit information about the underlying manifold, is to assume that
-the manifold belongs to some restricted family of manifolds which can
-be differentiated from each other on the basis of little
-information. Thus we wish to be able to prove that the output
+On the other hand, an approach that is appropriate when crude input
+data is the only explicit information about the underlying manifold,
+is to assume that the manifold belongs to some restricted family of
+manifolds which can be distinguished from each other on the basis of
+little information. Thus we wish to be able to prove that the output
 represents the ``projection'' of the true manifold into a restricted
 space of manifolds.
 
@@ -237,7 +240,7 @@ space of manifolds.
 % -- C_8H_{16}
 While manifold triangulation and reconstruction in higher dimensions
 already represents a challenge for effective practical algorithms,
-there is a need to progress to more complicated spaces than
+there is a need to progress to more complicated objects than
 manifolds. Stratified manifolds represent a potentially tractable yet
 flexible generalisation that can model many known naturally occurring
 structures. Examples include conformation spaces of molecules, such as
@@ -264,6 +267,6 @@ manifolds.
 New ideas will be required to develop sampling conditions which can
 yield guarantees for these structures. The algorithms will draw upon
 the theory developed for pure manifolds, as well as the geometric
-inference algorithms discussed in Focus Area 3. In particular,
+inference algorithms discussed in Focus Area 3. In particular, linear
 subspace clustering approaches will be required locally to resolve
 different strata.

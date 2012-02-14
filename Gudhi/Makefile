@@ -3,10 +3,11 @@
 # 20120127
 #
 
-papers= B1 B2
+papers= B1 B2 B12
 
-default: B2
+default: B12
 
+B12: B12.bbl
 B2: B2.bbl
 B1: B1.pdf
 
