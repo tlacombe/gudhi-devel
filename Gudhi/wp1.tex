@@ -14,30 +14,20 @@ A central tenet in this project is that simplicial complexes are the appropriate
 % =====
 
 \paragraph{Delaunay-like  simplicial complexes.} 
-Simplicial complexes have recently been derived from the Delaunay
-triangulation with the intent of offering better compromises between
-complexity and approximation quality. Two such simplicial complexes are 
-of special
-interest for meshing and reconstructing manifolds in high dimensional spaces (Focus Area 2), namely
+Simplicial complexes have recently been derived from the Delaunay triangulation. Given a set of point $P$ lying close to a manifold $\M$, the intent is to construct simplicial complexes on $P$ that provide better compromises between complexity, approximation quality and topological faithfulness than the Rips and the \v{C}ech complexes.  Two such simplicial complexes are of special interest for meshing and reconstructing manifolds in high dimensional spaces (Focus Area 2), namely
  the witness
 complex~\cite{cds-tewc-2004}, and the tangential Delaunay
 complex~\cite{geometrica-7142i}.
 % . Both complexes are embedded in the
 % ambient space and their dimension is generically $k$, the intrinsic
 % dimension of the manifold. Those complexes are thus 
-The
-tangential Delaunay complex is fairly well understood but is more
-difficult to compute than the witness complex since it requires the
-computation of $k$-dimensional Delaunay triangulations, where $k$ is
-the dimension of the manifold.  In contrast, the witness complex is
-easy to compute since only comparisons of interpoint distances are
-needed. Hence, the witness complex can be computed in any discrete
-metric space, as is possible for the Rips complex. %  As for the Rips
+Both can be considered as approximation of the restricted Delaunay complex~\cite{} which is the nerve of the cover of $\M$ by the Voronoi diagram of $P$. By the Nerve Theorem, the restricted Delaunay complex is homotopy equivalent to $\M$ provided that the Voronoi diagram is a good cover of $\M$.  While the restricted Delaunay complex is extremely difficult or even impossible to compute, the tangential Delaunay and the witness complexes are good candidates for practical implementations. % The Delaunay tangential complex is fairly well understood but is more difficult to compute than the witness complex since it requires the computation of $k$-dimensional Delaunay triangulations, where $k$ is the dimension of the manifold.  In contrast, the witness complex is easy to compute since only comparisons of interpoint distances are needed. Hence, the witness complex can be computed in any discrete metric space, as is possible for the Rips complex.
+% As for the Rips
 % complex, the penalty for its computational simplicity is that it is
 % not clear how the witness complex captures the topology of the sampled
 % manifold (see Focus Area 2). 
 
- Both structures uses ideas that can be combined. The tangential complex constructs local triangulations in a way that is reminiscent of dimensionality reduction techniques. Since dimensionality reduction has been flourishing during the last decade, many variations of the basic idea of the tangential complex are conceivable, with the the potential of enlarging its usability. In addition to being easy to compute, the witness complex brings the idea of landmarking, which can also be used in conjonction with the tangential Delaunay complex. We will further look for new
+ Both structures uses ideas that can be combined. The tangential complex constructs local triangulations in a way that is reminiscent of dimensionality reduction techniques. Since dimensionality reduction has been flourishing during the last decade, many variations on the basic idea of the tangential complex are conceivable, with the the potential of enlarging its usability. In addition to being easy to compute, the witness complex brings the idea of landmarking, which can also be used in conjonction with the tangential Delaunay complex. We will further look for new
 variants combining dimensionality reduction, landmarking and Delaunay triangulations. 
 %
 % % Some equivalences between the various types of simplicial complexes are known. For example,
