@@ -55,11 +55,15 @@ Let us illustrate our motivation and objectives through the paradigmatic example
 Many difficulties have to be faced when processing and analyzing
 high-dimensional geometries. First, the dimensionality severely restricts our intuition and ability to visualize the data.  Understanding higher dimensional shapes must hence rely on {\em automated} methods and tools that produce {\em provably correct} results under {\em realistic circumstances}.
 
-Second, major difficulties come from the fact that the complexity of data structures and algorithms used to approximate shapes rapidly grows as the dimensionality increases, which makes them intractable in high dimensions.  This phenomenon, referred to as the {\em curse of dimensionality}, prevents  in particular from subdividing the ambient space, as is usually done in 3-space, since the size of any such subdivision depends exponentially on the ambient dimension. Instead, any practical method must be {\em sensitive to the intrinsic dimension} (usually unknown) of the shape under analysis. As already mentioned, and observed in the cyclo-octane example, the intrinsic dimension can often be assumed to be much lower than the ambient dimension. This is a powerful assumption we refer to as the {\em manifold model}.\footnote{We use the term manifold in a rather liberal way, including stratified manifolds.} %  Note that, in the  cyclo-octane example above, the object of interest is 2-dimensional and lives in a much higher-dimensional ambient space.
+Second, major difficulties come from the fact that the complexity of
+data structures and algorithms used to approximate shapes rapidly
+grows as the dimensionality increases, which makes them intractable in
+high dimensions.  This phenomenon, referred to as the {\em curse of
+  dimensionality}, prevents,  in particular, the subdividing of the ambient space, as is usually done in 3-space, since the size of any such subdivision depends exponentially on the ambient dimension. Instead, any practical method must be {\em sensitive to the intrinsic dimension} (usually unknown) of the shape under analysis. As already mentioned, and observed in the cyclo-octane example, the intrinsic dimension can often be assumed to be much lower than the ambient dimension. This is a powerful assumption we refer to as the {\em manifold model}.\footnote{We use the term manifold in a rather liberal way, including stratified manifolds.} %  Note that, in the  cyclo-octane example above, the object of interest is 2-dimensional and lives in a much higher-dimensional ambient space.
 % but can be modeled as a {\em low-dimensional manifold}.% This is a common assumption  in many applications  that captures the fact that, most of the time, high-dimensional data are associated to physical systems that have a moderate number of  degrees of freedom.%parameters.
 
 
-In addition, high-dimensional data often suffer from significant {\em defects}, including sparsity, noise, and outliers that may hide the intrinsic dimension of the underlying structure. This is particularly so in the case of biological data, such as high throughput data from microarray or other sources. % Moreover, the structure and occurrence of geometric features in the data may depend on the {\em scale} at which it is considered, thus requiring the analysis to automatically select the appropriate scale.  These issues have been considered in the statistical community but not to the same extent in a geometric framework.
+In addition, high-dimensional data often suffer from significant {\em defects}, including sparsity, noise, and outliers that may hide the intrinsic dimension of the underlying structure. This is particularly so in the case of biological data, such as high throughput data from microarrays or other sources. % Moreover, the structure and occurrence of geometric features in the data may depend on the {\em scale} at which it is considered, thus requiring the analysis to automatically select the appropriate scale.  These issues have been considered in the statistical community but not to the same extent in a geometric framework.
 \vspace{-1.5mm}
 
 \paragraph{The emergence of geometry understanding in higher dimensions.}
@@ -82,7 +86,7 @@ until now, the applications have been limited  to rather simple cases and to low
 \vspace{-1.5mm}
 
 \paragraph{The grand challenge~: settling the algorithmic foundations.}
-Since many of the most promising applications are in higher dimensions, there is a pressing need to elaborate more effective tools that scale to real problems.  We identify the lack of  algorithmic foundations for geometry understanding in higher dimensions as 
+Since many of the most promising applications are in higher dimensions, there is a pressing need to develop more effective tools that scale to real problems.  We identify the lack of  algorithmic foundations for geometry understanding in higher dimensions as 
 the main cause of the current limited impact of geometric and topological methods.  Settling such foundations
 %al geometric modeling 
 is a challenge of great theoretical and practical significance at the heart of the Gudhi~project.
@@ -120,7 +124,9 @@ Simplicial complexes are combinatorial structures similar to hypergraphs that en
  The choice of a {\em metric} is another  fundamental issue 
 that determines the type and quality of an approximation.
  The simple Euclidean distance in the ambient space, while easy to deal with, is often not the right choice.  As already mentioned, when working in high dimensional spaces, the objects of interest have often an intrinsic dimension much smaller than the ambient dimension. It is thus important to exploit the {\em intrinsic geometry} of the objects. Computational intrinsic geometry has not been seriously tackled yet and even a basic question like the existence of  Delaunay triangulations on Riemannian manifolds has been elusive so far.  This question is of utmost importance for anisotropic mesh generation and optimal approximations. Another important situation is when data are not provided as  point clouds in some Euclidean space, but rather as a matrix of pairwise distances (i.e., a {\em discrete metric space}). Although such data may not be sampled from geometric subsets of Riemannian manifolds, they may still carry some interesting topological structures that need to be understood. 
-Lastly, let us mention other {\em pseudo-distances} such as Kullback-Leibler, Itakura-Saito or Bregman divergences that may be preferred in information theory, signal and image processing,
+Lastly, let us mention other {\em pseudo-distances} such as
+Kullback-Leibler, Itakura-Saito or Bregman divergences that may be
+preferred in information theory, and signal and image processing.
 % %  In computer  vision, divergences are used throughout all the process of object recognition: to detect features using statistical, algebraic or geometric techniques, and to use these features throughout classifiers.
 % %The recognition of objects in potentially complex scenes is a major issue in Computer Vision. 
 % % Prominent advances in object recognition integrate two essential stages: the induction of features of limited size, over a potentially huge feature space, and the use of these features for learning and classification. 
@@ -145,9 +151,10 @@ Recently,  larger families of noise models  have been considered and statistical
 
 \paragraph{Scientific challenge 4 : Turning theory into practice.}
 A major challenge, if not the most important, is to develop {\em theory} that is {\em of practical significance} for applications.  To take up the challenge, we will % foster a symbiotic relationship between theory and practice, and
-undertake the development of a {\em software platform} devoted to geometry understanding in higher dimensions.  We consider such a platform as central to our research for three main reasons.  {\em First}, the software platform will allow {\em large scale experimentations}, which is mandatory to design the right models and data structures. We believe that this will revitalize the current theory and open {\em new vistas for research}, both of a practical and a theoretical nature, leading towards a virtuous circle between theory and experimental research. This has proven to be highly fruitful when developing the CGAL library. The same will be even more true in high dimensional geometry.
+undertake the development of a {\em software platform} devoted to geometry understanding in higher dimensions.  We consider such a platform as central to our research for three main reasons.  {\em First}, the software platform will allow {\em large scale experimentation}, which is mandatory to design the right models and data structures. We believe that this will revitalize the current theory and open {\em new vistas for research}, both of a practical and a theoretical nature, leading towards a virtuous cycle between theory and experimental research. This has proven to be highly fruitful when developing the CGAL library. The same will be even more true in high dimensional geometry.
 
-{\em Second}, maintaining such a platform will help further effort and {\em consolidation in the long run}.  Having a library with interoperable modules will allow us to incrementally add more and more sophisticated tools based on solid foundations.  This is consistent with our long-term vision and our conviction that it is only through such a long standing effort that true impact, both theoretical and applied, can be gained.
+{\em Second}, maintaining such a platform will help further efforts
+and enable {\em consolidation in the long run}.  Having a library with interoperable modules will allow us to incrementally add more and more sophisticated tools based on solid foundations.  This is consistent with our long-term vision and our conviction that it is only through such a long standing effort that true impact, both theoretical and applied, can be gained.
 
 {\em Third}, the platform will serve as a unique tool to {\em communicate} with the computational geometry community and with researchers from other fields. 
  In return, we will get feedback from practitioners which will help shape the theoretical models and the software platform.
@@ -211,7 +218,10 @@ The proposal is structured into the following four {\em focus areas}  that addre
 %. Although risky, we argue that this approach is key to success. It can be argued that  my research group Geometrica is the best team worldwide to take up the challenge and to make this project a success. 
 
 My personal record as well as the record of my research group Geometrica are strong indications of my ability to take up the challenge of simultaneously conducting basic research at the best international level and developing software of the highest quality with good chances of success.  
-Geometrica has been at the cutting edge of research in geometric data structures and algorithms~\cite{by-ag-98}, mesh generation~\cite{geometrica-ecg-book}, manifold reconstruction~\cite{geometrica-7142i,geometrica-bgo-09}, geometric inference and computational topology~\cite{geometrica-ccl09,geometrica-cseh-07}. Geometrica is also one of the leader teams of the CGAL project (www.cgal.org).  We were at the source of successful developments in CGAL like interval arithmetics, 2 and 3-dimensional triangulations (now integrated in the heart of Matlab) and meshing packages. We also took a prominent part in the organization of the CGAL project and community, and in the creation of the spinoff GeometryFactory.
+Geometrica has been at the cutting edge of research in geometric data
+structures and algorithms~\cite{by-ag-98}, mesh
+generation~\cite{geometrica-ecg-book}, manifold
+reconstruction~\cite{geometrica-7142i,geometrica-bgo-09}, and geometric inference and computational topology~\cite{geometrica-ccl09,geometrica-cseh-07}. Geometrica is also one of the leader teams of the CGAL project (www.cgal.org).  We were at the source of successful developments in CGAL like interval arithmetics, 2 and 3-dimensional triangulations (now integrated in the heart of Matlab) and meshing packages. We also took a prominent part in the organization of the CGAL project and community, and in the creation of the spinoff GeometryFactory.
 %
 %The research won't be conducted in isolation.  
 We will benefit from our strong collaborations with the best groups in US and  Europe,
