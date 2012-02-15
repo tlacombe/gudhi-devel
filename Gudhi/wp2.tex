@@ -19,8 +19,7 @@
 % such a space is the best representation possible for computational
 % purposes. A simplicial complex can fill that role;
 The challenge is to develop algorithms that can construct simplicial
-complexes approximating manifolds and spaces which cannot be
-represented as subsets of 3-dimensional Euclidean space, and to do
+complexes approximating manifolds and spaces, and to do
 this efficiently and with guarantees on the approximation qualities of
 the output.
 %
@@ -48,7 +47,7 @@ through strategic refinement or perturbation of weights defining the
 neighbour relations. 
 
 The underlying problem is that the Delaunay paradigm is being applied
-where the underlying metric is not Euclidean.  In order to strengthen
+where the meaningful metric is not Euclidean.  In order to strengthen
 the theoretical foundations for tackling these issues, we intend to
 develop a deeper understanding of the intrinsic Delaunay complex
 defined by a Riemannian metric.
@@ -68,17 +67,18 @@ defined by a Riemannian metric.
 % -- algorithms to construct DT on RM
 % -- anisotropic meshes 
 % -- meshes for Bregman manifolds,
-The conditions for such intrinsic Delaunay triangulations have so far
-only been established through extrinsic criteria related to manifolds
-embedded in Euclidean space. We plan to establish sampling criteria
-based only on intrinsic properties of the manifold. In this abstract
-setting, the techniques required to demonstrate a homeomorphism with
-the original manifold will be different, but likely more generally
-useful, than those so far developed for specific substructures of an
-ambient Delaunay triangulation.  We will then develop an algorithm to
-construct the intrinsic Delaunay complex.  Since exact computation of
-geodesic distances is out of reach in many cases, in particular when
-the manifold is only known through a point sample, we will develop
+The conditions for the existence of such intrinsic Delaunay
+triangulations have so far only been established through extrinsic
+criteria related to manifolds embedded in Euclidean space. We plan to
+establish sampling criteria based only on intrinsic properties of the
+manifold. In this abstract setting, the techniques required to
+demonstrate a homeomorphism with the original manifold will be
+different, but likely more generally useful, than those so far
+developed for specific substructures of an ambient Delaunay
+triangulation.  We will then develop an algorithm to construct the
+intrinsic Delaunay complex.  Since exact computation of geodesic
+distances is out of reach in many cases, in particular when the
+manifold is only known through a point sample, we will develop
 algorithms that are robust with respect to approximate intrinsic
 distance computations. We will take inspiration from our recent work
 on anisotropic mesh generation~\cite{bwy-luam-08}.

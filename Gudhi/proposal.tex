@@ -22,7 +22,7 @@ foundations of geometry understanding in dimensions higher than 3.  We
 coin the term {\em geometry understanding} to encompass a collection
 of tasks including the computer representation and the approximation
 of geometric structures, and the inference of geometric or topological
-properties from sampled
+properties of sampled
 shapes.  
 
 
@@ -49,7 +49,7 @@ We now present the state of the art and the scientific objectives of our proposa
 \paragraph{Dimensionality reduction.} A widely accepted assumption in scientific computing and data analysis is that the objects of interest can be modeled as {\em low-dimensional manifolds}, even if they are embedded in high-dimensional ambient spaces. Low here is to be understood with respect to the ambient dimension and may be significantly higher than 3. This powerful assumption is supported by the fact that data are most of the time associated with physical systems that have relatively few degrees of freedom.  This assumption is valid across science and engineering and is at the heart of dimensionality reduction and manifold learning.
 %Examples can be found in fields as varied as chemistry~\cite{mtcw-tco-2010}, %neurosciences~\cite{} and  image processing~\cite{cids-lbsni-2008}.
 {\em Dimensionality reduction} techniques intend to infer the intrinsic dimensionality of the data, as well as to provide structure-preserving mappings of the data into lower-dimensional spaces. {\em Nonlinear} dimensionality reduction techniques~\cite{lv-nldr-2007} are capable of discovering {nonlinear} structures and have been successfully applied to analyze data in a wide range of applications.
-Nevertheless, these methods come with no or very limited guarantees. For example, Isomap~\cite{tsl-isomap-2000} provides a correct embedding only if the manifold is isometric to a convex open set of $\R ^k$, where $k$ is the dimension of the manifold, and LLE~\cite{rs-lle-2000} can only reconstruct topological balls. {\em Topological methods} are complementary to dimension reduction methods. They intend to better capture the geometry and the topology of manifolds represented as simplicial complexes.
+Nevertheless, these methods come with no or very limited guarantees. For example, Isomap~\cite{tsl-isomap-2000} provides a correct embedding only if the manifold is isometric to a convex open set of $\R ^k$, where $k$ is the dimension of the manifold, and LLE~\cite{rs-lle-2000} can only reconstruct topological balls. {\em Geometric and topological methods} are complementary to dimension reduction methods. They intend to better capture the geometry and the topology of manifolds represented as simplicial complexes.
 % by constructing piecewise linear approximations, most of the time  in the form of simplicial %complexes.
 
 %However, they are only guaranteed to work on data sets sampled from manifolds with low curvature and trivial topology.
@@ -61,20 +61,22 @@ Nevertheless, these methods come with no or very limited guarantees. For example
 Simplicial complexes are combinatorial structures similar to hypergraphs that encode proximity relationships between subsets of points.
 %Progress in higher-dimensions so far has been mostly theoretical and a  huge gap  remains to be %filled before  having at one's disposal fully satisfactory solutions of practical significance.% One research direction is to invent simplicial complexes of small complexity and easy to compute that still capture the main features of the underlying shape. see Attali and Carlsson. 
 Simplicial complexes have been extensively used in $\R ^3$ to produce fine meshes  providing a precise approximation of the geometry  (for the Hausdorff distance) and of the topology  (homeomorphism) of nonlinear manifolds.  Such precise approximations are
- well suited for scientific computing and visualization purposes.  In computational topology, simplicial complexes are also used to infer coarser topological properties of sampled shapes, most importantly {\em homological invariants}~\cite{kmm-ch-2003}. Multiscale topological analysis can be based on {\em filtrations} (i.e., nested families of simplicial complexes) and the recent theory of {\em persistent homology}~\cite{hh-ct-2010,az-tfc-2009}. 
+ well suited for scientific computing and visualization purposes.  In computational topology, simplicial complexes are also used to infer topological properties of sampled shapes, most importantly {\em homological invariants}~\cite{kmm-ch-2003}.  Well known examples of simplicial complexes used in this context are the \v{C}ech and the Rips complexes. The \v{C}ech 
+complex is the nerve of a set of balls (of some radius $\varepsilon$) centered at the data points. 
+The Rips complex  has the same edges as the \v{C}ech complex and its higher-dimensional simplices are obtained by computing all the cliques in the graph of its edges (complexes that can be obtained in this way from their 1-skeleton are called {\em flag} complexes). By varying $\varepsilon$, we obtain nested families of simplicial complexes, known as {\em filtrations.}
+Multiscale topological analysis based on {\em filtrations} is at the heart of the recent theory of {\em persistent homology}~\cite{hh-ct-2010,az-tfc-2009}.
  
 Simplicial simplexes have been studied for a long time by the mathematical community but the {\em algorithmic} side of the theory is still in its infancy. Most of the known simplicial complexes are either extremely difficult to compute, even in moderate dimensions, because their construction involves high-degree algebra (e.g., the  \v{C}ech complex) or easy to compute but so big that they cannot be constructed from real high-dimensional data (e.g., the Rips complex). Current research aims at finding new types of simplicial complexes that are easy to compute while still capturing the essential geometric and topological features of shapes. Recent progress has been made with the discovery of Delaunay-like complexes, such as the witness complex~\cite{cds-tewc-2004} and the Delaunay tangential complex~\cite{geometrica-7142i}, that offer new compromises between complexity and approximation quality.
 
  
-Another issue is the {\em computer representation} of simplicial complexes. 
-Little work has been done on the design of data structures for general
-simplicial complexes. Brisson~\cite{Brisson:1989:RGS:73833.73858} and
+Another issue is the  design of {\em data structures } to encode simplicial complexes.
+Little work has been done on this subject. Brisson~\cite{Brisson:1989:RGS:73833.73858} and
 Lienhardt~\cite{DBLP:journals/ijcga/Lienhardt94} have introduced data
 structures to represent $d$-dimensional cell complexes. These data
 structures are general and powerful, but very redundant, and they do
 not scale to large data sets in high dimensions.  In contrast, one
 could store only the 1-skeleton of the complex (edges and vertices). This 
-saves a lot of memory space at the penalty of having to recover the full complex when needed, e.g., to store a filtration. This expansion can be done in a purely combinatorial way, thus very efficiently, in the special case of flag complexes (among which the Rips complex is a prominent example). Elaborating on this idea, Attali et al.~\cite{Attali2011} have proposed a concise data structure that is efficient when applied to simplicial complexes that are {\em close} to flag complexes. Still, designing efficient data structures to represent simplicial complexes is a widely open area.
+saves a lot of memory space at the penalty of having to recover the full complex when needed, e.g., to store a filtration. This expansion can be done in a purely combinatorial way, thus very efficiently, in the special case of flag complexes. Elaborating on this idea, Attali et al.~\cite{Attali2011} have proposed a concise data structure that is efficient when applied to simplicial complexes that are {\em close} to flag complexes. Still, designing efficient data structures to represent simplicial complexes is a widely open area.
 
 % is enough to recover the full complex in the case of fl
 
@@ -82,7 +84,7 @@ saves a lot of memory space at the penalty of having to recover the full complex
 \vspace{2mm}
 
 {\bf Objective 1:} {\em 
-To extend  current knowledge of simplicial complexes, most notably their combinatorial and algorithmic properties.   To fully understand Delaunay-like simplicial complexes.  To design new  compact representation of simplicial complexes.}
+To extend  current knowledge of simplicial complexes, most notably their combinatorial and algorithmic properties.   To fully understand Delaunay-like simplicial complexes.  To design new  compact data structures to encode simplicial complexes.}
 
 \paragraph{Geometric approximation.}
 In low dimensions, computing a geometric approximation of a given geometric
@@ -100,14 +102,14 @@ A natural way to bypass the curse of dimensionality is to directly
 work on the manifold and to resort to {\em intrinsic geometry}. What
 is lacking is a full development of Riemannian computational
 geometry. A central question in our context, which has been elusive
-for a long time, asks for the existence of Delaunay triangulations on
+for a long time, asks for the existence of intrinsic Delaunay triangulations on
 Riemannian manifolds. Previously announced sampling
 criteria~\cite{leibon2000} for the existence of intrinsic Delaunay
 triangulations have recently been demonstrated to be insufficient, and
 sufficient criteria were introduced~\cite{boissonnat2012stab}. This opens exciting avenues for new developments on Delaunay triangulations in Riemannian manifolds and other non Euclidean spaces. Once again, what is profoundly lacking is the algorithmic side of the theory and the development of efficient algorithms.  A first promising step towards this goal is an anisotropic meshing algorithm that we proved correct and implemented~\cite{bwy-luam-08}.
 
 
-Another fundamental problem is {\em manifold reconstruction} which consists in computing an approximation of a geometric structure given a point sample.  In low dimensions, effective reconstruction techniques exist that can provide precise geometric approximations very efficiently and under reasonable sampling conditions~\cite{dey-csr-2007}. % Further processing makes it possible to study their topological and geometric properties.
+Another fundamental problem is {\em shape reconstruction} which consists in computing an approximation of a geometric structure given a point sample.  In low dimensions, %effective reconstruction techniques exist that can provide precise geometric approximations very efficiently and under reasonable sampling conditions~\cite{dey-csr-2007}. % Further processing makes it possible to study their topological and geometric properties.
 However,   almost all these methods rely on the computation of a triangulation of the ambient space and previous attempts to extend them to higher dimensions led to algorithms whose complexities depends exponentially in the ambient dimension.  Despite some very recent results~\cite{geometrica-7142i}, designing practical algorithms that can reconstruct smooth submanifolds of high-dimensional spaces under mild sampling conditions remains widely open. Extension beyond smooth manifolds is even more challenging.
 
 % n addition to the computational bottleneck, 
@@ -140,7 +142,7 @@ Building on the persistent homology theory new topological descriptors have been
 
 \vspace{2mm}
 
-{\bf Objective 3 :} To study new {\em robust models for geometric and topological inference}.  To cluster data with a geometric prior. To study topological signatures of shapes.
+{\bf Objective 3 :} {\em To study new {\em robust models for geometric and topological inference}.  To cluster data with a geometric prior. To study topological signatures of shapes.}
 
 \paragraph{Theory versus practice.} 
 Geometric and topological methods are well behind dimensionality reduction techniques in terms of 
@@ -178,7 +180,7 @@ To apply our techniques to a few key problems where they may have a huge impact.
 %
 
 
-The proposal is structured into four areas that focus on objectives 1-4 mentioned above.
+The proposal is structured into four focus areas that address the objectives mentioned above.
 % which we now describe in more detail. 
 
 
@@ -231,7 +233,7 @@ We expect several researchers among our current partners (in particular in the C
 \includegraphics[width=\textwidth]{budget2}
 
 
-\newpage
+
 
 {\footnotesize
 %\bibliographystyle{alpha}
