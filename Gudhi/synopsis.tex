@@ -74,7 +74,7 @@ Such techniques are widely used but have limited guarantees and
 impose strong constraints on the dimension or topology of the shapes they can successfully handle. 
 
 The techniques developed in {\em computational geometry and topology}  are complementary. They aim at processing and analyzing shapes with non trivial geometry and topology~\cite{hh-ct-2010}. 
-Emblematic problems such as mesh generation and surface reconstruction in 3-dimensions are now well-understood and several provably correct and highly efficient solutions are now available~\cite{geometrica-ecg-book}. 
+Emblematic problems such as mesh generation and surface reconstruction in 3-dimensions are now well-understood and several provably correct and highly efficient solutions are  available~\cite{geometrica-ecg-book}. 
 %The concepts of $\varepsilon$-samples, restricted Delaunay triangulation, anisotropic meshes %emerged together with the first efficient and provably correct algorithms for 
 
 Attempts to analyze higher dimensional shapes led to the development of beautiful pieces of theory with deep roots in various areas of mathematics like Riemannian geometry, geometric measure theory, differential and algebraic topology. Let us mention  the emergence of a sampling theory of geometric objects, and of geometric inference~\cite{geometrica-ccl09}, and the emergence and rapid growth of persistent homology~\cite{eh-ph-2008} and topological data analysis~\cite{gc-td-2009}.
@@ -113,7 +113,7 @@ We strongly believe that, by following this paradigm,  our ambitious objective i
 As discussed above, dimensionality reduction techniques cannot provide precise approximation of complicated shapes (as required in scientific computing) nor compute essential features of a shape like its topological invariants.
 % In the last decades, a set of new geometric methods, known as manifold learning, have been developed with the intent of parametrizing nonlinear shapes embedded in high-dimensional spaces. Although widely used, those methods  assume very restrictive hypotheses on the geometry of the manifolds sampled by the datapoints to ensure correctness. 
 More expressive representations of shapes are provided % , inspired by what has been done in 3-dimensions, consists in approximating
-by {\em simplicial complexes}, the analogue of triangulations in higher dimensions.
+by {\em simplicial complexes}, the higher dimensional analogue of triangulations.
 Simplicial complexes are combinatorial structures similar to hypergraphs that encode relationships between subsets of points.
 %Progress in higher-dimensions so far has been mostly theoretical and a  huge gap  remains to be %filled before  having at one's disposal fully satisfactory solutions of practical significance.% One research direction is to invent simplicial complexes of small complexity and easy to compute that still capture the main features of the underlying shape. see Attali and Carlsson. 
  Simplicial complexes can be used to produce fine meshes well suited to scientific computing purposes~\cite{mh-mpc-2002,boissonnat2010meshing}, or much coarser approximations still useful to infer some important features of shapes such as their homology or some local geometric properties~\cite{geometrica-ccl09,nsw-fhm-2008}. 
@@ -151,7 +151,7 @@ Recently,  larger families of noise models  have been considered and statistical
 
 \paragraph{Scientific challenge 4 : Turning theory into practice.}
 A major challenge, if not the most important, is to develop {\em theory} that is {\em of practical significance} for applications.  To take up the challenge, we will % foster a symbiotic relationship between theory and practice, and
-undertake the development of a {\em software platform} devoted to geometry understanding in higher dimensions.  We consider such a platform as central to our research for three main reasons.  {\em First}, the software platform will allow {\em large scale experimentation}, which is mandatory to design the right models and data structures. We believe that this will revitalize the current theory and open {\em new vistas for research}, both of a practical and a theoretical nature, leading towards a virtuous cycle between theory and experimental research. This has proven to be highly fruitful when developing the CGAL library. The same will be even more true in high dimensional geometry.
+undertake the development of a {\em software platform} devoted to geometry understanding in higher dimensions.  We consider such a platform as central to our research for three main reasons.  {\em First}, the software platform will allow {\em large scale experimentation}, which is mandatory to design the right models and data structures. We believe that this will revitalize the current theory and open {\em new vistas for research}, both of a practical and a theoretical nature, leading towards a virtuous cycle between theory and experimental research. This has proven to be highly fruitful when developing the CGAL library (\url{http://www.cgal.org}{}). The same will be even more true in high dimensional geometry.
 
 {\em Second}, maintaining such a platform will help further efforts
 and enable {\em consolidation in the long run}.  Having a library with interoperable modules will allow us to incrementally add more and more sophisticated tools based on solid foundations.  This is consistent with our long-term vision and our conviction that it is only through such a long standing effort that true impact, both theoretical and applied, can be gained.
@@ -162,7 +162,7 @@ and enable {\em consolidation in the long run}.  Having a library with interoper
 
 \paragraph{Objectives and research roadmap.}
 The ambition of this proposal is to settle the {\em algorithmic
-foundations} of geometry understanding in {\em dimensions higher than
+foundations of geometry understanding in dimensions higher than
 3}.  We intend to develop {\em scalable representations in the form of simplicial complexes} and {\em
 practical algorithms} to approximate {\em highly nonlinear shapes}, and to
 infer geometric and topological properties from data subject to
@@ -221,7 +221,7 @@ My personal record as well as the record of my research group Geometrica are str
 Geometrica has been at the cutting edge of research in geometric data
 structures and algorithms~\cite{by-ag-98}, mesh
 generation~\cite{geometrica-ecg-book}, manifold
-reconstruction~\cite{geometrica-7142i,geometrica-bgo-09}, and geometric inference and computational topology~\cite{geometrica-ccl09,geometrica-cseh-07}. Geometrica is also one of the leader teams of the CGAL project (www.cgal.org).  We were at the source of successful developments in CGAL like interval arithmetics, 2 and 3-dimensional triangulations (now integrated in the heart of Matlab) and meshing packages. We also took a prominent part in the organization of the CGAL project and community, and in the creation of the spinoff GeometryFactory.
+reconstruction~\cite{geometrica-7142i,geometrica-bgo-09}, and geometric inference and computational topology~\cite{geometrica-ccl09,geometrica-cseh-07}. Geometrica is also one of the leader teams of the CGAL project (\url{http://www.cgal.org}{}).  We were at the source of successful developments in CGAL like interval arithmetics, 2 and 3-dimensional triangulations (now integrated in the heart of Matlab) and meshing packages. We also took a prominent part in the organization of the CGAL project and community, and in the creation of the spinoff GeometryFactory.
 %
 %The research won't be conducted in isolation.  
 We will benefit from our strong collaborations with the best groups in US and  Europe,
@@ -255,7 +255,7 @@ Upon successful completion, the Gudhi project will put geometry understanding in
 \begin{thebibliography}{}
 \vspace{-2mm}
 
-{\footnotesize
+{\small %footnotesize
 \bibitem[Boissonnat and Ghosh, 2010b]{boissonnat2010meshing}
 Boissonnat, J.-D. and Ghosh, A. (2010b).
 \newblock Triangulating smooth submanifolds with light scaffolding.
