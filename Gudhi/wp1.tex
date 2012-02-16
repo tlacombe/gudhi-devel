@@ -21,14 +21,14 @@ complex~\cite{geometrica-7142i}.
 % . Both complexes are embedded in the
 % ambient space and their dimension is generically $k$, the intrinsic
 % dimension of the manifold. Those complexes are thus 
-Both can be considered as approximation of the restricted Delaunay complex, a subcomplex of the Delaunay triangulation that is known to be topology equivalent to $\M$ under appropriate conditions on $P$~\cite{dey-csr-2007}. %  which is the nerve of the cover of $\M$ by the Voronoi diagram of $P$. By the Nerve Theorem, the restricted Delaunay complex is homotopy equivalent to $\M$ provided that the Voronoi diagram is a good cover of $\M$. 
+Both can be considered as approximations of the restricted Delaunay complex, a subcomplex of the Delaunay triangulation that is known to be topology equivalent to $\M$ under appropriate conditions on $P$~\cite{dey-csr-2007}. %  which is the nerve of the cover of $\M$ by the Voronoi diagram of $P$. By the Nerve Theorem, the restricted Delaunay complex is homotopy equivalent to $\M$ provided that the Voronoi diagram is a good cover of $\M$. 
 While the restricted Delaunay complex is extremely difficult or even impossible to compute, the tangential Delaunay and the witness complexes are good candidates for practical implementations. % The Delaunay tangential complex is fairly well understood but is more difficult to compute than the witness complex since it requires the computation of $k$-dimensional Delaunay triangulations, where $k$ is the dimension of the manifold.  In contrast, the witness complex is easy to compute since only comparisons of interpoint distances are needed. Hence, the witness complex can be computed in any discrete metric space, as is possible for the Rips complex.
 % As for the Rips
 % complex, the penalty for its computational simplicity is that it is
 % not clear how the witness complex captures the topology of the sampled
 % manifold (see Focus Area 2). 
 
- Both structures uses ideas that can be combined. The tangential complex constructs local triangulations in a way that is reminiscent of dimensionality reduction techniques. Since dimensionality reduction has been flourishing during the last decade, many variations on the basic idea of the tangential complex are conceivable, with the the potential of enlarging its usability. In addition to being easy to compute, the witness complex brings the idea of landmarking, which can also be used in conjonction with the tangential Delaunay complex. We will further look for new
+ Both structures use ideas that can be combined. The tangential complex constructs local triangulations in a way that is reminiscent of dimensionality reduction techniques. Since dimensionality reduction has been flourishing during the last decade, many variations on the basic idea of the tangential complex are conceivable, with the the potential of enlarging its usability. In addition to being easy to compute, the witness complex brings the idea of landmarking (subsampling), which can also be used in conjunction with the tangential Delaunay complex. We will further look for new
 variants combining dimensionality reduction, landmarking and Delaunay triangulations. 
 %
 % % Some equivalences between the various types of simplicial complexes are known. For example,
@@ -47,18 +47,21 @@ We want to understand the various properties of Delaunay-based simplicial comple
 \paragraph{Combinatorial and algorithmic complexity.}
 
 Since the main limitation to using simplicial complexes is their combinatorial and algorithmic complexity, we will devote time towards better understanding those questions, both theoretically and experimentally.  % We intend to study random abstract complexes as well as geometric simplicial complexes from a combinatorial and an algorithmic point of view.
-A central question is to obtain {\em complexity bounds} for simplicial complexes of well sampled substructures such as submanifolds. We will consider various types of random or deterministic simplicial complexes.  We intend to measure the effect of {\em perturbations} (either noise or computed perturbations) on the mathematical properties and combinatorial complexity of those structures, and to develop {\em probabilistic analyses}.  In addition to their combinatorial complexity, the {\em complexity of algorithms} that construct the simplicial complexes is to be precisely analyzed under realistic models. In particular, expected complexity and output-sensitive complexity analyses will be performed in addition to worst-case analysis. % Due to the potential huge size of simplicial complexes,
+A central challenge is to obtain {\em complexity bounds} for simplicial complexes of well sampled substructures such as submanifolds. We will consider various types of random or deterministic simplicial complexes.  We intend to measure the effect of {\em perturbations} (either noise or computed perturbations) on the mathematical properties and combinatorial complexity of those structures, and to develop {\em probabilistic analyses}.  In addition to their combinatorial complexity, the {\em complexity of algorithms} that construct the simplicial complexes is to be precisely analyzed under realistic models. In particular, expected complexity and output-sensitive complexity analyses will be performed in addition to worst-case analysis. % Due to the potential huge size of simplicial complexes,
 We will also develop parallel and out-of-core algorithms.% will also be developed. % Efficient algorithms to simplify simplicial complexes while preserving some properties such as their topological type will also be searched.
 
 
 \paragraph{Compact data structures to encode simplicial complexes.}  We will develop efficient data structures to encode {\em general} simplicial complexes. 
-An open question is to establish bounds on the minimal size of data structures encoding simplicial complexes. Another major question is to design succinct data structures
+An open problem is to establish bounds on the minimal size of data structures encoding simplicial complexes. Another major challenge is to design succinct data structures
 in the spirit of what has been done for trees and graphs~\cite{Ferragina:2005:SLT:1097112.1097456,Munro:2002:SRB:586840.586885}. 
- Theoretical guarantees and large scale experimentations on various
+ Theoretical guarantees and large scale experimentation on various
  types of simplicial complexes are mandatory. As a first encouraging
  step in this direction, we have experimented with a tree structure
  that can store all the simplices of any simplicial complex in a
- compact way and can support fast queries. Simplicial complexes of 500 million simplices can be routinely constructed and stored on a laptop~\cite{bm-dssc-2012}.  This data structure deserves  full analysis and optimization before it can become the standard for encoding simplicial complexes. In addition to designing compact data structures, we will also consider simplifications of simplicial complexes that preserve geometric or topological properties.
+ compact way and can support fast queries. Simplicial complexes of 500 million simplices can be routinely constructed and stored on a laptop~\cite{bm-dssc-2012}.  
+% This data structure deserves full analysis and optimization before it can become the standard for encoding simplicial complexes.
+This data structure already represents a significant leap forward from the state of the art. It desrves further analysis and optimisation, and continued research is expected to yield encodings capable of sizes orders of magnitude higher still.
+In addition to designing compact data structures, we will also consider simplifications of simplicial complexes that preserve geometric or topological properties.
 
 
 
