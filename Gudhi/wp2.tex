@@ -127,12 +127,10 @@ quite restrictive) conditions under which the witness complex, and the
 restricted Delaunay triangulation are
 identical~\cite{boissonnat2011cgl}.
 %
-
 As yet, no algorithm for landmark selection has been developed which
-meets the required sampling conditions.  We plan to develop the
-techniques of controlled perturbation~\cite{funke2005cp} in this
-context, using the tangential complex paradigm to avoid dependence on
-the ambient dimension.
+meets these required sampling conditions.  We plan achieve this
+through perturbation techniques, using the tangential complex paradigm
+to avoid dependence on the ambient dimension.
 
 % The challenge remains that the topology of the witness complex is not
 % well understood.  Conditions which guarantee that the restrcited
@@ -218,15 +216,15 @@ compromises must be found.
 % -- ??
 We plan to explore two avenues to address the problem. On the one
 hand, we will strive to attain relaxed, parameterisable, approximation
-quality measures that yield a meaningful comparison between the
+quality metrics that yield a meaningful comparison between the
 algorithmic output and the underlying manifold represented by the
 given input data. This approach is applicable in the case where the
 manifold is known to high precision, and only the output
 representation is crude, due to a fixed vertex budget, for
 example. Evaluations based on Gromov-Hausdorff distance,
-or Wasserstein-type distances will be investigated.
+and Wasserstein-type distances will be investigated.
 
-On the other hand, an approach that is appropriate when crude input
+On the other hand, an appropriate approach, when crude input
 data is the only explicit information about the underlying manifold,
 is to assume that the manifold belongs to some restricted family of
 manifolds which can be distinguished from each other on the basis of
@@ -258,7 +256,7 @@ strata being manifolds with boundaries.
 
 % 3. workplan
 We plan to develop algorithms for meshing and reconstructing manifolds
-with boundary with an aim for applications to stratified
+with boundary with an aim towards applications to stratified
 manifolds. 
 % Thus a complementary task will be to triangulate a manifold
 % whose boundary has already been triangulated, and thus obtain a means
