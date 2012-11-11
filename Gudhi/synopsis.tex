@@ -46,7 +46,7 @@ Second, major difficulties come from the fact that the complexity of
 data structures and algorithms used to approximate shapes rapidly
 grows as the dimensionality increases, which makes them intractable in
 high dimensions.  This phenomenon, referred to as the {\em curse of
-  dimensionality}, prevents,  in particular, the subdividing of the ambient space, as is usually done in 3-space, since the size of any such subdivision depends exponentially on the ambient dimension. Instead, any practical method must be {\em sensitive to the intrinsic dimension} (usually unknown) of the shape under analysis. As already mentioned, and observed in the cyclo-octane example, the intrinsic dimension can often be assumed to be much lower than the ambient dimension. This is a powerful assumption we refer to as the {\em manifold model}.\footnote{We use the term manifold in a rather liberal way, including stratified manifolds.} %  Note that, in the  cyclo-octane example above, the object of interest is 2-dimensional and lives in a much higher-dimensional ambient space.
+  dimensionality}, prevents,  in particular, subdividing  the ambient space, as is usually done in 3-space, since the size of any such subdivision depends exponentially on the ambient dimension. Instead, any practical method must be {\em sensitive to the intrinsic dimension} (usually unknown) of the shape under analysis. As already mentioned, and observed in the cyclo-octane example, the intrinsic dimension can often be assumed to be much lower than the ambient dimension. This is a powerful assumption we refer to as the {\em manifold model}.\footnote{We use the term manifold in a rather liberal way, including stratified manifolds.} %  Note that, in the  cyclo-octane example above, the object of interest is 2-dimensional and lives in a much higher-dimensional ambient space.
 % but can be modeled as a {\em low-dimensional manifold}.% This is a common assumption  in many applications  that captures the fact that, most of the time, high-dimensional data are associated to physical systems that have a moderate number of  degrees of freedom.%parameters.
 
 
@@ -64,8 +64,12 @@ The techniques developed in {\em computational geometry and topology}  are compl
 Emblematic problems such as mesh generation and surface reconstruction in 3-dimensions are now well-understood and several provably correct and highly efficient solutions are  available~\cite{geometrica-ecg-book}. 
 %The concepts of $\varepsilon$-samples, restricted Delaunay triangulation, anisotropic meshes %emerged together with the first efficient and provably correct algorithms for 
 
-Attempts to analyze higher dimensional shapes led to the development of beautiful pieces of theory with deep roots in various areas of mathematics like Riemannian geometry, geometric measure theory, differential and algebraic topology. Let us mention the emergence of a sampling theory of geometric objects, and of geometric inference~\cite{geometrica-ccl09}, and the emergence and rapid growth of persistent homology~\cite{eh-ph-2008} and topological data analysis~\cite{gc-td-2009}.  These advances attracted interest from several fields like biological data analysis~\cite{fpgo-airc-2009} % , computer vision~\cite{cids-lbsni-2008} 
-or sensor networks~\cite{rg-bptd-2008}, and led to a new startup company, co-founded by G. Carlsson, a mathematician from Stanford university (\url{(http://www.ayasdi.com/}{}).  However, until now, the applications have been limited to rather simple cases and to low dimensions.
+Attempts to analyze higher dimensional shapes led to the development of beautiful pieces of theory with deep roots in various areas of mathematics like Riemannian geometry, geometric measure theory, differential and algebraic topology. Let us mention the emergence of a sampling theory of geometric objects, and of geometric inference~\cite{geometrica-ccl09}, and the emergence and rapid growth of persistent homology~\cite{eh-ph-2008} and topological data analysis~\cite{gc-td-2009}.  These advances attracted interest from several fields like chemistry, as noted above, biological data analysis~\cite{fpgo-airc-2009},  % , computer vision~\cite{cids-lbsni-2008}, 
+sensor networks~\cite{rg-bptd-2008}  or astrophysics~\cite{rvw-abu-2011}.
+However, until now, the applications have been limited to small data sets or moderate dimensions.
+Interestingly,  G. Carlsson, a mathematician from Stanford university recently launched
+a start up company that applies some of these techniques to visualization of data sets
+ (\url{(http://www.ayasdi.com/}{}).
 
 % , offering homology based products
 % for interactive visualization and topological data analysis of data sets in high dimension,
@@ -146,7 +150,7 @@ Recently,  larger families of noise models  have been considered and statistical
 
 \paragraph{Scientific challenge 4 : Turning theory into practice.}
 A major challenge, if not the most important, is to develop {\em theory} that is {\em of practical significance} for applications.  To take up the challenge, we will % foster a symbiotic relationship between theory and practice, and
-undertake the development of a {\em software platform} devoted to geometry understanding in higher dimensions.  We consider such a platform as central to our research for three main reasons.  {\em First}, the software platform will allow {\em large scale experimentation}, which is mandatory to design the right models and data structures. We believe that this will revitalize the current theory and open {\em new vistas for research}, both of a practical and a theoretical nature, leading towards a virtuous cycle between theory and experimental research. This has proven to be highly fruitful when developing the CGAL library (\url{http://www.cgal.org}{}). The same will be even more true in high dimensional geometry.
+undertake the development of a {\em software platform} devoted to geometry understanding in higher dimensions.  We consider such a platform as central to our research for three main reasons.  {\em First}, the software platform will allow {\em large scale experimentation}, which is mandatory to design the right models and data structures~\cite{bm-dssc-2012}. We believe that this will revitalize the current theory and open {\em new vistas for research}, both of a practical and a theoretical nature, leading towards a virtuous cycle between theory and experimental research. This has proven to be highly fruitful when developing the CGAL library (\url{http://www.cgal.org}{}). The same will be even more true in high dimensional geometry.
 
 {\em Second}, maintaining such a platform will help further efforts
 and enable {\em consolidation in the long run}.  Having a library with interoperable modules will allow us to incrementally add more and more sophisticated tools based on solid foundations.  This is consistent with our long-term vision and our conviction that it is only through such a long standing effort that true impact, both theoretical and applied, can be gained.
@@ -252,24 +256,35 @@ Upon successful completion, the Gudhi project will put geometry understanding in
 \vspace{-2mm}
 
 {\small %footnotesize
-\bibitem[Boissonnat and Ghosh, 2010b]{boissonnat2010meshing}
-Boissonnat, J.-D. and Ghosh, A. (2010b).
-\newblock Triangulating smooth submanifolds with light scaffolding.
-\newblock {\em Mathematics in Computer Science}, 4(4):431--461.
+
+\bibitem[Boissonnat and Ghosh, 2010a]{geometrica-7142i}
+Boissonnat, J.-D. and Ghosh, A. (2010a).
+\newblock Manifold reconstruction using tangential {Delaunay} complexes.
+\newblock In {\em Proc. 26th Annual Symposium on Computational Geometry}.
+
+%  \bibitem[Boissonnat and Ghosh, 2010b]{boissonnat2010meshing}
+% Boissonnat, J.-D. and Ghosh, A. (2010b).
+% \newblock Triangulating smooth submanifolds with light scaffolding.
+% \newblock {\em Mathematics in Computer Science}, 4(4):431--461.
 \vspace{-2mm}
 
-\bibitem[Boissonnat et~al., 2009]{geometrica-bgo-09}
-Boissonnat, J.-D., Guibas, L.~J., and Oudot, S. (2009).
-\newblock Manifold reconstruction in arbitrary dimensions using witness
-  complexes.
-\newblock {\em Discrete and Computational Geometry}, 42(1):37--70.
-\vspace{-2mm}
+% \bibitem[Boissonnat et~al., 2009]{geometrica-bgo-09}
+% Boissonnat, J.-D., Guibas, L.~J., and Oudot, S. (2009).
+% \newblock Manifold reconstruction in arbitrary dimensions using witness
+%   complexes.
+% \newblock {\em Discrete and Computational Geometry}, 42(1):37--70.
+% \vspace{-2mm}
 
-\bibitem[Carlsson, 2009]{gc-td-2009}
-Carlsson, G. (2009).
-\newblock Topology and data.
-\newblock {\em Bull. Amer. Math. Soc., 46}, pages 255--308.
-\vspace{-2mm}
+% \bibitem[Carlsson, 2009]{gc-td-2009}
+% Carlsson, G. (2009).
+% \newblock Topology and data.
+% \newblock {\em Bull. Amer. Math. Soc., 46}, pages 255--308.
+% \vspace{-2mm}
+
+\bibitem[Boissonnat and Maria, 2012]{bm-dssc-2012}
+Boissonnat, J.-D. and Maria, C. (2012).
+\newblock A data structure to represent simplicial complexes.
+\newblock European Symp. on Algorithms ESA 2012.
 
 \bibitem[Chazal et~al., 2011]{ccsm-gipm-2011}
 Chazal, F., Cohen-Steiner, D., and M\'erigot, Q. (2011).
@@ -296,6 +311,11 @@ Ghrist, R. (2008).
 \newblock Barcodes: the persistent topology of data.
 \newblock {\em Bull. Amer. Math. Soc., 45(1)}, pages 61--75.
 \vspace{-2mm}
+
+\bibitem[Lee and Verleysen, 2007]{lv-nldr-2007}
+Lee, J.~A. and Verleysen, M. (2007).
+\newblock {\em Nonlinear Dimensionality Reduction}.
+\newblock Springer.
 
 \bibitem[Niyogi et~al., 2008]{nsw-fhm-2008}
 Niyogi, P., Smale, S., and Weinberger, S. (2008).
