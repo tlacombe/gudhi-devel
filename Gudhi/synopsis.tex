@@ -60,11 +60,11 @@ Such techniques are widely used but have limited guarantees and
 %address elementary questions (which may be very hard to solve though) and 
 impose strong constraints on the dimension or topology of the shapes they can successfully handle. 
 
-The techniques developed in {\em computational geometry and topology}  are complementary. They aim at processing and analyzing shapes with non trivial geometry and topology~\cite{hh-ct-2010}. 
-Emblematic problems such as mesh generation and surface reconstruction in 3-dimensions are now well-understood and several provably correct and highly efficient solutions are  available~\cite{geometrica-ecg-book}. 
+The techniques developed in {\em computational geometry and topology}  are complementary. They aim at processing and analyzing shapes with non trivial geometry and topology~\cite{hh-ct-2010}.
+Emblematic problems such as mesh generation and surface reconstruction in 3-dimensions are now well-understood and several provably correct and highly efficient solutions are  available (see the references in Section~\ref{trackrecord}).%~\cite{geometrica-ecg-book}. 
 %The concepts of $\varepsilon$-samples, restricted Delaunay triangulation, anisotropic meshes %emerged together with the first efficient and provably correct algorithms for 
 
-Attempts to analyze higher dimensional shapes led to the development of beautiful pieces of theory with deep roots in various areas of mathematics like Riemannian geometry, geometric measure theory, differential and algebraic topology. Let us mention the emergence of a sampling theory of geometric objects, and of geometric inference~\cite{geometrica-ccl09}, and the emergence and rapid growth of persistent homology~\cite{eh-ph-2008} and topological data analysis~\cite{gc-td-2009}.  These advances attracted interest from several fields like chemistry, as noted above, biological data analysis~\cite{fpgo-airc-2009},  % , computer vision~\cite{cids-lbsni-2008}, 
+Attempts to analyze higher dimensional shapes led to the development of beautiful pieces of theory with deep roots in various areas of mathematics like Riemannian geometry, geometric measure theory, differential and algebraic topology. Let us mention the new and rapidly growing fields of geometric inference,  sampling theory for geometric objects~\cite{ccsm-gipm-2011}, persistent homology~\cite{hh-ct-2010},  and topological data analysis~\cite{gc-td-2009}.  These advances attracted interest from several fields like chemistry~\cite{mtcw-tco-2010}, as noted above, biological data analysis~\cite{fpgo-airc-2009},  % , computer vision~\cite{cids-lbsni-2008}, 
 sensor networks~\cite{rg-bptd-2008}  or astrophysics~\cite{rvw-abu-2011}.
 However, until now, the applications have been limited to small data sets or moderate dimensions.
 Interestingly,  G. Carlsson, a mathematician from Stanford university recently launched
@@ -104,7 +104,14 @@ We strongly believe that, by following this paradigm,  our ambitious objective i
 
 \vspace{-3mm}
 
-\paragraph{Scientific challenge 1 :  Choosing the right representation.}
+
+\paragraph{Scientific challenge 1 :  Bypassing the curse of dimensionality.} 
+Simplicial complexes have been known and studied for a long time in mathematics, but not so much from a computational point of view. This is however a main issue since the complexity of many geometric algorithms and data structures grows exponentially with increasing dimension. It is thus not possible to partition a high dimensional space, which rules out most, if not all, geometric algorithms developed in low dimensions.
+Hence, extending computational geometry in high dimensions cannot be done in a straightforward manner and one has to take advantage of additional structural properties of the problem. % This motivated a number of new concepts (e.g., core sets), new algorithmic paradigms (e.g., locality-sensitive hashing) and new analyses (e.g., smoothed analysis).
+In this project, we will address the curse of dimensionality by focusing on the inherent structure in the data which we assume to be of relative {\em low intrinsic dimension}.  We will put the emphasis on {\em output-sensitive} algorithms and on {\em average-case} analysis.  First investigations led to very promising results, such as the design of new simplicial complexes with low complexity and approximation algorithms that scale well with the dimension \cite{geometrica-7142i}.
+\vspace{-3mm}
+
+\paragraph{Scientific challenge 2 :  Choosing the right representation.}
 %Going beyond affine models and Euclidean spaces.}
 
 % Standard methods like PCA in Machine Learning to deal with high dimensional data assume that the data can be well approximated by some affine subspace of small dimension.  To overcome this 
@@ -115,7 +122,8 @@ More expressive representations of shapes are provided % , inspired by what has 
 by {\em simplicial complexes}, the higher dimensional analogue of triangulations.
 Simplicial complexes are combinatorial structures similar to hypergraphs that encode relationships between subsets of points.
 %Progress in higher-dimensions so far has been mostly theoretical and a  huge gap  remains to be %filled before  having at one's disposal fully satisfactory solutions of practical significance.% One research direction is to invent simplicial complexes of small complexity and easy to compute that still capture the main features of the underlying shape. see Attali and Carlsson. 
- Simplicial complexes can be used to produce fine meshes well suited to scientific computing purposes~\cite{mh-mpc-2002,boissonnat2010meshing}, or much coarser approximations still useful to infer some important features of shapes such as their homology or some local geometric properties~\cite{geometrica-ccl09,nsw-fhm-2008}. 
+ Simplicial complexes can be used to produce fine meshes well suited to scientific computing purposes~\cite{mh-mpc-2002,geometrica-7142i}, %boissonnat2010meshing}, 
+or much coarser approximations still useful to infer some important features of shapes such as their homology or some local geometric properties~\cite{nsw-fhm-2008}. 
  A {\em central tenet} in this project is to regard {\em simplicial complexes as a unifying representation of shapes for geometry understanding in higher dimensions}.%\framebox{still open questions}
 
 
@@ -129,21 +137,18 @@ preferred in information theory, and signal and image processing.
 % %  In computer  vision, divergences are used throughout all the process of object recognition: to detect features using statistical, algebraic or geometric techniques, and to use these features throughout classifiers.
 % %The recognition of objects in potentially complex scenes is a major issue in Computer Vision. 
 % % Prominent advances in object recognition integrate two essential stages: the induction of features of limited size, over a potentially huge feature space, and the use of these features for learning and classification. 
- These divergences are usually not genuine distances (they may not be symmetric nor satisfy the triangular inequality) and  geometric data structures and algorithms need to be revisited in this context~\cite{geometrica-6154a}.
+ These divergences are usually not genuine distances (they may not be symmetric nor satisfy the triangular inequality) and  geometric data structures and algorithms need to be revisited in this context (see ref 10 in Section~\ref{trackrecord}).%~\cite{geometrica-6154a}.
 
 
 \vspace{-3mm}
 
-\paragraph{Scientific challenge 2 :  Bypassing the curse of dimensionality.} 
-Simplicial complexes have been known and studied for a long time in mathematics, but not so much from a computational point of view. This is however a main issue since the complexity of many geometric algorithms and data structures grows exponentially with increasing dimension. It is thus not possible to partition a high dimensional space, which rules out most, if not all, geometric algorithms developed in low dimensions.
-Hence, extending computational geometry in high dimensions cannot be done in a straightforward manner and one has to take advantage of additional structural properties of the problem. % This motivated a number of new concepts (e.g., core sets), new algorithmic paradigms (e.g., locality-sensitive hashing) and new analyses (e.g., smoothed analysis).
-In this project, we will address the curse of dimensionality by focusing on the inherent structure in the data which we assume to be of relative {\em low intrinsic dimension}.  We will put the emphasis on {\em output-sensitive} algorithms and on {\em average-case} analysis.  First investigations led to very promising results, such as the design of new simplicial complexes with low complexity and approximation algorithms that scale well with the dimension \cite{geometrica-7142i}.
-\vspace{-3mm}
 
 \paragraph{Scientific challenge 3 : Searching for stable models.} 
 When dealing with approximations and samples, one needs stability results to ensure that the quantities that are computed are good approximations of the real ones. This is especially true in higher-dimensions where data are usually corrupted by various types of noise.  When the noise magnitude is small, methods have been proposed to robustly estimate topological and geometric properties of shapes~\cite{nsw-tvu-2011}.  The recent and fast developing theory of {\em persistent homology} provides a powerful tool to study  the homology of sampled spaces and to remove topological noise~\cite{eh-ph-2008}.
 However, in  many applications, the noise is non local and the previous methods fail.
-Recently,  larger families of noise models  have been considered and statistical approaches  have been proposed to provide shape approximations that are stable with respect to   those types of noise~\cite{gpvw-mme-2011}. These methods however do not provide topological guarantees on the approximation and the question of designing computationally tractable estimators converging at an optimal rate remains open. A major challenge is to design  unifying frameworks that {\em embrace statistical approaches and deterministic methods}, and offer topological guarantees.   
+Recently,  larger families of noise models  have been considered and statistical approaches  have been proposed to provide shape approximations that are stable with respect to   those types of noise~\cite{gpvw-mme-2011}. These methods however do not provide topological guarantees on the approximation and the question of designing computationally tractable estimators converging at an optimal rate remains open. New ideas such as those in \cite{ccsm-gipm-2011} are mandatory to 
+design  unifying frameworks that {\em embrace statistical approaches and deterministic methods}, and offer topological guarantees. 
+
 
 % The automatic selection of the relevant {\em scales} at which the geometry of data should be considered is another issue.  This can be understood by considering a point set sampling a curve lying on a manifold, say an helix with a small pitch drawn on a cylinder. Depending on the scale, the expected output of a reconstruction algorithm will be an approximation of the curve or of the cylinder. Hence, the analysis process has to be multiscale or at least be able to automatically select the appropriate scale.  Here also, combining persistent homology and other geometric approaches~\cite{geometrica-bgo-09} with statistical techniques would lead to significant progress.
 \vspace{-3mm}
@@ -217,10 +222,10 @@ The proposal is structured into the following four {\em focus areas}  that addre
 %. Although risky, we argue that this approach is key to success. It can be argued that  my research group Geometrica is the best team worldwide to take up the challenge and to make this project a success. 
 
 My personal record as well as the record of my research group Geometrica are strong indications of my ability to take up the challenge of simultaneously conducting basic research at the best international level and developing software of the highest quality with good chances of success.  
-Geometrica has been at the cutting edge of research in geometric data
+Geometrica (\url{http://www-sop.inria.fr/geometrica/}) has been at the cutting edge of research in geometric data
 structures and algorithms~\cite{by-ag-98}, mesh
 generation~\cite{geometrica-ecg-book}, manifold
-reconstruction~\cite{geometrica-7142i,geometrica-bgo-09}, and geometric inference and computational topology~\cite{geometrica-ccl09,geometrica-cseh-07}. Geometrica is also one of the leader teams of the CGAL project (\url{http://www.cgal.org}{}).  We were at the source of successful developments in CGAL like interval arithmetics, 2 and 3-dimensional triangulations (now integrated in the heart of Matlab) and meshing packages. We also took a prominent part in the organization of the CGAL project and community, and in the creation of the spinoff GeometryFactory.
+reconstruction~\cite{geometrica-7142i,geometrica-bgo-09}, and geometric inference and computational topology~\cite{ccsm-gipm-2011,geometrica-cseh-07}. Geometrica is also one of the leader teams of the CGAL project (\url{http://www.cgal.org}{}).  We were at the source of successful developments in CGAL like interval arithmetics, 2 and 3-dimensional triangulations (now integrated in the heart of Matlab) and meshing packages. We also took a prominent part in the organization of the CGAL project and community, and in the creation of the spinoff GeometryFactory.
 %
 %The research won't be conducted in isolation.  
 We will benefit from our strong collaborations with the best groups in US and  Europe,
