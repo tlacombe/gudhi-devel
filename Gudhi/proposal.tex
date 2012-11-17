@@ -25,7 +25,9 @@ of geometric structures, and the inference of geometric or topological
 properties of sampled
 shapes.  
 
+In Part B1, we have identified four main scientific challenges~: {\em bypassing the curse of dimensionality, choosing the right representation, searching for stable models, and turning theory into practice.} We describe below the novelty of our proposal wrt the state of the art and its main scientific objectives. 
 
+The overall  objective is {\em to develop geometric and topological methods for geometry understanding in higher dimensions.} %  To promote the use  of simplicial complexes as an %expressive and powerful representation of shapes. }
 We intend to develop {\em scalable representations} of shapes  in the form of {\em simplicial complexes}.
 Based on such expressive and flexible representations, we will design  {\em
 practical algorithms} to approximate {\em highly nonlinear shapes}, and to
@@ -37,27 +39,27 @@ will assume that the objects of interest can be modeled as {\em
 spaces. By exploiting the {\em intrinsic properties} of the objects,
 we will produce intrinsic dimension-sensitive data structures and algorithms
 that will {\em break the current computational
-bottleneck.}  
+bottleneck.}  A major part of the effort will be devoted to the development of {\em an open source software platform} to foster research and impact.
 
 
-We now present the state of the art and the scientific objectives of our proposal that mirror its four main scientific challenges~: {\em choosing the right representation, bypassing the curse of dimensionality, searching for stable models, and turning theory into practice.}
+% We now present the state of the art and the scientific strategy of our proposal to address
+% the four main scientific challenges identified in Part B1~: {\em bypassing the curse of dimensionality, choosing the right representation, searching for stable models, and turning theory into practice.}
 
 
 \subsection{State of the art and scientific objectives}
 %The last decade has seen tremendous progress in the understanding of geometry in high-dimensional spaces. 
 
-\paragraph{Dimensionality reduction.} A widely accepted assumption in scientific computing and data analysis is that the objects of interest can be modeled as {\em low-dimensional manifolds}, even if they are embedded in high-dimensional ambient spaces. Low here is to be understood with respect to the ambient dimension and may be significantly higher than 3. This powerful assumption is supported by the fact that data are most of the time associated with physical systems that have relatively few degrees of freedom.  This assumption is valid across science and engineering and is at the heart of dimensionality reduction and manifold learning.
+\paragraph{Dimensionality reduction.} A powerful and widely accepted assumption in scientific computing and data analysis to bypass the curse of dimensionality is that the objects of interest can be modeled as {\em low-dimensional manifolds}, even if they are embedded in high-dimensional ambient spaces. Low here is to be understood with respect to the ambient dimension and may be significantly higher than 3. This powerful assumption is supported by the fact that data are most of the time associated with physical systems that have relatively few degrees of freedom.  This assumption is valid across science and engineering and is at the heart of dimensionality reduction and manifold learning.
 %Examples can be found in fields as varied as chemistry~\cite{mtcw-tco-2010}, %neurosciences~\cite{} and  image processing~\cite{cids-lbsni-2008}.
 {\em Dimensionality reduction} techniques intend to infer the intrinsic dimensionality of the data, as well as to provide structure-preserving mappings of the data into lower-dimensional spaces. {\em Nonlinear} dimensionality reduction techniques~\cite{lv-nldr-2007} are capable of discovering {nonlinear} structures and have been successfully applied to analyze data in a wide range of applications.
-Nevertheless, these methods come with no or very limited guarantees. For example, Isomap~\cite{tsl-isomap-2000} provides a correct embedding only if the manifold is isometric to a convex open set of $\R ^k$, where $k$ is the dimension of the manifold, and LLE~\cite{rs-lle-2000} can only reconstruct topological balls. {\em Geometric and topological methods} are complementary to dimension reduction methods. They intend to better capture the geometry and the topology of manifolds by representing them as simplicial complexes.
+Nevertheless, these methods come with no or very limited guarantees. For example, Isomap~\cite{tsl-isomap-2000} provides a correct embedding only if the manifold is isometric to a convex open set of $\R ^k$, where $k$ is the dimension of the manifold, and LLE~\cite{rs-lle-2000} can only reconstruct topological balls. {\em Geometric and topological methods} are complementary to dimension reduction methods. They intend to better capture the geometry and the topology of manifolds by representing them as {\em simplicial complexes}.
 % by constructing piecewise linear approximations, most of the time  in the form of simplicial %complexes.
 
 %However, they are only guaranteed to work on data sets sampled from manifolds with low curvature and trivial topology.
-\vspace{2mm}  
+%\vspace{2mm}  
 
-{\bf Central objective :} {\em To develop geometric and topological methods for geometry understanding in higher dimensions.  To promote the use  of simplicial complexes as an expressive and powerful representation of shapes. }
 
-\paragraph{Simplicial complexes.}  
+\paragraph{Scalable representations in the form of simplicial complexes.}  
 Simplicial complexes are combinatorial structures, a special case of hypergraphs, that encode proximity relationships between subsets of points.
 %Progress in higher-dimensions so far has been mostly theoretical and a  huge gap  remains to be %filled before  having at one's disposal fully satisfactory solutions of practical significance.% One research direction is to invent simplicial complexes of small complexity and easy to compute that still capture the main features of the underlying shape. see Attali and Carlsson. 
 Simplicial complexes have been extensively used in $\R ^3$ to produce fine meshes  providing a precise approximation of the geometry  (for the Hausdorff distance) and of the topology  (homeomorphism) of nonlinear manifolds.  Such precise approximations are
@@ -78,7 +80,7 @@ structures to represent $d$-dimensional cell complexes. These data
 structures are general and powerful, but very redundant, and they do
 not scale to large data sets in high dimensions.  In contrast, one
 could store only the 1-skeleton of the complex (edges and vertices). This 
-saves a lot of memory space at the penalty of having to recover the full complex when needed, e.g. when one wants  to store a filtration. This expansion can be done in a purely combinatorial way, thus very efficiently, in the special case of flag complexes. Elaborating on this idea, Attali et al.~\cite{Attali2011} have proposed a concise data structure that is efficient when applied to simplicial complexes that are {\em close} to flag complexes. Still, designing efficient data structures to represent general simplicial complexes is a widely open area asking for advances in combinatorics, algorithm design and analysis. See~\cite{bm-dssc-2012} for our recent contribution in this area.
+saves a lot of memory space at the penalty of having to recover the full complex when needed, e.g. when one wants  to store a filtration. This expansion can be done in a purely combinatorial way, thus very efficiently, in the special case of flag complexes. Elaborating on this idea, Attali et al.~\cite{Attali2011} have proposed a concise data structure that is efficient when applied to simplicial complexes that are {\em close} to flag complexes. Still, designing efficient data structures to represent and process general simplicial complexes is a widely open area asking for advances in combinatorics, new algorithmic paradigms and new analyses. See~\cite{bm-dssc-2012} for a recent contribution.% in this area.
 
 % is enough to recover the full complex in the case of fl
 
@@ -86,9 +88,9 @@ saves a lot of memory space at the penalty of having to recover the full complex
 \vspace{2mm}
 
 {\bf Objective 1:} {\em 
-To extend  current knowledge of simplicial complexes, most notably their combinatorial and algorithmic properties.   To fully understand Delaunay-like simplicial complexes.  To design new  compact data structures to encode simplicial complexes.}
+To extend  current knowledge of simplicial complexes, most notably their combinatorial and algorithmic properties.   To fully understand Delaunay-like simplicial complexes.  To design new  compact data structures and algorithms to encode and process simplicial complexes.}
 
-\paragraph{Geometric approximation.}
+\paragraph{Geometric approximation of highly nonlinear shapes.}
 In low dimensions, computing a geometric approximation of a given geometric
 object is a well-understood problem~\cite{geometrica-ecg-book,dey-csr-2007}, and good approximations can be
 efficiently constructed.
@@ -112,7 +114,7 @@ sufficient criteria were introduced~\cite{boissonnat2012stab}. This opens exciti
 
 
 Another fundamental problem is {\em shape reconstruction} which consists in computing an approximation of a geometric structure given a point sample.  In low dimensions, effective reconstruction techniques exist that can provide precise geometric approximations very efficiently and under reasonable sampling conditions~\cite{dey-csr-2007}. % Further processing makes it possible to study their topological and geometric properties.
-However,   almost all these methods rely on the computation of a triangulation of the ambient space and previous attempts to extend them to higher dimensions led to algorithms whose complexities depends exponentially in the ambient dimension.  Despite some very recent results, designing practical algorithms that can reconstruct smooth submanifolds of high-dimensional spaces under mild sampling conditions remains widely open~\cite{geometrica-7142i}. Extension beyond smooth manifolds is even more challenging.
+However,   almost all these methods rely on the computation of a triangulation of the ambient space and previous attempts to extend them to higher dimensions led to algorithms whose complexities depends exponentially in the ambient dimension.  Despite some very recent results~\cite{geometrica-7142i}, designing practical algorithms that can reconstruct smooth submanifolds of high-dimensional spaces under mild sampling conditions remains widely open. Extension beyond smooth manifolds is even more challenging.
 
 % n addition to the computational bottleneck, 
 %  the data often suffers from significant defects, including sparsity, noise, and outliers, violating sampling conditions required by extant methods. %  since their complexity depends exponentially on the ambient dimension
@@ -122,7 +124,7 @@ However,   almost all these methods rely on the computation of a triangulation o
 {\bf Objective 2 :}  {\em To   develop new algorithms to {\em  triangulate non Euclidean metric spaces}. To study intrinsic Delaunay triangulations of Riemannian manifolds.  To reconstruct submanifolds using Delaunay-like simplicial complexes. To construct crude approximations 
 with quality guarantees. To extend current knowledge on processing non-smooth manifolds. }
 
-\paragraph{Geometric and topological inference.}
+\paragraph{Robust geometric and topological inference.}
 Since computing precise geometric approximations is currently only possible under strong assumptions that may not be met in some applications, we can look for {\em cruder information }
 that can still  uncover some of the properties of the structures underlying the data.
 %
@@ -196,12 +198,12 @@ The proposal is structured into four focus areas that address the objectives men
 \section{Resources}
 
 \paragraph{Research environment.}
-The PI and his research team, Geometrica, are part of INRIA, the French National Institute for Research in Mathematics and Informatics. Part of the group, including the PI, is located in the INRIA research center in Sophia Antipolis  (38 research groups) and part of the group is hosted by the INRIA research center in Saclay in Paris's area (26 research teams). Two members of the research center in Sophia Antipolis are members of the French Academy of Science, two have received an ERC advanced grant and two have received an ERC junior grant. Because of its partial location in Saclay, the group benefits from tight collaborations with the Ecole Normale Sup\'erieure and the Ecole Polytechnique. In particular, 4 members of the group teach at these prestigious institutions. Geometrica currently includes 10 permanent researchers,  2 postdoctoral researchers, 10 Ph.D. students, and 1 research engineer. 
+The PI and his research team, Geometrica, are part of INRIA, the French National Institute for Research in Mathematics and Informatics. Part of the group, including the PI, is located in the INRIA research center in Sophia Antipolis  (38 research groups) and part of the group is hosted by the INRIA research center in Saclay in Paris's area (26 research teams). Two members of the research center in Sophia Antipolis are members of the French Academy of Science, two have received an ERC advanced grant and two have received an ERC junior grant. Because of its partial location in Saclay, the group benefits from tight collaborations with the univerity of Orsay, the Ecole Normale Sup\'erieure and the Ecole Polytechnique. In particular, 4 members of the group teach at these prestigious institutions. Geometrica currently includes 10 permanent researchers,  2 postdoctoral researchers, 10 Ph.D. students, and 1 research engineer. 
 
 \paragraph{The team members.}
-The team members who are directly involved in this proposal are the PI (J-D. Boissonnat) and 2 permanent researchers of the Geometrica team : Fr\'ed\'eric Chazal and Mariette Yvinec.  J-D. Boissonnat will conduct and supervise the research activities of Gudhi and will be involved in the project for at least 70\% of his time.  Fr\'ed\'eric Chazal and Mariette Yvinec will each devote 20\% of their time to this project to co-supervise with the PI the research and implementation work of the students, postdocs and engineers to be engaged in this project. Fr\'ed\'eric Chazal, located in Saclay,  is a world expert in geometric inference and computational topology. Mariette Yvinec, located in Sophia Antipolis, is a member of the CGAL Editorial Board.  She will bring her unique expertise in geometric computing. Other members of Geometrica, not financially supported by this project, will also contribute to the ideas and expertise of Gudhi, most notably D. Cohen-Steiner, O. Devillers, M. Glisse and S. Oudot. \framebox{Check}
+The team members who are directly involved in this proposal are the PI (J-D. Boissonnat) and 2 permanent researchers of the Geometrica team : Fr\'ed\'eric Chazal and Mariette Yvinec.  J-D. Boissonnat will conduct and supervise the research activities of Gudhi and will be involved in the project for at least 70\% of his time.  Fr\'ed\'eric Chazal and Mariette Yvinec will each devote 20\% of their time to this project to co-supervise with the PI the research and implementation work of the students, postdocs and engineers to be engaged in this project. Fr\'ed\'eric Chazal, located in Saclay,  is a world expert in geometric inference and computational topology. Mariette Yvinec, located in Sophia Antipolis, is a member of the CGAL Editorial Board.  She will bring her unique expertise in geometric computing. Other members of Geometrica, not financially supported by this project, will also contribute to the ideas and expertise of Gudhi, most notably D. Cohen-Steiner, O. Devillers, M. Glisse and S. Oudot. 
 
-\paragraph{External collaborators.} We will establish  strong collaborations with \framebox{Coutsias}
+\paragraph{External collaborators.} We will establish  strong collaborations with Prof. Coutsias (University of New Mexico) and
 F. Cazals, leader of the ABS research group on computational structural biology at INRIA Sophia Antipolis, to work on the understanding of energy landscapes of macromolecules,  and with R. van Weijgaert, an astrophysicist from Groningen University, to work on the understanding of phase space dynamics of cosmic structure formation (see Focus Area 4).
 
 \paragraph{Available resources.} Our European ICT Fet-Open project Computational Geometric Learning (CG-Learning) will still be active until november 2013 for a maximum remaining amount of 100,210 Euros and will ensure a smooth start of Gudhi.  The ANR Pr\'esage (182,487 euros) will provide additional resources for the activities of Geometrica on probabilistic techniques in geometry. \framebox{Check}
