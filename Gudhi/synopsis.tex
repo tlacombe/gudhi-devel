@@ -127,8 +127,9 @@ or much coarser approximations still useful to infer some important features of 
  A {\em central tenet} in this project is to regard {\em simplicial complexes as a unifying representation of shapes for geometry understanding in higher dimensions}.%\framebox{still open questions}
 
 
- Many types of simplicial complexes can be used and a first issue is to choose the appropriate type. This choice depends on the {\em combinatorial and algorithmic complexities} of the complex, as well as on its {\em power to approximate} a shape.
- The choice of a {\em metric} is another  fundamental issue 
+ Many types of simplicial complexes, e.g. the \v{C}ech  or Rips complexes, can be used and a first issue is to choose the appropriate type. This choice depends on the {\em combinatorial and algorithmic complexities} of the complex, as well as on its {\em power to approximate} a shape.
+ The choice of the underlying {\em metric} %that underlies the definition of the complex
+ is another  fundamental issue 
 that determines the type and quality of an approximation.
  The simple Euclidean distance in the ambient space, while easy to deal with, is often not the right choice.  As already mentioned, when working in high dimensional spaces, the objects of interest have often an intrinsic dimension much smaller than the ambient dimension. It is thus important to exploit the {\em intrinsic geometry} of the objects. Computational intrinsic geometry has not been seriously tackled yet and even a basic question like the existence of  Delaunay triangulations on Riemannian manifolds has been elusive so far.  This question is of utmost importance for anisotropic mesh generation and optimal approximations. Another important situation is when data are not provided as  point clouds in some Euclidean space, but rather as a matrix of pairwise distances (i.e., a {\em discrete metric space}). Although such data may not be sampled from geometric subsets of Riemannian manifolds, they may still carry some interesting topological structures that need to be understood. 
 Lastly, let us mention other {\em pseudo-distances} such as
@@ -225,7 +226,7 @@ My personal record as well as the record of my research group Geometrica are str
 Geometrica (\url{http://www-sop.inria.fr/geometrica/}) has been at the cutting edge of research in geometric data
 structures and algorithms~\cite{by-ag-98}, mesh
 generation~\cite{geometrica-ecg-book}, manifold
-reconstruction~\cite{geometrica-7142i,geometrica-bgo-09}, and geometric inference and computational topology~\cite{ccsm-gipm-2011,geometrica-cseh-07}. Geometrica is also one of the leader teams of the CGAL project (\url{http://www.cgal.org}{}).  We were at the source of successful developments in CGAL like interval arithmetics, 2 and 3-dimensional triangulations (now integrated in the heart of Matlab) and meshing packages. We also took a prominent part in the organization of the CGAL project and community, and in the creation of the spinoff GeometryFactory.
+reconstruction~\cite{geometrica-7142i,geometrica-bgo-09}, and geometric inference and computational topology~\cite{ccsm-gipm-2011,geometrica-cseh-07}. Geometrica is also one of the leader teams of the CGAL project (\url{http://www.cgal.org}{}).  We were at the source of successful developments in CGAL like interval arithmetics, 2 and 3-dimensional triangulations (now integrated in the heart of Matlab) and meshing packages. We also took a prominent part in the organization of the CGAL project and community, and in the creation of the spinoff GeometryFactory (\url{http://geometryfactory.com/}).
 %
 %The research won't be conducted in isolation.  
 We will benefit from our strong collaborations with the best groups in US and  Europe,
@@ -255,12 +256,15 @@ Upon successful completion, the Gudhi project will put geometry understanding in
 % }
 
 %\paragraph{References} \mbox{}\\
-\vspace{-3mm}
+\vspace{-4mm}
 
 \begin{thebibliography}{}
-\vspace{-2mm}
+
 
 {\small %footnotesize
+
+\bibitem[A full list of references is given in Part B2]{}
+\vspace{-2.4mm}
 
 \bibitem[Boissonnat and Ghosh, 2010a]{geometrica-7142i}
 Boissonnat, J.-D. and Ghosh, A. (2010a).
@@ -271,7 +275,7 @@ Boissonnat, J.-D. and Ghosh, A. (2010a).
 % Boissonnat, J.-D. and Ghosh, A. (2010b).
 % \newblock Triangulating smooth submanifolds with light scaffolding.
 % \newblock {\em Mathematics in Computer Science}, 4(4):431--461.
-\vspace{-2mm}
+\vspace{-2.4mm}
 
 % \bibitem[Boissonnat et~al., 2009]{geometrica-bgo-09}
 % Boissonnat, J.-D., Guibas, L.~J., and Oudot, S. (2009).
@@ -290,37 +294,39 @@ Boissonnat, J.-D. and Ghosh, A. (2010a).
 Boissonnat, J.-D. and Maria, C. (2012).
 \newblock A data structure to represent simplicial complexes.
 \newblock European Symp. on Algorithms ESA 2012.
+\vspace{-2.4mm}
 
 \bibitem[Chazal et~al., 2011]{ccsm-gipm-2011}
 Chazal, F., Cohen-Steiner, D., and M\'erigot, Q. (2011).
 \newblock Geometric inference for probability measures.
 \newblock {\em Journal on Foundations of Computational Mathematics},
   11(6):733--751.
-\vspace{-2mm}
+\vspace{-2.4mm}
 
 \bibitem[Donoho, 2000]{dld-hdda-2000}
 Donoho, D. (2000).
 \newblock High-dimensional data analysis: The curses and blessings of
   dimensionality.
 \newblock In {\em Mathematical Challenges of the 21st Century}. AMS.
-\vspace{-2mm}
+\vspace{-2.4mm}
 
 \bibitem[Edelsbrunner and Harer, 2010]{hh-ct-2010}
 Edelsbrunner, H. and Harer, J. (2010).
 \newblock {\em Computational topology}.
 \newblock AMS.%merican Mathematical Society.
-\vspace{-2mm}
+\vspace{-2.4mm}
 
 \bibitem[Ghrist, 2008]{rg-bptd-2008}
 Ghrist, R. (2008).
 \newblock Barcodes: the persistent topology of data.
 \newblock {\em Bull. Amer. Math. Soc., 45(1)}, pages 61--75.
-\vspace{-2mm}
+\vspace{-2.4mm}
 
 \bibitem[Lee and Verleysen, 2007]{lv-nldr-2007}
 Lee, J.~A. and Verleysen, M. (2007).
 \newblock {\em Nonlinear Dimensionality Reduction}.
 \newblock Springer.
+\vspace{-2.4mm}
 
 \bibitem[Niyogi et~al., 2008]{nsw-fhm-2008}
 Niyogi, P., Smale, S., and Weinberger, S. (2008).
