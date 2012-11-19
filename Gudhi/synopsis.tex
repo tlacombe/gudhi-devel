@@ -65,8 +65,8 @@ Emblematic problems such as mesh generation and surface reconstruction in 3-dime
 \cite{geometrica-ecg-book}).%~\cite{geometrica-ecg-book}. 
 %The concepts of $\varepsilon$-samples, restricted Delaunay triangulation, anisotropic meshes %emerged together with the first efficient and provably correct algorithms for 
 
-Attempts to analyze higher dimensional shapes led to the development of beautiful pieces of theory with deep roots in various areas of mathematics like Riemannian geometry, geometric measure theory, differential and algebraic topology. Let us mention the new and rapidly growing fields of geometric inference,  sampling theory for geometric objects~\cite{ccsm-gipm-2011}, persistent homology~\cite{hh-ct-2010},  and topological data analysis~\cite{gc-td-2009}.  These advances attracted interest from several fields like chemistry~\cite{mtcw-tco-2010}, as noted above, biological data analysis~\cite{fpgo-airc-2009},  % , computer vision~\cite{cids-lbsni-2008}, 
-sensor networks~\cite{rg-bptd-2008}  or astrophysics~\cite{rvw-abu-2011}.
+Attempts to analyze higher dimensional shapes led to the development of beautiful pieces of theory with deep roots in various areas of mathematics like Riemannian geometry, geometric measure theory, differential and algebraic topology. Let us mention the new and rapidly growing fields of geometric inference~\cite{ccsm-gipm-2011}, persistent homology~\cite{hh-ct-2010},  and topological data analysis~\cite{gc-td-2009}.  These advances attracted interest from several fields like   chemistry~\cite{mtcw-tco-2010}, astrophysics \cite{rvw-abu-2011}, biological data analysis~\cite{fpgo-airc-2009},  % , computer vision~\cite{cids-lbsni-2008}, 
+or sensor networks \cite{rg-bptd-2008}.
 However, until now, the applications have been limited to small data sets or moderate dimensions.
 Interestingly,  G. Carlsson, a mathematician from Stanford university recently launched
 a start up company that applies some of these techniques to visualization of data sets
@@ -106,13 +106,7 @@ We strongly believe that, by following this paradigm,  our ambitious objective i
 \vspace{-3.1mm}
 
 
-\paragraph{Scientific challenge 1 :  Bypassing the curse of dimensionality.} 
-Simplicial complexes have been known and studied for a long time in mathematics, but not so much from a computational point of view. This is however a main issue since the complexity of many geometric algorithms and data structures grows exponentially with increasing dimension. It is thus not possible to partition a high dimensional space, which rules out most, if not all, geometric algorithms developed in low dimensions.
-Hence, extending computational geometry in high dimensions cannot be done in a straightforward manner and one has to take advantage of additional structural properties of the problem. % This motivated a number of new concepts (e.g., core sets), new algorithmic paradigms (e.g., locality-sensitive hashing) and new analyses (e.g., smoothed analysis).
-In this project, we will address the curse of dimensionality by focusing on the inherent structure in the data which we assume to be of relative {\em low intrinsic dimension}.  We will put the emphasis on {\em output-sensitive} algorithms and on {\em average-case} analysis.  First investigations led to very promising results, such as the design of new simplicial complexes with low complexity and approximation algorithms that scale well with the dimension \cite{geometrica-7142i}.
-\vspace{-3.1mm}
-
-\paragraph{Scientific challenge 2 :  Choosing the right representation.}
+\paragraph{Scientific challenge 1 :  Choosing the right representation.}
 %Going beyond affine models and Euclidean spaces.}
 
 % Standard methods like PCA in Machine Learning to deal with high dimensional data assume that the data can be well approximated by some affine subspace of small dimension.  To overcome this 
@@ -143,6 +137,14 @@ preferred in information theory, and signal and image processing.
 
 
 \vspace{-3.1mm}
+
+
+\paragraph{Scientific challenge 2 :  Bypassing the curse of dimensionality.} 
+Simplicial complexes have been known and studied for a long time in mathematics, but not so much from a computational point of view. This is however a main issue since the complexity of many geometric algorithms and data structures grows exponentially with increasing dimension. It is thus not possible to partition a high dimensional space, which rules out most, if not all, geometric algorithms developed in low dimensions.
+Hence, extending computational geometry in high dimensions cannot be done in a straightforward manner and one has to take advantage of additional structural properties of the problem. % This motivated a number of new concepts (e.g., core sets), new algorithmic paradigms (e.g., locality-sensitive hashing) and new analyses (e.g., smoothed analysis).
+In this project, we will address the curse of dimensionality by focusing on the inherent structure in the data which we assume to be of relative {\em low intrinsic dimension}.  We will put the emphasis on {\em output-sensitive} algorithms and on {\em average-case} analysis.  First investigations led to very promising results, such as the design of new simplicial complexes with low complexity and approximation algorithms that scale well with the dimension \cite{geometrica-7142i}.
+\vspace{-3.1mm}
+
 
 
 \paragraph{Scientific challenge 3 : Searching for stable models.} 
@@ -213,7 +215,7 @@ and {\em perennial software} development. %  We will undertake the
 
 
 The proposal is structured into the following four {\em focus areas}  that address the four scientific challenges listed above.
-{\bf A1} -- {\em Intrinsic dimension-sensitive data  structures} --  will address Challenges 1 and 2 by extending current knowledge on the combinatorial and algorithmic properties of simplicial complexes. 
+{\bf A1} -- {\em Data  structures sensitive to the intrinsic dimension} --  will address Challenges 1 and 2 by extending current knowledge on the combinatorial and algorithmic properties of simplicial complexes. 
   {\bf A2} --  {\em Triangulation of non Euclidean metric spaces} -- will address Challenges 1 and 2 by developing effective algorithms to mesh or reconstruct manifolds equipped with various metrics.   {\bf A3} -- {\em Robust models for geometric and topological inference} -- will address Challenge 3 by providing the crucial  algorithms for topological data analysis.
  {\bf A4} --  {\em  Software platform for geometric understanding in high dimensions} -- will address Challenge~4 by providing the software environment for experimenting with our new data structures and algorithms, for integrating them in a library of interoperable modules, and for diffusing our results to applied fields. 
 \vspace{-3.1mm}
