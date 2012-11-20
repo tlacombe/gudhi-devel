@@ -38,12 +38,12 @@ a full dimensional subset of $\rdee$, or a more general manifold.
 %
 Locally a manifold can be well approximated by a Euclidean space, and
 this is the main idea exploited by dimension reduction and dimension
-detection algorithms. In fact, this same theme can be found at the
+detection algorithms. In fact, the same idea can be found at the
 heart of anisotropic meshing algorithms and global meshing and
-reconstruction algorithms. The problem then comes down to ensuring
+reconstruction algorithms. The problem then boils down to ensuring
 that the locally constructed complexes knit together into a coherent
 whole. This issue is tackled by manipulating the complex either
-through strategic refinement or perturbation of weights defining the
+through strategic refinement or perturbation of the weights defining the
 neighbour relations. 
 
 The underlying problem is that the Delaunay paradigm is being applied
@@ -70,12 +70,12 @@ defined by a Riemannian metric.
 The conditions for the existence of such intrinsic Delaunay
 triangulations have so far only been established through extrinsic
 criteria related to manifolds embedded in Euclidean space~\cite{boissonnat2012stab}. We plan to
-establish sampling criteria based only on intrinsic properties of the
+establish sampling criteria based solely on intrinsic properties of the
 manifold. In this abstract setting, the techniques required to
 demonstrate a homeomorphism with the original manifold will be
-different, but likely more generally useful, than those so far
+different, but likely to be more general than those so far
 developed for specific substructures of an ambient Delaunay
-triangulation.  We will then develop an algorithm to construct the
+triangulation.  We will then devise an algorithm for constructing the
 intrinsic Delaunay complex.  Since exact computation of geodesic
 distances is out of reach in many cases, in particular when the
 manifold is only known through a point sample, we will develop
@@ -85,9 +85,10 @@ on anisotropic mesh generation~\cite{bwy-luam-08}.
 % on a controlled
 % perturbation of a given point set, rather than refining the point set
 % as required in previous algorithms.
-We expect that these results will lead to insight into the meshing of
+We expect that these results will lead to insights into the meshing of
 manifolds equipped with {\em alternatives to a metric}, such as Bregman
 divergences with locally defined potential functions.
+\vspace{-1mm}
 
 \paragraph{Manifold reconstruction using Delaunay-like structures.}
 
@@ -127,9 +128,9 @@ quite restrictive) conditions under which the witness complex, and the
 restricted Delaunay triangulation are
 identical~\cite{boissonnat2011cgl}.
 %
-As yet, no algorithm for landmark selection has been developed which
-meets these required sampling conditions.  We plan to achieve this
-through perturbation techniques, using the tangential complex paradigm
+As yet, no algorithm for landmark selection has been devised which
+meets these required sampling conditions.  We plan to tackle this
+problem through perturbation techniques, using the tangential complex paradigm
 to avoid dependence on the ambient dimension.
 
 % The challenge remains that the topology of the witness complex is not
@@ -172,6 +173,7 @@ to avoid dependence on the ambient dimension.
 % are met, and to do this in a way that does not introduce expensive
 % geometric predicates. 
 
+\vspace{-1mm}
 
 \paragraph{Crude models.}
 
@@ -181,12 +183,12 @@ to avoid dependence on the ambient dimension.
 % -- find a compromise between dimension reduction techniques and
 % topological methods 
 The homeomorphism guarantees obtained for triangulating a manifold
-still generally demand sampling criteria which may not be realistic in 
-practice. Even if the manifold is known to sufficient precision to
-permit such sampling, more light-weight representations may be
+still require in general sampling criteria which may clash with the
+practical reality. Even if the manifold is known to sufficient accuracy to
+allow for such sampling, light-weight representations may be
 preferred in some applications.  In order to progress towards
 practical algorithms with meaningful guarantees, satisfactory
-compromises must be found.
+tradeoffs must be discovered.
 %
 % 2. what is known
 % -- Collapsing
@@ -228,17 +230,18 @@ On the other hand, an appropriate approach, when crude input
 data is the only explicit information about the underlying manifold,
 is to assume that the manifold belongs to some restricted family of
 manifolds which can be distinguished from each other on the basis of
-little information. Thus we wish to be able to prove that the output
+little information. We thus wish to be able to prove that the output
 represents the ``projection'' of the true manifold into a restricted
 space of manifolds.
+\vspace{-1mm}
 
 \paragraph{Stratified manifolds.}
 
 % 1. why is it important
 % -- C_8H_{16}
 While manifold triangulation and reconstruction in higher dimensions
-already represents a challenge for effective practical algorithms,
-there is a need to progress to more complicated objects than
+already represent a challenge for effective practical algorithms,
+there is a need for advancing the knowledge on more complicated objects than
 manifolds. Stratified manifolds represent a potentially tractable yet
 flexible generalisation that can model many known naturally occurring
 structures. Examples include conformation spaces of molecules, such as
@@ -255,7 +258,7 @@ the strata of stratified manifolds~\cite{bendich2007}; the resulting
 strata being manifolds with boundaries. 
 
 % 3. workplan
-We plan to develop algorithms for meshing and reconstructing manifolds
+We intend to devise algorithms for meshing and reconstructing manifolds
 with boundary with an aim towards applications to stratified
 manifolds. 
 % Thus a complementary task will be to triangulate a manifold
@@ -264,7 +267,7 @@ manifolds.
 % component strata. 
 New ideas will be required to develop sampling conditions which can
 yield guarantees for these structures. The algorithms will draw upon
-the theory developed for pure manifolds, as well as the geometric
+the theory developed for pure manifolds, as well as upon the geometric
 inference algorithms discussed in Focus Area 3. In particular, linear
-subspace clustering approaches will be required locally to resolve
+subspace clustering approaches will be required to locally resolve
 different strata.

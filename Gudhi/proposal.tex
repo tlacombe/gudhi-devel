@@ -25,17 +25,27 @@ of geometric structures, and the inference of geometric or topological
 properties of sampled
 shapes.  
 
-The Gudhi project addresses four main scientific challenges~: {\em choosing the right representation, bypassing the curse of dimensionality, searching for stable models, and turning theory into practice.} We now present the state of the art and the scientific strategy of our project.
-We identify four main scientific objectives~:  to develop {\em scalable representations} of shapes  in the form of {\em simplicial complexes};
+The Gudhi project addresses four main scientific challenges~: {\em choosing the right representation, bypassing the curse of dimensionality, searching for stable models, and turning theory into practice.} We now detail the scientific strategy and the organization of our project. In view of the current state of the art, we % and 
+identify four main scientific objectives~:  to develop {\em scalable representations} of shapes  in the form of {\em simplicial complexes};
 to design {\em practical algorithms} to approximate {\em highly nonlinear shapes}; to design robust algorithms to infer geometric and topological properties from data subject to significant {\em defects} and under {\em realistic conditions}; to  develop  {\em an open source software platform} to foster research and impact.
+
+% Our project departs from the techniques The last decade has seen tremendous progress in  the understanding of geometry in high-dimensional spaces.
+% In signal and image processing, and in machine learning, a variety of techniques, known as {\em nonlinear dimensionality reduction} have been proposed to reduce the dimension of data, to learn nonlinear manifolds and to cluster data~\cite{lv-nldr-2007}. % In computational geometry, new approaches have been proposed to solve basic problems like searching nearest neighbours, computing smallest enclosing ellipsoids or approximating convex sets~\cite{hp-gaa-2011}.
+% Such techniques are widely used but have limited guarantees and 
+% %address elementary questions (which may be very hard to solve though) and 
+% impose strong constraints on the dimension or topology of the shapes they can successfully handle. 
 
 As is common in many applications across science and engineering, we
 will assume that the objects of interest can be modeled as {\em
   low-dimensional manifolds} embedded in possibly high-dimensional
-spaces. By exploiting the {\em intrinsic properties} of the objects,
+spaces. This is also the central assumption of  {\em nonlinear dimensionality reduction}  techniques which have been flourishing recently in  signal and image processing, and in machine learning. The geometric and topological approach developed in this project is complementary.
+By exploiting the {\em intrinsic properties} of the objects,
 we will produce data structures and algorithms that are sensitive to the intrinsic dimension, and
-will {\em break the current computational
-bottleneck.}  %A major part of the effort will be devoted to the development of.
+therefore will {\em break the current computational
+bottleneck of geometric and topological methods.}  At the same time, they will be able to process and analyze shapes whose complexities in terms of geometry and topology are beyond what dimensionality reduction techniques permit.
+
+
+%A major part of the effort will be devoted to the development of.
 
 %To address those challenges, we will %focus our research on four areas.
 % The overall  objective is {\em to develop geometric and topological methods for geometry understanding in higher dimensions.} %  To promote the use  of simplicial complexes as an %expressive and powerful representation of shapes. }
@@ -81,7 +91,7 @@ Simplicial complexes have been extensively used in $\R ^3$ to produce fine meshe
 By varying $\varepsilon$, we obtain nested families of simplicial complexes, known as {\em filtrations.}
 Multiscale topological analysis based on {\em filtrations} is at the heart of the recent theory of {\em persistent homology}~\cite{hh-ct-2010,az-tfc-2009}.
  
-Simplicial complexes have been studied for a long time by the mathematical community but the {\em algorithmic} side of the theory is still in its infancy. Most of the known simplicial complexes are either extremely difficult to compute, even in moderate dimensions, because their construction involves high-degree algebra (e.g., the  \v{C}ech complex) or are easy to compute, but so big that they cannot be constructed from real high-dimensional data (e.g., the Rips complex). Current research aims at finding new types of simplicial complexes that are easy to compute while still capturing the essential geometric and topological features of shapes. Recent progress has been made with the discovery of Delaunay-like complexes, such as the witness complex~\cite{cds-tewc-2004} and the Delaunay tangential complex~\cite{geometrica-7142i}, that offer new compromises between complexity and approximation quality.
+Simplicial complexes have been studied for a long time by the mathematical community but the {\em algorithmic} side of the theory is still in its infancy. Most of the known simplicial complexes are either extremely difficult to compute, even in moderate dimensions, because their construction involves high-degree algebra (e.g., the  \v{C}ech complex) or are easy to compute (e.g., the Rips complex), but their size is then so big that they cannot be constructed from real high-dimensional data. Current research aims at finding new types of simplicial complexes that are easy to compute while still capturing the essential geometric and topological features of shapes. Recent progress has been made with the discovery of Delaunay-like complexes, such as the witness complex~\cite{cds-tewc-2004} and the Delaunay tangential complex~\cite{geometrica-7142i}, that offer new tradeoffs between complexity and approximation quality.
 
  
 Another issue is the  design of {\em data structures } to encode simplicial complexes.
@@ -89,9 +99,9 @@ Little work has been done on this subject. Brisson~\cite{Brisson:1989:RGS:73833.
 Lienhardt~\cite{DBLP:journals/ijcga/Lienhardt94} have introduced data
 structures to represent $d$-dimensional cell complexes. These data
 structures are general and powerful, but very redundant, and they do
-not scale to large data sets in high dimensions.  In contrast, one
+not scale to large data sets in high dimensions.  In contrast, one 
 could store only the 1-skeleton of the complex (edges and vertices). This 
-saves a lot of memory space at the penalty of having to recover the full complex when needed, e.g. when one wants  to store a filtration. This expansion can be done in a purely combinatorial way, thus very efficiently, in the special case of flag complexes. Elaborating on this idea, Attali et al.~\cite{Attali2011} have proposed a concise data structure that is efficient when applied to simplicial complexes that are {\em close} to flag complexes. Still, designing efficient data structures to represent and process general simplicial complexes is a widely open area asking for advances in combinatorics, new algorithmic paradigms and new analyses. See~\cite{bm-dssc-2012} for a recent contribution.% in this area.
+saves a lot of memory space at the penalty of having to recover the full complex when needed, e.g. when one wants  to store a filtration. This expansion can be done in a purely combinatorial way, thus very efficiently, in the special case of flag complexes. Elaborating upon this idea, Attali et al.~\cite{Attali2011} have proposed a concise data structure that is efficient when applied to simplicial complexes that are {\em close} to flag complexes. Still, designing efficient data structures to represent and process general simplicial complexes is a widely open area in dire need of advances in combinatorics, new algorithmic paradigms and new analyses. See~\cite{bm-dssc-2012} for a recent contribution.% in this area.
 
 % is enough to recover the full complex in the case of fl
 
@@ -107,25 +117,17 @@ object is a well-understood problem~\cite{geometrica-ecg-book,dey-csr-2007}, and
 efficiently constructed.
 The situation is quite different in higher dimensions.  Although the
 mathematical literature on triangulation of manifolds is abundant, few
-effective algorithms have been proposed and tested.  The main issue is
+effective algorithms have been proposed and evaluated.  The main issue is
 to avoid computing a subdivision of the ambient space since this would lead to algorithms that scale exponentially with the ambient dimension. Very few attempts have been made to exploit the  low-dimensional manifold assumption.
 To analyze {dynamical systems} in science and engineering, higher-dimensional {\em continuation methods} have been proposed to mesh solution manifolds~\cite{mh-mpc-2002}. These methods are however lacking guarantees and are restricted in practice to very low dimensional manifolds. 
-Recently, we made progress towards a better understanding of the complexity issues of triangulating smooth submanifolds and provided a provably correct algorithm that scales {\em linearly} with the ambient dimension~\cite{boissonnat2010meshing}. 
-It is however still a long way before this theoretical result could be turned into a fully practical algorithm.
+Recently, we made progress towards a better understanding of the complexity issues when triangulating smooth submanifolds and provided a provably correct algorithm that scales {\em linearly} with the ambient dimension~\cite{boissonnat2010meshing}. 
+It is however still a challenge to turn this theoretical result into a fully practical algorithm.
 
-A natural way to bypass the curse of dimensionality is to directly
-work on the manifold and to resort to {\em intrinsic geometry}. What
-is lacking is a full development of Riemannian computational
-geometry. A central question in our context, which has been elusive
-for a long time, asks for the existence of intrinsic Delaunay triangulations on
-Riemannian manifolds. Previously announced sampling
-criteria~\cite{leibon2000} for the existence of intrinsic Delaunay
-triangulations have recently been demonstrated to be insufficient, and
-sufficient criteria were introduced~\cite{boissonnat2012stab}. This opens exciting avenues for new developments on Delaunay triangulations in Riemannian manifolds and other non Euclidean spaces. Once again, what is profoundly lacking is the algorithmic side of the theory and the development of efficient, possibly approximate, provably correct algorithms.  % A first promising step towards this goal is an anisotropic meshing algorithm that we proved correct and implemented~\cite{bwy-luam-08}.
+A natural way to bypass the curse of dimensionality is to directly work on the manifold and to resort to {\em intrinsic geometry}. What is lacking however is a full development of Riemannian computational geometry. A central question in our context, which has been elusive for a long time, is to provide sampling conditions asserting the existence of intrinsic Delaunay triangulations on Riemannian manifolds. Previously announced sampling criteria~\cite{leibon2000} for the existence of intrinsic Delaunay triangulations have recently been demonstrated to be insufficient, and sufficient criteria were introduced~\cite{boissonnat2012stab}. This opens stimulating avenues for new developments on Delaunay triangulations in Riemannian manifolds and other non Euclidean spaces. Here too, there is a dire need for an algorithmic side of the theory and for the development of efficient, possibly approximate, provably correct algorithms.  % A first promising step towards this goal is an anisotropic meshing algorithm that we proved correct and implemented~\cite{bwy-luam-08}.
 
 
 Another fundamental problem is {\em shape reconstruction} which consists in computing an approximation of a geometric structure given a point sample.  In low dimensions, effective reconstruction techniques exist that can provide precise geometric approximations very efficiently and under reasonable sampling conditions~\cite{dey-csr-2007}. % Further processing makes it possible to study their topological and geometric properties.
-However,   almost all these methods rely on the computation of a triangulation of the ambient space and previous attempts to extend them to higher dimensions led to algorithms whose complexities depends exponentially in the ambient dimension.  Despite some very recent results~\cite{geometrica-7142i}, designing practical algorithms that can reconstruct smooth submanifolds of high-dimensional spaces under mild sampling conditions remains widely open. Extension beyond smooth manifolds is even more challenging.
+However,   almost all these methods rely on the computation of a triangulation of the ambient space and previous attempts to extend them to higher dimensions led to algorithms whose complexities depends exponentially in the ambient dimension.  Despite some very recent results \cite{geometrica-7142i}, designing practical algorithms that can reconstruct smooth submanifolds of high-dimensional spaces under mild sampling conditions remains widely open. Extension beyond smooth manifolds is even more challenging.
 
 % n addition to the computational bottleneck, 
 %  the data often suffers from significant defects, including sparsity, noise, and outliers, violating sampling conditions required by extant methods. %  since their complexity depends exponentially on the ambient dimension
@@ -137,27 +139,27 @@ with quality guarantees. To extend current knowledge on processing non-smooth ma
 
 \paragraph{Robust geometric and topological inference.}
 Since computing precise geometric approximations is currently only possible under strong assumptions that may not be met in some applications, we can look for {\em cruder information }
-that can still  uncover some of the properties of the structures underlying the data.
+that can still  unveil some of the properties of the structures underlying the data.
 %
 %is not always mandatory. In some applications,   useful approximations can be obtained at a lower computational cost.
 % In {\em robotics}, the goal is to capture the connectivity of configuration spaces and to search paths. Randomized techniques have been proved to be quite successful in constructing graphs to approximate the space of free configurations of robots~\cite{sml-pa-2006}. Those techniques are however limited to simple mechanical systems with no redundancy, no loop nor kinematic constraints. \framebox{check}
 %In {\em topological data analysis}, 
 %
-A prominent example is {\em homology} that can be computed without a precise reconstruction and under less restrictive conditions~\cite{geometrica-ccl09,nsw-fhm-2008}. The rapidly growing theory of {\em computational homology}~\cite{kmm-ch-2003} and, in particular, of {\em persistent homology}~\cite{hh-ct-2010,rg-bptd-2008,az-tfc-2009} was recently introduced as a powerful tool for the study of the topological invariants of sampled shapes. The approach consists of building a simplicial complex whose elements are filtered by some user-defined function. The filtration is then used to remove topological noise and to report the stable topological features.  These advances in computational topology attracted interest in the mathematical community and in several fields like neurosciences, computer vision or sensor networks~\cite{fpgo-airc-2009,cids-lbsni-2008,dsrg-csnph-2007}.  What still prevents these new methods from highly impacting applications is the lack of efficient data structures and algorithms to construct simplicial complexes and filtrations in high dimensions (Objective 1)..
+A prominent example is {\em homology} that can be computed without a precise reconstruction and under less restrictive conditions~\cite{geometrica-ccl09,nsw-fhm-2008}. The rapidly growing theory of {\em computational homology}~\cite{kmm-ch-2003} and, in particular, of {\em persistent homology}~\cite{hh-ct-2010,rg-bptd-2008,az-tfc-2009} was recently introduced as a powerful tool for the study of the topological invariants of sampled shapes. The approach consists of building a simplicial complex whose elements are filtered by some user-defined function. The filtration is then used to remove topological noise and to report the stable topological features.  These advances in computational topology attracted interest in the mathematical community and in several fields like neurosciences, computer vision or sensor networks~\cite{fpgo-airc-2009,cids-lbsni-2008,dsrg-csnph-2007}.  What still prevents these new methods from highly impacting applications is the lack of efficient data structures and algorithms to construct simplicial complexes and filtrations in high dimensions (Objective 1).
 
 In addition, practitioners need methods that are stable with respect
-to {\em noise, sparsity, outliers and other defects} that corrupt data. The geometric approaches have so far only considered very restrictive models of noise~\cite{nsw-fhm-2008}.  Larger families of noise models have recently been considered and statistical approaches have been proposed to provide geometric approximations that are stable with respect to those models~\cite{gpvw-mme-2011}. These methods however do not provide topological guarantees on the approximation and the question of designing computationally tractable estimators converging at an optimal rate remains open. A major challenge is to design unifying frameworks that embrace {\em statistical approaches} and deterministic methods, and offer topological guarantees.  
+to {\em noise, sparsity, outliers and other defects} that corrupt data. The geometric approaches have so far only considered very restrictive noise models~\cite{nsw-fhm-2008}.  Larger families of noise models have recently been considered and statistical approaches have been proposed to provide geometric approximations that are stable with respect to those models~\cite{gpvw-mme-2011}. These methods however do not provide topological guarantees on the approximation and the question of designing computationally tractable estimators converging at an optimal rate remains open. A major challenge is to design unifying frameworks that embrace {\em statistical approaches} and deterministic methods, and offer topological guarantees.  
 
 {\em Shape descriptors} are used in a variety of applications, including shape classification, shape retrieval, shape matching, shape registration, and symmetry detection.  % Shape here must be understood in a broad sense and may be a point cloud, a manifold, or more generally, a compact metric set. 
 A fundamental question is {\em how much information} about a shape can be recovered from descriptors. Most existing work in shape analysis only provides lower bounds on a shape distance (e.g., the Gromov-Hausdorff distance) based on descriptor distance. There are very few exceptions to this rule, and the upper bounds on shape distances obtained so far are quite loose~\cite{bbk-gmds-06,ms-gh-05}. Deriving tight upper bounds is thus still widely open. 
-Building on the persistent homology theory new topological descriptors have been recently introduced. They can be robustly estimated from filtrations built on top of measured point clouds  and open new directions to explore~\cite{ccgmo-ghsssp-09, socg-pbsds-10}.
+Building on the persistent homology theory new topological descriptors have been recently introduced. These descriptors can be robustly estimated from filtrations built on top of measurement data points  and open new directions to explore~\cite{ccgmo-ghsssp-09, socg-pbsds-10}.
 %Descriptors based on topological quantities measured from a point cloud~\cite{ccgmo-ghsssp-09, socg-pbsds-10} opens new directions to explore. \framebox{check}
 
 
 
 \vspace{2mm}
 
-{\bf Objective 3 :} {\em To study new {\em robust models for geometric and topological inference}.  To combine statistical  and geometric and topological approaches in data analysis. To study topological signatures of shapes.}
+{\bf Objective 3 :} {\em To study new {\em robust models for geometric and topological inference}.  To combine statistical  and geometric and topological approaches for data analysis. To study topological signatures of shapes.}
 
 \paragraph{Theory versus practice.} 
 Geometric and topological methods are well behind dimensionality reduction techniques in terms of 
@@ -167,19 +169,19 @@ software development and applications.
 % higher dimensions is a grand challenge of great theoretical and practical significance.
 %
 To go beyond low-dimensional examples, one needs efficient and robust software to construct and manipulate simplicial complexes in dimensions higher than 3.  Only a very few such software exist.  {\em Qhull} (\url{http://www.qhull.org/}{}) can compute convex hulls and Delaunay triangulations in moderate dimensions, but is of little use in the context of geometry understanding since it only constructs full-dimensional triangulations. {\em Multifario} (\url{http://multifario.sourceforge.net/}{}) is a set of subroutines and data structures dedicated to {\em meshing} manifolds that occur in dynamical systems. The software can in principle construct geometric approximations of manifolds of arbitrary codimension, but examples are only reported in very low dimensions. Interestingly, the algorithm implemented in Multifario  uses a multiple parameter continuation approach and has some similarity with our algorithm~\cite{boissonnat2010meshing}, which has theoretical guarantees and whose complexity is only linear in the ambient dimension.  {\em Polymake} (\url{http://polymake.org/}{}) can handle several types of complexes, build Voronoi diagrams, and compute advanced topological characteristics of objects like a finite representation of the fundamental group. However, it is more oriented towards an interactive use for mathematical experimentation
-rather than  an automated use at large scale.%, fast and robust data processing.
+rather than  routine automation at large scales.%, fast and robust data processing.
 % C'est l'impression que j'en ai apres avoir un peu surfe sur differents
 % sites, mais je n'ai pas une confiance absolue dans ce que je dis
 % ci-dessus.
 
-Several libraries exist for homology computation. RedHom (\url{http://redhom.ii.uj.edu.pl/}{}) computes Betti numbers and torsion coefficients of cubical sets, simplicial complexes and general, regular CW complexes (http://redhom.ii.uj.edu.pl/).
+Several software libraries exist for homology computation. RedHom (\url{http://redhom.ii.uj.edu.pl/}{}) computes Betti numbers and torsion coefficients of cubical sets, simplicial complexes and general, regular CW complexes (http://redhom.ii.uj.edu.pl/).
 Two implementations of {\em persistent homology} algorithms are currently available, PLEX a package for Matlab (\url{http://comptop.stanford.edu/u/programs/jplex/}{}), and  Dionysus (\url{http://www.mrzv.org/software/dionysus/}{}). They both offer the construction of several types of simplicial complexes. PLEX has been  successfully applied in low dimensions~\cite{fpgo-airc-2009,rg-bptd-2008}. Dionysus offers advanced
 functionalities but has no documentation and a limited diffusion. As evidenced by recent experiments~\cite{bm-dssc-2012}, huge improvements are to be expected.
 %Dionysus constructs $\alpha$-shapes, Cech and Rips complexes. Various options to compromize between memory and efficiency
 %Plex : rips, landmark selection , ex k=1, d=25
 \vspace{2mm}
 
-{\bf Objective 4 :}   {\em To develop an open source {\em  software platform for geometric understanding in high dimensions}. %that will provide the software environment for experimenting with our new data structures and algorithms and to integrate them in a coherent library of interoperable modules. 
+{\bf Objective 4 :}   {\em To devise an open source {\em  software platform for geometric understanding in high dimensions}. %that will provide the software environment for experimenting with our new data structures and algorithms and to integrate them in a coherent library of interoperable modules. 
 To apply our techniques to a few key problems where they may have a huge impact. To disseminate our methods and to benchmark our results on real data from various applied fields.}
 
 \subsection{Research roadmap} 

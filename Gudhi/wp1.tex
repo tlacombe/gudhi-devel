@@ -12,9 +12,10 @@ A central tenet in this project is that simplicial complexes are the appropriate
 % Apart for some very special cases such as the random flag (abstract) complex~\cite{CambridgeJournals:2077252}, the combinatorics of simplicial complexes are not well known. 
 
 % =====
+\vspace{-1mm}
 
 \paragraph{Delaunay-like  simplicial complexes.} 
-Simplicial complexes have recently been derived from the Delaunay triangulation. Given a set of point $P$ lying close to a manifold $\M$, the intent is to construct simplicial complexes on $P$ that provide better compromises between complexity, approximation quality and topological faithfulness than the Rips and the \v{C}ech complexes.  Two such simplicial complexes are of special interest for meshing and reconstructing manifolds in high dimensional spaces (Focus Area 2), namely
+Simplicial complexes have recently been derived from the Delaunay triangulation. Given a set of point $P$ lying close to a manifold $\M$, the intent is to construct simplicial complexes on $P$ that provide better tradeoffs between complexity, approximation quality and topological faithfulness than the Rips and the \v{C}ech complexes.  Two such simplicial complexes are of special interest for meshing and reconstructing manifolds in high dimensional spaces (Focus Area 2), namely
  the witness
 complex~\cite{cds-tewc-2004}, and the tangential Delaunay
 complex~\cite{geometrica-7142i}.
@@ -43,25 +44,27 @@ We want to understand the various properties of Delaunay-based simplicial comple
 
 % We also intend to study Delaunay-like simplicial complexes where the metric is replaced by a divergence measure such as the Bregman divergence or other information theoretic distortion measure which are not true distances and, in particular, are not symmetric nor satisfy the triangular inequality.
 
+\vspace{-1mm}
 
 \paragraph{Combinatorial and algorithmic complexity.}
 
-Since the main limitation to using simplicial complexes is their combinatorial and algorithmic complexity, we will devote time towards better understanding those questions, both theoretically and experimentally.  % We intend to study random abstract complexes as well as geometric simplicial complexes from a combinatorial and an algorithmic point of view.
+Since the main limitation to using simplicial complexes is their combinatorial and algorithmic complexity, we will devote effort at better understanding those questions, both theoretically and experimentally.  % We intend to study random abstract complexes as well as geometric simplicial complexes from a combinatorial and an algorithmic point of view.
 A central challenge is to obtain {\em complexity bounds} for simplicial complexes of well sampled substructures such as submanifolds. We will consider various types of random or deterministic simplicial complexes.  We intend to measure the effect of {\em perturbations} (either noise or computed perturbations) on the mathematical properties and combinatorial complexity of those structures, and to develop {\em probabilistic analyses}.  In addition to their combinatorial complexity, the {\em complexity of algorithms} that construct the simplicial complexes is to be precisely analyzed under realistic models. In particular, expected complexity and output-sensitive complexity analyses will be performed in addition to worst-case analysis. % Due to the potential huge size of simplicial complexes,
-We will also develop parallel and out-of-core algorithms.% will also be developed. % Efficient algorithms to simplify simplicial complexes while preserving some properties such as their topological type will also be searched.
+We will also develop parallel as well as out-of-core algorithms.% will also be developed. % Efficient algorithms to simplify simplicial complexes while preserving some properties such as their topological type will also be searched.
 
+\vspace{-1mm}
 
 \paragraph{Compact data structures to encode simplicial complexes.}  We will develop efficient data structures to encode {\em general} simplicial complexes. 
 An open problem is to establish bounds on the minimal size of data structures encoding simplicial complexes. Another major challenge is to design succinct data structures
 in the spirit of what has been done for trees and graphs~\cite{Ferragina:2005:SLT:1097112.1097456,Munro:2002:SRB:586840.586885}. 
  Theoretical guarantees and large scale experimentation on various
  types of simplicial complexes are mandatory. As a first encouraging
- step in this direction, we have experimented with a tree structure
+ step in this direction, we have devised a tree structure
  that can store all the simplices of any simplicial complex in a
- compact way and can support fast queries. Simplicial complexes of 500 million simplices can be routinely constructed and stored on a laptop~\cite{bm-dssc-2012}.  
+ compact way while it can support fast queries. Simplicial complexes of 500 million simplices can be routinely constructed and stored on a laptop computer~\cite{bm-dssc-2012}.  
 % This data structure deserves full analysis and optimization before it can become the standard for encoding simplicial complexes.
-This data structure already represents a significant leap forward from the state of the art. It deserves further analysis and optimisation, and continued research is expected to yield encodings capable of sizes orders of magnitude higher still.
-In addition to designing compact data structures, we will also consider {\em simplifications} of simplicial complexes that preserve geometric or topological properties.
+This data structure already represents a significant leap forward from the state of the art. It deserves further analysis and optimisation, and further research is expected to yield encodings capable of sizes orders of magnitude higher still.
+In addition to designing compact data structures, we will also consider {\em simplifications} of simplicial complexes that preserve geometric and topological properties.
 
 
 
