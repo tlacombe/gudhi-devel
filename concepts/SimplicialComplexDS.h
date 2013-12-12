@@ -31,7 +31,8 @@ struct SimplicialComplexDS
 	/// \name Simplex extra data
 	/// 
 	/// Extra space allocated for each simplex to store
-	/// additional information
+	/// additional information. If not `void`, it must be persistent,
+	/// i.e. it cannot be part of a temporary Simplex object.
 	///
 	/// @{
 	/**
@@ -43,7 +44,7 @@ struct SimplicialComplexDS
 	 * Returns a pointer to the extra information provided for
 	 * the simplex s
 	 */
-	Simplex_data *simplex_buffer_pointer(Simplex s);
+	Simplex_data *simplex_data_pointer(Simplex s);
 	/// @}
 	/*************************************************/	
 
