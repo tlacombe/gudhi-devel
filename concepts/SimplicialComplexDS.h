@@ -25,32 +25,7 @@ struct SimplicialComplexDS
 	 */
 	typedef unspecified Simplex;
 	///@}
-	/*************************************************/	
-	
-	/*************************************************/		
-	/// \name Simplex extra data
-	/// 
-	/// Extra space allocated for each simplex to store
-	/// additional information. If not `void`, it must be persistent,
-	/// i.e. it cannot be part of a temporary Simplex object.
-	///
-	/// @{
-	/**
-	 * Type of the extra information provided for each simplex
-	 * to store additional information
-	 */
-	typedef unspecified Simplex_data;
-	/**
-	 * Returns a pointer to the extra information provided for
-	 * the simplex s
-	 */
-	Simplex_data *simplex_data_pointer(Simplex s);
-	/// @}
-	/*************************************************/	
 
-	
-	
-	
 	/*************************************************/	
 	/// \name Iterators
 	/// @{
@@ -78,10 +53,22 @@ struct SimplicialComplexDS
 	 *	`value_type` must be a `Simplex`
 	 */
 	typedef unspecified Coboundary_simplex_iterator;
+	/// @}
 	
+	/*************************************************/		
+	/// \name Simplex extra data
+	/// 
+	/// @{
+	/**
+	 * Type of the extra space provided for each simplex
+	 * to store additional information
+	 */
+	typedef unspecified Simplex_data;
+	/// @}
 	
-	
-	
+	/*************************************************/	
+	/// \name Iterator constructors
+	/// @{
 	/**
 	 Returns an iterator to the beginning of the sequence of
 	 simplices of a complex
@@ -130,7 +117,6 @@ struct SimplicialComplexDS
 	 simplices of the coboundary of a simplex
 	 */
 	Coboundary_simplex_iterator coboundary_simplex_iterator_end(Simplex s);
-	
 	/// @}
 	/*************************************************/	
 	
@@ -168,6 +154,13 @@ struct SimplicialComplexDS
 	/// @}
 	/*************************************************/	
 
-	
-
+	/// \name Simplex extra data accessor
+	/// @{
+	/**
+	 * Returns a pointer to the extra information provided for
+	 * the simplex s.  If not `Simplex_data` is not `void`, it must be
+	 * persistent, i.e. it cannot be part of a temporary Simplex object.
+	 */
+	Simplex_data *simplex_data_pointer(Simplex s);
+	/// @}
 };
