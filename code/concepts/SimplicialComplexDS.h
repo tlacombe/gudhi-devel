@@ -28,25 +28,22 @@ struct SimplicialComplexDS
 	/*************************************************/	
 	
 	/*************************************************/		
-	/// \name Simplex buffer
+	/// \name Simplex extra data
 	/// 
-	/// Extra memory allocated for each simplex
-	///
-	/// \todo Memory must be aligned??? Mention that 
-	/// some algo require a buffer of size at least...
-	/// sizeof(void *) for CAM
+	/// Extra space allocated for each simplex to store
+	/// additional information
 	///
 	/// @{
 	/**
-	 * Size of the extra memory provided for each simplex
+	 * Type of the extra information provided for each simplex
 	 * to store additional information
 	 */
-	static const int simplex_buffer_size;
+	typedef unspecified Simplex_data;
 	/**
-	 * Returns a pointer to the extra memory provided for
+	 * Returns a pointer to the extra information provided for
 	 * the simplex s
 	 */
-	char *simplex_buffer_pointer(Simplex s);
+	Simplex_data *simplex_buffer_pointer(Simplex s);
 	/// @}
 	/*************************************************/	
 
@@ -59,25 +56,25 @@ struct SimplicialComplexDS
 	/**
 	 *	Iterator over all simplices of a complex
 	 *
-	 *	 `value_type` must be a Simplex
+	 *	 `value_type` must be a `Simplex`
 	 */
 	typedef unspecified Complex_simplex_iterator;
 	/**
-	 *	Iterator over all vertices of a vimplex
+	 *	Iterator over all vertices of a simplex
 	 *
-	 *	 `value_type` must be a Simplex
+	 *	 `value_type` must be a `Vertex`
 	 */
 	typedef unspecified Simplex_vertex_iterator;
 	/**
 	 *	 Iterator over all simplices of the boundary of a simplex
 	 *
-	 *	 `value_type` must be a Vertex
+	 *	 `value_type` must be a `Simplex`
 	 */
 	typedef unspecified Boundary_simplex_iterator;
 	/** OPTIONAL
 	 * Iterator over all simplices of the coboundary of a simplex
 	 *
-	 *	`value_type` must be a Simplex
+	 *	`value_type` must be a `Simplex`
 	 */
 	typedef unspecified Coboundary_simplex_iterator;
 	
@@ -106,7 +103,7 @@ struct SimplicialComplexDS
 	Simplex_vertex_iterator simplex_vertex_iterator_begin(Simplex s);
 	/**
 	 Returns an iterator to the end of the sequence of 
-	 simplices of the boundary of a simplex
+	 vertices of a simplex
 	 */
 	Simplex_vertex_iterator simplex_vertex_iterator_end(Simplex s);
 	
