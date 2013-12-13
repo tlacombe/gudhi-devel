@@ -36,6 +36,11 @@ struct SimplicialComplexDS
 	 */
 	typedef unspecified Complex_simplex_iterator;
 	/**
+	 *	Range of all simplices of a complex, corresponding to the
+	 *	iterator type `Complex_simplex_iterator`
+	 */
+	typedef unspecified Complex_simplex_range;
+	/**
 	 *	Iterator over all vertices of a simplex
 	 *
 	 *	 `value_type` must be a `Vertex`
@@ -79,6 +84,10 @@ struct SimplicialComplexDS
 	 simplices of a complex
 	 */
 	Complex_simplex_iterator complex_simplex_end(); 
+	/**
+	 Returns a range of the sequence of simplices of a complex
+	 */
+	Complex_simplex_range complex_simplices(); 
 	
 	/**
 	 * Returns an iterator to the beginning of the sequence of 
