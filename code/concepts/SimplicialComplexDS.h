@@ -73,12 +73,12 @@ struct SimplicialComplexDS
 	 Returns an iterator to the beginning of the sequence of
 	 simplices of a complex
 	 */
-	Complex_simplex_iterator complex_simplex_iterator_begin(); 
+	Complex_simplex_iterator complex_simplex_begin(); 
 	/**
 	 Returns an iterator to the end of the sequence of 
 	 simplices of a complex
 	 */
-	Complex_simplex_iterator complex_simplex_iterator_end(); 
+	Complex_simplex_iterator complex_simplex_end(); 
 	
 	/**
 	 * Returns an iterator to the beginning of the sequence of 
@@ -88,35 +88,35 @@ struct SimplicialComplexDS
 	 * @return Iterator to the beginning of the sequence of vertices of
 	 *	s
 	 */
-	Simplex_vertex_iterator simplex_vertex_iterator_begin(Simplex s);
+	Simplex_vertex_iterator simplex_vertex_begin(Simplex s);
 	/**
 	 Returns an iterator to the end of the sequence of 
 	 vertices of a simplex
 	 */
-	Simplex_vertex_iterator simplex_vertex_iterator_end(Simplex s);
+	Simplex_vertex_iterator simplex_vertex_end(Simplex s);
 	
 	/**
 	 Returns an iterator to the beginning of the sequence of
 	 simplices of the boundary of a simplex
 	 */
-	Boundary_simplex_iterator boundary_simplex_iterator_begin(Simplex s);
+	Boundary_simplex_iterator boundary_simplex_begin(Simplex s);
 	/**
 	 Returns an iterator to the end of the sequence of 
 	 simplices of the boundary of a simplex
 	 */
-	Boundary_simplex_iterator boundary_simplex_iterator_end(Simplex s);
+	Boundary_simplex_iterator boundary_simplex_end(Simplex s);
 	
 	
 	/**
 	 Returns an iterator to the beginning of the sequence of
 	 simplices of the coboundary of a simplex
 	 */
-	Coboundary_simplex_iterator coboundary_simplex_iterator_begin(Simplex s);
+	Coboundary_simplex_iterator coboundary_simplex_begin(Simplex s);
 	/**
 	 Returns an iterator to the end of the sequence of 
 	 simplices of the coboundary of a simplex
 	 */
-	Coboundary_simplex_iterator coboundary_simplex_iterator_end(Simplex s);
+	Coboundary_simplex_iterator coboundary_simplex_end(Simplex s);
 	/// @}
 	/*************************************************/	
 	
