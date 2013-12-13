@@ -48,10 +48,10 @@ struct FilteredSimplicialComplexDS
    *  Returns an iterator to the beginning of the sequence of
    *  simplices of a complex in the order of the filtration
    */
-  Filtration_simplex_iterator filtration_simplex_iterator_begin();
+  Filtration_simplex_iterator filtration_simplex_begin();
   /**
    *  Returns an iterator to the end of the sequence of 
    *  simplices of a complex in the order of the filtration
    */
-  Filtration_simplex_iterator filtration_simplex_iterator_end();
+  Filtration_simplex_iterator filtration_simplex_end();
 };
