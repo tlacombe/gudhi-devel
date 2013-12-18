@@ -13,19 +13,21 @@
 struct GeometryTraits
 {
 	/**
-	 Element of a metric space, where pairwise 
-	 distances can be computed
+	 * Element of a metric space, where pairwise 
+	 * distances can be computed
 	 */
 	typedef unspecified Point;
 	
 	/**
-	 Comparable distance type, field operations
+	 * Comparable distance type, field operations
 	 */
 	typedef unspecified FT;
 	
 	/**
-	 Distance function between points
+	 * Distance function between points
+	 *
+	 * @todo Define the properties of the "distance". A similarity measure
+	 * is usually enough.
 	 */
 	FT distance(Point p1, Point p2);
-	
 };
