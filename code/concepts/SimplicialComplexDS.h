@@ -9,78 +9,47 @@
 
 /**
  * \brief Data structure for representing a simplicial complex.
+ *
+ * This concept is general, and defines the types Simplex 
+ * and Vertex.
  */
 struct SimplicialComplexDS
 {
-	
 	/*************************************************/		
 	/// \name Objects
 	/// @{
 	/**
-	 * Vertices of a simplicial complex \f$ K = (V,S) \f$
+	 * \brief Vertices of a simplicial complex \f$ K = (V,S) \f$.
+	 *
+	 * The Vertices must admit a total order.
 	 */
 	typedef unspecified Vertex;
 	/**
-	 * Simplex type
+	 * \brief Simplex type.
+	 * 
+	 * A Simplex does not need to be a simplex
+	 * of the simplicial complex represented. It admits a canonical 
+	 * orientation induces by the order on its Vertices.
 	 */
 	typedef unspecified Simplex;
 	///@}
+	/*************************************************/	
 
 	/*************************************************/	
 	/// \name Iterators
 	/// @{
 	/**
-	 *	Iterator over all simplices of a complex
+	 *	Iterator over all Vertices of a Simplex.
 	 *
-	 *	 `value_type` must be a `Simplex`
-	 */
-	typedef unspecified Complex_simplex_iterator;
-	/**
-	 *	Range of all simplices of a complex, corresponding to the
-	 *	iterator type `Complex_simplex_iterator`
-	 */
-	typedef unspecified Complex_simplex_range;
-	/**
-	 *	Iterator over all vertices of a simplex
-	 *
-	 *	 `value_type` must be a `Vertex`
+	 *	 `value_type` must be a `Vertex`.
 	 */
 	typedef unspecified Simplex_vertex_iterator;
 	/**
-	 *	 Iterator over all simplices of the boundary of a simplex
-	 *
-	 *	 `value_type` must be a `Simplex`
-	 */
-	typedef unspecified Boundary_simplex_iterator;
-	/** OPTIONAL
-	 * Iterator over all simplices of the coboundary of a simplex
-	 *
-	 *	`value_type` must be a `Simplex`
-	 */
-	typedef unspecified Coboundary_simplex_iterator;
-	/// @}
-	
-	/*************************************************/	
-	/// \name Iterator constructors
-	/// @{
-	/**
-	 Returns an iterator to the beginning of the sequence of
-	 simplices of a complex
-	 */
-	Complex_simplex_iterator complex_simplex_begin(); 
-	/**
-	 Returns an iterator to the end of the sequence of 
-	 simplices of a complex
-	 */
-	Complex_simplex_iterator complex_simplex_end(); 
-	/**
-	 Returns a range of the sequence of simplices of a complex
-	 */
-	Complex_simplex_range complex_simplices(); 
-	
-	/**
 	 * Returns an iterator to the beginning of the sequence of 
 	 * vertices of a simplex
+	 *
+	 * The iterator enumerated the Vertices of a Simplex in increasing
+	 * order of the Vertices.
 	 *
 	 * @param s Simplex from which we enumerate the vertices
 	 * @return Iterator to the beginning of the sequence of vertices of
@@ -88,50 +57,97 @@ struct SimplicialComplexDS
 	 */
 	Simplex_vertex_iterator simplex_vertex_begin(Simplex s);
 	/**
-	 Returns an iterator to the end of the sequence of 
-	 vertices of a simplex
+	 * Returns an iterator to the end of the sequence of 
+	 * vertices of a simplex
 	 */
 	Simplex_vertex_iterator simplex_vertex_end(Simplex s);
-	
-	/**
-	 Returns an iterator to the beginning of the sequence of
-	 simplices of the boundary of a simplex
-	 */
-	Boundary_simplex_iterator boundary_simplex_begin(Simplex s);
-	/**
-	 Returns an iterator to the end of the sequence of 
-	 simplices of the boundary of a simplex
-	 */
-	Boundary_simplex_iterator boundary_simplex_end(Simplex s);
-	
-	
-	/**
-	 Returns an iterator to the beginning of the sequence of
-	 simplices of the coboundary of a simplex
-	 */
-	Coboundary_simplex_iterator coboundary_simplex_begin(Simplex s);
-	/**
-	 Returns an iterator to the end of the sequence of 
-	 simplices of the coboundary of a simplex
-	 */
-	Coboundary_simplex_iterator coboundary_simplex_end(Simplex s);
-	/// @}
 	/*************************************************/	
-	
+
 	/*************************************************/	
 	/// \name Queries
 	/// @{
 	/**
-	 * Returns the dimension of a simplex s
+	 * Answer true if the Simplex belongs to the simplicial complex;
+	 * false otherwise.
+	 *
+	 * The set of simplices for which this query answers true defines
+	 * the set of simplices of the simplicial complex. It must satisfy 
+	 * the subsimplex closeness of simplicial complexes.
+	 */
+	bool does_simplex_belong_to_complex(Simplex s);
+	/**
+	 * Returns the dimension of a simplex s, i.e. the
+	 * number of Vertices minus 1
 	 */
 	int simplex_dimension(Simplex s);
 	/**
-	 * Returns the dimension of the complex
+	 * Returns the dimension of the complex, i.e. the maximal
+	 * dimension of a simplex in the simplicial complex.
 	 */
 	int complex_dimension();
-	
 	/// @}
 	/*************************************************/	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/**
+	 *	Iterator over all simplices of a complex
+	 *
+	 *	 `value_type` must be a `Simplex`
+	 */
+//	typedef unspecified Complex_simplex_iterator;
+	/**
+	 *	Range of all simplices of a complex, corresponding to the
+	 *	iterator type `Complex_simplex_iterator`
+	 */
+//	typedef unspecified Complex_simplex_range;
+	/** OPTIONAL
+	 * Iterator over all simplices of the coboundary of a simplex
+	 *
+	 *	`value_type` must be a `Simplex`
+	 */
+//	typedef unspecified Coboundary_simplex_iterator;
+	/// @}
+	
+	/*************************************************/	
+
+	/**
+	 Returns an iterator to the beginning of the sequence of
+	 simplices of a complex
+	 */
+//	Complex_simplex_iterator complex_simplex_begin(); 
+	/**
+	 Returns an iterator to the end of the sequence of 
+	 simplices of a complex
+	 */
+//	Complex_simplex_iterator complex_simplex_end(); 
+	/**
+	 Returns a range of the sequence of simplices of a complex
+	 */
+//	Complex_simplex_range complex_simplices(); 
+
+	/**
+	 Returns an iterator to the beginning of the sequence of
+	 simplices of the coboundary of a simplex
+	 */
+//	Coboundary_simplex_iterator coboundary_simplex_begin(Simplex s);
+	/**
+	 Returns an iterator to the end of the sequence of 
+	 simplices of the coboundary of a simplex
+	 */
+//	Coboundary_simplex_iterator coboundary_simplex_end(Simplex s);
+	/// @}
+	/*************************************************/	
+	
 
 	/*************************************************/		
 	/// \name Modifiers
@@ -140,15 +156,25 @@ struct SimplicialComplexDS
 	 * Build the flag complex of dimension maximal_dimension
 	 * induced by the 1-skeleton of the simplicial complex
 	 */
-	void expand(int maximal_dimension);
+//	void expand(int maximal_dimension);
 	/** OPTIONAL
 	 * Remove the simplex s and all its cofaces
 	 */
-	void remove_simplex(Simplex s);
+//	void remove_simplex(Simplex s);
 	/** OPTIONAL
 	 * Contract an edge s
 	 */
-	void edge_contraction(Simplex s);
+//	void edge_contraction(Simplex s);
 	/// @}
 	/*************************************************/	
+
+	/// \name Simplex extra data accessor
+	/// @{
+	/**
+	 * Returns a pointer to the extra information provided for
+	 * the simplex s.  If not `Simplex_data` is not `void`, it must be
+	 * persistent, i.e. it cannot be part of a temporary Simplex object.
+	 */
+//	Simplex_data *simplex_data_pointer(Simplex s);
+	/// @}
 };
