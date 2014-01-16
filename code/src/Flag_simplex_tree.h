@@ -37,11 +37,11 @@ public:
 	typedef typename NeighborsGeometryTraits::Point						Point							;
 	typedef typename NeighborsGeometryTraits::Point_range			Point_range				;
 	typedef typename NeighborsGeometryTraits::Point_iterator	Point_iterator		;
-	typedef typename NeighborsGeometryTraits::Vertex					Vertex						;
+	typedef typename NeighborsGeometryTraits::Vertex					Vertex						; //-
 	typedef typename NeighborsGeometryTraits::Vertex_iterator	Vertex_iterator		;
 	typedef typename NeighborsGeometryTraits::Vertex_range		Vertex_range			;
 	typedef typename NeighborsGeometryTraits::Neighbor_vertex_range	
-																										Neighbor_vertex_range		;
+																										Neighbor_vertex_range			;
 	typedef typename NeighborsGeometryTraits::Neighbor_vertex_iterator
 																										Neighbor_vertex_iterator	;
 	/** Node in the simplex tree.*/	
@@ -52,7 +52,31 @@ public:
 	typedef typename Siblings::Dictionary											Dictionary				;
 	/** \todo Probably not correct, should be Dictionary::iterator. */
 	typedef typename Siblings::Dictionary_it									Dictionary_it			;
+	
+	
+	
+	typedef typedef Siblings::Dictionary_it										Simplex_handle		;
+//	typedef std::vector< Vertex >															Simplex					;
+	typedef std::vector< Vertex >												Simplex_vertex_range		;
+	typedef std::vector< Vertex >::iterator							Simplex_vertex_iterator	;
+	
 	/// @}
+
+	
+	/** \todo */
+	bool does_simplex_belong_to_complex(Simplex & s)
+	{	//...
+	}
+	
+	int simplex_dimension(Simplex & s) { return s.size()-1; }
+	
+	/** \todo */
+	int complex_dimension()
+	{ //...	
+	}
+	
+	
+	
 	
 	/** \brief Default constructor.*/
 	Flag_simplex_tree() :
