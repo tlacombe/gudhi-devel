@@ -10,6 +10,7 @@
 #ifndef GUDHI_SIMPLEX_TREE_SIBLINGS
 #define GUDHI_SIMPLEX_TREE_SIBLINGS
 
+//#include <map>
 #include <boost/container/flat_map.hpp>
 #include "Filtered_simplex_tree_node.h"
 
@@ -28,6 +29,8 @@ public:
 	 * Must be ordered increasingly.
 	 */
 	typedef boost::container::flat_map<Vertex,Node>								Dictionary		;
+//	typedef std::map<Vertex,Node>	Dictionary;
+	
 	typedef Dictionary::iterator																	Dictionary_it	;
 	
 	/**
@@ -46,18 +49,24 @@ public:
 												Vertex									parent ) :
 	oncles_(oncles),
 	parent_(parent),
-	members_(Dictionary())
+	members_()
 	{}
 	
 	
 	
 	Simplex_tree_siblings(Simplex_tree_siblings * oncles,
 												Vertex									parent,
+												size_t									size_intersection,
 												std::vector< std::pair< Vertex, Node > > & members) :
 	oncles_(oncles),
 	parent_(parent)
 	{
-		members_ = Dictionary(members.begin(),members.end());
+		members_ = Dictionary();
+		members_.reserve(size_intersection);
+		for(std::vector< std::pair< Vertex, Node > >::iterator v_it = members.begin();
+				v_it != members.end(); ++v_it)
+		{ (members_.insert(members_.end(),*v_it))->second.assign_children(this);	}
+//		members_ = Dictionary(members.begin(),members.end());
 	}
 	
 	/**
@@ -74,6 +83,7 @@ public:
 				map_it != members_.end(); map_it++)
 		{	map_it->second.assign_children(this);	}
 	}
+		
 	
 	/**
 	 * Destructor, calls recursively the destructor
