@@ -55,26 +55,26 @@ public:
 	
 	
 	
-	typedef typedef Siblings::Dictionary_it										Simplex_handle		;
-//	typedef std::vector< Vertex >															Simplex					;
-	typedef std::vector< Vertex >												Simplex_vertex_range		;
-	typedef std::vector< Vertex >::iterator							Simplex_vertex_iterator	;
+	typedef typename	Siblings::Dictionary_it						Simplex_handle					;
+//	typedef std::vector< Vertex >											Simplex									;
+	typedef						std::vector< Vertex >							Simplex_vertex_range		;
+	typedef typename	std::vector< Vertex >::iterator		Simplex_vertex_iterator	;
 	
 	/// @}
 
 	
 	/** \todo */
-	bool does_simplex_belong_to_complex(Simplex & s)
+/*	bool does_simplex_belong_to_complex(Simplex & s)
 	{	//...
 	}
-	
-	int simplex_dimension(Simplex & s) { return s.size()-1; }
+	*/
+//	int simplex_dimension(Simplex & s) { return s.size()-1; }
 	
 	/** \todo */
-	int complex_dimension()
+/*	int complex_dimension()
 	{ //...	
 	}
-	
+	*/
 	
 	
 	
@@ -84,7 +84,7 @@ public:
 	rho_max_(0),
 	nb_vertices_(0),
 	size_cpx_(0),
-	root_(std::vector< Node >())
+	root_()
 	{};
 	
 	/** Destructor.*/
@@ -103,7 +103,7 @@ public:
 	 */
 	void init(//Point_range_sc	&	point_range,
 						int								dim_max,
-						double						rho_max)
+						Filtration_value	rho_max)
 	{
 		rho_max_ = rho_max;
 		nb_vertices_ = gt_->nb_elements();
@@ -132,6 +132,7 @@ public:
 		{ if(r_it->has_children(v)) {size_cpx_ += r_it->children()->members().size();}	}
 	
 		// Expansion
+		clock_t start = clock();
 		int curr_vertex = 0;
 		for(std::vector< Node >::iterator root_it = root_.begin();
 				root_it != root_.end(); ++root_it, ++curr_vertex)
@@ -139,6 +140,10 @@ public:
 			if(root_it->has_children(curr_vertex)) 
 			{ siblings_expansion(root_it->children(), dim_max-1); }
 		}
+		
+		clock_t end = clock();
+		std::cout << "Computational time for Rips construction = " << 
+		(double)(end - start)/(double)CLOCKS_PER_SEC << std::endl;
 	}
 	
 	/**
@@ -151,12 +156,14 @@ public:
 		if(k == 0) return;
 		
 		Dictionary_it next = siblings->members().begin(); ++next;
+		
+		static std::vector< std::pair<Vertex , Node> > inter;
+
 		for(Dictionary_it s_h = siblings->members().begin();
 				s_h != siblings->members().end(); ++s_h,++next)
 		{
 			if(root_[s_h->first].has_children(s_h->first))
 			{
-				std::vector< std::pair<Vertex , Node> > inter = std::vector< std::pair<Vertex , Node> >();
 				int size_intersection = intersection(inter,  //output intersection
 																						 next,					//begin
 																						 siblings->members().end(),//end
@@ -168,34 +175,29 @@ public:
 					size_cpx_ += size_intersection;
 					Siblings * new_sib = new Siblings(siblings,					 //oncles
 																						s_h->first,		 //parent
+																						size_intersection,
 																						inter);					//boost::container::ordered_unique_range_t
+					inter.clear();
 					s_h->second.assign_children(new_sib);
 					siblings_expansion(new_sib,k-1);
 				}
+				else {	inter.clear();	}
 			}
 		}
 	}
 	
-	/**
-	 * Maximum over 3 values.
-	 */
-	double maximum( double a, double b, double c )
-	{
-		double max = ( a < b ) ? b : a;
-		return ( ( max < c ) ? c : max );
-	}
-	
+		
 	/**
 	 * Intersects Dictionary 1 [begin1;end1) with
 	 * Dictionary 2 [begin2,end2) and assign the
 	 * maximal possible value to the Nodes.
 	 */
 	int intersection(std::vector< std::pair< Vertex, Node > > & intersection,
-									 Dictionary_it begin1,
-									 Dictionary_it end1,
-									 Dictionary_it begin2,
-									 Dictionary_it end2,
-									 double filtration)
+									 Dictionary_it		begin1,
+									 Dictionary_it		end1,
+									 Dictionary_it		begin2,
+									 Dictionary_it		end2,
+									 Filtration_value filtration)
 	{
 		if(begin1 == end1 || begin2 == end2) return 0;
 		int size_intersection = 0;
@@ -243,12 +245,22 @@ public:
 	
 	
 	
-	
+private:	
+	/**
+	 * Maximum over 3 values.
+	 */
+	Filtration_value maximum( Filtration_value a, 
+													 Filtration_value b, 
+													 Filtration_value c )
+	{
+		Filtration_value max = ( a < b ) ? b : a;
+		return ( ( max < c ) ? c : max );
+	}
 	
 	
 	private :
 	NeighborsGeometryTraits		*	gt_						;
-	double											rho_max_			;	
+	Filtration_value						rho_max_			;	
 	int													nb_vertices_	;
 	int													size_cpx_			; //
 //	int													dimension_cpx_; 

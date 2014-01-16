@@ -121,9 +121,11 @@ class Euclidean_rips_naive_geometry_traits {
 	 * Default constructor
 	 */
 	Euclidean_rips_naive_geometry_traits() :
-	point_range_ptr_(NULL),
 	dimension_(-1),
+	nb_elements_(0),
+	point_range_ptr_(NULL),
 	vertex_range_(Vertex_range(0))
+//	dist_max_(0)
 	{}
 	
 	/**
@@ -209,7 +211,7 @@ class Euclidean_rips_naive_geometry_traits {
 	/** Range of points contained in the space. */
 	Point_range		*	point_range_ptr_;
 	Vertex_range    vertex_range_;
-	FT							dist_max_;
+//	FT							dist_max_;
 	
 };
 

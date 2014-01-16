@@ -1,5 +1,5 @@
 #include <iostream>
-
+#include <ctime>
 #include "iofile.h"
 #include "Flag_simplex_tree.h"
 
@@ -14,11 +14,11 @@ int main (int argc, char * const argv[])
 	// Turn them into a Point_range object:	
 	
 	Euclidean_rips_naive_geometry_traits::Point_range points;
-	string file_name = "/Users/cmaria/Desktop/Points.txt";  
+	string file_name = "/Users/cmaria/Desktop/Bro_fp.txt";  
  	read_points(file_name,points);                         //<- make different versions of read_points
 
 	/****************************************/
-	cout << "Points from file: ---------- \n";
+/*	cout << "Points from file: ---------- \n";
 	for(vector< vector< double > >::iterator it = points.begin();
 			it!=points.end(); it++)
 	{
@@ -30,11 +30,11 @@ int main (int argc, char * const argv[])
 		cout << endl;
 	}
 	cout << "---------------------------- \n";
-	/****************************************/
+*/	/****************************************/
 	
 	/****** Construct a Rips complex: ******/
 	int			dim_max			= 10;
-	double	rho_max			= 30;
+	double	rho_max			= 0.77;
 
 	// Creates an empty simplex tree
 	Flag_simplex_tree< Euclidean_rips_naive_geometry_traits > st;
@@ -43,7 +43,7 @@ int main (int argc, char * const argv[])
 	st.gt()->init(points);
 	
 	/****************************************/
-	cout << "Points from metric space: -- \n";
+/*	cout << "Points from metric space: -- \n";
 	for(vector< vector< double > >::iterator it = st.gt()->point_range().begin();
 			it != st.gt()->point_range().end(); ++it)
 	{
@@ -56,19 +56,17 @@ int main (int argc, char * const argv[])
 	}
 	cout << "Nb elements MP: " << st.gt()->nb_elements() << endl;
 	cout << "---------------------------- \n";
-	/****************************************/
+*/	/****************************************/
 	
 	// Constructs the Rips complex
+	
 	st.init(//points,			//Point_range, subset of the points in st.gt()
 					dim_max,			// dimension maximal of the expansion
 					rho_max);			// threshold for the Rips
-
+	
 	// Prints the simplex tree in std::cout
-	cout << st;
-	
-	
-	
-	
+	cout << st.size_complex() << endl;
+		
 	
 	
 	
