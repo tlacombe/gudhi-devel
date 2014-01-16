@@ -15,24 +15,54 @@
  */
 struct SimplicialComplexDS
 {
-	/*************************************************/		
-	/// \name Objects
+	/*************************************************/	
+	/** \breif The geometry
+	 */
+	typedef NeighborsGeometryTraits Geometry_traits; 
+	
+	
+	
+	
+	/// \name Vertex and Simplex:
 	/// @{
 	/**
 	 * \brief Vertices of a simplicial complex \f$ K = (V,S) \f$.
 	 *
 	 * The Vertices must admit a total order.
 	 */
-	typedef unspecified	Vertex;
+	typedef Geometry_traits::Vertex			Vertex;
 	
 	/**
-	 * \brief Simplex type.
-	 * 
-	 * A Simplex does not need to be a simplex
-	 * of the simplicial complex represented. It admits a canonical 
-	 * orientation induces by the order on its Vertices.
+	 * \brief Simplex handle.
+	 *
+	 * A Simplex_handle represents a unique simplex in the
+	 * simplicial complex.
 	 */
-	typedef unspecified Simplex;
+	typedef unspecified Simplex_handle;
+	
+	/** \brief Simplex range type.
+	 * 
+	 * A range over the vertices of a simplex. A Simplex does not 
+	 * need to be a simplex
+	 * of the simplicial complex represented. The simplex admits
+	 * a canonical orientation induced by the order on its Vertices
+	 * in the range returned by simplex_vertex_range(Simplex_handle s)
+	 */
+	typedef unspecified Simplex_vertex_range;
+	
+	/**
+	 * \brief Returns a range over the Vertices of the input Simplex.
+	 *
+	 * Specifies the orientation of the simplex corresponding to
+	 * the input Simplex_handle.
+	 */
+	Simplex_vertex_range simplex_vertex_range(Simplex_handle sh);
+
+	/** \brief Iterator over all Vertices of a Simplex.
+	 *
+	 * `value_type` must be a `Vertex`.
+	 */	
+	typedef unspecified Simplex_vertex_iterator;
 	///@}
 	/*************************************************/	
 
@@ -44,7 +74,7 @@ struct SimplicialComplexDS
 	 *
 	 *	 `value_type` must be a `Vertex`.
 	 */
-	typedef unspecified Simplex_vertex_iterator;
+	//typedef unspecified Simplex_vertex_iterator;
 	/**
 	 * Returns an iterator to the beginning of the sequence of 
 	 * vertices of a simplex
@@ -56,12 +86,12 @@ struct SimplicialComplexDS
 	 * @return Iterator to the beginning of the sequence of vertices of
 	 *	s
 	 */
-	Simplex_vertex_iterator simplex_vertex_begin(Simplex s);
+	//Simplex_vertex_iterator simplex_vertex_begin(Simplex s);
 	/**
 	 * Returns an iterator to the end of the sequence of 
 	 * vertices of a simplex
 	 */
-	Simplex_vertex_iterator simplex_vertex_end(Simplex s);
+	//Simplex_vertex_iterator simplex_vertex_end(Simplex s);
 	/*************************************************/	
 
 	/*************************************************/	
@@ -75,12 +105,12 @@ struct SimplicialComplexDS
 	 * the set of simplices of the simplicial complex. It must satisfy 
 	 * the subsimplex closeness of simplicial complexes.
 	 */
-	bool does_simplex_belong_to_complex(Simplex s);
+	bool does_simplex_belong_to_complex(Simplex_handle s);
 	/**
 	 * Returns the dimension of a simplex s, i.e. the
 	 * number of Vertices minus 1
 	 */
-	int simplex_dimension(Simplex s);
+	int simplex_dimension(Simplex_handle s);
 	/**
 	 * Returns the dimension of the complex, i.e. the maximal
 	 * dimension of a simplex in the simplicial complex.
