@@ -31,13 +31,13 @@ class Euclidean_rips_naive_geometry_traits {
 	public:
 
 	/** \brief Distance type.*/
-	typedef double														FT						;
-	typedef std::vector<double>								Point					;
+	typedef double														FT 	;
+	typedef std::vector<double>								Point			;
 	typedef std::vector< Point >							Point_range		;
-	typedef std::vector< Point >::iterator		Point_iterator;
+	typedef std::vector< Point >::iterator					Point_iterator	;
 
 	/** \brief Vertex type.*/
-	typedef int																Vertex				;
+	typedef int												Vertex			;
 
 	// Vertex_iterator type -----------------------------------------------------
 	class Vertex_iterator {

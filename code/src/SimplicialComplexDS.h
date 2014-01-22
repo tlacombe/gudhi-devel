@@ -16,21 +16,18 @@
 struct SimplicialComplexDS
 {
 	/*************************************************/	
-	/** \breif The geometry
+	/** \brief The geometry
 	 */
 	typedef NeighborsGeometryTraits Geometry_traits; 
 	
-	
-	
-	
 	/// \name Vertex and Simplex:
-	/// @{
+	/// @{ 
 	/**
 	 * \brief Vertices of a simplicial complex \f$ K = (V,S) \f$.
 	 *
 	 * The Vertices must admit a total order.
 	 */
-	typedef Geometry_traits::Vertex			Vertex;
+	typedef Geometry_traits::Vertex 		Vertex;
 	
 	/**
 	 * \brief Simplex handle.
@@ -39,6 +36,14 @@ struct SimplicialComplexDS
 	 * simplicial complex.
 	 */
 	typedef unspecified Simplex_handle;
+	
+	/**
+	 * \brief Iterator on the sequence of vertices of
+	 * a simplex.
+	 *
+	 * 'value type' Vertex
+	 */
+	typedef unspecified Simplex_vertex_iterator;
 	
 	/** \brief Simplex range type.
 	 * 
@@ -57,41 +62,7 @@ struct SimplicialComplexDS
 	 * the input Simplex_handle.
 	 */
 	Simplex_vertex_range simplex_vertex_range(Simplex_handle sh);
-
-	/** \brief Iterator over all Vertices of a Simplex.
-	 *
-	 * `value_type` must be a `Vertex`.
-	 */	
-	typedef unspecified Simplex_vertex_iterator;
 	///@}
-	/*************************************************/	
-
-	/*************************************************/	
-	/// \name Iterators
-	/// @{
-	/**
-	 *	Iterator over all Vertices of a Simplex.
-	 *
-	 *	 `value_type` must be a `Vertex`.
-	 */
-	//typedef unspecified Simplex_vertex_iterator;
-	/**
-	 * Returns an iterator to the beginning of the sequence of 
-	 * vertices of a simplex
-	 *
-	 * The iterator enumerated the Vertices of a Simplex in increasing
-	 * order of the Vertices.
-	 *
-	 * @param s Simplex from which we enumerate the vertices
-	 * @return Iterator to the beginning of the sequence of vertices of
-	 *	s
-	 */
-	//Simplex_vertex_iterator simplex_vertex_begin(Simplex s);
-	/**
-	 * Returns an iterator to the end of the sequence of 
-	 * vertices of a simplex
-	 */
-	//Simplex_vertex_iterator simplex_vertex_end(Simplex s);
 	/*************************************************/	
 
 	/*************************************************/	
