@@ -14,8 +14,9 @@ int main (int argc, char * const argv[])
 	// Turn them into a Point_range object:	
 	
 	Euclidean_rips_naive_geometry_traits::Point_range points;
-	string file_name = "/Users/cmaria/Desktop/Bro_fp.txt";  
- 	read_points(file_name,points);                         //<- make different versions of read_points
+//	string file_name = "/Users/cmaria/Desktop/Bro_fp.txt";  
+	string file_name = "/Users/cmaria/Desktop/Points.txt";
+	read_points(file_name,points);                         //<- make different versions of read_points
 
 	/****************************************/
 /*	cout << "Points from file: ---------- \n";
@@ -33,8 +34,8 @@ int main (int argc, char * const argv[])
 */	/****************************************/
 	
 	/****** Construct a Rips complex: ******/
-	int			dim_max			= 10;
-	double	rho_max			= 0.77;
+	int			dim_max			= 100;
+	double	rho_max			= 100;
 
 	// Creates an empty simplex tree
 	Flag_simplex_tree< Euclidean_rips_naive_geometry_traits > st;
@@ -68,7 +69,31 @@ int main (int argc, char * const argv[])
 	cout << st.size_complex() << endl;
 		
 	
+//	return 0;
 	
+//	std::cout << st;
+	
+	vector< int > v;
+	for(int i = 1; i < 4 ; ++i) v.push_back(i);
+	Flag_simplex_tree< Euclidean_rips_naive_geometry_traits >::Simplex_handle sh; 
+	sh = st.find(v);
+	st.print(sh);
+	std::cout << "\n \n";
+
+
+Flag_simplex_tree< Euclidean_rips_naive_geometry_traits >::
+Boundary_simplex_range rg = st.boundary_simplex_range(sh);
+	
+Flag_simplex_tree< Euclidean_rips_naive_geometry_traits >::
+		Boundary_simplex_iterator it = rg.begin();
+
+
+
+	for(; it != rg.end(); ++it)
+	{
+		st.print(*it);
+	}
+
 	
 	
 	/* TO DO

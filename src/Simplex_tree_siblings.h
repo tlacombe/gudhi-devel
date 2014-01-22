@@ -11,7 +11,7 @@
 #define GUDHI_SIMPLEX_TREE_SIBLINGS
 
 //#include <map>
-#include <boost/container/flat_map.hpp>
+#include "boost/container/flat_map.hpp"
 #include "Filtered_simplex_tree_node.h"
 
 /**
@@ -53,21 +53,16 @@ public:
 	{}
 	
 	
-	
+	/**
+	 * 'members' is sorted and unique.
+	 */
 	Simplex_tree_siblings(Simplex_tree_siblings * oncles,
 												Vertex									parent,
-												size_t									size_intersection,
 												std::vector< std::pair< Vertex, Node > > & members) :
 	oncles_(oncles),
-	parent_(parent)
-	{
-		members_ = Dictionary();
-		members_.reserve(size_intersection);
-		for(std::vector< std::pair< Vertex, Node > >::iterator v_it = members.begin();
-				v_it != members.end(); ++v_it)
-		{ (members_.insert(members_.end(),*v_it))->second.assign_children(this);	}
-//		members_ = Dictionary(members.begin(),members.end());
-	}
+	parent_(parent),
+	members_(boost::container::ordered_unique_range,members.begin(),members.end())
+	{}
 	
 	/**
 	 * Construct with initialized set of members
@@ -120,8 +115,13 @@ public:
 		{	members_.insert(std::pair< Vertex, Node >( v, Node(filtration_value,this) )); 
 			return; }
 	}
-	
 		
+	
+	Dictionary_it find(Vertex v)
+	{ return members_.find(v);	}
+	
+	
+	
 	/**********************/	
 	
 	Simplex_tree_siblings * oncles()

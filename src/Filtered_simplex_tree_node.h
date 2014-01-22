@@ -27,43 +27,24 @@ class Filtered_simplex_tree_node {
 	/**
 	 * Default constructor.
 	 */
-	Filtered_simplex_tree_node() :
-	children_(NULL),
-	inter_node_(NULL),
-	filtration_(0)
-	{}
-	
+	Filtered_simplex_tree_node();
 	/**
 	 * Constructor with values.
 	 */
 	Filtered_simplex_tree_node(double filtration,
-														 Simplex_tree_siblings *self_sib) :
-	children_(self_sib),
-	inter_node_(NULL),
-	filtration_(filtration)
-	{}
-	
-	Filtered_simplex_tree_node(double filtration) :
-	children_(NULL),
-	inter_node_(NULL),
-	filtration_(filtration)
-	{}
-		
+								Simplex_tree_siblings *self_sib);
+	/**
+	 * Constructor with values.
+	 */
+	Filtered_simplex_tree_node(double filtration);	
 	/** Necessary
 	 * Copy constructor
 	 */
-	Filtered_simplex_tree_node(const Filtered_simplex_tree_node &other) :
-	children_(other.children_),
-	inter_node_(other.inter_node_),
-	filtration_(other.filtration_)
-	{}
-	
+	Filtered_simplex_tree_node(const Filtered_simplex_tree_node &other);
 	/**
 	 * Destructor
 	 */
-	~Filtered_simplex_tree_node()
-	{}
-	
+	~Filtered_simplex_tree_node();
 	/**
 	 * When in a simplex tree, returns a pointer
 	 * to the Simplex_tree_siblings containing the node.
@@ -71,40 +52,33 @@ class Filtered_simplex_tree_node {
 	 * Vertex label is the biggest Vertex in the simplex
 	 * represented by the node.
 	 */
-	Simplex_tree_siblings *get_self_siblings(Vertex label);
-	
+	Simplex_tree_siblings * self_siblings(Vertex label);
 	/**
 	 * Return true if the node has children,
 	 * false otherwise.
 	 */
 	bool has_children(Vertex label);
-		
 	/**
 	 * Assign a children to the node
 	 */
 	void assign_children(Simplex_tree_siblings *children)
 	{	children_ = children;	}
-	
 	/**
 	 *
 	 */
 	void assign_filtration(double filtration_value)
 	{	filtration_ = filtration_value;	}
-	
 	/**
 	 * Return the dimension of the simplex corresponding
 	 * to the node.
 	 */
 	int dimension(unsigned int label);
-	
 	/**
 	 * Fill sigma with the list of vertices
 	 * of the simplex corresponding to the node
 	 */		
-	void list_of_vertices(std::vector<Vertex> &sigma,
-												Vertex							label);
-
-	
+	void list_of_vertices(	std::vector<Vertex> &sigma,
+							Vertex				label);
 	/**
 	 * Return true is the simplex corresponding 
 	 * to the node is an edge, false otherwise.
@@ -114,6 +88,7 @@ class Filtered_simplex_tree_node {
 	double filtration()
 	{ return filtration_; }
 
+	/** Careful -> has_children() must be true*/
 	Simplex_tree_siblings * children()
 	{ return children_; }
 	
@@ -123,12 +98,10 @@ class Filtered_simplex_tree_node {
 	/***************************/
 	private :	
 	Simplex_tree_siblings		* children_;
-	//S_inter_Node					* inter_node_;
-	void										* inter_node_;
-	double										filtration_; //value in the filtration
+	//S_inter_Node				* inter_node_;
+	void						* inter_node_;
+	double						filtration_; //value in the filtration
 	
 };
 
-
 #endif // GUDHI_FILTERED_SIMPLEX_TREE_NODE_H
-
