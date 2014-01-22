@@ -23,21 +23,21 @@
  */
 void
 read_points(std::string file_name,
-						std::vector< std::vector< double > > &points)
+	    std::vector< std::vector< double > > &points)
 {	
-	std::ifstream in_file (file_name.c_str(),std::ios::in);
-	if(!in_file.is_open()) {
-		std::cerr << "Unable to open file " << file_name << std::endl;
-		return;}
+  std::ifstream in_file (file_name.c_str(),std::ios::in);
+  if(!in_file.is_open()) {
+    std::cerr << "Unable to open file " << file_name << std::endl;
+    return;}
 	
-	std::string line;
-	double x;
-	while( getline (in_file,line) )
-	{
-		std::vector<double> point;
-		std::istringstream iss(line);
-		while(iss >> x) {point.push_back(x);}
-			points.push_back(point);		
-	}
-	in_file.close();
+  std::string line;
+  double x;
+  while( getline (in_file,line) )
+    {
+      std::vector<double> point;
+      std::istringstream iss(line);
+      while(iss >> x) {point.push_back(x);}
+      points.push_back(point);		
+    }
+  in_file.close();
 }
