@@ -1,5 +1,4 @@
 
-
 template<class N >
 Flag_simplex_tree<N>::
 Flag_simplex_tree() :
@@ -11,11 +10,10 @@ Flag_simplex_tree() :
   filtration_vect_()
 {}
 
-
 template<class N>
 void 
 Flag_simplex_tree<N>::print(Simplex_handle sh,
-			    std::ostream& os)
+          std::ostream& os)
 {
   Simplex_vertex_range svr = simplex_vertex_range(sh);
   for(Simplex_vertex_iterator it = svr.begin();
@@ -50,14 +48,11 @@ Flag_simplex_tree<N>::find(std::vector < Vertex > & s)
   return sh;
 }
 
-
-
-
 template<class N>
 void 
 Flag_simplex_tree< N >::init(//Point_range_sc&point_range,
-			     int dim_max,
-			     Filtration_value rho_max)
+           int dim_max,
+           Filtration_value rho_max)
 {
   rho_max_ = rho_max;
   nb_vertices_ = gt_->nb_elements();
@@ -68,15 +63,15 @@ Flag_simplex_tree< N >::init(//Point_range_sc&point_range,
     {
       Neighbor_vertex_range n_range(gt_,*v_it,rho_max);
       for(Neighbor_vertex_iterator n_it = n_range.begin();
-	  n_it != n_range.end(); ++n_it)
-	{
-	  if(*v_it < *n_it) 
-	    {
-	      if(! root_[*v_it].has_children(*v_it)) 
-		{root_[*v_it].assign_children(new Siblings(NULL,*v_it)); }
-	      root_[*v_it].children()->insert(*n_it,gt_->distance(*v_it,*n_it));
-	    }
-	}
+    n_it != n_range.end(); ++n_it)
+  {
+    if(*v_it < *n_it) 
+      {
+        if(! root_[*v_it].has_children(*v_it)) 
+    {root_[*v_it].assign_children(new Siblings(NULL,*v_it)); }
+        root_[*v_it].children()->insert(*n_it,gt_->distance(*v_it,*n_it));
+      }
+  }
     }
   // Update size of the complex
   size_cpx_ += root_.size();
@@ -92,7 +87,7 @@ Flag_simplex_tree< N >::init(//Point_range_sc&point_range,
       root_it != root_.end(); ++root_it, ++curr_vertex)
     {
       if(root_it->has_children(curr_vertex)) 
-	{ siblings_expansion(root_it->children(), dim_max-1); }
+  { siblings_expansion(root_it->children(), dim_max-1); }
     }
 
   clock_t end = clock();
@@ -100,16 +95,11 @@ Flag_simplex_tree< N >::init(//Point_range_sc&point_range,
     (double)(end - start)/(double)CLOCKS_PER_SEC << std::endl;
 }
 
-
-
-
-
-
 template<class N>
 void 
 Flag_simplex_tree<N>::
 siblings_expansion(Siblings * siblings, //must contain elements
-		   int k)
+       int k)
 {
   //if (k==0 || members_.empty()) return;
   if(k == 0) return;
@@ -122,88 +112,80 @@ siblings_expansion(Siblings * siblings, //must contain elements
       s_h != siblings->members().end(); ++s_h,++next)
     {
       if(root_[s_h->first].has_children(s_h->first))
-	{
-	  intersection(inter,  //output intersection
-		       next,//begin
-		       siblings->members().end(),//end
-		       root_[s_h->first].children()->members().begin(),
-		       root_[s_h->first].children()->members().end(),
-		       s_h->second.filtration());
-	  if(inter.size() != 0)
-	    {
-	      size_cpx_ += inter.size();
-	      Siblings * new_sib = new Siblings(siblings,//oncles
-						s_h->first, //parent
-						inter);//boost::container::ordered_unique_range_t
-	      inter.clear();
-	      s_h->second.assign_children(new_sib);
-	      siblings_expansion(new_sib,k-1);
-	    }
-	  else {
-	    s_h->second.assign_children(siblings); //ensure the children property
-	    inter.clear();
-	  }
-	}
+  {
+    intersection(inter,  //output intersection
+           next,//begin
+           siblings->members().end(),//end
+           root_[s_h->first].children()->members().begin(),
+           root_[s_h->first].children()->members().end(),
+           s_h->second.filtration());
+    if(inter.size() != 0)
+      {
+        size_cpx_ += inter.size();
+        Siblings * new_sib = new Siblings(siblings,//oncles
+            s_h->first, //parent
+            inter);//boost::container::ordered_unique_range_t
+        inter.clear();
+        s_h->second.assign_children(new_sib);
+        siblings_expansion(new_sib,k-1);
+      }
+    else {
+      s_h->second.assign_children(siblings); //ensure the children property
+      inter.clear();
+    }
+  }
     }
 }
-
-
-
 
 template<class N>
 void 
 Flag_simplex_tree<N>::
 intersection(std::vector< std::pair< typename Flag_simplex_tree<N>::Vertex,
-             typename Flag_simplex_tree<N>::Node > > &       intersection,
-	     typename Flag_simplex_tree<N>::Dictionary_it    begin1,
-	     typename Flag_simplex_tree<N>::Dictionary_it    end1,
-	     typename Flag_simplex_tree<N>::Dictionary_it    begin2,
- 	     typename Flag_simplex_tree<N>::Dictionary_it    end2,
-	     typename Flag_simplex_tree<N>::Filtration_value filtration)
+                     typename Flag_simplex_tree<N>::Node > > &       intersection,
+             typename Flag_simplex_tree<N>::Dictionary_it            begin1,
+             typename Flag_simplex_tree<N>::Dictionary_it            end1,
+             typename Flag_simplex_tree<N>::Dictionary_it            begin2,
+             typename Flag_simplex_tree<N>::Dictionary_it            end2,
+             typename Flag_simplex_tree<N>::Filtration_value         filtration)
 {
   if(begin1 == end1 || begin2 == end2) return;// 0;
   while( true )
     {
       if( begin1->first == begin2->first )
-	{
-	  intersection.push_back(std::pair< Vertex, Node >(begin1->first,
-							   Node(maximum(begin1->second.filtration(),
-									begin2->second.filtration(),
-									filtration))));
-	  ++begin1;
-	  ++begin2;
-	  if( begin1 == end1 || begin2 == end2 ) return;
-	}
+  {
+    intersection.push_back(std::pair< Vertex, Node >(begin1->first,
+                 Node(maximum(begin1->second.filtration(),
+                  begin2->second.filtration(),
+                  filtration))));
+    ++begin1;
+    ++begin2;
+    if( begin1 == end1 || begin2 == end2 ) return;
+  }
       else { 
-	if( begin1->first < begin2->first ) 
-	  {
-	    ++begin1;
-	    if(begin1 == end1) return;
-	  }
-	else {
-	  ++begin2;
-	  if(begin2 == end2) return;
-	}
+  if( begin1->first < begin2->first ) 
+    {
+      ++begin1;
+      if(begin1 == end1) return;
+    }
+  else {
+    ++begin2;
+    if(begin2 == end2) return;
+  }
       }
     }
 }
-
-
-
-
 
 template<class N>
 bool 
 Flag_simplex_tree<N>::
 compare_simplices_fil(const Simplex_handle sh1,
-		      const Simplex_handle sh2)
+          const Simplex_handle sh2)
 {
   if(sh1->second.filtration() != sh2->second.filtration())
     {return sh1->second.filtration() < sh2->second.filtration();}
 
   return !(is_subface(sh1,sh2)); //is sh1 a subface of sh2
 }
-
 
 template<class N>
 bool 
@@ -219,23 +201,20 @@ is_subface(Simplex_handle sh1, Simplex_handle sh2)
     {
       if(*it1 < *it2) {++it2;}
       else {
-	if(*it1 == *it2) {++it1; ++it2;}
-	else {return false;}
+  if(*it1 == *it2) {++it1; ++it2;}
+  else {return false;}
       }
     }
   if(it1 == rg1.end()) return true;
   return false;
 }
 
-
-
-
 template<class N>
 void 
 Flag_simplex_tree<N>::
 initialize_filtration()
 {
-  filtration_vect_.reserve(size_cpx_ - nb_vertices_);   //Attention gestion vertices
+  filtration_vect_.reserve(size_cpx_ - nb_vertices_);      //Attention gestion vertices
   Complex_simplex_range rg = Complex_simplex_range();
   for(Complex_simplex_iterator it = rg.begin();
       it != rg.end(); ++it)
