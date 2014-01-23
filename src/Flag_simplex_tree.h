@@ -53,7 +53,7 @@ class Flag_simplex_tree {
   /// @}
 
 
-  /// \name Simplex Vertex traversal
+  /// \name Simplex Vertex traversal    
   /// @{
   /**
    * \brief Range over the vertices of a simplex
@@ -287,29 +287,29 @@ Simplex_handle find(std::vector < Vertex > & s);
     return ( ( max < c ) ? c : max );
   }
 
+/** \brief Pointer to the traits. */
+  NeighborsGeometryTraits        * gt_             ;
+/** \brief Threshold for the filtration function. */
+  Filtration_value                 rho_max_        ;
+/** \brief Number of vertices. The set of vertices is static.*/      
+  int                              nb_vertices_    ;
+/** \brief Total number of simplices in the complex, without the empty simplex.*/
+  int                              size_cpx_       ;
+/** \brief Set of simplex tree Nodes representing the vertices.*/  
+  std::vector< Node >              root_           ;
+/** \brief Simplices ordered according to a filtration*/  
+  std::vector< Simplex_handle >    filtration_vect_;
+/** \brief A NULL Simplex_handle; useful for the implementation.*/  
+  Simplex_handle                   NULL_sh_        ;
 
-  NeighborsGeometryTraits        *    gt_            ;
-  Filtration_value                rho_max_        ;    
-  int                            nb_vertices_;
-  int                            size_cpx_        ; //with or without vertices ?
-  //    int                            dimension_cpx_    ; 
-  std::vector< Node >                root_            ;  //set of top nodes
-
-  std::vector< Simplex_handle >     filtration_vect_;
-
-  Simplex_handle                    NULL_sh_        ;
+//int                            dimension_cpx_    ; 
 };
 
-
-
-
-
-
-
-
-
-
-std::ostream& operator<<(std::ostream& os, Simplex_tree_siblings & obj)
+/**
+* \brief Print a Simplex_tree_siblings in os.
+*/
+std::ostream& operator<<(std::ostream& os, 
+                         Simplex_tree_siblings & obj)
 {
   os << "--Oncles: @ " << (long int)(obj.oncles()) << "\n";
   os << "--Parent:   " << obj.parent() << "\n";
@@ -323,7 +323,11 @@ std::ostream& operator<<(std::ostream& os, Simplex_tree_siblings & obj)
     {if(sh->second.has_children(sh->first)) os << *(sh->second.children());}
   return os;
 };
-std::ostream& operator<<(std::ostream& os, Flag_simplex_tree< Euclidean_rips_naive_geometry_traits > & obj)
+/**
+* Print a Flag_simplex_tree in os.
+*/
+std::ostream& operator<<(std::ostream& os, 
+                         Flag_simplex_tree< Euclidean_rips_naive_geometry_traits > & obj)
 {
   os << "Flag Simplex Tree: \n";
   os << "Size Cpx   = " << obj.size_complex() << std::endl;
@@ -349,8 +353,9 @@ std::ostream& operator<<(std::ostream& os, Flag_simplex_tree< Euclidean_rips_nai
 };    
 
 
-#include "Flag_simplex_tree_iterators.h" 
-#include "Flag_simplex_tree.hpp"
-
+#include "Flag_simplex_tree_iterators.h" //implementation of the iterators
+                                         // for Flag_simplex_tree.
+#include "Flag_simplex_tree.hpp"         //implementation of the methods in
+                                         // Flag_simplex_tree.
 
 #endif // GUDHI_FLAG_SIMPLEX_TREE_H
