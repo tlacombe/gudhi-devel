@@ -23,7 +23,7 @@
  */
 void
 read_points(std::string file_name,
-	    std::vector< std::vector< double > > &points)
+	          std::vector< std::vector< double > > &points)
 {	
   std::ifstream in_file (file_name.c_str(),std::ios::in);
   if(!in_file.is_open()) {

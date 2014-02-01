@@ -1,0 +1,143 @@
+/*
+ *  Rips_graph_naive.h
+ *  Gudhi
+ *
+ *  Created by Clément Maria on 1/8/14.
+ *  Copyright 2014 INRIA. All rights reserved.
+ *
+ */
+
+#ifndef GUDHI_RIPS_GRAPH_NAIVE_H
+#define GUDHI_RIPS_GRAPH_NAIVE_H
+
+#include <set>
+#include <cmath>
+#include "boost/iterator/filter_iterator.hpp"
+
+
+/**
+ * \brief Represents Points in a metric space with
+ * nearest neighbors queries within a radius of a Point.
+ *
+ * The computation of nearest neighbors is naive, and 
+ * traverses all points in the metric space to find the one
+ * within a given radius.
+ * In particular, it does not store any additional data 
+ * structure apart from the set of points.
+ *
+ * \todo Make it lazy.
+ *
+ * \implements boost::AdjacencyGraph
+ *
+ * \implements NeighborGraph < MetricSpace >
+ *
+ * \todo Should we merge it to Euclidean_geometry?
+ */
+template < class MetricSpace >
+class Rips_graph_naive
+{
+  public:
+  typedef typename MetricSpace::Vertex          Vertex          ;//iterate through the
+  typedef typename MetricSpace::Space_vertex_iterator Space_vertex_iterator ;//iterate through the
+  typedef typename MetricSpace::Space_vertex_range    Space_vertex_range    ;//vertices of the space.
+  typedef typename MetricSpace::FT                    FT              ;//distance type.
+  //boost::Graph
+  typedef typename MetricSpace::Vertex          vertex_descriptor     ;
+  typedef std::pair< vertex_descriptor
+                   , vertex_descriptor >        edge_descriptor       ;
+  typedef boost::undirected_tag                 directed_category     ;
+  typedef boost::disallow_parallel_edge_tag     edge_parallel_category;
+  typedef boost::adjacency_graph_tag            traversal_category    ;
+  //boost::AdjacencyGraph
+/**
+  * \brief Predicate associated to a Vertex v_:
+  * returns true if an input Vertex u is at distance
+  * at most some threshold from v_.
+  */
+  struct is_within_threshold_distance {
+    is_within_threshold_distance(MetricSpace * ms,
+                                 Vertex v,
+                                 FT threshold) :
+    ms_(ms),
+    v_(v),
+    threshold_(threshold) {}
+
+    bool operator() (Vertex u)
+    { return ms_->closer_than(u,v_,threshold_); }
+
+    private:
+    MetricSpace * ms_;
+    Vertex        v_ ;
+    FT     threshold_;
+  };
+
+  typedef boost::filter_iterator< is_within_threshold_distance
+                                , Space_vertex_iterator >      adjacency_iterator;
+  class adjacency_range {
+  public:
+    adjacency_range(Rips_graph_naive * ng,
+                    vertex_descriptor  v,
+                    FT threshold)          :
+    ng_(ng),
+    v_(v),
+    threshold_(threshold) {}
+    
+    adjacency_iterator begin ()
+    { Space_vertex_range v_rg = ng_->ms_->space_vertex_range();
+      return adjacency_iterator( is_within_threshold_distance( ng_->ms_,   //predicate.
+                                                               v_,
+                                                               threshold_ ),
+                                  v_rg.begin(), //for all vertices in the space.
+                                  v_rg.end()
+                                ); }
+    adjacency_iterator end ()
+    { Space_vertex_range v_rg = ng_->ms_->space_vertex_range();
+      return adjacency_iterator( is_within_threshold_distance( ng_->ms_,   //predicate.
+                                                               v_,
+                                                               threshold_ ),
+                                  v_rg.end(), //for all vertices in the space.
+                                  v_rg.end()
+                                ); }
+  private:
+    Rips_graph_naive *                      ng_        ; 
+    Vertex                                  v_         ;
+    FT                                      threshold_  ;
+  }; 
+
+  /**
+  * \brief Returns a range over all Vertices at distance at most
+  * threshold from the Vertex v.
+  */
+  adjacency_range vertex_adjacency_range( vertex_descriptor v )
+  { return adjacency_range( this,v,threshold_ ); }
+  //------------------------------------------------------------------------
+  /** Construct the class on a MetricSpace.*/
+  Rips_graph_naive( MetricSpace & ms,
+                    FT threshold   ) :
+  ms_(&ms),
+  threshold_(threshold) {}
+
+  size_t size_graph()
+  { return ms_->nb_elements(); }
+
+
+  /**
+   * Initializes the trait.
+   *
+   * For example, construct a kd-tree. Here, copies a
+   * pointer to the set of Points.
+   */
+  // template< class Point_range > 
+  // void 
+  // init(Point_range &points)
+  // { ms_->init(points); } 
+          
+
+
+  private:
+  MetricSpace *   ms_;
+  FT              threshold_;
+
+};
+
+#endif // GUDHI_RIPS_GRAPH_NAIVE_H

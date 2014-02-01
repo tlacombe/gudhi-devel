@@ -1,24 +1,59 @@
 #include <iostream>
 #include <ctime>
-#include "iofile.h"
-#include "Flag_simplex_tree.h"
 
-#include "Euclidean_rips_naive_geometry_traits.h"
+#include "iofile.h"
+
+//#include "Simplex_tree.h"
+
+#include <boost/pending/disjoint_sets.hpp>
+#include <boost/iterator/counting_iterator.hpp>
+#include "boost/range/counting_range.hpp"
+
+#include "boost/container/flat_map.hpp"
+
+#include "Euclidean_geometry.h"
+#include "Rips_graph_naive.h"
+#include "Simplex_tree.h"
+
 
 using namespace std;
 
 
+
 int main (int argc, char * const argv[]) 
 {
-	// Extract data points from file file_name.
-	// Turn them into a Point_range object:	
-	
-	Euclidean_rips_naive_geometry_traits::Point_range points;
-//	string file_name = "/Users/cmaria/Desktop/Bro_fp.txt";  
-	string file_name = "/Users/cmaria/Desktop/Points.txt";
-	read_points(file_name,points);                         //<- make different versions of read_points
 
-	/****************************************/
+	// Extract data points from file file_name.
+	// Turn them into a Point_range object:	   <--- has to be templated; best, use a istream_iterator
+	typedef std::vector<double> Point;           // in order not to copy many times the Points.
+  typedef std::vector<Point>  Point_range;
+
+  Point_range points;
+	string file_name = "/Users/cmaria/Desktop/Points.txt";
+	read_points(file_name,points);
+
+  // Create a metric space from the points, with euclidean metric:
+	Euclidean_geometry< Point > ms;
+  ms.init(points);                 
+
+  // Create a NeighborGraph with the space:
+  double threshold = 100;
+  Rips_graph_naive< Euclidean_geometry< Point > > ng(ms,threshold);  // <--- merge Euclidean_geom and Rips_graph ?
+
+  // Create a simplex_tree
+  Simplex_tree< Euclidean_geometry< Point > > st(ms); //constructor
+
+  st.insert_graph(ng); //insert the graph
+
+  int max_dim = 10;
+  std::cout << "Expand the flag complex \n";
+  st.expansion(max_dim);
+
+  std::cout << st << std::endl;
+
+
+
+  /****************************************/
 /*	cout << "Points from file: ---------- \n";
 	for(vector< vector< double > >::iterator it = points.begin();
 			it!=points.end(); it++)
@@ -34,7 +69,7 @@ int main (int argc, char * const argv[])
 */	/****************************************/
 	
 	/****** Construct a Rips complex: ******/
-	int			dim_max			= 100;
+/*	int	dim_max			= 100;
 	double	rho_max			= 100;
 
 	// Creates an empty simplex tree
@@ -42,7 +77,7 @@ int main (int argc, char * const argv[])
 	
 	// Initializes the geometry traits with the Point_range
 	st.gt()->init(points);
-	
+*/	
 	/****************************************/
 /*	cout << "Points from metric space: -- \n";
 	for(vector< vector< double > >::iterator it = st.gt()->point_range().begin();
@@ -61,7 +96,7 @@ int main (int argc, char * const argv[])
 	
 	// Constructs the Rips complex
 	
-	st.init(//points,			//Point_range, subset of the points in st.gt()
+/*	st.init(//points,			//Point_range, subset of the points in st.gt()
 					dim_max,			// dimension maximal of the expansion
 					rho_max);			// threshold for the Rips
 	
@@ -94,7 +129,7 @@ Flag_simplex_tree< Euclidean_rips_naive_geometry_traits >::
 		st.print(*it);
 	}
 
-	
+*/	
 	
 	/* TO DO
 	 PcoH<Flag_simplex_tree> co;
