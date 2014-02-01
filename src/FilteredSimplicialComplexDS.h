@@ -118,7 +118,7 @@ Complex_simplex_range complex_simplex_range();
 	 * @note OPTIONAL
 	 * @todo use an enum? Just a bool?
 	 */
-	int compare_in_filtration(Simplex_handle s, Simplex_handle t);
+	int is_before_in_filtration(Simplex_handle s, Simplex_handle t);
 	/*************************************************/		
 	
 };
