@@ -21,6 +21,7 @@ template < class Vertex
          , class Node >//, class Dictionary > 
 class Simplex_tree_siblings {
 public:
+
  // typedef          MapContainer                   Dictionary;
  // typedef typename MapContainer::iterator         Dictionary_it;
 
@@ -49,8 +50,8 @@ typedef boost::container::flat_map< Vertex, Node > Dictionary;
   Simplex_tree_siblings() :
   oncles_(NULL),
   parent_(-1),
-  members_(Dictionary())
-  {};
+  members_()
+  {}
   
   /**
    * Construct with values
@@ -61,7 +62,6 @@ typedef boost::container::flat_map< Vertex, Node > Dictionary;
   parent_(parent),
   members_()
   {}
-  
   
   /**
    * 'members' is sorted and unique.
@@ -78,6 +78,8 @@ typedef boost::container::flat_map< Vertex, Node > Dictionary;
     {  map_it->second.assign_children(this);  }
   }
   
+  
+
   /**
    * Construct with initialized set of members
    */
@@ -143,8 +145,10 @@ typedef boost::container::flat_map< Vertex, Node > Dictionary;
   Dictionary & members()
   { return members_; }
   
-        
-private:
+  size_t size() { return members_.size(); }
+
+
+//private:
   Simplex_tree_siblings        * oncles_;
   Vertex                         parent_;
   Dictionary                     members_;

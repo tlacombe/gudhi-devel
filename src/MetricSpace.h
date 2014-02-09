@@ -7,20 +7,20 @@
  *
  */
 
-/**
- * \brief Defines a metric space. A metric space contains
- * elements that are known by the type Vertex. Each element 
- * of the metric space is assigned a unique Vertex.
- * Pairwise distances can be computed.
+/** \brief Defines a discrete metric space. 
  *
- * Remark: the distance may be more general, like a similarity m
+ * The metric space contains a finite set of elements defined by
+ * a type Vertex, and a distance between each pair of Vertices is
+ * defined.
+ *
+ * Remark: the distance may be more general, like a similarity 
  * measure, and simply needs to be symmetric.
  * 
  * If the space does not have a distance, we define the discrete
- * distance satisfying: f(x,y) = 0 if x!=y and 0 otherwise.
+ * distance satisfying: \f$\text{d}(x,y) = 0\f$ if \f$x \neq y\f$
+ * and \f$0\f$ otherwise.
  *
- * \todo Defines the exact properties of the distance function.
- */
+ * \todo Defines the exact properties of the distance function.*/
 struct MetricSpace
 {
   /// \name Vertex:

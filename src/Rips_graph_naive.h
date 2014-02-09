@@ -41,6 +41,7 @@ class Rips_graph_naive
   typedef typename MetricSpace::Space_vertex_iterator Space_vertex_iterator ;//iterate through the
   typedef typename MetricSpace::Space_vertex_range    Space_vertex_range    ;//vertices of the space.
   typedef typename MetricSpace::FT                    FT              ;//distance type.
+  
   //boost::Graph
   typedef typename MetricSpace::Vertex          vertex_descriptor     ;
   typedef std::pair< vertex_descriptor
@@ -58,58 +59,71 @@ class Rips_graph_naive
     is_within_threshold_distance(MetricSpace * ms,
                                  Vertex v,
                                  FT threshold) :
-    ms_(ms),
-    v_(v),
-    threshold_(threshold) {}
+    ms_(ms), v_(v), threshold_(threshold) {}
 
-    bool operator() (Vertex u)
+    bool operator() (const Vertex u) const
     { return ms_->closer_than(u,v_,threshold_); }
 
-    private:
     MetricSpace * ms_;
     Vertex        v_ ;
     FT     threshold_;
   };
 
   typedef boost::filter_iterator< is_within_threshold_distance
-                                , Space_vertex_iterator >      adjacency_iterator;
-  class adjacency_range {
-  public:
-    adjacency_range(Rips_graph_naive * ng,
-                    vertex_descriptor  v,
-                    FT threshold)          :
-    ng_(ng),
-    v_(v),
-    threshold_(threshold) {}
+                                , Space_vertex_iterator >  adjacency_iterator;
+  typedef boost::iterator_range< adjacency_iterator >      adjacency_range;
+
+  adjacency_range adjacent_vertices(Vertex v)
+  { Space_vertex_range srg = ms_->space_vertex_range();
+    return adjacency_range(
+               adjacency_iterator(is_within_threshold_distance(ms_,v,threshold_),
+                                  srg.begin(), srg.end() 
+                                  )    ,
+               adjacency_iterator(is_within_threshold_distance(ms_,v,threshold_),
+                                  srg.end(), srg.end() 
+                                  )
+                          ); }
+
+  // class adjacency_range {
+  // public:
+  //   adjacency_range(Rips_graph_naive * ng,
+  //                   vertex_descriptor  v,
+  //                   FT threshold)          :
+  //   ng_(ng),
+  //   v_(v),
+  //   threshold_(threshold) {}
     
-    adjacency_iterator begin ()
-    { Space_vertex_range v_rg = ng_->ms_->space_vertex_range();
-      return adjacency_iterator( is_within_threshold_distance( ng_->ms_,   //predicate.
-                                                               v_,
-                                                               threshold_ ),
-                                  v_rg.begin(), //for all vertices in the space.
-                                  v_rg.end()
-                                ); }
-    adjacency_iterator end ()
-    { Space_vertex_range v_rg = ng_->ms_->space_vertex_range();
-      return adjacency_iterator( is_within_threshold_distance( ng_->ms_,   //predicate.
-                                                               v_,
-                                                               threshold_ ),
-                                  v_rg.end(), //for all vertices in the space.
-                                  v_rg.end()
-                                ); }
-  private:
-    Rips_graph_naive *                      ng_        ; 
-    Vertex                                  v_         ;
-    FT                                      threshold_  ;
-  }; 
+  //   adjacency_iterator begin ()
+  //   { Space_vertex_range v_rg = ng_->ms_->space_vertex_range();
+  //     return adjacency_iterator( is_within_threshold_distance( ng_->ms_,   //predicate.
+  //                                                              v_,
+  //                                                              threshold_ ),
+  //                                 v_rg.begin(), //for all vertices in the space.
+  //                                 v_rg.end()
+  //                               ); }
+  //   adjacency_iterator end ()
+  //   { Space_vertex_range v_rg = ng_->ms_->space_vertex_range();
+  //     return adjacency_iterator( is_within_threshold_distance( ng_->ms_,   //predicate.
+  //                                                              v_,
+  //                                                              threshold_ ),
+  //                                 v_rg.end(), //for all vertices in the space.
+  //                                 v_rg.end()
+  //                               ); }
+  // private:
+  //   Rips_graph_naive *                      ng_        ; 
+  //   Vertex                                  v_         ;
+  //   FT                                      threshold_  ;
+  // }; 
 
   /**
   * \brief Returns a range over all Vertices at distance at most
   * threshold from the Vertex v.
   */
-  adjacency_range vertex_adjacency_range( vertex_descriptor v )
-  { return adjacency_range( this,v,threshold_ ); }
+//  adjacency_range vertex_adjacency_range( vertex_descriptor v )
+//  { return adjacency_range( this,v,threshold_ ); }
+
+
+
   //------------------------------------------------------------------------
   /** Construct the class on a MetricSpace.*/
   Rips_graph_naive( MetricSpace & ms,
@@ -139,5 +153,14 @@ class Rips_graph_naive
   FT              threshold_;
 
 };
+/*
+std::pair< typename Rips_graph_naive::adjacency_iterator ,
+           typename Rips_graph_naive::adjacency_iterator >
+  adjacent_vertices(Vertex v , Rips_graph_naive &g)
+  { Rips_graph_naive::adjacency_range rg = g.adjacent_vertices(v);
+   return std::pair< typename Rips_graph_naive::adjacency_iterator ,
+                     typename Rips_graph_naive::adjacency_iterator >
+                     (rg.begin(),rg.end()); }
+*/
 
 #endif // GUDHI_RIPS_GRAPH_NAIVE_H

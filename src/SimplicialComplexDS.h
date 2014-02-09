@@ -15,19 +15,15 @@
  */
 struct SimplicialComplexDS
 {
-	/*************************************************/	
-	/** \brief The geometry
-	 */
-	typedef NeighborsGeometryTraits Geometry_traits; 
-	
-	/// \name Vertex and Simplex:
-	/// @{ 
+	/** \brief Defines a type, model of concept MetricSpace.*/
+  typedef unspecified MetricSpace;
 	/**
-	 * \brief Vertices of a simplicial complex \f$ K = (V,S) \f$.
-	 *
+	 * \brief Defines a type Vertex, which matches with the one
+   * defined in MetricSpace.
+
 	 * The Vertices must admit a total order.
 	 */
-	typedef Geometry_traits::Vertex 		Vertex;
+	typedef MetricSpace::Vertex 		Vertex;
 	
 	/**
 	 * \brief Simplex handle.

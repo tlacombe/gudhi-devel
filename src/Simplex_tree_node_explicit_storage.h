@@ -13,9 +13,9 @@
 #include <vector>
 #include <iostream>
 
-template < class Vertex
-         , class Filtration_value
-         , class Node >
+template < class V
+         , class F
+         , class N >
 class Simplex_tree_siblings;
 
 /**
@@ -122,7 +122,7 @@ class Simplex_tree_node_explicit_storage {
    */
   bool is_edge( Vertex label );
   
-  double filtration()
+  Filtration_value filtration()
   { return filtration_; }
 
   /** Careful -> has_children() must be true*/
@@ -134,6 +134,7 @@ class Simplex_tree_node_explicit_storage {
   Simplex_data simplex_data()
   { return simplex_data_; }
   
+
   /***************************/
 private:  
    Simplex_tree_siblings< Vertex
@@ -144,7 +145,6 @@ private:
   
   // Data attached to simplex;
   Simplex_data             simplex_data_;
-
   Filtration_value         filtration_; //value in the filtration
   
 };

@@ -42,6 +42,7 @@ Simplex_tree_node_explicit_storage(const Simplex_tree_node_explicit_storage &oth
   filtration_(other.filtration_)  
 {}*/
 
+/** \todo remove next_sib == NULL test in Node.cpp*/
 template <class V, class F, class SD>
 Simplex_tree_siblings< V,
                        F,
@@ -52,9 +53,9 @@ self_siblings(V label)
 {
   Simplex_tree_siblings< V,
                          F,
-                       Simplex_tree_node_explicit_storage<V,F,SD>
-                       > * next_sib =  children_;
-  if(next_sib == NULL) std::cerr << "Error in get_self_siblings \n";
+                         Simplex_tree_node_explicit_storage<V,F,SD>
+                       > * next_sib = children_;
+  if(next_sib == NULL) std::cerr << "Error in self_siblings \n";
   if(next_sib->parent() == label) return next_sib->oncles();
   else                            return next_sib;
 }
