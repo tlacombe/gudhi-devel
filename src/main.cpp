@@ -1,7 +1,7 @@
 #include <iostream>
 #include <ctime>
 
-#include "iofile.h"
+#include "utils/iofile.h"
 
 //#include "Simplex_tree.h"
 
@@ -11,11 +11,11 @@
 
 #include "boost/container/flat_map.hpp"
 
-#include "Euclidean_geometry.h"
-#include "Rips_graph_naive.h"
-#include "Simplex_tree.h"
+#include "geometry/Euclidean_geometry.h"
+#include "geometry/Rips_graph_naive.h"
+#include "combinatorics/Simplex_tree.h"
 
-#include "topology/Persistent_cohomology.h"
+//#include "topology/Persistent_cohomology.h"
 
 using namespace std;
 

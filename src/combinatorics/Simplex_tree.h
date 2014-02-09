@@ -52,6 +52,7 @@ class Simplex_tree {
  typedef typename Siblings::Dictionary                      Dictionary;
  typedef typename Dictionary::iterator                      Dictionary_it;
  typedef typename Dictionary::iterator                      Simplex_handle;
+ typedef typename Dictionary_it::value_type                          D_it_value_t;
 
 // Simplex Tree Iterators
   typedef Simplex_vertex_iterator < Simplex_tree >              Simplex_vertex_iterator    ;
@@ -127,6 +128,22 @@ Simplex_data simplex_data(Simplex_handle sh)
 { return sh->second.data(); }
 
 
+struct dereference_handle_first {
+  Vertex operator() (const Simplex_handle& sh) const
+  {return sh->first;}
+};
+
+typedef boost::container::transform_iterator< dereference_handle_first,
+                                   Simplex_handle > Complex_vertex_iterator;
+typedef boost::iterator_range < Complex_vertex_iterator >
+                                                    Complex_vertex_range;
+
+Complex_vertex_range complex_vertex_range()
+{
+return ;//Complex_vertex_range(Complex_vertex_iterator)
+}
+
+
 /** 
 * \brief Given a sequence of Vertices, returns the
 * Simplex_handle in the simplex tree corresponding 
@@ -158,26 +175,23 @@ Simplex_handle find(std::vector< Vertex > & s)
   }
 return tmp_dit;
 }   
+/** \todo Simplex_tree::insert() */
+//Simplex_handle insert(); //input a vertex_range
+
 /** \todo flat_map and valid iterators ?*/
 Simplex_handle null_simplex() {return root_.members_.end(); }
 
 Vertex null_vertex() { return -1; }
-/** \todo Simplex_tree::insert() */
-//Simplex_handle insert(); //input a vertex_range
 
 
+/** Returns a pointer to the root nodes of the simplex tree.*/
+Siblings *      root()          { return &root_; }
 /** Returns a pointer to the geometry traits.*/
-MetricSpace *                     ms()                { return ms_; }
-/** Returns the maximal threshold for the Filtration_value.*/
-// Filtration_value                rho_max()           { return rho_max_; }
+MetricSpace *   ms()            { return ms_; }
 /** Returns the number of vertices in the complex.*/
-size_t                            nb_vertices()       { return nb_vertices_; }
+size_t          nb_vertices()   { return root_.members_->size(); }
 /** \brief Returns the number of faces of the complex.*/
-size_t                            size_complex()      { return size_cpx_; }
-/** Returns a reference to the root nodes of the simplex tree.*/
-Siblings *                        root()              { return &root_; }
-/** Returns the vector representing the filtration order.*/
-//std::vector< Simplex_handle > & filtration_vector() { return filtration_vect_; }
+size_t          nb_simplices()  { return size_cpx_; }
 
 /** \brief Initializes the filtrations, i.e. inserts a Simplex_handle 
 * for every simplex in the simplicial complex and sort the
