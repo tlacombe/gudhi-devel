@@ -15,6 +15,7 @@
 #include "Rips_graph_naive.h"
 #include "Simplex_tree.h"
 
+#include "topology/Persistent_cohomology.h"
 
 using namespace std;
 
