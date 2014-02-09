@@ -23,9 +23,15 @@ using namespace std;
 int main (int argc, char * const argv[]) 
 {
 
+
+
+
+
+
+
 	// Extract data points from file file_name.
 	// Turn them into a Point_range object:	   <--- has to be templated; best, use a istream_iterator
-	typedef std::vector<double> Point;           // in order not to copy many times the Points.
+  typedef std::vector<double> Point;           // in order not to copy many times the Points.
   typedef std::vector<Point>  Point_range;
 
   Point_range points;
@@ -49,8 +55,32 @@ int main (int argc, char * const argv[])
   std::cout << "Expand the flag complex \n";
   st.expansion(max_dim);
 
-  std::cout << st << std::endl;
+//  std::cout << st << std::endl;
 
+  std::vector<int> v;
+  for(int i=0;i<5;i++) v.push_back(i);
+
+  auto sh = st.find(v);
+  cout << "Hello \n";
+
+  if(sh != st.null_simplex()) {st.print(sh);}
+
+  for(auto sh_c : st.complex_simplex_range())
+  {cout << "   "; st.print(sh_c);}
+
+
+
+// auto rg = st.boundary_simplex_range(sh);
+// auto sh_b = rg.begin();
+// cout << "   "; st.print(*sh_b);
+// sh_b++;
+// cout << "   "; st.print(*sh_b);
+// sh_b++;
+// cout << "   "; st.print(*sh_b);
+// sh_b++;
+// cout << "   "; st.print(*sh_b);
+// sh_b++;
+// cout << "   "; st.print(*sh_b);
 
 
   /****************************************/
@@ -138,5 +168,5 @@ Flag_simplex_tree< Euclidean_rips_naive_geometry_traits >::
 	 intervals_begin();	// <- does the work
 	//end
 	*/
-	return EXIT_SUCCESS;
+	return 0;
 }

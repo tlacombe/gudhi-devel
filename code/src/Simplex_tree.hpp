@@ -12,10 +12,10 @@ bool
 Simplex_tree<MS>::
 is_subface(Simplex_handle sh1, Simplex_handle sh2)
 {
-  Simplex_vertex_range< Simplex_tree >    rg1 = simplex_vertex_range(sh1);
-  Simplex_vertex_range< Simplex_tree >    rg2 = simplex_vertex_range(sh2);
-  Simplex_vertex_iterator< Simplex_tree > it1 = rg1.begin();
-  Simplex_vertex_iterator< Simplex_tree > it2 = rg2.begin();
+  Simplex_vertex_range    rg1 = simplex_vertex_range(sh1);
+  Simplex_vertex_range    rg2 = simplex_vertex_range(sh2);
+  Simplex_vertex_iterator it1 = rg1.begin();
+  Simplex_vertex_iterator it2 = rg2.begin();
   while(it1 != rg1.end() && it2 != rg2.end()) {
       if(*it1 < *it2) {++it2;}
       else {
@@ -27,60 +27,27 @@ is_subface(Simplex_handle sh1, Simplex_handle sh2)
   return false;
 }
 
-/**
-* \brief Inserts a Simplex_handle for every simplex in the simplicial
-* complex, except vertices, and sort they according to the filtration.
-*
-* The use of a depth-first traversal of the simplex tree combined with
-* a stable sort is meant to optimize the order of simplices with same
-* filtration value. The heuristic consists in inserting the cofaces of a
-* simplex as soon as possible.
-*
-* \todo Check if the heuristic is efficient. How should we deal with vertices? 
-*
-*/
-template<class MS>
-void 
-Simplex_tree<MS>::
-initialize_filtration()
-{
-  filtration_vect_.reserve(size_cpx_ - nb_vertices_);      //Attention gestion vertices
-  Complex_simplex_range< Simplex_tree > rg = Complex_simplex_range< Simplex_tree >();
-  for(Complex_simplex_iterator< Simplex_tree > it = rg.begin();
-      it != rg.end(); ++it)
-    { filtration_vect_.push_back(*it);}
-  stable_sort(filtration_vect_.begin(),filtration_vect_.end(),is_before_in_filtration(this));
-}
-
-
-
-/**
-* Use of "static" makes the librarynot thread safe.
-*
-* \todo non-static?
-*/
+/** \todo Not thread-safe: use non-static?*/
 template < class MS >
 void 
 Simplex_tree<MS>::
 siblings_expansion(Siblings * siblings, //must contain elements
                    int k)
 {
-  //if (k==0 || members_.empty()) return;
   if(k == 0) return;
   Dictionary_it next = siblings->members().begin(); ++next;
 
   static std::vector< std::pair<Vertex , Node> > inter; // <-------static
-
   for(Dictionary_it s_h = siblings->members().begin();
       s_h != siblings->members().end(); ++s_h,++next)
     {
-      if(this->root_[s_h->first].has_children(s_h->first))
+      if(this->root_.members_[s_h->first].has_children(s_h->first))
       {
         intersection(inter,  //output intersection
                      next,                     //begin
                      siblings->members().end(),//end
-                     this->root_[s_h->first].children()->members().begin(),
-                     this->root_[s_h->first].children()->members().end(),
+                     this->root_.members_[s_h->first].children()->members().begin(),
+                     this->root_.members_[s_h->first].children()->members().end(),
                      s_h->second.filtration());
         if(inter.size() != 0)
         {
@@ -98,11 +65,7 @@ siblings_expansion(Siblings * siblings, //must contain elements
       }
     }
 }
-
-
-/**
-* \brief Print a Siblings in os.
-*/
+// Print a Siblings in os, recursively.
 template <class V, class F, class N> 
 std::ostream& operator<<(std::ostream& os, 
                          Simplex_tree_siblings<V,F,N> & obj)
@@ -119,32 +82,17 @@ std::ostream& operator<<(std::ostream& os,
     {if(sh->second.has_children(sh->first)) os << *(sh->second.children());}
   return os;
 }
-/**
-* Print a Simplex_tree in os.
-*/
+// Print a Simplex_tree in os.
 template< class MS >
 std::ostream& operator<<(std::ostream& os, 
                          Simplex_tree< MS > & obj)
 {
   os << "Simplex Tree: \n";
   os << "Size Cpx   = " << obj.size_complex() << std::endl;
-  os << "nb_V    = " << obj.nb_vertices() << std::endl;
+  os << "nb_V       = " << obj.nb_vertices() << std::endl;
   os << std::endl;
-
-  int v = 0;
-  os << "@ ROOT:   ";
-  for(typename std::vector< typename Simplex_tree< MS >::Node >::iterator it = obj.root().begin();
-      it != obj.root().end(); ++it, ++v)
-    {    os << v << " ";  }
-  os << std::endl << std::endl;;
-
-  v = 0;
-  for(typename std::vector< typename Simplex_tree< MS >::Node >::iterator it = obj.root().begin();
-      it != obj.root().end(); ++it,++v)
-    {
-      if(it->has_children(v)) os << *(it->children());    
-    }
-  return os;
+  os << obj.root();
+return os;
 }    
 
 

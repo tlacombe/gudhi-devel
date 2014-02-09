@@ -10,12 +10,13 @@
 #ifndef GUDHI_EUCLIDEAN_GEOMETRY_H
 #define GUDHI_EUCLIDEAN_GEOMETRY_H
 
+#include "boost/container/container_fwd.hpp"
 #include "boost/iterator/counting_iterator.hpp"
 #include "boost/range/counting_range.hpp"
 
 /**
 * \brief Represents the space \f$\mathbb{R}^d\f$ with
-* euclidean distance.
+* Euclidean distance.
 *
 * The Vertices are contiguous integers from 0 to n-1.
 *
@@ -32,6 +33,7 @@ public:
   typedef double                                         FT;
   typedef boost::counting_iterator< Vertex >             Space_vertex_iterator;
   typedef boost::iterator_range< Space_vertex_iterator > Space_vertex_range;
+ 
 
  /** \brief Returns a range over all Vertices.*/
   Space_vertex_range space_vertex_range()
@@ -39,7 +41,7 @@ public:
                                Space_vertex_iterator(point_set_.size()) ); }
   
   FT distance(Vertex u, Vertex v) 
-  { return euclidean_distance(vertex_to_point(u),
+  { return Euclidean_distance(vertex_to_point(u),
                               vertex_to_point(v)); }
 
   Euclidean_geometry() :
@@ -88,7 +90,7 @@ private:
  /** 
   * \brief Euclidean distance.
   */
-  FT euclidean_distance ( Point &p1, Point &p2 )
+  FT Euclidean_distance ( Point &p1, Point &p2 )
   {  return std::sqrt(squared_distance(p1,p2)); }
   /**
   * \brief Euclidean distance squared.
