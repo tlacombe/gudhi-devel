@@ -17,24 +17,19 @@ struct SimplicialComplexDS
 {
 	/** \brief Defines a type, model of concept MetricSpace.*/
   typedef unspecified MetricSpace;
-	/**
-	 * \brief Defines a type Vertex, which matches with the one
+	/** \brief Defines a type Vertex, which matches with the one
    * defined in MetricSpace.
-
-	 * The Vertices must admit a total order.
+   *
+   * The Vertices must admit a total order.
 	 */
 	typedef MetricSpace::Vertex 		Vertex;
-	
-	/**
-	 * \brief Simplex handle.
+	/** \brief Simplex handle.
 	 *
 	 * A Simplex_handle represents a unique simplex in the
-	 * simplicial complex.
-	 */
+	 * simplicial complex. */
 	typedef unspecified Simplex_handle;
 	
-	/**
-	 * \brief Iterator on the sequence of vertices of
+	/** \brief Iterator on the sequence of vertices of
 	 * a simplex.
 	 *
 	 * 'value type' Vertex

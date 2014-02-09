@@ -53,8 +53,6 @@ class Simplex_tree {
  typedef typename Dictionary::iterator                      Dictionary_it;
  typedef typename Dictionary::iterator                      Simplex_handle;
 
-
-
 // Simplex Tree Iterators
   typedef Simplex_vertex_iterator < Simplex_tree >              Simplex_vertex_iterator    ;
   typedef boost::iterator_range < Simplex_vertex_iterator >     Simplex_vertex_range       ;
@@ -115,7 +113,6 @@ void print(Simplex_handle sh, std::ostream& os = std::cout)
 { for(auto v : simplex_vertex_range(sh)) {os << v << " ";} 
   os << std::endl;}
 
-
 /** \brief Empty constructor.*/
 Simplex_tree( MetricSpace & ms ) :
 ms_(&ms),
@@ -125,6 +122,9 @@ root_(), //how to put null vertex here ?
 filtration_vect_()
 //NULL_sh_(ms_->NULL_vertex,Node())
 {root_.parent_ = null_vertex();}
+
+Simplex_data simplex_data(Simplex_handle sh)
+{ return sh->second.data(); }
 
 
 /** 

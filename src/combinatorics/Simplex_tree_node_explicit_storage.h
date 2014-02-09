@@ -134,6 +134,8 @@ class Simplex_tree_node_explicit_storage {
   Simplex_data simplex_data()
   { return simplex_data_; }
   
+  Simplex_data data() { return simplex_data_; }
+
 
   /***************************/
 private:  
