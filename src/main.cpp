@@ -3,10 +3,8 @@
 
 #include "utils/iofile.h"
 
-//#include "Simplex_tree.h"
-
-#include <boost/pending/disjoint_sets.hpp>
-#include <boost/iterator/counting_iterator.hpp>
+#include "boost/pending/disjoint_sets.hpp"
+#include "boost/iterator/counting_iterator.hpp"
 #include "boost/range/counting_range.hpp"
 
 #include "boost/container/flat_map.hpp"
@@ -40,7 +38,7 @@ int main (int argc, char * const argv[])
 	read_points(file_name,points);
 
   // Create a metric space from the points, with euclidean metric:
-	Euclidean_geometry< Point > ms;
+  Euclidean_geometry< Point > ms;
   ms.init(points);                 
 
   // Create a NeighborGraph with the space:
@@ -68,6 +66,11 @@ int main (int argc, char * const argv[])
 
   for(auto sh_c : st.complex_simplex_range())
   {cout << "   "; st.print(sh_c);}
+
+
+for(auto v : st.complex_vertex_range())
+  cout << v << "-";
+cout << endl;
 
 
 

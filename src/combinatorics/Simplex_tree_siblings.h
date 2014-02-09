@@ -18,46 +18,27 @@
  */
 template < class Vertex
          , class Filtration_value
-         , class Node >//, class Dictionary > 
+         , class Node
+         , class MapContainer >// < Vertex, Node >
+       //   >//, class Dictionary > 
 class Simplex_tree_siblings {
 public:
 
- // typedef          MapContainer                   Dictionary;
- // typedef typename MapContainer::iterator         Dictionary_it;
+  typedef          MapContainer                   Dictionary;
+  typedef typename MapContainer::iterator         Dictionary_it;
 
-typedef boost::container::flat_map< Vertex, Node > Dictionary;
-
- // typedef typename MapContainer::key_type         Vertex;
- // typedef typename MapContainer::value_type::second_type Node;
-
-  //typedef typename Node::Vertex                             Vertex;
-
-  /** \brief Dictionary to store the nodes.
-   *
-   * Construct the relation Vertex -> Node, where the Vertex is the biggest 
-   * Vertex of the Simplex corresponding to the output Node.
-   * Must be ordered increasingly.
-   */
- // typedef boost::container::flat_map<Vertex,Node>           Dictionary    ;
-//  typedef std::map<Vertex,Node>  Dictionary;
-  //  typedef Dictionary< Vertex, Node > Dictionary;
-
-
+//typedef boost::container::flat_map< Vertex, Node > Dictionary;
   
-  /**
-   * Default constructor
-   */
+  // Default constructor
   Simplex_tree_siblings() :
   oncles_(NULL),
   parent_(-1),
   members_()
   {}
   
-  /**
-   * Construct with values
-   */
+  // Construct with values
   Simplex_tree_siblings(Simplex_tree_siblings  * oncles,
-                        Vertex                  parent ) :
+                        Vertex                   parent ) :
   oncles_(oncles),
   parent_(parent),
   members_()
@@ -95,21 +76,6 @@ typedef boost::container::flat_map< Vertex, Node > Dictionary;
     {  map_it->second.assign_children(this);  }
   }*/
     
-  /**
-   * Destructor, calls recursively the destructor
-   * for all St_siblings
-   */
-  ~Simplex_tree_siblings()
-  {
-    for(auto map_it = members_.begin();
-        map_it != members_.end(); map_it++)
-    {
-      if(map_it->second.has_children(map_it->first)) 
-      {
-        delete map_it->second.children();
-      }
-    }
-  }
   
   /**
    * \brief Inserts a Node in the set of siblings nodes.

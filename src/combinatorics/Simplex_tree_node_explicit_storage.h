@@ -15,7 +15,8 @@
 
 template < class V
          , class F
-         , class N >
+         , class N
+         , class MC >
 class Simplex_tree_siblings;
 
 /**
@@ -24,14 +25,17 @@ class Simplex_tree_siblings;
  *
  * It stores explicitely its own filtration value and its own Simplex_data.
  */
-template < class Vertex
-         , class Filtration_value
-         , class Simplex_data = int > 
+template < class SimplexTree > 
 class Simplex_tree_node_explicit_storage {
-  public: 
-  /**
-   * Default constructor.
-   */
+  public:
+
+  typedef typename SimplexTree::Siblings Siblings;
+  typedef typename SimplexTree::Filtration_value Filtration_value;
+  typedef typename SimplexTree::Simplex_data Simplex_data;
+
+  //private:
+  //friend class Simplex_tree; 
+  // Default constructor.
   Simplex_tree_node_explicit_storage() :
   children_(NULL),
   simplex_data_(-1),
@@ -43,92 +47,40 @@ class Simplex_tree_node_explicit_storage {
   filtration_(filtration) 
   {}*/
 
-//template < class V, class F, class N >
-  Simplex_tree_node_explicit_storage( 
-                Simplex_tree_siblings< Vertex
-                                     , Filtration_value
-                                     , Simplex_tree_node_explicit_storage > * sib,
-                Filtration_value                                        filtration) :
+
+  Simplex_tree_node_explicit_storage(Siblings * sib,
+                                     Filtration_value filtration) :
   children_(sib),
   simplex_data_(-1),
   filtration_(filtration) {}
 
-  /**
-   * Constructor with values.
-   */
-  // Simplex_tree_node_explicit_storage( Filtration_value filtration,
-  //                                     Simplex_tree_siblings< Vertex
-  //                                                          , Simplex_tree_node_explicit_storage
-  //                                                          >                *self_sib);
-   /**
-   * Constructor with values.
-   */
 
-  /** Necessary
-   * Copy constructor
-   */
-  //Simplex_tree_node_explicit_storage(const Simplex_tree_node_explicit_storage &other);
-  /**
-   * Destructor
-   */
-  //~Simplex_tree_node_explicit_storage();
-  /**
-   * When in a simplex tree, returns a pointer
-   * to the Simplex_tree_siblings containing the node.
-   *
-   * Vertex label is the biggest Vertex in the simplex
-   * represented by the node.
-   */
-  //template <class N>
-  Simplex_tree_siblings< Vertex
-                       , Filtration_value
-                       , Simplex_tree_node_explicit_storage > * 
-  self_siblings(Vertex label);
+  void assign_data(Simplex_data key) { simplex_data_ = key; }
+
   /**
    * Return true if the node has children,
    * false otherwise.
    */
-  bool has_children(Vertex label)
-  { if(children_ == NULL)             return false; //for root simplices
-    if(children_->parent() == label)  return true;
-    else                              return false;}
+  //bool has_children(Vertex label)
+  //{ //if(children_ == NULL)             return false; //for root simplices
+  //  return (children_->parent() == label);}
   /**
    * Assign a children to the node
    */
   void 
-  assign_children( Simplex_tree_siblings< Vertex
-                                        , Filtration_value
-                                        , Simplex_tree_node_explicit_storage > *      children)
+  assign_children (Siblings *      children)
   { children_ = children; }
   /**
    *
    */
   void assign_filtration(double filtration_value)
   {  filtration_ = filtration_value;  }
-  /**
-   * Return the dimension of the simplex corresponding
-   * to the node.
-   */
-  int dimension(Vertex label);
-  /**
-   * Fill sigma with the list of vertices
-   * of the simplex corresponding to the node
-   */    
-  //void list_of_vertices( std::vector< Vertex > & sigma,
-  //                       Vertex                  label );
-  /**
-   * Return true if the simplex corresponding 
-   * to the node is an edge, false otherwise.
-   */
-  bool is_edge( Vertex label );
   
   Filtration_value filtration()
   { return filtration_; }
 
   /** Careful -> has_children() must be true*/
-  Simplex_tree_siblings< Vertex
-                       , Filtration_value
-                       , Simplex_tree_node_explicit_storage > *     children()
+  Siblings *     children()
   { return children_; }
   
   Simplex_data simplex_data()
@@ -136,18 +88,12 @@ class Simplex_tree_node_explicit_storage {
   
   Simplex_data data() { return simplex_data_; }
 
-
-  /***************************/
 private:  
-   Simplex_tree_siblings< Vertex
-                       , Filtration_value
-                       , Simplex_tree_node_explicit_storage > *     children_;
-  //S_inter_Node        * inter_node_;
-  //void            * inter_node_;
+   Siblings *              children_;
   
-  // Data attached to simplex;
+  // Data attached to simplex, explicit storage
   Simplex_data             simplex_data_;
-  Filtration_value         filtration_; //value in the filtration
+  Filtration_value         filtration_;   //value in the filtration
   
 };
 

@@ -16,6 +16,8 @@
 #include "Simplex_tree_node_explicit_storage.cpp" //circular dependency siblings <-> node
 #include "Simplex_tree_iterators.h" // implementation of the iterators
                                     // for Simplex_tree.
+ #include "boost/iterator/transform_iterator.hpp"
+
 /**
  * \brief Simplex tree data structure.
  *
@@ -29,30 +31,30 @@ template < class MetricSpace >
 class Simplex_tree {
   public:
 // Metric Space types  
-  typedef typename MetricSpace::FT                            Filtration_value         ;
-  typedef typename MetricSpace::Vertex                        Vertex                   ;   
-  typedef typename MetricSpace::Space_vertex_iterator         Space_vertex_iterator    ;
-  typedef typename MetricSpace::Space_vertex_range            Space_vertex_range       ;
+  typedef typename MetricSpace::FT                              Filtration_value         ;
+  typedef typename MetricSpace::Vertex                          Vertex                   ;   
+  typedef typename MetricSpace::Space_vertex_iterator           Space_vertex_iterator    ;
+  typedef typename MetricSpace::Space_vertex_range              Space_vertex_range       ;
 
   /** \brief Type of data store in each simplex. */
-  typedef int                                                 Simplex_data;
+  typedef int                                                   Simplex_data;
   /** \brief Node in the simplex tree.*/ 
-  typedef Simplex_tree_node_explicit_storage < Vertex,
-                                               Filtration_value,
-                                               Simplex_data >       Node          ;
+  typedef Simplex_tree_node_explicit_storage < Simplex_tree >   Node          ;
  /** \brief Must be an ordered range. */
  // typedef boost::flat_map< Vertex, Node >                        Dictionary    ;
 
   /** \brief Set of nodes sharing a same parent in the simplex tree. */
   typedef Simplex_tree_siblings < Vertex
                                 , Filtration_value
-                                , Node >                            Siblings      ;
-/** \todo Didn't manage to define the Dictionary type in Simplex_tree because
-* of the mutual dependence of Siblings and Node.*/
- typedef typename Siblings::Dictionary                      Dictionary;
- typedef typename Dictionary::iterator                      Dictionary_it;
- typedef typename Dictionary::iterator                      Simplex_handle;
- typedef typename Dictionary_it::value_type                          D_it_value_t;
+                                , Node
+                                , boost::container::flat_map< Vertex, Node > 
+                                >                               Siblings      ;
+  /** \todo Didn't manage to define the Dictionary type in Simplex_tree because
+  * of the mutual dependence of Siblings and Node.*/
+  typedef typename Siblings::Dictionary                         Dictionary;
+  typedef typename Dictionary::iterator                         Dictionary_it;
+  typedef typename Dictionary::iterator                         Simplex_handle;
+  typedef typename Dictionary_it::value_type                    Dit_value_t;
 
 // Simplex Tree Iterators
   typedef Simplex_vertex_iterator < Simplex_tree >              Simplex_vertex_iterator    ;
@@ -64,6 +66,43 @@ class Simplex_tree {
   typedef typename std::vector < Simplex_handle >::iterator     Filtration_simplex_iterator; 
   typedef boost::iterator_range < Filtration_simplex_iterator > Filtration_simplex_range   ;
  
+  struct return_first {Vertex operator()(const Dit_value_t& p_sh) const {return p_sh.first;}};
+  typedef boost::transform_iterator< return_first,
+                                     Dictionary_it >            Complex_vertex_iterator;
+  typedef boost::iterator_range < Complex_vertex_iterator >     Complex_vertex_range;
+
+/** \brief Returns a range over the vertices of the complex.
+*
+* The iterators have value type Vertex.*/
+Complex_vertex_range complex_vertex_range()
+{  return Complex_vertex_range(boost::make_transform_iterator(root_.members_.begin(),return_first()),
+                               boost::make_transform_iterator(root_.members_.end(),return_first())  );}
+
+void assign_data(Simplex_handle sh, Simplex_data key)
+{ sh->second.assign_data(key);}
+
+/** \brief Returns the dimension of a simplex.*/
+int dimension(Simplex_handle sh)
+{ Siblings curr_sib = self_siblings(sh);
+  int dim = 0;
+  while(curr_sib != NULL) { ++dim; curr_sib = curr_sib->oncles(); }
+  return dim-1;}
+/** \brief Returns true iff the simplex is a vertex (dim 0).*/
+bool is_vertex(Simplex_handle sh)
+{ return (self_siblings(sh)->oncles() == NULL);}
+/** \brief Returns true iff the simplex is an edge (dim 1).*/
+bool is_edge(Simplex_handle sh)
+{ Siblings sib = self_siblings(sh)->oncles();
+  return (sib != NULL && sib->oncles() == NULL);}
+
+bool has_children(Simplex_handle sh)
+{ return (sh->second.children()->parent() == sh->first); }
+
+// Returns the Siblings containg a simplex.*/
+Siblings * self_siblings(Simplex_handle sh)
+{ if(sh->second.children()->parent() == sh->first) return sh->second.children()->oncles();
+  else                                             return sh->second.children(); }
+
 /**
 * \brief Returns a range over the sequence of all simplices in
 * the filtered simplicial complex, in the order of a filtration.
@@ -83,8 +122,8 @@ Filtration_simplex_range filtration_simplex_range()
  * equal to \f$(-1)^{\text{dim} \sigma}\f$ the 
  * canonical orientation on the simplex. */
   Simplex_vertex_range simplex_vertex_range(Simplex_handle sh)
-  { return Simplex_vertex_range (Simplex_vertex_iterator(sh),
-                                 Simplex_vertex_iterator());}
+  { return Simplex_vertex_range (Simplex_vertex_iterator(this,sh),
+                                 Simplex_vertex_iterator(this));}
 /** \brief Returns a range over the simplices of the boundary of a simplex, i.e.
  * the set of codimension \f$1\f$ subsimplices of the simplex.
  *
@@ -128,21 +167,17 @@ Simplex_data simplex_data(Simplex_handle sh)
 { return sh->second.data(); }
 
 
-struct dereference_handle_first {
-  Vertex operator() (const Simplex_handle& sh) const
-  {return sh->first;}
-};
-
-typedef boost::container::transform_iterator< dereference_handle_first,
-                                   Simplex_handle > Complex_vertex_iterator;
-typedef boost::iterator_range < Complex_vertex_iterator >
-                                                    Complex_vertex_range;
-
-Complex_vertex_range complex_vertex_range()
-{
-return ;//Complex_vertex_range(Complex_vertex_iterator)
+/** \todo iterative version ~Simplex_tree*/
+~Simplex_tree() 
+{ 
+  for(auto sh = root_.members().begin(); sh != root_.members().end(); ++sh)
+    { if(has_children(sh)) {rec_delete(sh->second.children());} }
 }
-
+void rec_delete(Siblings * sib)
+{ for(auto sh = sib->members().begin(); sh != sib->members().end(); ++sh)
+    { if(has_children(sh)) {rec_delete(sh->second.children());} }
+  delete sib;
+}
 
 /** 
 * \brief Given a sequence of Vertices, returns the
@@ -168,13 +203,17 @@ Simplex_handle find(std::vector< Vertex > & s)
   Vertex last = s[s.size()-1];
   for(auto v : s) {
     tmp_dit = tmp_sib->members_.find(v);
-    if(tmp_dit == tmp_sib->members_.end()) {return null_simplex();}
-    if(!tmp_dit->second.has_children(tmp_dit->first)
-      && v != last) {return null_simplex();}
+    if(tmp_dit == tmp_sib->members_.end())   {return null_simplex();}
+    if( !has_children(tmp_dit) && v != last) {return null_simplex();}
     tmp_sib = tmp_dit->second.children();
   }
 return tmp_dit;
 }   
+
+/** \brief Faster way to find a vertex*/
+Simplex_handle find_vertex(Vertex v)
+{ return root_.members_.begin()+v; }
+
 /** \todo Simplex_tree::insert() */
 //Simplex_handle insert(); //input a vertex_range
 
@@ -182,7 +221,6 @@ return tmp_dit;
 Simplex_handle null_simplex() {return root_.members_.end(); }
 
 Vertex null_vertex() { return -1; }
-
 
 /** Returns a pointer to the root nodes of the simplex tree.*/
 Siblings *      root()          { return &root_; }
@@ -212,7 +250,17 @@ void initialize_filtration()
   for(auto sh : complex_simplex_range()) { filtration_vect_.push_back(sh);}
   stable_sort(filtration_vect_.begin(),filtration_vect_.end(),is_before_in_filtration(this));};
 /** \brief Returns true iff sh1 is a subface of sh2.*/
-bool is_subface(Simplex_handle sh1, Simplex_handle sh2);
+bool is_subface(Simplex_handle sh1, Simplex_handle sh2)
+{ Simplex_vertex_range    rg1 = simplex_vertex_range(sh1);
+  Simplex_vertex_range    rg2 = simplex_vertex_range(sh2);
+  Simplex_vertex_iterator it1 = rg1.begin();
+  Simplex_vertex_iterator it2 = rg2.begin();
+  while(it1 != rg1.end() && it2 != rg2.end()) {
+      if(*it1 < *it2) {++it2;}
+      else { if(*it1 == *it2) {++it1; ++it2;}
+             else {return false;} }
+    }
+  return (it1 == rg1.end());}
 /** \brief Strict weak ordering corresponding to the partial order
 * induced by the filtration.*/
 struct is_before_in_filtration {
@@ -253,7 +301,7 @@ void insert_graph( NeighborGraph & ng )
     {
       if(sh->first < neigh) 
       {
-        if(! sh->second.has_children(sh->first))
+        if(! has_children(sh))
         { sh->second.assign_children(new Siblings(&root_,sh->first)); }
         sh->second.children()->members()[neigh] = 
                                         Node(sh->second.children(),
@@ -265,7 +313,7 @@ void insert_graph( NeighborGraph & ng )
   this->size_cpx_ += this->root_.size();
   for(Simplex_handle sh = root_.members().begin(); //all root simplices, ie vertices.
     sh != root_.members().end(); ++sh) 
-  { if(sh->second.has_children(sh->first)) 
+  { if(has_children(sh)) 
     { size_cpx_ += sh->second.children()->size(); }  }
 }
 /**
@@ -285,14 +333,45 @@ void expansion(int max_dim)
   for(Dictionary_it root_it = root_.members_.begin();
       root_it != root_.members_.end(); ++root_it)
   {
-    if(root_it->second.has_children(root_it->first)) 
+    if(has_children(root_it)) 
     { siblings_expansion(root_it->second.children(), max_dim-1); }
   }
 }
+private:
 // Recursive expansion of the simplex tree.
+/** \todo Not thread-safe: use non-static?*/
 void siblings_expansion(Siblings * siblings, //must contain elements
-                        int k);
+                        int k)
+{
+  if(k == 0) return;
+  Dictionary_it next = siblings->members().begin(); ++next;
 
+  static std::vector< std::pair<Vertex , Node> > inter; // <-------static
+  for(Dictionary_it s_h = siblings->members().begin();
+      s_h != siblings->members().end(); ++s_h,++next)
+    {
+      Simplex_handle root_sh = find_vertex(s_h->first);//root_.members_[s_h->first]; //<-- simplex ahndle 
+      if(has_children(root_sh))
+      {
+        intersection(inter,  //output intersection
+                     next,                     //begin
+                     siblings->members().end(),//end
+                     root_sh->second.children()->members().begin(),
+                     root_sh->second.children()->members().end(),
+                     s_h->second.filtration());
+        if(inter.size() != 0)
+        { this->size_cpx_ += inter.size();
+          Siblings * new_sib = new Siblings(siblings,   //oncles
+                                            s_h->first, //parent
+                                            inter);     //boost::container::ordered_unique_range_t
+          inter.clear();
+          s_h->second.assign_children(new_sib);
+          siblings_expansion(new_sib,k-1);}
+        else { s_h->second.assign_children(siblings); //ensure the children property
+               inter.clear();}
+      }
+    }
+}
 // Intersects Dictionary 1 [begin1;end1) with Dictionary 2 [begin2,end2) 
 // and assigns the maximal possible Filtration_value to the Nodes.
 void intersection(std::vector< std::pair< Vertex, Node > > &   intersection,
@@ -318,23 +397,17 @@ void intersection(std::vector< std::pair< Vertex, Node > > &   intersection,
     else 
     { 
       if( begin1->first < begin2->first ) 
-      { ++begin1;
-        if(begin1 == end1) return; }
-      else 
-      { ++begin2;
-        if(begin2 == end2) return;
-      }
+      { ++begin1; if(begin1 == end1) return; }
+      else { ++begin2; if(begin2 == end2) return;}
     }
   }
-}
-
-private:    
-  // Maximum over 3 values.
-  Filtration_value maximum(Filtration_value a, 
-                           Filtration_value b, 
-                           Filtration_value c )
-  { Filtration_value max = ( a < b ) ? b : a;
-    return ( ( max < c ) ? c : max ); }
+}    
+// Maximum over 3 values.
+Filtration_value maximum(Filtration_value a, 
+                         Filtration_value b, 
+                         Filtration_value c )
+{ Filtration_value max = ( a < b ) ? b : a;
+  return ( ( max < c ) ? c : max ); }
 
 /** \brief Pointer to a metric space. */
   MetricSpace *                    ms_             ;
@@ -347,13 +420,10 @@ private:
 /** \brief Set of simplex tree Nodes representing the vertices.*/  
 //  std::vector< Node >              root_           ;
   Siblings                         root_;
-
-
 /** \brief Simplices ordered according to a filtration*/  
   std::vector< Simplex_handle >    filtration_vect_;
 /** \brief A NULL Simplex_handle; useful for the implementation.*/  
 //    Simplex_handle                   NULL_sh_        ;
-
 };
 
 #include "Simplex_tree.hpp"         //implementation of the methods in
