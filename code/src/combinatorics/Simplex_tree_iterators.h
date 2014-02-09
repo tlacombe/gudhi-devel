@@ -26,11 +26,12 @@
     typedef typename SimplexTree::Siblings       Siblings;
     typedef typename SimplexTree::Vertex         Vertex;
 
-    Simplex_vertex_iterator() :   //any end() iterator
-    sib_(NULL), v_(-1) {}
+    Simplex_vertex_iterator(SimplexTree * st) :   //any end() iterator
+    sib_(NULL), v_(st->null_vertex()) {}
 
-    Simplex_vertex_iterator(Simplex_handle sh) :
-    sib_(sh->second.self_siblings(sh->first)),
+    Simplex_vertex_iterator(SimplexTree * st,
+                            Simplex_handle sh) :
+    sib_(st->self_siblings(sh)),
     v_(sh->first)    {}
 
     Vertex operator*() {return v_;}
@@ -76,7 +77,7 @@ class Boundary_simplex_iterator
   st_(st)
   { 
     last_          = sh->first;
-    Siblings * sib = sh->second.self_siblings(last_);
+    Siblings * sib = st->self_siblings(sh);
     next_          = sib->parent();
     sib_           = sib->oncles();       /** \todo check if NULL*/
     if(sib_ != NULL) { sh_ = sib_->find(next_); };
@@ -139,7 +140,7 @@ class Complex_simplex_iterator
     { st_ = NULL; }
     else {
       sh_ = st->root()->members().begin();
-      while(sh_->second.has_children(sh_->first)) 
+      while(st->has_children(sh_)) 
         { sib_ = sh_->second.children();
           sh_ = sib_->members().begin();}
     }
@@ -163,7 +164,7 @@ class Complex_simplex_iterator
       { if(sib_->oncles() == NULL) { st_ = NULL; return; } //reach the end
         sh_ = sib_->oncles()->members().find(sib_->parent());
         sib_ = sib_->oncles();    return;  }
-    while(sh_->second.has_children(sh_->first)) 
+    while(st_->has_children(sh_)) 
       { sib_ = sh_->second.children();
         sh_ = sib_->members().begin();}
   }  
