@@ -13,7 +13,6 @@
 #include <boost/container/flat_map.hpp>
 #include "Simplex_tree_node_explicit_storage.h"
 #include "Simplex_tree_siblings.h"
-#include "Simplex_tree_node_explicit_storage.cpp" //circular dependency siblings <-> node
 #include "Simplex_tree_iterators.h" // implementation of the iterators
                                     // for Simplex_tree.
  #include "boost/iterator/transform_iterator.hpp"
