@@ -10,14 +10,11 @@
 #ifndef GUDHI_RIPS_GRAPH_NAIVE_H
 #define GUDHI_RIPS_GRAPH_NAIVE_H
 
-#include <set>
-#include <cmath>
 #include "boost/iterator/filter_iterator.hpp"
-
 
 /**
  * \brief Represents Points in a metric space with
- * nearest neighbors queries within a radius of a Point.
+ * nearest neighbors queries within a radius of a point.
  *
  * The computation of nearest neighbors is naive, and 
  * traverses all points in the metric space to find the one
@@ -25,11 +22,7 @@
  * In particular, it does not store any additional data 
  * structure apart from the set of points.
  *
- * \todo Make it lazy.
- *
  * \implements boost::AdjacencyGraph
- *
- * \implements NeighborGraph < MetricSpace >
  *
  * \todo Should we merge it to Euclidean_geometry?
  */
@@ -37,9 +30,9 @@ template < class MetricSpace >
 class Rips_graph_naive
 {
   public:
-  typedef typename MetricSpace::Vertex          Vertex          ;//iterate through the
-  typedef typename MetricSpace::Space_vertex_iterator Space_vertex_iterator ;//iterate through the
-  typedef typename MetricSpace::Space_vertex_range    Space_vertex_range    ;//vertices of the space.
+  typedef typename MetricSpace::Vertex                Vertex          ;     
+  typedef typename MetricSpace::Space_vertex_iterator Space_vertex_iterator;//iterate through the
+  typedef typename MetricSpace::Space_vertex_range    Space_vertex_range;//vertices of the space.
   typedef typename MetricSpace::FT                    FT              ;//distance type.
   
   //boost::Graph
@@ -73,6 +66,9 @@ class Rips_graph_naive
                                 , Space_vertex_iterator >  adjacency_iterator;
   typedef boost::iterator_range< adjacency_iterator >      adjacency_range;
 
+ 
+  /** \brief Returns a range over all Vertices at distance at most
+  * threshold from the Vertex v. */
   adjacency_range adjacent_vertices(Vertex v)
   { Space_vertex_range srg = ms_->space_vertex_range();
     return adjacency_range(
@@ -84,83 +80,21 @@ class Rips_graph_naive
                                   )
                           ); }
 
-  // class adjacency_range {
-  // public:
-  //   adjacency_range(Rips_graph_naive * ng,
-  //                   vertex_descriptor  v,
-  //                   FT threshold)          :
-  //   ng_(ng),
-  //   v_(v),
-  //   threshold_(threshold) {}
-    
-  //   adjacency_iterator begin ()
-  //   { Space_vertex_range v_rg = ng_->ms_->space_vertex_range();
-  //     return adjacency_iterator( is_within_threshold_distance( ng_->ms_,   //predicate.
-  //                                                              v_,
-  //                                                              threshold_ ),
-  //                                 v_rg.begin(), //for all vertices in the space.
-  //                                 v_rg.end()
-  //                               ); }
-  //   adjacency_iterator end ()
-  //   { Space_vertex_range v_rg = ng_->ms_->space_vertex_range();
-  //     return adjacency_iterator( is_within_threshold_distance( ng_->ms_,   //predicate.
-  //                                                              v_,
-  //                                                              threshold_ ),
-  //                                 v_rg.end(), //for all vertices in the space.
-  //                                 v_rg.end()
-  //                               ); }
-  // private:
-  //   Rips_graph_naive *                      ng_        ; 
-  //   Vertex                                  v_         ;
-  //   FT                                      threshold_  ;
-  // }; 
 
-  /**
-  * \brief Returns a range over all Vertices at distance at most
-  * threshold from the Vertex v.
-  */
-//  adjacency_range vertex_adjacency_range( vertex_descriptor v )
-//  { return adjacency_range( this,v,threshold_ ); }
+  /** \brief Constructs the class on a MetricSpace.*/
+  Rips_graph_naive( MetricSpace & ms
+                  , FT threshold ) 
+  : ms_(&ms)
+  , threshold_(threshold) {}
 
-
-
-  //------------------------------------------------------------------------
-  /** Construct the class on a MetricSpace.*/
-  Rips_graph_naive( MetricSpace & ms,
-                    FT threshold   ) :
-  ms_(&ms),
-  threshold_(threshold) {}
-
+  /** \brief Returns the number of nodes in the graph.*/
   size_t size_graph()
   { return ms_->nb_elements(); }
-
-
-  /**
-   * Initializes the trait.
-   *
-   * For example, construct a kd-tree. Here, copies a
-   * pointer to the set of Points.
-   */
-  // template< class Point_range > 
-  // void 
-  // init(Point_range &points)
-  // { ms_->init(points); } 
-          
-
 
   private:
   MetricSpace *   ms_;
   FT              threshold_;
 
 };
-/*
-std::pair< typename Rips_graph_naive::adjacency_iterator ,
-           typename Rips_graph_naive::adjacency_iterator >
-  adjacent_vertices(Vertex v , Rips_graph_naive &g)
-  { Rips_graph_naive::adjacency_range rg = g.adjacent_vertices(v);
-   return std::pair< typename Rips_graph_naive::adjacency_iterator ,
-                     typename Rips_graph_naive::adjacency_iterator >
-                     (rg.begin(),rg.end()); }
-*/
 
 #endif // GUDHI_RIPS_GRAPH_NAIVE_H

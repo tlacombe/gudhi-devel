@@ -24,7 +24,7 @@ template < class Vertex
 class Simplex_tree_siblings {
 public:
 
-  typedef          MapContainer                   Dictionary;
+  typedef  MapContainer                                     Dictionary;
   typedef typename MapContainer::iterator         Dictionary_it;
 
 //typedef boost::container::flat_map< Vertex, Node > Dictionary;
