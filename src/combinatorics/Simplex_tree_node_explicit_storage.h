@@ -28,10 +28,11 @@ class Simplex_tree_siblings;
 template < class SimplexTree > 
 class Simplex_tree_node_explicit_storage {
   public:
+friend SimplexTree;
 
-  typedef typename SimplexTree::Siblings Siblings;
+  typedef typename SimplexTree::Siblings         Siblings;
   typedef typename SimplexTree::Filtration_value Filtration_value;
-  typedef typename SimplexTree::Simplex_data Simplex_data;
+  typedef typename SimplexTree::Simplex_data     Simplex_data;
 
   //private:
   //friend class Simplex_tree; 

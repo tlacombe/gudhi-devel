@@ -5,4 +5,6 @@ find_package(Boost		REQUIRED COMPONENTS)
 
 set(CMAKE_CXX_FLAGS "-std=c++0x -g -Wpedantic -Wall")
 
+#g++-4.9 -std=c++0x -g -Wpedantic -Wall ../main.cpp;
+
 add_executable(gudh main.cpp)
