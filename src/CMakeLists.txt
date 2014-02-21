@@ -7,4 +7,21 @@ set(CMAKE_CXX_FLAGS "-std=c++0x -g -Wpedantic -Wall")
 
 #g++-4.9 -std=c++0x -g -Wpedantic -Wall ../main.cpp;
 
-add_executable(gudh main.cpp)
+
+include_directories(utils combinatorics geometry)
+
+
+
+add_executable(
+	TestSkeletonBlockerComplex test/TestSkeletonBlockerComplex.cxx
+)
+
+add_executable(
+	TestSimplifiable test/TestSimplifiable.cxx
+)
+
+add_executable(
+	TestContraction test/TestContraction.cxx
+)
+
+#add_executable(gudh main.cpp)
