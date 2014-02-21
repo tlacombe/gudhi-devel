@@ -28,11 +28,9 @@ struct SimplifiableSimplicialComplexDS
 	/**
 	 * Edge type.
 	 *
-	 * @todo If we extend the definition of contraction to simplices
-	 * we probably do not need a specific type for Edge.
 	 */
 	typedef unspecified Edge;
-	
+
 	/*************************************************/	
 	/// \name Simplicial Complex Iterator
 	/// @{
@@ -42,30 +40,28 @@ struct SimplifiableSimplicialComplexDS
 	 *	 `value_type` must be a `Simplex`
 	 */
 	typedef unspecified Complex_simplex_iterator;
+
 	/**
-	 * Returns an iterator to the beginning of the sequence of
+	 * Returns a range of the sequence of
+	 * k-simplices of a complex
+	 */
+	Complex_simplex_iterator simplex_range(int k);
+
+
+	/**
+	 * Returns a range of the sequence of
 	 * simplices of a complex
 	 */
-	Complex_simplex_iterator complex_simplex_begin(); 
+	Complex_simplex_iterator simplex_range();
+
 	/**
 	 * Returns an iterator to the end of the sequence of 
 	 * simplices of a complex
 	 */
-	Complex_simplex_iterator complex_simplex_end(); 
-	
-	
-	/**
-	 *	Range of all simplices of a complex, corresponding to the
-	 *	iterator type `Complex_simplex_iterator`
-	 *
-	 * @todo Choose between iterators begin/end and range
-	 */
-//	typedef unspecified Complex_simplex_range;
-	/**
-	 Returns a range of the sequence of simplices of a complex
-	 */
-//	Complex_simplex_range complex_simplices(); 
-	/// @}
+	Complex_simplex_iterator simplex_end();
+
+
+		/// @}
 	/*************************************************/	
 
 	/*************************************************/		
@@ -98,15 +94,15 @@ struct SimplifiableSimplicialComplexDS
 	Boundary_simplex_iterator boundary_simplex_end(Simplex s);
 	/// @}
 	/*************************************************/	
-		
+
 	/*************************************************/	
 	/// \name Simplification
 	/// @{
 	/**
 	 * Remove a Simplex and all its cofaces
 	 */
-	int remove_simplex(Simplex s);
-	
+	int remove(Simplex s);
+
 	/**
 	 * Check if removing s would modify the homotopy
 	 * type of the simplicial complex
@@ -115,13 +111,13 @@ struct SimplifiableSimplicialComplexDS
 	 * (preserve homoemorphism, ...)
 	 */
 	enum does_removal_preserve_homotopy(Simplex s);
-	
-	
+
+
 	/**
 	 * Proceed to an edge contraction
 	 */
 	int contract_edge(Edge e);
-	
+
 	/**
 	 * Check if contracting e would modify the homotopy
 	 * type of the simplicial complex
@@ -138,8 +134,8 @@ struct SimplifiableSimplicialComplexDS
 	/// @}
 	/*************************************************/	
 
-	
-	
+
+
 
 
 	/*************************************************/		
@@ -150,17 +146,17 @@ struct SimplifiableSimplicialComplexDS
 	 *
 	 *	`value_type` must be a `Simplex`
 	 */
-//	typedef unspecified Coboundary_simplex_iterator;	
+	//	typedef unspecified Coboundary_simplex_iterator;
 	/**
 	 Returns an iterator to the beginning of the sequence of
 	 simplices of the coboundary of a simplex
 	 */
-//	Coboundary_simplex_iterator coboundary_simplex_begin(Simplex s);
+	//	Coboundary_simplex_iterator coboundary_simplex_begin(Simplex s);
 	/**
 	 Returns an iterator to the end of the sequence of 
 	 simplices of the coboundary of a simplex
 	 */
-//	Coboundary_simplex_iterator coboundary_simplex_end(Simplex s);
+	//	Coboundary_simplex_iterator coboundary_simplex_end(Simplex s);
 	/// @}
 	/*************************************************/	
 };
