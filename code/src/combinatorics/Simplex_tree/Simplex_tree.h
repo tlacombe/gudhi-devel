@@ -15,6 +15,9 @@
 #include "Simplex_tree_siblings.h"
 #include "Simplex_tree_iterators.h" 
 #include "boost/iterator/transform_iterator.hpp"
+//#include "topology/Persistent_cohomology.h"
+#include "../topology/Persistent_cohomology.h"
+
 
 /**
  * \brief Simplex tree data structure.
@@ -23,12 +26,18 @@
  * induced by the order relation on vertices \f$ v_0 < \cdots < v_d \f$,
  $ furnished by MetricSpace.
  *
- * \implements SimplexDataFilteredSimplicialComplexDS
- */
+ * \implements SimplexDataFilteredSimplicialComplexDS.*/
 template < class MetricSpace >
  class Simplex_tree {
 
-friend class Simplex_tree_node_explicit_storage< Simplex_tree< MetricSpace > >;
+friend class Simplex_tree_node_explicit_storage < Simplex_tree< MetricSpace > >;
+friend class Simplex_vertex_iterator< Simplex_tree < MetricSpace > >;
+friend class Boundary_simplex_iterator< Simplex_tree < MetricSpace > >;
+friend class Complex_simplex_iterator< Simplex_tree < MetricSpace > >;
+
+template < class T > friend class Persistent_cohomology;
+
+
 
 // Metric Space types  
 public:
@@ -56,7 +65,10 @@ private:
   * of the mutual dependence of Siblings and Node.*/
   typedef typename Siblings::Dictionary                Dictionary;
   typedef typename Dictionary::iterator                Dictionary_it;
+  
+public:
   typedef typename Dictionary::iterator                Simplex_handle;
+private:
   typedef typename Dictionary_it::value_type           Dit_value_t;
 
 // Simplex Tree Iterators
@@ -205,8 +217,8 @@ Simplex_handle find(std::vector< Vertex > & s)
   Vertex last = s[s.size()-1];
   for(auto v : s) {
     tmp_dit = tmp_sib->members_.find(v);
-    if(tmp_dit == tmp_sib->members_.end())   {return null_simplex();}
-    if( !has_children(tmp_dit) && v != last) {return null_simplex();}
+    if(tmp_dit == tmp_sib->members_.end())   { return null_simplex(); }
+    if( !has_children(tmp_dit) && v != last) { return null_simplex(); }
     tmp_sib = tmp_dit->second.children();
   }
   return tmp_dit;
@@ -277,16 +289,7 @@ private:
 
 
 
-
-
-
-
-
-
-private:
- std::pair<Simplex_handle,Simplex_handle> endpoints(Simplex_handle sh)
-  { return std::pair<Simplex_handle,Simplex_handle>(root_.members_.find(sh->first)
-                                  , root_.members_.find(self_siblings(sh)->parent()) ); }
+public:
 
 void assign_data(Simplex_handle sh, Simplex_data key)
 { sh->second.assign_data(key);}
@@ -298,6 +301,15 @@ int dimension(Simplex_handle sh)
   while(curr_sib != NULL) { ++dim; curr_sib = curr_sib->oncles(); }
   return dim-1; 
 }
+
+
+
+private:
+ std::pair<Simplex_handle,Simplex_handle> endpoints(Simplex_handle sh)
+  { return std::pair<Simplex_handle,Simplex_handle>(root_.members_.find(sh->first)
+                                  , root_.members_.find(self_siblings(sh)->parent()) ); }
+
+
 /** \brief Returns true iff the simplex is a vertex (dim 0).*/
   bool is_vertex(Simplex_handle sh) { return (self_siblings(sh)->oncles() == NULL); }
 /** \brief Returns true iff the simplex is an edge (dim 1).*/
