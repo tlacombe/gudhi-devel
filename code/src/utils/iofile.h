@@ -189,13 +189,13 @@ bool general_read_off_file(const std::string & file_name, Complex& complex){
 
 
 template<typename Complex>
-class Geometric_complex_wrapper{
+class Geometric_flag_complex_wrapper{
 	Complex& complex_;
 	typedef typename Complex::Vertex_handle Vertex_handle;
 	typedef typename Complex::Point Point;
 
 public:
-	Geometric_complex_wrapper(Complex& complex):complex_(complex){}
+	Geometric_flag_complex_wrapper(Complex& complex):complex_(complex){}
 
 
 	void add_vertex(double* xyz){
@@ -222,7 +222,7 @@ public:
 template<typename Complex>
 bool read_off_file(std::string file_name,Complex &complex){
 	complex.clear();
-	Geometric_complex_wrapper<Complex> complex_wrapper(complex);
+	Geometric_flag_complex_wrapper<Complex> complex_wrapper(complex);
 	return general_read_off_file(file_name,complex_wrapper);
 
 }
