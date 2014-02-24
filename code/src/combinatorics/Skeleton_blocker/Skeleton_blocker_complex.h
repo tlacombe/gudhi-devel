@@ -24,7 +24,7 @@
 #include "Simplex.h"
 
 #include "Skeleton_blocker_complex_visitor.h"
-#include "Utils.h"
+#include "utils/Utils.h"
 
 /**
  *@class Skeleton_blocker_complex
@@ -145,7 +145,7 @@ public:
 		if (!copy.blocker_map.empty()){
 			for (BlockerMapConstIterator dp=copy.blocker_map.begin(); dp!=copy.blocker_map.end(); ++dp){
 				if ( (*dp).first == ( (*dp).second )->first_vertex() ){
-					Simplex_handle* sigma = new Simplex_handle((*dp).second);
+					Simplex_handle* sigma = new Simplex_handle(*(*dp).second);
 					add_blocker(sigma);
 				}
 			}
@@ -642,7 +642,7 @@ protected:
 	virtual void remove_neighbours(Vertex_handle v, Simplex_handle & n,bool keep_only_superior=false) const{
 		Simplex_handle nv;
 		add_neighbours(v,nv,keep_only_superior);
-		n.difference(&nv);
+		n.difference(nv);
 	}
 
 

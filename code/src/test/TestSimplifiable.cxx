@@ -14,11 +14,11 @@
 #include <fstream>
 #include <sstream>
 #include "Test.h"
-#include "Simplex.h"
-#include "Skeleton_blocker_complex.h"
-#include "Skeleton_blocker_complex_iterators.h"
-#include "Simplifiable_skeleton_blocker.h"
-#include "Simple_skeleton_blockers_traits.h"
+#include "Skeleton_blocker/Simplex.h"
+#include "Skeleton_blocker/Skeleton_blocker_complex.h"
+#include "Skeleton_blocker/Skeleton_blocker_complex_iterators.h"
+#include "Skeleton_blocker/Simplifiable_skeleton_blocker.h"
+#include "Skeleton_blocker/Simple_skeleton_blockers_traits.h"
 
 
 using namespace std;

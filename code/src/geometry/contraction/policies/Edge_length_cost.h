@@ -5,8 +5,8 @@
  *      Author: dsalinas
  */
 
-#ifndef EDGE_LENGTH_COST_H_
-#define EDGE_LENGTH_COST_H_
+#ifndef GUDHI_EDGE_LENGTH_COST_H_
+#define GUDHI_EDGE_LENGTH_COST_H_
 
 #include "Cost_policy.h"
 
@@ -31,4 +31,4 @@ public:
 
 }  // namespace contraction
 
-#endif /* EDGE_LENGTH_COST_H_ */
+#endif /* GUDHI_EDGE_LENGTH_COST_H_ */

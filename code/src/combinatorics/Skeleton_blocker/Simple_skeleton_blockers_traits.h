@@ -47,6 +47,9 @@ struct Simple_complex_DS_traits{
 	struct Vertex_handle{
 		typedef int boost_vertex_handle;
 		Vertex_handle(boost_vertex_handle val=-1):vertex(val){}
+
+		Vertex_handle(const Vertex_handle & other):vertex(other.vertex){}
+
 		boost_vertex_handle vertex;
 
 		bool operator==( const Vertex_handle& other) const{
@@ -133,6 +136,7 @@ struct Simple_complex_DS_traits{
 
 template<typename GT>
 struct Simple_complex_geometry_traits : public Simple_complex_DS_traits {
+
 	typedef typename GT::Point Point;
 	typedef typename Simple_complex_DS_traits::Root_vertex_handle Root_vertex_handle;
 	typedef typename Simple_complex_DS_traits::Vertex Simple_vertex;

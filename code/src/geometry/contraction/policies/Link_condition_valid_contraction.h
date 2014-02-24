@@ -8,7 +8,7 @@
 #ifndef LINK_CONDITION_VALID_CONTRACTION_H_
 #define LINK_CONDITION_VALID_CONTRACTION_H_
 
-#include "Utils.h"
+#include "utils/Utils.h"
 
 
 namespace contraction {

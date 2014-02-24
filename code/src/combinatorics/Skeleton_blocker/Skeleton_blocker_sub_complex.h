@@ -2,7 +2,7 @@
 #define __SUB_COMPLEX_H
 
 #include "Skeleton_blocker_complex.h"
-#include "Utils.h"
+#include "utils/Utils.h"
 
 /**
  * @brief Simplicial subcomplex of a complex represented by a skeleton/blockers pair.

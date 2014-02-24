@@ -9,8 +9,8 @@
 #define SKELETON_BLOCKER_GEOMETRIC_COMPLEX_H_
 
 
-#include "Utils.h"
-#include "Simplifiable_skeleton_blocker.h"
+#include "utils/Utils.h"
+#include "combinatorics/Skeleton_blocker/Simplifiable_skeleton_blocker.h"
 
 template<typename ComplexGeometricTraits>
 class Skeleton_blocker_geometric_complex : public Simplifiable_Skeleton_blocker<ComplexGeometricTraits>
