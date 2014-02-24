@@ -8,10 +8,8 @@
 #ifndef SKELETON_BLOCKERS_LINK_COMPLEX_H_
 #define SKELETON_BLOCKERS_LINK_COMPLEX_H_
 
-#include "Utils.h"
-
-
-#include "Skeleton_blocker_complex.h"
+#include "utils/Utils.h"
+#include "combinatorics/Skeleton_blocker/Skeleton_blocker_complex.h"
 
 
 

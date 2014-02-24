@@ -326,7 +326,7 @@ public:
 			{
 				Simplex_handle sigma = *alpha; sigma.union_vertices(*beta);
 				Root_simplex_handle sigma_id = this->get_id(sigma);
-				if ( this->contains(&sigma) &&
+				if ( this->contains(sigma) &&
 						proper_faces_in_union<SkeletonBlockerComplex>(sigma_id,link_a,link_b))
 				{
 					Simplex_handle * blocker = new Simplex_handle(sigma);

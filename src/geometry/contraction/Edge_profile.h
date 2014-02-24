@@ -7,7 +7,7 @@
 
 #ifndef EDGE_PROFILE_H_
 #define EDGE_PROFILE_H_
-#include "Simplex.h"
+#include "combinatorics/Skeleton_blocker/Simplex.h"
 
 
 
@@ -15,6 +15,8 @@ namespace contraction {
 template<typename GeometricSimplifiableComplex> class Edge_profile{
 
 public:
+
+	typedef GeometricSimplifiableComplex Complex;
 	typedef typename GeometricSimplifiableComplex::Vertex_handle Vertex_handle;
 	typedef typename GeometricSimplifiableComplex::Root_vertex_handle Root_vertex_handle;
 

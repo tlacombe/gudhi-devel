@@ -8,7 +8,7 @@ set(CMAKE_CXX_FLAGS "-std=c++0x -g -Wpedantic -Wall")
 #g++-4.9 -std=c++0x -g -Wpedantic -Wall ../main.cpp;
 
 
-include_directories(utils combinatorics geometry)
+include_directories(. utils combinatorics geometry)
 
 
 

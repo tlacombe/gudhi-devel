@@ -24,9 +24,9 @@
 #include "policies/Valid_contraction_policy.h"
 #include "policies/Dummy_valid_contraction.h" //xxx remove
 #include "policies/Link_condition_valid_contraction.h" //xxx remove
-#include "Skeleton_blocker_complex_visitor.h"
+#include "combinatorics/Skeleton_blocker/Skeleton_blocker_complex_visitor.h"
 
-#include "Utils.h"
+#include "utils/Utils.h"
 
 
 namespace contraction {
@@ -344,14 +344,14 @@ public:
 	}
 
 	Skeleton_blocker_contractor(GeometricSimplifiableComplex& complex,
-			std::shared_ptr<Cost_policy<Profile> > &cost_policy_,
-			std::shared_ptr<Placement_policy<Profile> >& placement_policy_,
-			std::shared_ptr<Valid_contraction_policy<Profile> > &valid_contraction_policy_
+			Cost_policy<Profile> *cost_policy_,
+			Placement_policy<Profile> * placement_policy_,
+			Valid_contraction_policy<Profile> * valid_contraction_policy_
 	):
 		complex_(complex),
-		cost_policy(std::move(cost_policy_)),
-		placement_policy(std::move(placement_policy_)),
-		valid_contraction_policy(std::move(valid_contraction_policy_))
+		cost_policy(cost_policy_),
+		placement_policy(placement_policy_),
+		valid_contraction_policy(valid_contraction_policy_)
 
 	{
 		complex_.set_visitor(this);
@@ -420,11 +420,9 @@ private:
 
 private:
 
-	std::shared_ptr<Cost_policy<Profile> > cost_policy;
-
-	std::shared_ptr<Placement_policy<Profile> > placement_policy;
-
-	std::shared_ptr<Valid_contraction_policy<Profile> > valid_contraction_policy;
+	Cost_policy<Profile> * cost_policy;
+	Placement_policy<Profile> * placement_policy;
+	Valid_contraction_policy<Profile>* valid_contraction_policy;
 
 	Edge_data_array mEdgeDataArray ;
 

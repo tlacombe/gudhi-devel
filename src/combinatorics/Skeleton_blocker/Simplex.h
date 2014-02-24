@@ -334,11 +334,7 @@ public:
 		while(i != sigma.end())
 		{
 			if (first) first = 0; else o << ',';
-#if 0
-			o << static_cast<char>(*i+65);
-#else
 			o << *i;
-#endif
 			++i;
 		}
 		o << '}';

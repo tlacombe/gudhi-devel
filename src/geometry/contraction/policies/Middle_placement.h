@@ -5,13 +5,11 @@
  *      Author: dsalinas
  */
 
-#ifndef MIDDLE_PLACEMENT_H_
-#define MIDDLE_PLACEMENT_H_
+#ifndef GUDHI_MIDDLE_PLACEMENT_H_
+#define GUDHI_MIDDLE_PLACEMENT_H_
 
 
 namespace contraction {
-
-
 
 template< typename EdgeProfile> class Middle_placement : public Placement_policy<EdgeProfile>{
 
@@ -30,4 +28,4 @@ public:
 }  // namespace contraction
 
 
-#endif /* MIDDLE_PLACEMENT_H_ */
+#endif /* GUDHI_MIDDLE_PLACEMENT_H_ */

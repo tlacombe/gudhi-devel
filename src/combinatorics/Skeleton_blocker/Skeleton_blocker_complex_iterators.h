@@ -155,6 +155,7 @@ public:
 /**
  * \brief Iterator over the triangles that are
  * adjacent to a vertex of the simplicial complex.
+ * \remark Will be removed soon -> dont look
  */
 template<typename Traits>
 template<typename LinkType>
@@ -227,6 +228,7 @@ public:
 /**
  * \brief Iterator over the triangles of the
  * simplicial complex.
+ * \remark Will be removed soon -> dont look
  *
  */
 template<typename Traits>

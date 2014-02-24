@@ -6,12 +6,12 @@
 #include "Utils.h"
 
 #include "Test.h"
-#include "Simplex.h"
-#include "Skeleton_blocker_complex.h"
-#include "Skeleton_blocker_complex_iterators.h"
-#include "Skeleton_blocker_link_complex.h"
-#include "Skeleton_blocker_link_superior.h"
-#include "Simple_skeleton_blockers_traits.h"
+#include "Skeleton_blocker/Simplex.h"
+#include "Skeleton_blocker/Skeleton_blocker_complex.h"
+#include "Skeleton_blocker/Skeleton_blocker_complex_iterators.h"
+#include "Skeleton_blocker/Skeleton_blocker_link_complex.h"
+#include "Skeleton_blocker/Skeleton_blocker_link_superior.h"
+#include "Skeleton_blocker/Simple_skeleton_blockers_traits.h"
 //#include "Simple_vertex.h"
 //#include "Simple_edge.h"
 
