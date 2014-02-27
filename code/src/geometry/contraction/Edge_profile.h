@@ -57,7 +57,7 @@ public:
 
 	const Point& p1() const {return v1().point();}
 
-	friend ostream& operator << (ostream& o, const Edge_profile & v){
+	friend std::ostream& operator << (std::ostream& o, const Edge_profile & v){
 		o << "v0:"<<v.v0_handle() << " v1:"<<v.v1_handle();
 		return o;
 	}

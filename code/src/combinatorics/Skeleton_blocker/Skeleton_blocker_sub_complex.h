@@ -44,8 +44,7 @@ public:
 	typedef typename ComplexType::BlockerMapIterator BlockerMapIterator;
 	typedef typename ComplexType::BlockerMapConstIterator BlockerMapConstIterator;
 
-	typedef typename ComplexType::Simplex_handle::const_iterator Simplex_const_iterator;
-	typedef typename ComplexType::Root_simplex_handle::const_iterator Root_simplex_const_iterator;
+
 
 	template<class T> friend class Skeleton_blocker_link_complex;
 
@@ -57,7 +56,7 @@ public:
 	template<typename T> friend bool
 	proper_face_in_union(
 			Skeleton_blocker_sub_complex<T> & link,
-			vector<boost::optional<typename T::Vertex_handle> > & addresses_sigma_in_link,
+			std::vector<boost::optional<typename T::Vertex_handle> > & addresses_sigma_in_link,
 			int vertex_to_be_ignored);
 
 	/**
@@ -109,8 +108,8 @@ private:
 	 *  same as get_address except that it will return a simplex in any case.
 	 *  The vertices that were not found are not added.
 	 */
-	vector<boost::optional<Vertex_handle> > get_addresses(const Root_simplex_handle & s) const{
-		vector<boost::optional<Vertex_handle> > res;
+	std::vector<boost::optional<Vertex_handle> > get_addresses(const Root_simplex_handle & s) const{
+		std::vector<boost::optional<Vertex_handle> > res;
 		for (auto i : s)
 		{
 			res.push_back(get_address(i));
@@ -183,7 +182,7 @@ Skeleton_blocker_sub_complex<ComplexType>::clear(){
 template<typename ComplexType>
 bool proper_face_in_union(
 		Skeleton_blocker_sub_complex<ComplexType> & link,
-		vector<boost::optional<typename ComplexType::Vertex_handle> > & addresses_sigma_in_link,
+		std::vector<boost::optional<typename ComplexType::Vertex_handle> > & addresses_sigma_in_link,
 		int vertex_to_be_ignored)
 {
 	// we test that all vertices of 'addresses_sigma_in_link' but 'vertex_to_be_ignored'
@@ -210,8 +209,8 @@ bool
 proper_faces_in_union(Simplex<typename ComplexType::Root_vertex_handle> & sigma, Skeleton_blocker_sub_complex<ComplexType> & link1, Skeleton_blocker_sub_complex<ComplexType> & link2)
 {
 	typedef typename ComplexType::Vertex_handle  Vertex_handle;
-	vector<boost::optional<Vertex_handle> > addresses_sigma_in_link1 = link1.get_addresses(sigma);
-	vector<boost::optional<Vertex_handle> > addresses_sigma_in_link2 = link2.get_addresses(sigma);
+	std::vector<boost::optional<Vertex_handle> > addresses_sigma_in_link1 = link1.get_addresses(sigma);
+	std::vector<boost::optional<Vertex_handle> > addresses_sigma_in_link2 = link2.get_addresses(sigma);
 
 	for (int current_index = 0; current_index < addresses_sigma_in_link1.size() ; ++current_index)
 	{

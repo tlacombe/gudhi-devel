@@ -71,8 +71,8 @@ public:
 	typedef typename Root_vertex_handle::boost_vertex_handle boost_vertex_handle;
 	typedef typename ComplexDS::Simplex_handle Simplex_handle;
 	typedef typename ComplexDS::Root_simplex_handle Root_simplex_handle;
-	typedef typename Root_simplex_handle::const_iterator Root_simplex_iterator;
-	typedef typename Simplex_handle::const_iterator Simplex_handle_iterator;
+	typedef typename Root_simplex_handle::Simplex_vertex_const_iterator Root_simplex_iterator;
+	typedef typename Simplex_handle::Simplex_vertex_const_iterator Simplex_handle_iterator;
 
 
 protected:
@@ -95,10 +95,10 @@ public:
 
 
 
-	typedef multimap<Vertex_handle,Simplex_handle *> BlockerMap;
-	typedef typename multimap<Vertex_handle,Simplex_handle *>::value_type BlockerPair;
-	typedef typename multimap<Vertex_handle,Simplex_handle *>::iterator BlockerMapIterator;
-	typedef typename multimap<Vertex_handle,Simplex_handle *>::const_iterator BlockerMapConstIterator;
+	typedef std::multimap<Vertex_handle,Simplex_handle *> BlockerMap;
+	typedef typename std::multimap<Vertex_handle,Simplex_handle *>::value_type BlockerPair;
+	typedef typename std::multimap<Vertex_handle,Simplex_handle *>::iterator BlockerMapIterator;
+	typedef typename std::multimap<Vertex_handle,Simplex_handle *>::const_iterator BlockerMapConstIterator;
 
 protected:
 	int num_vertices_;
@@ -113,7 +113,7 @@ protected:
 	 * This quantity is updated when adding/removing edge (useful because the operation
 	 * list.size() is done in linear time).
 	 */
-	vector<boost_vertex_handle> degree;
+	std::vector<boost_vertex_handle> degree;
 	Graph skeleton; /** 1-skeleton of the simplicial complex. */
 
 	/** Each vertex can access to the blockers passing through it. */
@@ -161,7 +161,7 @@ public:
 		if (!copy.blocker_map.empty()){
 			for (BlockerMapConstIterator dp=copy.blocker_map.begin(); dp!=copy.blocker_map.end(); ++dp){
 				if ( (*dp).first == ( (*dp).second )->first_vertex() ){
-					Simplex_handle* sigma = new Simplex_handle((*dp).second);
+					Simplex_handle* sigma = new Simplex_handle(*((*dp).second));
 					add_blocker(sigma);
 				}
 			}
@@ -385,7 +385,7 @@ public:
 	 */
 	Edge_handle add_edge(Vertex_handle a, Vertex_handle b){
 		assert(contains_vertex(a) && contains_vertex(b));
-		std::pair<Edge_handle,bool> pair_descr_bool = (*this)[make_pair(a,b)];
+		std::pair<Edge_handle,bool> pair_descr_bool = (*this)[std::make_pair(a,b)];
 		Edge_handle edge_descr;
 		bool edge_present = pair_descr_bool.second;
 		if (edge_present== false)
@@ -453,10 +453,10 @@ public:
 	 * and all edges of simplex sigma
 	 */
 	bool contains_edges(const Simplex_handle & sigma) const{
-		Simplex_handle_iterator i, j;
-		for (i = sigma.begin() ; i != sigma.end() ; ++i){
+		for (auto i = sigma.begin() ; i != sigma.end() ; ++i){
 			if(!contains_vertex(*i)) return false;
-			for (j = i, ++j ; j != sigma.end() ; ++j){
+			auto j=i;
+			for (++j ; j != sigma.end() ; ++j){
 				if (!contains_edge(*i,*j))
 					return false;
 			}
@@ -496,7 +496,7 @@ public:
 		}
 		else{
 			num_blockers_++;
-			Simplex_handle_iterator vertex = sigma->begin();
+			auto vertex = sigma->begin();
 			while(vertex != sigma->end())
 			{
 				blocker_map.insert(BlockerPair(*vertex,sigma));
@@ -518,8 +518,7 @@ public:
 			if (*blocker == sigma) break;
 		}
 		if (*blocker != sigma){
-
-			cerr << "bug ((*blocker).second == sigma) ie try to remove a blocker not present\n";
+			std::cerr << "bug ((*blocker).second == sigma) ie try to remove a blocker not present\n";
 			assert(false);
 		}
 		else{
@@ -532,13 +531,10 @@ public:
 	 * s has to belongs to the set of blockers
 	 */
 	void remove_blocker(const Simplex_handle * sigma){
-		Simplex_handle_iterator vertex;
 		if (visitor) visitor->on_remove_blocker(*sigma);
-
-		for (vertex = sigma->begin() ; vertex != sigma->end() ; ++vertex){
-			remove_blocker(sigma,*vertex);
+		for (auto vertex : *sigma){
+			remove_blocker(sigma,vertex);
 		}
-
 		num_blockers_--;
 	}
 
@@ -581,8 +577,8 @@ public:
 	/**
 	 * @returns the list of blockers of the simplex
 	 */
-	list<Simplex_handle*> get_blockers_list(){
-		list <Simplex_handle*> res;
+	std::list<Simplex_handle*> get_blockers_list(){
+		std::list <Simplex_handle*> res;
 		for (BlockerMapConstIterator dp=blocker_map.begin(); dp!=blocker_map.end(); ++dp){
 			// check if it is the first time we encounter the blocker
 			if ( (*dp).first == ( (*dp).second )->first_vertex() ){
@@ -653,7 +649,7 @@ protected:
 		// Compute vertices in the link
 		// we compute the intersection of N(alpha_i) and store it in n
 		// ----------------------------
-		Simplex_handle_iterator alpha_vertex = alpha.begin();
+		auto alpha_vertex = alpha.begin();
 		add_neighbours(*alpha_vertex,n,keep_only_superior);
 		for (alpha_vertex = (alpha.begin())++ ; alpha_vertex != alpha.end() ; ++alpha_vertex)
 		{
@@ -668,7 +664,7 @@ protected:
 	virtual void keep_neighbours(Vertex_handle v, Simplex_handle& n,bool keep_only_superior=false) const{
 		Simplex_handle nv;
 		add_neighbours(v,nv,keep_only_superior);
-		n.intersection(&nv);
+		n.intersection(nv);
 	}
 
 	/**
@@ -961,33 +957,33 @@ public:
 	 */
 	//@{
 public:
-	string to_string(){
-		ostringstream stream;
+	std::string to_string(){
+		std::ostringstream stream;
 		stream<<num_vertices()<<" vertices:\n"<<vertices_to_string()<<std::endl;
 		stream<<num_edges()<<" edges:\n"<<edges_to_string()<<std::endl;
 		stream<<num_blockers()<<" blockers:\n"<<blockers_to_string()<<std::endl;
 		return stream.str();
 	}
 
-	virtual string vertices_to_string() {
-		ostringstream stream;
+	virtual std::string vertices_to_string() {
+		std::ostringstream stream;
 		for(auto vertex : vertex_range())
 			stream << "("<<(*this)[vertex].get_id()<<"),";
 		stream<< std::endl;
 		return stream.str();
 	}
 
-	string edges_to_string() {
-		ostringstream stream;
+	std::string edges_to_string() {
+		std::ostringstream stream;
 		for(auto edge : edge_range())
-			stream <<edge<<" id = "<< (*this)[edge].id()<<endl;
+			stream <<edge<<" id = "<< (*this)[edge].id()<< std::endl;
 		stream<< std::endl;
 		return stream.str();
 	}
 
 
-	string blockers_to_string() const{
-		ostringstream stream;
+	std::string blockers_to_string() const{
+		std::ostringstream stream;
 		for (auto bl:blocker_map){
 			stream << bl.first << " => " << bl.second << ":"<<*bl.second <<"\n";
 		}

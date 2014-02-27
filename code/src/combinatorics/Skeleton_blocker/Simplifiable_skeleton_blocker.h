@@ -86,15 +86,15 @@ public:
 		int maxDim=-1;
 		while (blocker_popable_found){
 			blocker_popable_found=false;
-			list <Simplex_handle*> blockers = this->get_blockers_list();
+			std::list <Simplex_handle*> blockers = this->get_blockers_list();
 			maxDim=-1;
 			for (
-					typename list <Simplex_handle*>::iterator block=blockers.begin();
+					typename std::list <Simplex_handle*>::iterator block=blockers.begin();
 					block!=blockers.end();
 					++block)
 			{
 				if (!is_popable_blocker(*block)) {
-					maxDim = max(maxDim,(*block)->dimension());
+					maxDim = std::max(maxDim,(*block)->dimension());
 				}
 				else{
 					//			cout << "A BLOCKER HAD BECOMED POPABLE -> REMOVED\n";
@@ -129,7 +129,7 @@ public:
 	 */
 	int remove_star(Vertex_handle a, Vertex_handle b){
 		//	cout << "CollapseEdge("<<a<<","<<b<<")\n";
-		list <Simplex_handle*> blockers_to_delete;
+		std::list <Simplex_handle*> blockers_to_delete;
 		Edge_handle edge_descriptor;
 		Simplex_handle edge(a,b);
 
@@ -175,7 +175,7 @@ public:
 			remove_star(sigma.first_vertex(),sigma.last_vertex());
 		}
 		else {
-			cerr << "not implemented yet"<<endl;
+			std::cerr << "not implemented yet"<<std::endl;
 			assert(false);
 		}
 	}
@@ -226,7 +226,7 @@ protected:
 	 * Suppose that the link condition Link(ab) = Link(a) inter Link(b)
 	 * is satisfied !
 	 */
-	void tip_blockers(Vertex_handle a, Vertex_handle b, vector<Simplex_handle> & buffer) const{
+	void tip_blockers(Vertex_handle a, Vertex_handle b, std::vector<Simplex_handle> & buffer) const{
 		for (auto blocker : this->const_blocker_range(a))
 		{
 			Simplex_handle beta = (*blocker);
@@ -272,7 +272,7 @@ private:
 	 * @brief removes all blockers passing through the edge 'ab'
 	 */
 	void remove_blockers(Vertex_handle a, Vertex_handle b){
-		vector<Simplex_handle *> blocker_to_delete;
+		std::vector<Simplex_handle *> blocker_to_delete;
 		for (auto it = this->blocker_map.lower_bound(a); it != this->blocker_map.upper_bound(a); ++it)
 			if ((*it).second->contains(b)) blocker_to_delete.push_back(  (*it).second );
 		while (!blocker_to_delete.empty())
@@ -309,12 +309,12 @@ public:
 		LinkComplexType link_a(*this,a);
 		LinkComplexType link_b(*this,b);
 
-		vector<Simplex_handle> vector_alpha, vector_beta;
+		std::vector<Simplex_handle> vector_alpha, vector_beta;
 
 		tip_blockers(a,b,vector_alpha);
 		tip_blockers(b,a,vector_beta);
 
-		vector<Simplex_handle *> blocker_to_add;
+		std::vector<Simplex_handle *> blocker_to_add;
 		for (auto alpha = vector_alpha.begin(); alpha != vector_alpha.end(); ++alpha){
 			for (auto beta = vector_beta.begin(); beta != vector_beta.end(); ++beta)
 			{
@@ -345,7 +345,7 @@ public:
 		// We delete all blockers a.tau and b.tau of K
 		// after the edge contraction ab ----> a
 		BlockerMapIterator it;
-		vector<Simplex_handle *> blocker_to_delete;
+		std::vector<Simplex_handle *> blocker_to_delete;
 
 		for (it = this->blocker_map.lower_bound(a); it != this->blocker_map.upper_bound(a); ++it)
 			blocker_to_delete.push_back(  (*it).second );
