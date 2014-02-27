@@ -397,7 +397,7 @@ private:
 		//1-get the edge_descriptor corresponding to ab
 		//2-change the data in mEdgeArray[ab.id()]
 		//3-update the heap
-		edge_descriptor lEdge = (complex_[make_pair(a,b)]).first;
+		edge_descriptor lEdge = (complex_[std::make_pair(a,b)]).first;
 		Edge_data& lData = get_data(lEdge);
 		Profile const& lProfile = create_profile(lEdge);
 		lData.cost() = get_cost(lProfile) ;
@@ -416,7 +416,7 @@ private:
 
 	void on_remove_edge(Vertex_handle a,Vertex_handle b){
 
-		edge_descriptor lEdge = (complex_[make_pair(a,b)]).first;
+		edge_descriptor lEdge = (complex_[std::make_pair(a,b)]).first;
 		Edge_data& lData = get_data(lEdge) ;
 		if ( lData.is_in_PQ() )
 		{
@@ -430,8 +430,8 @@ private:
 	 * We assign the index of 'bx' to the edge index of 'ax'
 	 */
 	void on_swaped_edge(Vertex_handle a,Vertex_handle b,Vertex_handle x){
-		std::pair<edge_descriptor,bool> ax_pair = complex_[make_pair(a,x)];
-		std::pair<edge_descriptor,bool> bx_pair = complex_[make_pair(b,x)];
+		std::pair<edge_descriptor,bool> ax_pair = complex_[std::make_pair(a,x)];
+		std::pair<edge_descriptor,bool> bx_pair = complex_[std::make_pair(b,x)];
 		assert(ax_pair.second && bx_pair.second);
 		complex_[ax_pair.first].id() =complex_[bx_pair.first].id();
 	}

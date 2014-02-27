@@ -37,7 +37,7 @@ struct Simple_complex_DS_traits{
 			return this->vertex < other.vertex;
 		}
 
-		friend ostream& operator << (ostream& o, const Root_vertex_handle & v)
+		friend std::ostream& operator << (std::ostream& o, const Root_vertex_handle & v)
 		{
 			o << v.vertex;
 			return o;
@@ -58,7 +58,7 @@ struct Simple_complex_DS_traits{
 			return this->vertex < other.vertex;
 		}
 
-		friend ostream& operator << (ostream& o, const Vertex_handle & v)
+		friend std::ostream& operator << (std::ostream& o, const Vertex_handle & v)
 		{
 			o << v.vertex;
 			return o;
@@ -80,13 +80,13 @@ struct Simple_complex_DS_traits{
 		void set_id(Root_vertex_handle i){id_=i;}
 		Root_vertex_handle get_id() const{return id_;}
 
-		virtual string to_string() const {
-			ostringstream res;
+		virtual std::string to_string() const {
+			std::ostringstream res;
 			res<< id_;
 			return res.str();
 		}
 
-		friend ostream& operator << (ostream& o, const Simple_vertex & v){
+		friend std::ostream& operator << (std::ostream& o, const Simple_vertex & v){
 			o << v.to_string();
 			return o;
 		}
@@ -120,7 +120,7 @@ struct Simple_complex_DS_traits{
 			return b_;
 		}
 
-		friend ostream& operator << (ostream& o, const Simple_edge & v){
+		friend std::ostream& operator << (std::ostream& o, const Simple_edge & v){
 			o << "("<<v.a_<<","<<v.b_<<" - id = "<<v.id();
 			return o;
 		}

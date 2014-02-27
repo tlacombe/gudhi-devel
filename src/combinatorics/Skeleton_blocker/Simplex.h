@@ -6,7 +6,6 @@
 #include<set>
 #include<vector>
 
-using namespace std;
 
 /**
  *@class Simplex
@@ -24,55 +23,14 @@ template <typename T>
 class Simplex {
 
 private :
-	set<T> simplex_set;
+	std::set<T> simplex_set;
 
 public:
 	typedef typename T::boost_vertex_handle boost_vertex_handle;
 
 
-	class Simplex_vertex_const_iterator{
-	private:
-		typename std::set<T>::iterator set_iterator;
-		typedef typename std::set<T>::const_iterator const_set_iterator;
-		friend class Simplex;
-
-		//		Simplex_vertex_const_iterator(const_set_iterator& other):set_iterator(other){}
-	public:
-
-		explicit Simplex_vertex_const_iterator(typename std::set<T>::const_iterator other):set_iterator(other){}
-
-
-		explicit Simplex_vertex_const_iterator() :	set_iterator(){}
-
-		Simplex_vertex_const_iterator& operator=(const Simplex_vertex_const_iterator& other)
-		{
-			set_iterator = other.set_iterator;
-			return(*this);
-		}
-
-		bool operator!= (const Simplex_vertex_const_iterator & other) const{
-			if(set_iterator == other.set_iterator) return false;
-			else return true;
-		}
-
-		T operator* () const{
-			return *set_iterator;
-		}
-
-		const Simplex_vertex_const_iterator & operator++ (){
-			set_iterator++;
-			return *this;
-		}
-
-		Simplex_vertex_const_iterator  operator++ (int){
-			Simplex_vertex_const_iterator tmp(*this);
-			tmp.set_iterator++;
-			return(tmp);
-		}
-	};
-
-
-	typedef Simplex_vertex_const_iterator const_iterator;
+	typedef typename std::set<T>::const_iterator Simplex_vertex_const_iterator;
+	typedef typename std::set<T>::iterator Simplex_vertex_iterator;
 
 	/** @name Constructors / Destructors / Initialization
 	 */
@@ -125,7 +83,7 @@ public:
 	/**
 	 * Initialize a simplex with a string such as {0,1,2}
 	 */
-	Simplex(string token){
+	Simplex(std::string token){
 		clear();
 		if ((token[0] == '{')  && (token[token.size()-1] == '}' ) )
 		{
@@ -134,22 +92,12 @@ public:
 			while(token.size()!=0 ){
 				int coma_position=token.find_first_of(',');
 				//cout << "coma_position:"<<coma_position<<endl;
-				string n = token.substr(0,coma_position);
+				std::string n = token.substr(0,coma_position);
 				//cout << "token:"<<token<<endl;
 				token.erase(0,n.size()+1);
 				add_vertex((T)(atoi(n.c_str())));
 			}
 		}
-	}
-
-
-	/**
-	 * Constructs the Simplex which is the same than sigma
-	 */
-	Simplex(const Simplex* sigma)
-	{
-		for (const_iterator i=sigma->begin(); i!=sigma->end(); ++i)
-			simplex_set.insert(*i);
 	}
 
 	//@}
@@ -183,7 +131,7 @@ public:
 	 * \f$ (*this) \leftarrow (*this) \cap a \f$
 	 */
 	void intersection(const Simplex & a){
-		vector<T> v;
+		std::vector<T> v;
 		v.reserve(std::min(simplex_set.size(), a.simplex_set.size()));
 
 		set_intersection(simplex_set.begin(),simplex_set.end(),
@@ -199,7 +147,7 @@ public:
 	 * \f$ (*this) \leftarrow (*this) \setminus a \f$
 	 */
 	void difference(const Simplex & a){
-		vector<T> v;
+		std::vector<T> v;
 		v.reserve(simplex_set.size());
 
 		set_difference(simplex_set.begin(),simplex_set.end(),
@@ -216,27 +164,32 @@ public:
 	 * \f$ (*this) \leftarrow (*this) \cup a \f$
 	 */
 	void union_vertices(const Simplex & a){
-		vector<T> v;
+		std::vector<T> v;
 		v.reserve(simplex_set.size() + a.simplex_set.size());
 
 		set_union(simplex_set.begin(),simplex_set.end(),
 				a.simplex_set.begin(),a.simplex_set.end(),
 				std::back_inserter(v));
-
 		clear();
-		for (typename vector<T>::iterator i=v.begin(); i!=v.end(); ++i)
-			simplex_set.insert(*i);
+		simplex_set.insert(v.begin(),v.end());
 	}
 
-
-
-	const_iterator begin() const{
-		return const_iterator(simplex_set.cbegin());
+	typename std::set<T>::const_iterator begin() const{
+		return simplex_set.cbegin();
 	}
 
-	const_iterator end() const{
-		return const_iterator(simplex_set.cend());
+	typename std::set<T>::const_iterator end() const{
+		return simplex_set.cend();
 	}
+
+	typename std::set<T>::iterator begin(){
+		return simplex_set.begin();
+	}
+
+	typename std::set<T>::iterator end(){
+		return simplex_set.end();
+	}
+
 
 
 	//@}
@@ -270,8 +223,8 @@ public:
 	 */
 	int inline second_vertex() const
 	{
-		const_iterator it=(begin());
-		++it;
+		assert(simplex_set.size()>=2);
+		auto it=++(begin());
 		return *it;
 	}
 
@@ -304,7 +257,7 @@ public:
 	 * @return \f$ (*this) \cap a = \emptyset \f$.
 	 */
 	bool disjoint(const Simplex& a) const{
-		vector<T> v;
+		std::vector<T> v;
 		v.reserve(std::min(simplex_set.size(), a.simplex_set.size()));
 
 		set_intersection(simplex_set.cbegin(),simplex_set.cend(),
@@ -330,16 +283,14 @@ public:
 	/**
 	 * Display a simplex
 	 */
-	friend ostream& operator << (ostream& o, const Simplex & sigma)
+	friend std::ostream& operator << (std::ostream& o, const Simplex & sigma)
 	{
-		int first = 1;
-		const_iterator i = sigma.begin();
+		bool first = true;
 		o << '{';
-		while(i != sigma.end())
+		for(auto i : sigma)
 		{
-			if (first) first = 0; else o << ',';
-			o << *i;
-			++i;
+			first? first = false : o << ',';
+			o << i;
 		}
 		o << '}';
 		return o;

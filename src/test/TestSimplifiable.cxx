@@ -35,7 +35,7 @@ typedef Complex::Complex_const_blocker_iterator ConstBlockerIterator;
 // true iff v \in K
 bool assert_vertex(Complex &complex,Vertex_handle v){
 	Address_simplex simplex(v);
-	bool test = complex.contains(&simplex);
+	bool test = complex.contains(simplex);
 	assert(test);
 	return test;
 }
@@ -164,7 +164,7 @@ bool test_collapse2(){
 
 	// verification
 	assert_blocker(K,Root_vertex_handle(1),Root_vertex_handle(2),Root_vertex_handle(3));
-	assert(!K.contains_blocker(new Address_simplex(Vertex_handle(1),Vertex_handle(2),Vertex_handle(3),Vertex_handle(4))));
+	assert(!K.contains_blocker(Address_simplex(Vertex_handle(1),Vertex_handle(2),Vertex_handle(3),Vertex_handle(4))));
 	cerr <<"----> OK \n";
 	return true;
 }

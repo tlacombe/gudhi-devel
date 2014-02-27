@@ -23,7 +23,7 @@ typedef typename Complex::Vertex_handle Vertex_handle;
 typedef typename Complex::Root_vertex_handle Root_vertex_handle;
 typedef typename Complex::Simplex_handle Simplex_handle;
 typedef typename Complex::Root_simplex_handle Root_simplex_handle;
-typedef Simplex_handle::const_iterator AddressSimplexConstIterator;
+typedef Simplex_handle::Simplex_vertex_const_iterator Simplex_vertex_const_iterator;
 typedef Complex::Complex_const_blocker_iterator ConstBlockerIterator;
 typedef Complex::Complex_vertex_range VertexRange;
 typedef Complex::Complex_vertex_iterator VertexIterator;
@@ -70,9 +70,9 @@ void buildComplete(int n,Complex& complex){
 bool test_simplex(){
 	PRINT("test simplex");
 	Simplex_handle simplex(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2),Vertex_handle(3));
-	for (AddressSimplexConstIterator i = simplex.begin() ; i != simplex.end() ; ++i){
+	for (auto i = simplex.begin() ; i != simplex.end() ; ++i){
 		PRINT(*i);
-		AddressSimplexConstIterator j = i;
+		auto j = i;
 		for (++j ;
 				j != simplex.end() ;
 				++j){

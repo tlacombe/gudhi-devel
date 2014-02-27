@@ -43,8 +43,8 @@ public:
 	typedef typename ComplexType::BlockerMapIterator BlockerMapIterator;
 	typedef typename ComplexType::BlockerMapConstIterator BlockerMapConstIterator;
 
-	typedef typename ComplexType::Simplex_handle::const_iterator AddressSimplexConstIterator;
-	typedef typename ComplexType::Root_simplex_handle::const_iterator IdSimplexConstIterator;
+	typedef typename ComplexType::Simplex_handle::Simplex_vertex_const_iterator Simplex_handle_iterator;
+	typedef typename ComplexType::Root_simplex_handle::Simplex_vertex_const_iterator Root_simplex_handle_iterator;
 
 	typedef typename ComplexType::Complex_vertex_iterator Complex_vertex_iterator;
 
@@ -102,7 +102,7 @@ protected:
 	}
 
 	void compute_link_edges(const ComplexType & parent_complex, Simplex_handle& alpha_parent_adress){
-		AddressSimplexConstIterator y_link, x_parent , y_parent;
+		Simplex_handle_iterator y_link, x_parent , y_parent;
 		// ----------------------------
 		// Compute edges in the link
 		// -------------------------

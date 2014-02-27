@@ -7,7 +7,7 @@
 #include <sstream>
 #include <iostream>
 
-using namespace std;
+
 /**
  * Class to perform test
  */
@@ -15,31 +15,31 @@ using namespace std;
 class Test
 {
 private :
-	string name;
+	std::string name;
 	bool (*test)();
 
-	string separation() const{
+	std::string separation() const{
 		return "+++++++++++++++++++++++++++++++++++++++++++++++++\n";
 	}
 
-	string print_between_plus(string& s) const{
-		stringstream res;
+	std::string print_between_plus(std::string& s) const{
+		std::stringstream res;
 		res << "+++++++++++++++++"<<s<<"+++++++++++++++++\n";
 		return res.str();
 	}
 
 
 public:
-	Test(string name_,bool (*test_)()){
+	Test(std::string name_,bool (*test_)()){
 		name=name_;
 		test =test_;
 	}
 
 	bool run(){
-		cout << print_between_plus(name);
+		std::cout << print_between_plus(name);
 		return test();
 	}
-	string getName(){
+	std::string getName(){
 		return name;
 	}
 };
@@ -48,26 +48,26 @@ public:
 class Tests
 {
 private:
-	list<Test> tests;
+	std::list<Test> tests;
 
 public:
-	void add(string name_,bool (*test_)()){
+	void add(std::string name_,bool (*test_)()){
 		Test test(name_,test_);
 		tests.push_back(test);
 	}
 	bool run(){
 		bool tests_succesful(true);
-		vector<bool> res;
+		std::vector<bool> res;
 		for (Test test : tests){
 			res.push_back(test.run());
 		}
-		cout << "\n\n results of tests : "<<endl;
+		std::cout << "\n\n results of tests : "<<std::endl;
 		int i=0;
 		for (Test t : tests){
-			cout << "Test "<<i<< " \""<<t.getName()<<"\"  -->  ";
-			if (res[i++]) cout << "OK"<<endl;
+			std::cout << "Test "<<i<< " \""<<t.getName()<<"\"  -->  ";
+			if (res[i++]) std::cout << "OK"<<std::endl;
 			else {
-				cout << "Fail"<<endl;
+				std::cout << "Fail"<<std::endl;
 				tests_succesful = false;
 				break;
 			}
