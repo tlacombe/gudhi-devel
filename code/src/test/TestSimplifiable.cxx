@@ -78,8 +78,8 @@ bool test_contraction1(){
 		if (i!=1) assert_vertex(complex,Vertex_handle(i));
 	bool test1 = !complex.contains_edge(Vertex_handle(a),Vertex_handle(b));
 	bool test2 = assert_blocker(complex,Root_vertex_handle(a),Root_vertex_handle(x),Root_vertex_handle(y));
-	bool test3 = complex.get_num_edges()==6;
-	bool test4 = complex.get_num_blockers()==1;
+	bool test3 = complex.num_edges()==6;
+	bool test4 = complex.num_blockers()==1;
 	Address_simplex sigma;
 	sigma.add_vertex(Vertex_handle(a));
 	sigma.add_vertex(Vertex_handle(x));
@@ -112,7 +112,7 @@ bool test_contraction2(){
 	// there should be one blocker (a,c,d,e) in the complex
 	bool test ;
 	test = complex.contains_blocker(Address_simplex(a,x,y,z));
-	test = test && complex.get_num_blockers()==1;
+	test = test && complex.num_blockers()==1;
 	return test;
 }
 
@@ -232,7 +232,7 @@ bool test_remove_popable_blockers(){
 	cerr << "K.RemovePopableBlockers();"<<endl;
 	K.remove_popable_blockers();
 	cerr << "complex K"<< K.to_string();
-	cerr <<endl<<endl;	assert(K.get_num_blockers()==1);
+	cerr <<endl<<endl;	assert(K.num_blockers()==1);
 
 
 	// test 2
@@ -254,7 +254,7 @@ bool test_remove_popable_blockers(){
 	cerr <<endl<<endl;	cerr << "K.RemovePopableBlockers();"<<endl;
 	K.remove_popable_blockers();
 	cerr << "complex K"<< K.to_string();
-	cerr <<endl<<endl;	assert(K.get_num_blockers()==0);
+	cerr <<endl<<endl;	assert(K.num_blockers()==0);
 
 
 	cerr <<endl<<endl;

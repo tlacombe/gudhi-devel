@@ -6,8 +6,8 @@
  *  Copyright 2013 INRIA. All rights reserved
  */
 
-#ifndef COMPLEXDS_H_
-#define COMPLEXDS_H_
+#ifndef GUDHI_COMPLEXDS_H_
+#define GUDHI_COMPLEXDS_H_
 
 /** \brief Concept defining the ComplexDS trait that must be passed to
  * the template class Skeleton_blockers_complex
@@ -67,10 +67,10 @@ struct ComplexDS
 	 *
 	 */
 	struct Vertex{
-		/** \brief Used to desactivate a vertex for example when contracting an edge.
+		/** \brief Used to deactivate a vertex for example when contracting an edge.
 		 * It allows in some cases to remove the vertex at low cost.
 		 */
-		void desactivate();
+		void deactivate();
 
 		/** \brief Used to activate a vertex.
 		 */
@@ -100,7 +100,7 @@ struct ComplexDS
 		 * \todo renommer en index afin d'eviter l'ambiguite avec la méthode setId
 		 */
 		int& id();
-		int id();
+		int id() const;
 
 		/**
 		 * @brief Allows to modify vertices of the edge.
@@ -125,4 +125,4 @@ struct ComplexDS
 
 
 
-#endif /* COMPLEXDS_H_ */
+#endif /* GUDHI_COMPLEXDS_H_ */

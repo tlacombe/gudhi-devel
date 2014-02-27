@@ -5,8 +5,8 @@
  *      Author: dsalinas
  */
 
-#ifndef SIMPLE_SKELETON_BLOCKERS_TRAITS_H_
-#define SIMPLE_SKELETON_BLOCKERS_TRAITS_H_
+#ifndef GUDHI_SIMPLE_SKELETON_BLOCKERS_TRAITS_H_
+#define GUDHI_SIMPLE_SKELETON_BLOCKERS_TRAITS_H_
 
 #include <string>
 #include <sstream>
@@ -48,8 +48,6 @@ struct Simple_complex_DS_traits{
 		typedef int boost_vertex_handle;
 		Vertex_handle(boost_vertex_handle val=-1):vertex(val){}
 
-		Vertex_handle(const Vertex_handle & other):vertex(other.vertex){}
-
 		boost_vertex_handle vertex;
 
 		bool operator==( const Vertex_handle& other) const{
@@ -77,7 +75,7 @@ struct Simple_complex_DS_traits{
 		virtual ~Simple_vertex(){}
 
 		void activate(){is_active_=true;}
-		void desactivate(){is_active_=false;}
+		void deactivate(){is_active_=false;}
 		bool is_active() const{return is_active_;}
 		void set_id(Root_vertex_handle i){id_=i;}
 		Root_vertex_handle get_id() const{return id_;}
@@ -130,14 +128,20 @@ struct Simple_complex_DS_traits{
 
 	typedef Simple_edge Edge;
 
+
+	typedef Simplex<Vertex_handle> Simplex_handle;
+	typedef Simplex<Root_vertex_handle> Root_simplex_handle;
+
 };
 
 
 
 template<typename GT>
 struct Simple_complex_geometry_traits : public Simple_complex_DS_traits {
+public:
 
-	typedef typename GT::Point Point;
+	typedef GT GeometryTrait;
+	typedef typename GeometryTrait::Point Point;
 	typedef typename Simple_complex_DS_traits::Root_vertex_handle Root_vertex_handle;
 	typedef typename Simple_complex_DS_traits::Vertex Simple_vertex;
 
@@ -156,4 +160,4 @@ struct Simple_complex_geometry_traits : public Simple_complex_DS_traits {
 
 
 
-#endif /* SIMPLE_SKELETON_BLOCKERS_TRAITS_H_ */
+#endif /* GUDHI_SIMPLE_SKELETON_BLOCKERS_TRAITS_H_ */

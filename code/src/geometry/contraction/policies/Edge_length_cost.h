@@ -20,8 +20,8 @@ public:
 	typedef typename EdgeProfile::Point Point;
 	Cost_type operator()(const EdgeProfile& profile, const boost::optional<Point>& placement){
 		Cost_type res;
-		const Point& a = profile.p0();
-		const Point& b = profile.p1();
+		//const Point& a = profile.p0();
+		//const Point& b = profile.p1();
 		//res = CGAL::squared_distance(a,b);
 		// todo length
 		return 1.0;

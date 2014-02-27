@@ -5,8 +5,8 @@
  *      Author: dsalinas
  */
 
-#ifndef __SIMPLICIAL_COMPLEX_H
-#define __SIMPLICIAL_COMPLEX_H
+#ifndef GUDHI_SKELETON_BLOCKER_COMPLEX_H
+#define GUDHI_SKELETON_BLOCKER_COMPLEX_H
 
 #include <map>
 #include <vector>
@@ -68,6 +68,11 @@ public:
 	 */
 	typedef typename ComplexDS::Vertex_handle Vertex_handle;
 	typedef typename ComplexDS::Root_vertex_handle Root_vertex_handle;
+	typedef typename Root_vertex_handle::boost_vertex_handle boost_vertex_handle;
+	typedef typename ComplexDS::Simplex_handle Simplex_handle;
+	typedef typename ComplexDS::Root_simplex_handle Root_simplex_handle;
+	typedef typename Root_simplex_handle::const_iterator Root_simplex_iterator;
+	typedef typename Simplex_handle::const_iterator Simplex_handle_iterator;
 
 
 protected:
@@ -88,13 +93,7 @@ protected:
 public:
 	typedef typename boost::graph_traits<Graph>::edge_descriptor Edge_handle;
 
-	typedef typename Root_vertex_handle::boost_vertex_handle boost_vertex_handle;
 
-
-	typedef Simplex<Vertex_handle> Simplex_handle;
-	typedef Simplex<Root_vertex_handle> Root_simplex_handle;
-	typedef typename Root_simplex_handle::const_iterator Root_simplex_iterator;
-	typedef typename Simplex_handle::const_iterator Simplex_handle_iterator;
 
 	typedef multimap<Vertex_handle,Simplex_handle *> BlockerMap;
 	typedef typename multimap<Vertex_handle,Simplex_handle *>::value_type BlockerPair;
@@ -102,8 +101,8 @@ public:
 	typedef typename multimap<Vertex_handle,Simplex_handle *>::const_iterator BlockerMapConstIterator;
 
 protected:
-	int num_vertices;
-	int num_blockers;
+	int num_vertices_;
+	int num_blockers_;
 
 	typedef Skeleton_blocker_complex_visitor<Vertex_handle> Visitor;
 	//	typedef Visitor* Visitor_ptr;
@@ -189,14 +188,14 @@ public:
 		visitor = NULL;
 
 		degree.clear();
-		num_vertices =0;
+		num_vertices_ =0;
 
 		// Desallocate the blockers
 
 		while (!blocker_map.empty()){
 			delete_blocker(blocker_map.begin()->second);
 		}
-		num_blockers = 0;
+		num_blockers_ = 0;
 
 
 		blocker_map.clear();
@@ -217,8 +216,11 @@ public:
 
 public:
 
-	Vertex& operator[](Root_vertex_handle global){
-		return skeleton[get_address(global)->vertex];
+	Vertex_handle& operator[](Root_vertex_handle global){
+		return *get_address(global);
+	}
+	const Vertex_handle& operator[] (Root_vertex_handle global) const{
+		return *get_address(global);
 	}
 
 	Vertex& operator[](Vertex_handle address){
@@ -239,7 +241,7 @@ public:
 		// safe since we now that we are in the root complex and the field 'address' and 'id'
 		// are identical for every vertices
 		(*this)[address].set_id(Root_vertex_handle(address.vertex));
-		num_vertices++;
+		num_vertices_++;
 		degree.push_back(0);
 		if (visitor) visitor->on_add_vertex(address);
 		return address;
@@ -248,14 +250,14 @@ public:
 
 	/**
 	 * Remove a vertex from the simplicial complex
-	 * in fact it just desactivate it
+	 * in fact it just deactivates it
 	 * The degree of v has to be 0 before the removal
 	 */
 	void remove_vertex(Vertex_handle address){
 		// We remove b
 		boost::clear_vertex(address.vertex,skeleton);
-		(*this)[address].desactivate();
-		num_vertices--;
+		(*this)[address].deactivate();
+		num_vertices_--;
 		degree[address.vertex]=-1;
 		if (visitor) visitor->on_remove_vertex(address);
 	}
@@ -303,6 +305,31 @@ public:
 	}
 
 
+public:
+
+
+	/**
+	 * Compute the local vertices of 's' in the current complex
+	 * If one of them is not present in the complex then the return value is uninitialized.
+	 */
+	boost::optional<Simplex_handle>	get_simplex_address(const Root_simplex_handle& s) const
+	{
+		boost::optional<Simplex_handle> res;
+
+		Simplex_handle s_address;
+		//Root_simplex_const_iterator i;
+		for (auto i = s.begin() ; i != s.end() ; ++i)
+		{
+			boost::optional<Vertex_handle> address = get_address(*i);
+			if (!address)
+				return res;
+			else
+				s_address.add_vertex(*address);
+		}
+		res = s_address;
+		return res;
+	}
+
 	/**
 	 * return the id of a vertex of adress local present in the graph
 	 */
@@ -342,6 +369,15 @@ public:
 
 	const Edge& operator[](Edge_handle edge_descriptor) const{
 		return skeleton[edge_descriptor];
+	}
+
+	/**
+	 * @brief returns the simplex that consists in the two vertices of the edge
+	 */
+	Simplex_handle get_vertices(Edge_handle edge_descriptor) const{
+		Vertex_handle v1 =(*this)[((*this)[edge_descriptor].first())];
+		Vertex_handle v2 =(*this)[((*this)[edge_descriptor].second())];
+		return Simplex_handle(v1,v2);
 	}
 
 	/**
@@ -459,7 +495,7 @@ public:
 			return;
 		}
 		else{
-			num_blockers++;
+			num_blockers_++;
 			Simplex_handle_iterator vertex = sigma->begin();
 			while(vertex != sigma->end())
 			{
@@ -503,7 +539,7 @@ public:
 			remove_blocker(sigma,*vertex);
 		}
 
-		num_blockers--;
+		num_blockers_--;
 	}
 
 
@@ -679,32 +715,32 @@ public:
 	 * @return true iff the complex is a 0-sphere
 	 */
 	bool empty() const{
-		return get_num_vertices()==0;
+		return num_vertices()==0;
 	}
 
 
-	int get_num_vertices() const{
-		return num_vertices;
+	int num_vertices() const{
+		return num_vertices_;
 	}
 
-	int get_num_edges() const{
+	int num_edges() const{
 		return boost::num_edges(skeleton);
 	}
 
-	int get_num_blockers() const{
-		return num_blockers;
+	int num_blockers() const{
+		return num_blockers_;
 	}
 
 
 	bool complete() const{
-		return (get_num_vertices()*(get_num_vertices()-1))/2 == get_num_edges();
+		return (num_vertices()*(num_vertices()-1))/2 == num_edges();
 	}
 
 	/**
 	 * @return the number of connected components in the graph of the skeleton
 	 */
-	int number_of_connected_compenents(){
-		int num_vert_collapsed = skeleton.vertex_set().size() - get_num_vertices();
+	int num_connected_components(){
+		int num_vert_collapsed = skeleton.vertex_set().size() - num_vertices();
 		std::vector<int> component(skeleton.vertex_set().size());
 		return boost::connected_components(this->skeleton,&component[0]) - num_vert_collapsed;
 	}
@@ -716,8 +752,8 @@ public:
 	 * runs in O(stats.getNumberVertices())
 	 */
 	bool is_cone() const{
-		if (get_num_vertices()==0) return false;
-		if (get_num_vertices()==1) return true;
+		if (num_vertices()==0) return false;
+		if (num_vertices()==1) return true;
 		std::pair<boost_vertex_iterator, boost_vertex_iterator> vp;
 		for (vp = vertices(skeleton); vp.first != vp.second; ++vp.first)
 			if ((skeleton[*vp.first]).is_active()){
@@ -725,7 +761,7 @@ public:
 				// we check if the current vertex belongs to a blocker
 				if (blocker_map.find(v)==blocker_map.end()){
 					//				if (out_degree(v, skeleton) == num_vertices() -1)
-					if (degree[v.vertex] == get_num_vertices() -1)
+					if (degree[v.vertex] == num_vertices() -1)
 
 						// we check if the current vertex is linked to all others vertices of the complex
 						return true;
@@ -862,11 +898,11 @@ public:
 
 
 
-protected:
-	/**
-	 * \brief Range over the blockers of the simplicial complex adjacent to a vertex.
-	 * Methods .begin() and .end() return a Complex_blocker_iterator.
-	 */
+public:
+//	/**
+//	 * \brief Range over the blockers of the simplicial complex adjacent to a vertex.
+//	 * Methods .begin() and .end() return a Complex_blocker_iterator.
+//	 */
 	//template<typename ComplexType> friend class Complex_blocker_range;
 
 
@@ -927,9 +963,9 @@ protected:
 public:
 	string to_string(){
 		ostringstream stream;
-		stream<<get_num_vertices()<<" vertices:\n"<<vertices_to_string()<<std::endl;
-		stream<<get_num_edges()<<" edges:\n"<<edges_to_string()<<std::endl;
-		stream<<get_num_blockers()<<" blockers:\n"<<blockers_to_string()<<std::endl;
+		stream<<num_vertices()<<" vertices:\n"<<vertices_to_string()<<std::endl;
+		stream<<num_edges()<<" edges:\n"<<edges_to_string()<<std::endl;
+		stream<<num_blockers()<<" blockers:\n"<<blockers_to_string()<<std::endl;
 		return stream.str();
 	}
 

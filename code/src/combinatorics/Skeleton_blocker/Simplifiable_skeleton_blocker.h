@@ -5,8 +5,8 @@
  *      Author: dsalinas
  */
 
-#ifndef SIMPLIFIABLE_SKELETON_BLOCKERS_H_
-#define SIMPLIFIABLE_SKELETON_BLOCKERS_H_
+#ifndef GUDHI_SIMPLIFIABLE_SKELETON_BLOCKERS_H_
+#define GUDHI_SIMPLIFIABLE_SKELETON_BLOCKERS_H_
 
 #include "Skeleton_blocker_sub_complex.h"
 
@@ -14,8 +14,6 @@
 /**
  *  \brief Class that allows simplification operation on a simplicial complex represented
  *  by a skeleton/blockers pair.
- *
- *  \extends Skeleton_blocker_complex
  */
 template<typename Traits>
 class Simplifiable_Skeleton_blocker : public Skeleton_blocker_complex<Traits>
@@ -60,12 +58,16 @@ public:
 	}
 
 	/**
-	 * Returns true iff the blocker sigma is popable.
+	 * Returns true iff the blocker 'sigma' is popable.
+	 * To define popable, let us call 'L' the complex that
+	 * consists in the current complex without the blocker 'sigma'.
+	 * A blocker 'sigma' is then "popable" if the link of 'sigma'
+	 * in L is reducible.
 	 */
-	virtual bool is_popable_blocker(Simplex_handle *blocker){
-		this->remove_blocker(blocker);
-		Skeleton_blocker_link_complex<Simplifiable_Skeleton_blocker<Traits> > link_blocker(*this,*blocker);
-		this->add_blocker(blocker);
+	virtual bool is_popable_blocker(Simplex_handle *sigma){
+		this->remove_blocker(sigma);
+		Skeleton_blocker_link_complex<Simplifiable_Skeleton_blocker<Traits> > link_blocker(*this,*sigma);
+		this->add_blocker(sigma);
 		return link_blocker.is_reducible();
 	}
 
@@ -292,8 +294,6 @@ public:
 		DBGVALUE(a); DBGVALUE(b);
 		// if some blockers passes through 'ab', we remove them.
 		if (!link_condition(a,b)){
-			//xxx
-			assert(false);
 			remove_blockers(a,b);
 		}
 
@@ -314,14 +314,8 @@ public:
 		tip_blockers(a,b,vector_alpha);
 		tip_blockers(b,a,vector_beta);
 
-		DBGVALUE(vector_alpha.size());
-		DBGVALUE(vector_beta.size());
-
-
-
 		vector<Simplex_handle *> blocker_to_add;
 		for (auto alpha = vector_alpha.begin(); alpha != vector_alpha.end(); ++alpha){
-			DBGVALUE(*alpha);
 			for (auto beta = vector_beta.begin(); beta != vector_beta.end(); ++beta)
 			{
 				Simplex_handle sigma = *alpha; sigma.union_vertices(*beta);
@@ -405,4 +399,4 @@ public:
 
 
 
-#endif /* SIMPLIFIABLE_SKELETON_BLOCKERS_H_ */
+#endif /* GUDHI_SIMPLIFIABLE_SKELETON_BLOCKERS_H_ */

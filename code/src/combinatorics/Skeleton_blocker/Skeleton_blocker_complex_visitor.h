@@ -5,8 +5,8 @@
  *      Author: dsalinas
  */
 
-#ifndef COMPLEXVISITOR_H_
-#define COMPLEXVISITOR_H_
+#ifndef GUDHI_COMPLEXVISITOR_H_
+#define GUDHI_COMPLEXVISITOR_H_
 
 
 #include <map>
@@ -104,4 +104,4 @@ public:
 };
 
 
-#endif /* COMPLEXVISITOR_H_ */
+#endif /* GUDHI_COMPLEXVISITOR_H_ */

@@ -5,8 +5,8 @@
  *      Author: dsalinas
  */
 
-#ifndef PLACEMENT_POLICY_H_
-#define PLACEMENT_POLICY_H_
+#ifndef GUDHI_PLACEMENT_POLICY_H_
+#define GUDHI_PLACEMENT_POLICY_H_
 
 #include <boost/optional.hpp>
 
@@ -25,4 +25,4 @@ public:
 }  // namespace contraction
 
 
-#endif /* PLACEMENT_POLICY_H_ */
+#endif /* GUDHI_PLACEMENT_POLICY_H_ */

@@ -1,5 +1,5 @@
-#ifndef __SUB_COMPLEX_H
-#define __SUB_COMPLEX_H
+#ifndef GUDHI_SKELETON_BLOCKER_SUB_COMPLEX_H
+#define GUDHI_SKELETON_BLOCKER_SUB_COMPLEX_H
 
 #include "Skeleton_blocker_complex.h"
 #include "utils/Utils.h"
@@ -98,18 +98,18 @@ public:
 	 */
 	boost::optional<Vertex_handle> get_address(Root_vertex_handle global) const;
 
-	/**
-	 * Allocates a simplex in L corresponding to the simplex s in K
-	 * with its local adresses and returns an AddressSimplex.
-	 */
-	boost::optional<Simplex_handle> get_address(const Root_simplex_handle & s) const;
+	//	/**
+	//	 * Allocates a simplex in L corresponding to the simplex s in K
+	//	 * with its local adresses and returns an AddressSimplex.
+	//	 */
+	//	boost::optional<Simplex_handle> get_address(const Root_simplex_handle & s) const;
 
 private:
 	/**
 	 *  same as get_address except that it will return a simplex in any case.
 	 *  The vertices that were not found are not added.
 	 */
-	vector<boost::optional<Vertex_handle> > get_addresses(const Root_simplex_handle & s){
+	vector<boost::optional<Vertex_handle> > get_addresses(const Root_simplex_handle & s) const{
 		vector<boost::optional<Vertex_handle> > res;
 		for (auto i : s)
 		{
@@ -129,7 +129,7 @@ Skeleton_blocker_sub_complex<ComplexType>::add_vertex(Root_vertex_handle id)
 	(*this)[address].activate();
 	(*this)[address].set_id(id);
 	adresses.insert(AddressPair(id,address));
-	this->num_vertices++;
+	this->num_vertices_++;
 	this->degree.push_back(0);
 	return address;
 }
@@ -137,7 +137,7 @@ Skeleton_blocker_sub_complex<ComplexType>::add_vertex(Root_vertex_handle id)
 
 template<typename ComplexType>
 boost::optional<typename ComplexType::Vertex_handle>
-Skeleton_blocker_sub_complex<ComplexType>::get_address(Root_vertex_handle i) const
+Skeleton_blocker_sub_complex<ComplexType>::get_address(typename ComplexType::Root_vertex_handle i) const
 {
 	boost::optional<Vertex_handle> res;
 	IdAddressMapConstIterator it = adresses.find(i);
@@ -146,25 +146,25 @@ Skeleton_blocker_sub_complex<ComplexType>::get_address(Root_vertex_handle i) con
 	return res;
 }
 
-template<typename ComplexType>
-boost::optional<typename ComplexType::Simplex_handle>
-Skeleton_blocker_sub_complex<ComplexType>::get_address(const Root_simplex_handle& s) const
-{
-	boost::optional<typename ComplexType::Simplex_handle> res;
-
-	Simplex_handle s_address;
-	Root_simplex_const_iterator i;
-	for (i = s.begin() ; i != s.end() ; ++i)
-	{
-		boost::optional<Vertex_handle> address = get_address(*i);
-		if (!address)
-			return res;
-		else
-			s_address.add_vertex(*address);
-	}
-	res = s_address;
-	return res;
-}
+//template<typename ComplexType>
+//boost::optional<typename ComplexType::Simplex_handle>
+//Skeleton_blocker_sub_complex<ComplexType>::get_address(const Root_simplex_handle& s) const
+//{
+//	boost::optional<typename ComplexType::Simplex_handle> res;
+//
+//	Simplex_handle s_address;
+//	Root_simplex_const_iterator i;
+//	for (i = s.begin() ; i != s.end() ; ++i)
+//	{
+//		boost::optional<Vertex_handle> address = get_address(*i);
+//		if (!address)
+//			return res;
+//		else
+//			s_address.add_vertex(*address);
+//	}
+//	res = s_address;
+//	return res;
+//}
 
 template<typename ComplexType>
 void

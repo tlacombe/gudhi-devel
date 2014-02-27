@@ -5,8 +5,8 @@
  *      Author: dsalinas
  */
 
-#ifndef DUMMY_VALID_CONTRACTION_H_
-#define DUMMY_VALID_CONTRACTION_H_
+#ifndef GUDHI_DUMMY_VALID_CONTRACTION_H_
+#define GUDHI_DUMMY_VALID_CONTRACTION_H_
 
 namespace contraction {
 
@@ -24,4 +24,4 @@ public:
 
 
 
-#endif /* DUMMY_VALID_CONTRACTION_H_ */
+#endif /* GUDHI_DUMMY_VALID_CONTRACTION_H_ */

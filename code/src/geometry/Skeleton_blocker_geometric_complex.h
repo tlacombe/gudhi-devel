@@ -17,6 +17,8 @@ class Skeleton_blocker_geometric_complex : public Simplifiable_Skeleton_blocker<
 {
 public:
 
+	typedef typename ComplexGeometricTraits::GeometryTrait GeometryTrait;
+
 	typedef Simplifiable_Skeleton_blocker<ComplexGeometricTraits> SimplifiableSkeletonblocker;
 
 	typedef typename SimplifiableSkeletonblocker::Vertex_handle Vertex_handle;

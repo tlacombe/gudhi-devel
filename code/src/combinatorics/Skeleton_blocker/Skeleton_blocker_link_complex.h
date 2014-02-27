@@ -5,8 +5,8 @@
  *      Author: dsalinas
  */
 
-#ifndef SKELETON_BLOCKERS_LINK_COMPLEX_H_
-#define SKELETON_BLOCKERS_LINK_COMPLEX_H_
+#ifndef GUDHI_SKELETON_BLOCKERS_LINK_COMPLEX_H_
+#define GUDHI_SKELETON_BLOCKERS_LINK_COMPLEX_H_
 
 #include "utils/Utils.h"
 #include "combinatorics/Skeleton_blocker/Skeleton_blocker_complex.h"
@@ -20,8 +20,6 @@ template<class ComplexType> class Skeleton_blocker_sub_complex;
  *  \brief Class representing the link of a simplicial complex encoded by a skeleton/blockers pair.
  *  It inherits from Skeleton_blocker_sub_complex because such complex is a sub complex of a
  *  root complex.
- *
- *  \extends Skeleton_blockers_sub_complex
  */
 template<typename ComplexType>
 class Skeleton_blocker_link_complex : public Skeleton_blocker_sub_complex<ComplexType>
@@ -167,7 +165,7 @@ protected:
 
 				if (sigma_parent.dimension()>=2 && sigma_parent.first_vertex() == x_parent){
 					Root_simplex_handle sigma_id(parent_complex.get_id(sigma_parent));
-					boost::optional<Simplex_handle> sigma_link = this->get_address(sigma_id);
+					auto  sigma_link = this->get_simplex_address(sigma_id);
 					// ie if the vertices of sigma are vertices of the link
 					if(sigma_link){
 						bool is_new_blocker = true;
