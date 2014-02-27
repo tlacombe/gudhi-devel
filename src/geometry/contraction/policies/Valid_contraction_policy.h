@@ -5,8 +5,8 @@
  *      Author: dsalinas
  */
 
-#ifndef VALID_CONTRACTION_POLICY_H_
-#define VALID_CONTRACTION_POLICY_H_
+#ifndef GUDHI_VALID_CONTRACTION_POLICY_H_
+#define GUDHI_VALID_CONTRACTION_POLICY_H_
 
 namespace contraction {
 template< typename EdgeProfile> class Valid_contraction_policy{
@@ -23,4 +23,4 @@ public:
 
 
 
-#endif /* VALID_CONTRACTION_POLICY_H_ */
+#endif /* GUDHI_VALID_CONTRACTION_POLICY_H_ */

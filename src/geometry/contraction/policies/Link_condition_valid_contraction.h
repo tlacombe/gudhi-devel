@@ -5,8 +5,8 @@
  *      Author: dsalinas
  */
 
-#ifndef LINK_CONDITION_VALID_CONTRACTION_H_
-#define LINK_CONDITION_VALID_CONTRACTION_H_
+#ifndef GUDHI_LINK_CONDITION_VALID_CONTRACTION_H_
+#define GUDHI_LINK_CONDITION_VALID_CONTRACTION_H_
 
 #include "utils/Utils.h"
 
@@ -27,4 +27,4 @@ public:
 };
 }  // namespace contraction
 
-#endif /* LINK_CONDITION_VALID_CONTRACTION_H_ */
+#endif /* GUDHI_LINK_CONDITION_VALID_CONTRACTION_H_ */

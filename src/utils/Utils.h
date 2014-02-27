@@ -5,13 +5,13 @@
  *      Author: salinasd
  */
 
-#ifndef UTILS_H_
-#define UTILS_H_
+#ifndef GUDHI_UTILS_H_
+#define GUDHI_UTILS_H_
 
 
 #define PRINT(a) std::cout << #a << ": " << (a) << " (DISP)"<<std::endl
 
-//#define DBG_VERBOSE
+#define DBG_VERBOSE
 #ifdef DBG_VERBOSE
 #define DBG(a) std::cout << "DBG: " << (a)<<std::endl
 #define DBGMSG(a,b) std::cout << "DBG: " << a<<b<<std::endl

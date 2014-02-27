@@ -60,11 +60,11 @@ int main (int argc, char *argv[])
 	Complex complex;
 	std::string file_name(argv[1]);
 	system("pwd");
-	bool loaded = read_off_file<Complex>(file_name,complex);
+	read_off_file<Complex>(file_name,complex);
 	PRINT(complex.to_string());
 	Complex_contractor contractor(complex);
 
-	contractor.contract_edges(complex.get_num_vertices()-1);
+	contractor.contract_edges(complex.num_vertices()-1);
 
 	PRINT(complex.to_string());
 

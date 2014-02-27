@@ -6,8 +6,8 @@
  *  Copyright 2013 INRIA. All rights reserved
  */
 
-#ifndef FIRST_VERTEX_PLACEMENT_H_
-#define FIRST_VERTEX_PLACEMENT_H_
+#ifndef GUDHI_FIRST_VERTEX_PLACEMENT_H_
+#define GUDHI_FIRST_VERTEX_PLACEMENT_H_
 
 
 namespace contraction {
@@ -34,4 +34,4 @@ public:
 
 
 
-#endif /* FIRST_VERTEX_PLACEMENT_H_ */
+#endif /* GUDHI_FIRST_VERTEX_PLACEMENT_H_ */

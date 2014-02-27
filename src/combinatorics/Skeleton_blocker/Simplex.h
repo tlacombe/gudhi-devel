@@ -1,5 +1,5 @@
-#ifndef __GIGA_SIMPLEX_H
-#define __GIGA_SIMPLEX_H
+#ifndef GUDHI_SIMPLEX_H
+#define GUDHI_SIMPLEX_H
 
 #include<cassert>
 #include<iostream>
@@ -16,6 +16,8 @@ using namespace std;
  * each element representing a vertex.
  * 
  * The element representing a vertex can be a 'ComplexDS::Vertex_handle' or a  'ComplexDS::Root_vertex_handle'
+ *
+ *
  */
 template <typename T>
 
@@ -158,6 +160,8 @@ public:
 
 	/**
 	 * Add the vertex v to the simplex:
+	 * Note that adding two times the same vertex is
+	 * the same that adding it once.
 	 * \f$ (*this) \leftarrow (*this) \cup \{ v \} \f$
 	 */
 	void inline add_vertex(T v)

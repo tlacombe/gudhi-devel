@@ -6,8 +6,8 @@
  *  Copyright 2013 INRIA. All rights reserved
  */
 
-#ifndef SKELETON_BLOCKER_LINK_SUPERIOR_H_
-#define SKELETON_BLOCKER_LINK_SUPERIOR_H_
+#ifndef GUDHI_SKELETON_BLOCKER_LINK_SUPERIOR_H_
+#define GUDHI_SKELETON_BLOCKER_LINK_SUPERIOR_H_
 
 #include "Skeleton_blocker_link_complex.h"
 

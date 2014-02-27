@@ -5,8 +5,8 @@
  *      Author: dsalinas
  */
 
-#ifndef EDGE_PROFILE_H_
-#define EDGE_PROFILE_H_
+#ifndef GUDHI_EDGE_PROFILE_H_
+#define GUDHI_EDGE_PROFILE_H_
 #include "combinatorics/Skeleton_blocker/Simplex.h"
 
 
@@ -40,8 +40,8 @@ public:
 	}
 
 	Vertex& v0() const{return complex_[v0_handle()];}
-
 	Vertex& v1() const{return complex_[v1_handle()];}
+
 
 	Vertex_handle v0_handle() const{
 		Root_vertex_handle root = complex_[edge_].first();
@@ -72,4 +72,4 @@ private:
 
 }  // namespace contraction
 
-#endif /* EDGE_PROFILE_H_ */
+#endif /* GUDHI_EDGE_PROFILE_H_ */

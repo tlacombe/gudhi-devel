@@ -5,20 +5,11 @@
  *      Author: dsalinas
  */
 
-#ifndef CONTRACTION_VISITOR_H_
-#define CONTRACTION_VISITOR_H_
+#ifndef GUDHI_CONTRACTION_VISITOR_H_
+#define GUDHI_CONTRACTION_VISITOR_H_
 
-
-/*
- * ComplexVisitor.h
- *
- *  Created on: Dec 11, 2013
- *      Author: dsalinas
- */
-
-#ifndef COMPLEXVISITOR_H_
-#define COMPLEXVISITOR_H_
-
+#include "geometry/contraction/Edge_profile.h"
+#include "boost/optional.hpp"
 
 namespace contraction {
 
@@ -29,9 +20,13 @@ namespace contraction {
 template <typename ComplexType>
 class Contraction_visitor {
 public:
-	virtual ~Contraction_visitor(){};
+	//typedef typename ComplexType::GeometryTrait GT;
+	typedef Edge_profile<ComplexType> Profile;
+	typedef double FT;
+	typedef typename ComplexType::Point Point;
 
-	virtual void on_add_vertex(Address){};
+
+	virtual ~Contraction_visitor(){};
 
 	/**
 	 * @brief Called before the edge contraction process starts.
@@ -39,34 +34,35 @@ public:
 	virtual void on_started (ComplexType & complex){}
 
 	/**
-	 * @brief Called when the edge contraction process finishes.
-	 */
-	virtual void on_finished (ComplexType &complex){}
-
-
-	/**
 	 * @brief Called when the StopPredicate returned true (but not if the algorithm terminates because the surface could not be simplified any further).
 	 */
-	virtual void on_stop_condition_reached (ComplexType &complex){}
+	virtual void on_stop_condition_reached (const Profile &profile){}
 
 
 	/**
 	 * @brief Called during the collecting phase (when a cost is assigned to the edges), for each edge collected.
 	 */
- 	virtual void on_collected (Profile const &profile, boost::optional< FT > cost){}
+	virtual void on_collected (const Profile &profile, boost::optional< FT > cost){}
 
- 	//Called during the processing phase (when edges are collapsed), for each edge that is selected. More...
- 	virtual void on_selected (Profile const &profile, boost::optional< FT > cost, size_type initial_count, size_type current_count){}
+	/**
+	 * @brief Called during the processing phase (when edges are collapsed), for each edge that is selected.
+	 */
+	virtual void on_selected (Profile const &profile, boost::optional< FT > cost, int initial_count, int current_count){}
 
 
- 	//Called when an edge is about to be collapsed and replaced by a vertex whose position is *placement. More...
- 	virtual void 	on_collapsing(Profile const &profile, boost::optional< Point > placement){}
+	/**
+	 * @brief Called when an edge is about to be contracted and replaced by a vertex whose position is *placement.
+	 */
+	virtual void on_contracting(Profile const &profile, boost::optional< Point > placement){
+	}
 
- 	// 	Called for each selected edge which cannot be contracted because the ValidContractionPredicate is false
- 	virtual void 	on_non_valid(Profile const &profile){}
+	/**
+	 * @brief Called for each selected edge which cannot be contracted because the ValidContractionPredicate is false
+	 */
+	virtual void on_non_valid(Profile const &profile){}
 
 };
 
 }  // namespace contraction
 
-#endif /* CONTRACTION_VISITOR_H_ */
+#endif /* GUDHI_CONTRACTION_VISITOR_H_ */

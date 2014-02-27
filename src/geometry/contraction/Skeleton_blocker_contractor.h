@@ -5,8 +5,8 @@
  *      Author: dsalinas
  */
 
-#ifndef SKELETON_BLOCKER_CONTRACTOR_H_
-#define SKELETON_BLOCKER_CONTRACTOR_H_
+#ifndef GUDHI_SKELETON_BLOCKER_CONTRACTOR_H_
+#define GUDHI_SKELETON_BLOCKER_CONTRACTOR_H_
 
 #include <cassert>
 
@@ -24,6 +24,9 @@
 #include "policies/Valid_contraction_policy.h"
 #include "policies/Dummy_valid_contraction.h" //xxx remove
 #include "policies/Link_condition_valid_contraction.h" //xxx remove
+
+#include "policies/Contraction_visitor.h"
+
 #include "combinatorics/Skeleton_blocker/Skeleton_blocker_complex_visitor.h"
 
 #include "utils/Utils.h"
@@ -67,12 +70,24 @@ public:
 
 	typedef Edge_profile<GeometricSimplifiableComplex> Profile;
 
+
+	typedef Cost_policy<Profile> Cost_policy_;
+	typedef Placement_policy<Profile> Placement_policy_;
+	typedef Valid_contraction_policy<Profile> Valid_contraction_policy_;
+
+
+
+
+	typedef Contraction_visitor<GeometricSimplifiableComplex> Contraction_visitor_;
+
 	typedef boost::optional<double> Cost_type;
 	typedef boost::optional<Point> Placement_type ;
 
 	typedef size_t size_type;
 
 	typedef Skeleton_blocker_contractor Self ;
+
+
 
 private:
 
@@ -215,16 +230,11 @@ private:
 		//
 		// Loop over all the edges in the complex in the heap
 		//
-		size_type lSize = complex_.get_num_edges();
+		size_type lSize = complex_.num_edges();
 		std::cerr  << "Collecting edges ..."<<std::endl;
 		std::cerr  << lSize<<" edges "<<std::endl;
 
-		//mInitialEdgeCount = mCurrentEdgeCount = lSize;
-
-		//mEdgeDataArray.reset( new Edge_data[lSize] ) ;
-
 		mEdgeDataArray.reset( new Edge_data[lSize] ) ;
-
 
 		mPQ.reset( new PQ (lSize, Compare_cost(this), Undirected_edge_id(this) ) ) ;
 
@@ -242,6 +252,8 @@ private:
 			Edge_data& lData = get_data(lEdge);
 			lData.cost() = get_cost(lProfile) ;
 			insert_in_PQ(lEdge,lData);
+			contraction_visitor->on_collected(lProfile,lData.cost());
+
 		}
 	}
 
@@ -270,7 +282,7 @@ public:
 	void contract_edges(int num_max_loop){
 
 		DBG("collapse_edges");
-		DBGVALUE(complex_.get_num_vertices());
+		DBGVALUE(complex_.num_vertices());
 		int num_loop = 0 ;
 		//
 		// Pops and processes each edge from the PQ
@@ -284,13 +296,13 @@ public:
 
 			Profile const& lProfile = create_profile(*lEdge);
 			Cost_type lCost = get_data(*lEdge).cost();
-			//Visitor.OnSelected(lProfile,lCost,mInitialEdgeCount,mCurrentEdgeCount);
+			contraction_visitor->on_selected(lProfile,lCost,initial_edge_count,mCurrentEdgeCount);
 			if (lCost)
 			{
 				DBGMSG("lCost",*lCost);
-				if (should_stop(*lCost,lProfile,mInitialEdgeCount,mCurrentEdgeCount) )
+				if (should_stop(*lCost,lProfile,initial_edge_count,mCurrentEdgeCount) )
 				{
-					//Visitor.OnStopConditionReached(lProfile);
+					contraction_visitor->on_stop_condition_reached(lProfile);
 					DBG("should_stop");
 					break ;
 				}
@@ -306,7 +318,7 @@ public:
 				else
 				{
 					DBG("collapse not valid");
-					//Visitor.OnNonCollapsable(lProfile);
+					contraction_visitor->on_non_valid(lProfile);
 				}
 			}
 			else
@@ -317,42 +329,47 @@ public:
 	}
 
 	/**
-	 * @brief Returns an edge_descriptor which is the edge with the lowest
-	 * cost in the heap.
-	 * The value is initialized iff the heap is non-empty.
+	 * @brief Returns an edge_descriptor and a Placement_type. This pair consists in
+	 * the edge with the lowest cost in the heap together with its placement.
+	 * The returned value is initialized iff the heap is non-empty.
 	 */
-	boost::optional<edge_descriptor> top_edge(){
-		boost::optional<edge_descriptor> res;
+	boost::optional<std::pair<edge_descriptor,Placement_type > > top_edge(){
+		boost::optional<std::pair<edge_descriptor,Placement_type > > res;
 
 		if(!mPQ->empty()) {
-			res = mPQ->top();
-			DBGMSG("top edge:",complex_[*res]);
+			auto edge = mPQ->top();
+			Profile const& profile = create_profile(edge);
+			Placement_type placement = get_placement(profile);
+			res = make_pair(edge,placement);
+			DBGMSG("top edge:",complex_[edge]);
+
 		}
 		return res;
 	}
 
 	Skeleton_blocker_contractor(GeometricSimplifiableComplex& complex)
-	:complex_(complex),cost_policy(new Edge_length_cost<Profile>),
+	:complex_(complex),
+	 cost_policy(new Edge_length_cost<Profile>),
 	 placement_policy(new Middle_placement<Profile>),
-	 valid_contraction_policy(new Link_condition_valid_contraction<Profile>)
-
-	//placement_policy(std::move(placement_policy_)),
-	//valid_contraction_policy(std::move(valid_contraction_policy_))
+	 valid_contraction_policy(new Link_condition_valid_contraction<Profile>),
+	 contraction_visitor(new Contraction_visitor_())
 	{
+		contraction_visitor->on_started(complex);
 		complex_.set_visitor(this);
 		collect_edges();
 	}
 
 	Skeleton_blocker_contractor(GeometricSimplifiableComplex& complex,
-			Cost_policy<Profile> *cost_policy_,
-			Placement_policy<Profile> * placement_policy_,
-			Valid_contraction_policy<Profile> * valid_contraction_policy_
+			Cost_policy_ *cost_policy_,
+			Placement_policy_ * placement_policy_,
+			Valid_contraction_policy_ * valid_contraction_policy_,
+			Contraction_visitor_* contraction_visitor_ = new Contraction_visitor_()
 	):
 		complex_(complex),
 		cost_policy(cost_policy_),
 		placement_policy(placement_policy_),
-		valid_contraction_policy(valid_contraction_policy_)
-
+		valid_contraction_policy(valid_contraction_policy_),
+		contraction_visitor(contraction_visitor_)
 	{
 		complex_.set_visitor(this);
 		collect_edges();
@@ -364,8 +381,12 @@ public:
 
 private:
 	void contract_edge( Profile const& aProfile, Placement_type aPlacement ) {
-		DBGMSG("collapse edge:",aProfile);
-		if (aPlacement)	aProfile.v0().point() = *aPlacement;
+		//DBGMSG("collapse edge:",aProfile);
+		contraction_visitor->on_contracting(aProfile,aPlacement);
+		if (aPlacement)	{
+			aProfile.v0().point() = *aPlacement;
+			aProfile.v1().point() = *aPlacement;
+		}
 		complex_.contract_edge(aProfile.v0_handle(),aProfile.v1_handle());
 	}
 
@@ -420,15 +441,17 @@ private:
 
 private:
 
-	Cost_policy<Profile> * cost_policy;
-	Placement_policy<Profile> * placement_policy;
-	Valid_contraction_policy<Profile>* valid_contraction_policy;
+	Cost_policy_ * cost_policy;
+	Placement_policy_ * placement_policy;
+	Valid_contraction_policy_* valid_contraction_policy;
+
+	Contraction_visitor_* contraction_visitor;
 
 	Edge_data_array mEdgeDataArray ;
 
 	boost::scoped_ptr<PQ> mPQ ;
 
-	std::size_t mInitialEdgeCount ;
+	std::size_t initial_edge_count ;
 	std::size_t mCurrentEdgeCount ;
 
 };
@@ -436,4 +459,4 @@ private:
 }  // namespace contraction
 
 
-#endif /* SKELETON_BLOCKER_CONTRACTOR_H_ */
+#endif /* GUDHI_SKELETON_BLOCKER_CONTRACTOR_H_ */
