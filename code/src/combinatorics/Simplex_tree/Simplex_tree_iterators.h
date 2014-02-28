@@ -81,7 +81,7 @@ public:
     next_          = sib->parent();
     sib_           = sib->oncles();       /** \todo check if NULL*/
     if(sib_ != NULL) { sh_ = sib_->find(next_); }
-    //else { ... }
+    else { last_ = st->null_vertex(); } // vertex: == end()
   }
 
 private:
@@ -93,7 +93,8 @@ private:
   Simplex_handle const& dereference () const  { return sh_; }
 
   void increment()
-  { if(sib_ == NULL) { last_ = st_->null_vertex(); return; }
+  { 
+    if(sib_ == NULL) { last_ = st_->null_vertex(); return; }
     
     Siblings * for_sib = sib_;
     for(typename std::vector< Vertex >::reverse_iterator rit = suffix_.rbegin();
