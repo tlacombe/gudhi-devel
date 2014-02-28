@@ -13,16 +13,14 @@
 #include "Simplex.h"
 
 
-
-
-
 struct Simple_complex_DS_traits{
 	/**
 	 * @brief global and local handle similar to <a href="http://www.boost.org/doc/libs/1_38_0/libs/graph/doc/subgraph.html">boost subgraphs</a>.
 	 * In gross, vertices are stored in a vector.
 	 * For the root simplicial complex, the local and global descriptors are the same.
-	 * For a subcomplex and one of its vertices 'v', its local descriptor is its position is the vector of these subcomplex
-	 * whereas its global address is the position of 'v' in the root simplicial complex.
+	 * For a subcomplex L and one of its vertices 'v', the local descriptor of 'v' is its position in
+	 * the vertex vector of the subcomplex L whereas its global descriptor is the position of 'v'
+	 * in the vertex vector of the root simplicial complex.
 	 */
 	struct Root_vertex_handle{
 		typedef int boost_vertex_handle;

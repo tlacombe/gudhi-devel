@@ -35,9 +35,11 @@
  * - its set of blockers.
  *
  * The graph is a boost graph templated with ComplexDS::Vertex and ComplexDS::Edge.
- * @TODO make concept for Vertex, Edge
  *
- * One can access vertices through ComplexDS::Vertex_handle and edges through ComplexDS::Edge_handle
+ * One can access vertices through ComplexDS::Vertex_handle, edges through ComplexDS::Edge_handle and
+ * simplices through Simplex_handle.
+ * @todo TODO Simplex_handle are not classic handle
+ *
  * The ComplexDS::Root_vertex_handle serves in the case of a subcomplex (see class Skeleton_blocker_sub_complex)
  * to access to the address of one vertex in the parent complex.
  *
@@ -56,16 +58,6 @@ public:
 	typedef typename ComplexDS::Vertex Vertex;
 	typedef typename ComplexDS::Edge Edge;
 
-	/**
-	 * @brief global and local vertex handle similar to <a href="http://www.boost.org/doc/libs/1_38_0/libs/graph/doc/subgraph.html">boost subgraphs</a>.
-	 * Vertex_handle must support operators ==, < and << and have a int field vertex.
-	 *
-	 * For the root simplicial complex, the local and global descriptors are the same.
-	 * Let 'K' be a complex, 'L' a subcomplex of 'K' and 'v' a vertex of 'L'.
-	 * The (local) vertex_handle of 'v' in 'L' is its position in the vertex vector of 'L'
-	 * whereas the (global) root_vertex_handle is the position of 'v' in the vertex vector
-	 * of the root simplicial complex.
-	 */
 	typedef typename ComplexDS::Vertex_handle Vertex_handle;
 	typedef typename ComplexDS::Root_vertex_handle Root_vertex_handle;
 	typedef typename Root_vertex_handle::boost_vertex_handle boost_vertex_handle;
@@ -171,7 +163,7 @@ public:
 
 
 	/**
-	 * Destructor
+	 * The destructor delete all blockers allocated.
 	 */
 	virtual ~Skeleton_blocker_complex(){
 		clear();
@@ -209,18 +201,21 @@ public:
 	//@}
 
 
-	/** @name Vertices customization
+	/** @name Vertices operations
 	 */
 	//@{
 
 
 public:
 
-	Vertex_handle& operator[](Root_vertex_handle global){
-		return *get_address(global);
-	}
-	const Vertex_handle& operator[] (Root_vertex_handle global) const{
-		return *get_address(global);
+	/**
+	 * @brief Return a local Vertex_handle of a vertex given a global one.
+	 * @remark Assume that the vertex is present in the complex.
+	 */
+	Vertex_handle operator[](Root_vertex_handle global) const{
+		auto local(get_address(global));
+		assert(local);
+		return *local;
 	}
 
 	Vertex& operator[](Vertex_handle address){
@@ -232,8 +227,7 @@ public:
 	}
 
 	/**
-	 * Adds a vertex to the simplicial complex
-	 * and returns its address
+	 * @brief Adds a vertex to the simplicial complex and returns its Vertex_handle.
 	 */
 	virtual Vertex_handle add_vertex(){
 		Vertex_handle address(boost::add_vertex(skeleton));
@@ -249,9 +243,8 @@ public:
 
 
 	/**
-	 * Remove a vertex from the simplicial complex
-	 * in fact it just deactivates it
-	 * The degree of v has to be 0 before the removal
+	 * @brief Remove a vertex from the simplicial complex
+	 * @remark In fact, it just deactivates the vertex.
 	 */
 	void remove_vertex(Vertex_handle address){
 		// We remove b
@@ -292,7 +285,6 @@ public:
 	}
 
 
-	//protected:
 	/**
 	 * Given an Id return the address of the vertex having this Id in the complex.
 	 * For a simplicial complex, the address is the id but it may not be the case for a SubComplex.
@@ -305,30 +297,6 @@ public:
 	}
 
 
-public:
-
-
-	/**
-	 * Compute the local vertices of 's' in the current complex
-	 * If one of them is not present in the complex then the return value is uninitialized.
-	 */
-	boost::optional<Simplex_handle>	get_simplex_address(const Root_simplex_handle& s) const
-	{
-		boost::optional<Simplex_handle> res;
-
-		Simplex_handle s_address;
-		//Root_simplex_const_iterator i;
-		for (auto i = s.begin() ; i != s.end() ; ++i)
-		{
-			boost::optional<Vertex_handle> address = get_address(*i);
-			if (!address)
-				return res;
-			else
-				s_address.add_vertex(*address);
-		}
-		res = s_address;
-		return res;
-	}
 
 	/**
 	 * return the id of a vertex of adress local present in the graph
@@ -337,28 +305,19 @@ public:
 		return (*this)[local].get_id();
 	}
 
-	/**
-	 * return a simplex with vertices which are the id of vertices of the
-	 * argument
-	 */
-	Root_simplex_handle get_id(const Simplex_handle& local_simplex) const{
-		Root_simplex_handle global_simplex;
-		for (auto x = local_simplex.begin(); x!= local_simplex.end();++x){
-			global_simplex.add_vertex(get_id(*x));
-
-		}
-		return global_simplex;
-
-	}
-
-
 	//@}
 
-	/** @name Edges customization and access
+	/** @name Edges operations
 	 */
 	//@{
 
 public:
+
+	/**
+	 * @brief returns a pair that consists in :
+	 * - an edge handle that is valid and describes ab iff the edge is present.
+	 * - a boolean which is true is the edge was founded.
+	 */
 	std::pair<Edge_handle,bool> operator[](const std::pair<Vertex_handle,Vertex_handle>& ab){
 		return boost::edge(ab.first.vertex,ab.second.vertex,skeleton);
 	}
@@ -372,16 +331,15 @@ public:
 	}
 
 	/**
-	 * @brief returns the simplex that consists in the two vertices of the edge
+	 * @brief returns the simplex made with the two vertices of the edge
 	 */
 	Simplex_handle get_vertices(Edge_handle edge_descriptor) const{
-		Vertex_handle v1 =(*this)[((*this)[edge_descriptor].first())];
-		Vertex_handle v2 =(*this)[((*this)[edge_descriptor].second())];
-		return Simplex_handle(v1,v2);
+		auto edge((*this)[edge_descriptor]);
+		return Simplex_handle((*this)[edge.first()],(*this)[edge.second()]);
 	}
 
 	/**
-	 * Adds an edge between vertices a and b
+	 * @brief Adds an edge between vertices a and b
 	 */
 	Edge_handle add_edge(Vertex_handle a, Vertex_handle b){
 		assert(contains_vertex(a) && contains_vertex(b));
@@ -397,11 +355,10 @@ public:
 			if (visitor) visitor->on_add_edge(a,b);
 		}
 		return edge_descr;
-
 	}
 
 	/**
-	 * Adds all edges of simplex sigma to the simplicial complex
+	 * @brief Adds all edges of simplex sigma to the simplicial complex.
 	 */
 	void add_edges(Simplex_handle & sigma){
 		Simplex_handle_iterator i, j;
@@ -411,7 +368,7 @@ public:
 	}
 
 	/**
-	 * Removes edge {a,b} from the simplicial complex.
+	 * @brief Removes edge ab from the simplicial complex.
 	 */
 	virtual Edge_handle remove_edge(Vertex_handle a, Vertex_handle b){
 		bool found;
@@ -465,7 +422,7 @@ public:
 	}
 	//@}
 
-	/** @name Blockers customization and access
+	/** @name Blockers operations
 	 */
 	//@{
 	/**
@@ -621,7 +578,7 @@ private:
 
 protected:
 	/**
-	 * Adds to simplex n the neighbours of v:
+	 * @brief Adds to simplex n the neighbours of v:
 	 * \f$ n \leftarrow n \cup N(v) \f$
 	 * If 'keep_only_superior' is true then only vertices that are greater than v are added.
 	 */
@@ -638,7 +595,7 @@ protected:
 	}
 
 	/**
-	 * Add to simplex n all vertices which are
+	 * @brief Add to simplex n all vertices which are
 	 * neighbours of alpha: \f$ n \leftarrow n \cup N(alpha) \f$
 	 * If 'keep_only_superior' is true then only vertices that are greater than alpha are added.
 	 *
@@ -658,7 +615,7 @@ protected:
 	}
 
 	/**
-	 * Eliminates from simplex n all vertices which are
+	 * @brief Eliminates from simplex n all vertices which are
 	 * not neighbours of v: \f$ n \leftarrow n \cap N(v) \f$
 	 */
 	virtual void keep_neighbours(Vertex_handle v, Simplex_handle& n,bool keep_only_superior=false) const{
@@ -668,7 +625,7 @@ protected:
 	}
 
 	/**
-	 * Eliminates from simplex n all vertices which are
+	 * @brief Eliminates from simplex n all vertices which are
 	 * neighbours of v: \f$ n \leftarrow n \setminus N(v) \f$
 	 */
 	virtual void remove_neighbours(Vertex_handle v, Simplex_handle & n,bool keep_only_superior=false) const{
@@ -685,16 +642,47 @@ protected:
 	/** @name Operations on the simplicial complex
 	 */
 	//@{
-
-
-	//@}
-
-	/** @name Queries on the simplicial complex
-	 */
-	//@{
 public:
+
 	/**
-	 * Determines whether the simplex s belongs to the simplicial
+	 * @brief Compute the local vertices of 's' in the current complex
+	 * If one of them is not present in the complex then the return value is uninitialized.
+	 */
+	boost::optional<Simplex_handle>	get_simplex_address(const Root_simplex_handle& s) const
+	{
+		boost::optional<Simplex_handle> res;
+
+		Simplex_handle s_address;
+		//Root_simplex_const_iterator i;
+		for (auto i = s.begin() ; i != s.end() ; ++i)
+		{
+			boost::optional<Vertex_handle> address = get_address(*i);
+			if (!address)
+				return res;
+			else
+				s_address.add_vertex(*address);
+		}
+		res = s_address;
+		return res;
+	}
+
+	/**
+	 * @return a simplex with vertices which are the id of vertices of the
+	 * argument
+	 */
+	Root_simplex_handle get_id(const Simplex_handle& local_simplex) const{
+		Root_simplex_handle global_simplex;
+		for (auto x = local_simplex.begin(); x!= local_simplex.end();++x){
+			global_simplex.add_vertex(get_id(*x));
+
+		}
+		return global_simplex;
+
+	}
+
+
+	/**
+	 * @return true iff the simplex s belongs to the simplicial
 	 * complex.
 	 */
 	virtual bool contains(const Simplex_handle & s) const{
@@ -708,32 +696,42 @@ public:
 	}
 
 	/*
-	 * @return true iff the complex is a 0-sphere
+	 * @return true iff the complex is empty
 	 */
 	bool empty() const{
 		return num_vertices()==0;
 	}
 
-
+	/*
+	 * @return the number of vertices in the complex
+	 */
 	int num_vertices() const{
 		return num_vertices_;
 	}
 
+	/*
+	 * @return the number of edges in the complex
+	 */
 	int num_edges() const{
 		return boost::num_edges(skeleton);
 	}
 
+	/*
+	 * @return the number of blockers in the complex
+	 */
 	int num_blockers() const{
 		return num_blockers_;
 	}
 
-
+	/*
+	 * @return true iff the graph of the 1-skeleton of the complex is complete
+	 */
 	bool complete() const{
 		return (num_vertices()*(num_vertices()-1))/2 == num_edges();
 	}
 
 	/**
-	 * @return the number of connected components in the graph of the skeleton
+	 * @return the number of connected components in the graph of the 1-skeleton
 	 */
 	int num_connected_components(){
 		int num_vert_collapsed = skeleton.vertex_set().size() - num_vertices();
@@ -741,11 +739,9 @@ public:
 		return boost::connected_components(this->skeleton,&component[0]) - num_vert_collapsed;
 	}
 
-
-
 	/**
 	 * Test if the complex is a cone
-	 * runs in O(stats.getNumberVertices())
+	 * runs in O(n) if n is the number of vertices
 	 */
 	bool is_cone() const{
 		if (num_vertices()==0) return false;
@@ -769,7 +765,6 @@ public:
 	/** @name Vertex, Edge, simplex and blockers iterators
 	 */
 	//@{
-
 
 	//friend class Complex_vertex_iterator;
 	/**
@@ -847,10 +842,10 @@ public:
 	typedef Triangle_around_vertex_iterator<Superior_link> Superior_triangle_around_vertex_iterator;
 
 	Triangle_around_vertex_range<Link> triangle_range(Vertex_handle v)
-					{return Triangle_around_vertex_range<Link>(this,v);}
+									{return Triangle_around_vertex_range<Link>(this,v);}
 
 	Triangle_around_vertex_range<Superior_link> superior_triangle_range(Vertex_handle v)
-					{return Triangle_around_vertex_range<Superior_link>(this,v);}
+									{return Triangle_around_vertex_range<Superior_link>(this,v);}
 
 
 
@@ -895,10 +890,10 @@ public:
 
 
 public:
-//	/**
-//	 * \brief Range over the blockers of the simplicial complex adjacent to a vertex.
-//	 * Methods .begin() and .end() return a Complex_blocker_iterator.
-//	 */
+	//	/**
+	//	 * \brief Range over the blockers of the simplicial complex adjacent to a vertex.
+	//	 * Methods .begin() and .end() return a Complex_blocker_iterator.
+	//	 */
 	//template<typename ComplexType> friend class Complex_blocker_range;
 
 
@@ -949,7 +944,7 @@ public:
 	{return ConstComplexBlockerRange(*this,v);}
 
 	ComplexBlockerRange blocker_range(Vertex_handle v)
-	{return ConstComplexBlockerRange(*this,v);}
+	{return ComplexBlockerRange(*this,v);}
 
 	//@}
 
