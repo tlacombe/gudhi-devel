@@ -11,7 +11,7 @@
 
 #define PRINT(a) std::cout << #a << ": " << (a) << " (DISP)"<<std::endl
 
-#define DBG_VERBOSE
+//#define DBG_VERBOSE
 #ifdef DBG_VERBOSE
 #define DBG(a) std::cout << "DBG: " << (a)<<std::endl
 #define DBGMSG(a,b) std::cout << "DBG: " << a<<b<<std::endl

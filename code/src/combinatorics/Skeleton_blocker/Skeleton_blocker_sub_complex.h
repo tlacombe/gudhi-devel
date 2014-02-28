@@ -145,26 +145,6 @@ Skeleton_blocker_sub_complex<ComplexType>::get_address(typename ComplexType::Roo
 	return res;
 }
 
-//template<typename ComplexType>
-//boost::optional<typename ComplexType::Simplex_handle>
-//Skeleton_blocker_sub_complex<ComplexType>::get_address(const Root_simplex_handle& s) const
-//{
-//	boost::optional<typename ComplexType::Simplex_handle> res;
-//
-//	Simplex_handle s_address;
-//	Root_simplex_const_iterator i;
-//	for (i = s.begin() ; i != s.end() ; ++i)
-//	{
-//		boost::optional<Vertex_handle> address = get_address(*i);
-//		if (!address)
-//			return res;
-//		else
-//			s_address.add_vertex(*address);
-//	}
-//	res = s_address;
-//	return res;
-//}
-
 template<typename ComplexType>
 void
 Skeleton_blocker_sub_complex<ComplexType>::clear(){
