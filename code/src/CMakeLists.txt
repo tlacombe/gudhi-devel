@@ -12,16 +12,16 @@ include_directories(. utils combinatorics geometry)
 
 
 
-add_executable(
-	TestSkeletonBlockerComplex test/TestSkeletonBlockerComplex.cxx
-)
+#add_executable(
+#	TestSkeletonBlockerComplex test/TestSkeletonBlockerComplex.cxx
+#)
 
-add_executable(
-	TestSimplifiable test/TestSimplifiable.cxx
-)
+#add_executable(
+#	TestSimplifiable test/TestSimplifiable.cxx
+#)
 
-add_executable(
-	TestContraction test/TestContraction.cxx
-)
+#add_executable(
+#	TestContraction test/TestContraction.cxx
+#)
 
-#add_executable(gudh main.cpp)
+add_executable(TestSimplexTree test_simplex_tree.cpp)

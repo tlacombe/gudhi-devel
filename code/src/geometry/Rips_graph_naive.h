@@ -11,6 +11,7 @@
 #define GUDHI_RIPS_GRAPH_NAIVE_H
 
 #include "boost/iterator/filter_iterator.hpp"
+#include "boost/graph/graph_concepts.hpp"
 
 /**
  * \brief Represents Points in a metric space with

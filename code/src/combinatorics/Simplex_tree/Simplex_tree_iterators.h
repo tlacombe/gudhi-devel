@@ -59,28 +59,29 @@ private:
 template < class SimplexTree >
 class Boundary_simplex_iterator 
 : public boost::iterator_facade < Boundary_simplex_iterator< SimplexTree >
-, typename SimplexTree::Simplex_handle const
-, boost::forward_traversal_tag
+                                , typename SimplexTree::Simplex_handle const
+                                , boost::forward_traversal_tag
 >
 {
 public:
-  typedef typename SimplexTree::Simplex_handle Simplex_handle;
-  typedef typename SimplexTree::Vertex                Vertex;
-  typedef typename SimplexTree::Siblings             Siblings;
+  typedef typename SimplexTree::Simplex_handle  Simplex_handle;
+  typedef typename SimplexTree::Vertex          Vertex;
+  typedef typename SimplexTree::Siblings        Siblings;
 
 // any end() iterator
   Boundary_simplex_iterator(SimplexTree * st) :
   last_(st->null_vertex()), sib_(NULL) {}
 
-  Boundary_simplex_iterator(SimplexTree *  st,
-    Simplex_handle sh) :
+  Boundary_simplex_iterator ( SimplexTree *  st,
+                              Simplex_handle sh ) :
   suffix_(), st_(st)
   { 
     last_          = sh->first;
     Siblings * sib = st->self_siblings(sh);
     next_          = sib->parent();
-sib_           = sib->oncles();       /** \todo check if NULL*/
-    if(sib_ != NULL) { sh_ = sib_->find(next_); };
+    sib_           = sib->oncles();       /** \todo check if NULL*/
+    if(sib_ != NULL) { sh_ = sib_->find(next_); }
+    //else { ... }
   }
 
 private:
@@ -93,25 +94,26 @@ private:
 
   void increment()
   { if(sib_ == NULL) { last_ = st_->null_vertex(); return; }
+    
+    Siblings * for_sib = sib_;
+    for(typename std::vector< Vertex >::reverse_iterator rit = suffix_.rbegin();
+      rit != suffix_.rend(); ++rit)
+    {
+      sh_ = for_sib->find(*rit);
+      for_sib =  sh_->second.children();
+    } 
+    sh_ = for_sib->find(last_); //sh_ points to the right simplex now
+    suffix_.push_back(next_);
+    next_ = sib_->parent();
+    sib_ = sib_->oncles();
+  }
 
-  Siblings * for_sib = sib_;
-  for(typename std::vector< Vertex >::reverse_iterator rit = suffix_.rbegin();
-    rit != suffix_.rend(); ++rit)
-  {
-    sh_ = for_sib->find(*rit);
-    for_sib =  sh_->second.children();
-  } 
-sh_ = for_sib->find(last_); //sh_ points to the right simplex now
-suffix_.push_back(next_);
-next_ = sib_->parent();
-sib_ = sib_->oncles();
-}
-Vertex                   last_   ; //last vertex of the simplex
-Vertex                   next_   ; //next vertex to push in suffix_
-std::vector< Vertex >    suffix_ ;
-Siblings *               sib_    ; //where the next search will start from
-Simplex_handle           sh_     ; //current Simplex_handle in the boundary
-SimplexTree *            st_     ; //simplex containing the simplicial complex
+  Vertex                   last_   ; //last vertex of the simplex
+  Vertex                   next_   ; //next vertex to push in suffix_
+  std::vector< Vertex >    suffix_ ;
+  Siblings *               sib_    ; //where the next search will start from
+  Simplex_handle           sh_     ; //current Simplex_handle in the boundary
+  SimplexTree *            st_     ; //simplex containing the simplicial complex
 };
 /*---------------------------------------------------------------------------*/
 /** \brief Iterator over the simplices of a simplicial complex.

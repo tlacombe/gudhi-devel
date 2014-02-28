@@ -15,7 +15,6 @@
 #include "Simplex_tree_siblings.h"
 #include "Simplex_tree_iterators.h" 
 #include "boost/iterator/transform_iterator.hpp"
-//#include "topology/Persistent_cohomology.h"
 #include "../topology/Persistent_cohomology.h"
 
 
@@ -30,12 +29,12 @@
 template < class MetricSpace >
  class Simplex_tree {
 
-friend class Simplex_tree_node_explicit_storage < Simplex_tree< MetricSpace > >;
-friend class Simplex_vertex_iterator< Simplex_tree < MetricSpace > >;
-friend class Boundary_simplex_iterator< Simplex_tree < MetricSpace > >;
-friend class Complex_simplex_iterator< Simplex_tree < MetricSpace > >;
+  friend class Simplex_tree_node_explicit_storage < Simplex_tree< MetricSpace > >;
+  friend class Simplex_vertex_iterator< Simplex_tree < MetricSpace > >;
+  friend class Boundary_simplex_iterator< Simplex_tree < MetricSpace > >;
+  friend class Complex_simplex_iterator< Simplex_tree < MetricSpace > >;
 
-template < class T > friend class Persistent_cohomology;
+  template < class T > friend class Persistent_cohomology;
 
 
 
@@ -141,8 +140,8 @@ Complex_vertex_range complex_vertex_range()
  *
  * The iterators have 'value type' Simplex_handle.*/
  Boundary_simplex_rg boundary_simplex_range(Simplex_handle sh)
- { return Boundary_simplex_rg (Boundary_simplex_it(this,sh),
-  Boundary_simplex_it(this) );}
+ { return Boundary_simplex_rg ( Boundary_simplex_it(this,sh),
+                                Boundary_simplex_it(this) );  }
 
 /** \brief Empty constructor.*/
  Simplex_tree( MetricSpace & ms ) 
@@ -185,7 +184,7 @@ Siblings *      root()          { return &root_; }
 /** Returns a pointer to the geometry traits.*/
 MetricSpace *   ms()            { return ms_; }
 /** \brief Returns the number of vertices in the complex.*/
-size_t          nb_vertices()   { return root_.members_->size(); }
+size_t          nb_vertices()   { return root_.members_.size(); }
 /** \brief Returns the number of simplices in the complex.
 *
 * Does not count the empty simplex.*/
@@ -252,8 +251,8 @@ void initialize_filtration()
 };
 
 private:
-/** \brief Returns true iff sh1 is a proper subface of sh2.*/
-  bool is_proper_subface(Simplex_handle sh1, Simplex_handle sh2)
+/** \brief Returns true if sh1 is a subface of sh2, or is equal to sh2.*/
+  bool is_subface(Simplex_handle sh1, Simplex_handle sh2)
   { Simplex_vertex_rg rg1 = simplex_vertex_range(sh1);
     Simplex_vertex_rg rg2 = simplex_vertex_range(sh2);
     Simplex_vertex_it it1 = rg1.begin();
@@ -264,10 +263,11 @@ private:
              else {return false;} 
       }
     }
-    return (it2 != rg2.end());
+    return (it1 == rg1.end());
   }
-/** \brief Strict weak ordering corresponding to the partial order
- * induced by the filtration.*/
+/** \brief Total order corresponding to the partial order
+ * induced by the filtration, plus subface relations. 
+ * The filtration must be valid*/
   struct is_before_in_filtration {
     is_before_in_filtration(Simplex_tree * st) : st_(st) {}
 
@@ -275,18 +275,11 @@ private:
                      const Simplex_handle sh2 ) const 
     { if(sh1->second.filtration() != sh2->second.filtration())
       { return sh1->second.filtration() < sh2->second.filtration(); }
-      return st_->is_proper_subface(sh1,sh2); //is sh1 a proper subface of sh2
+      return st_->is_subface(sh1,sh2); //is sh1 a proper subface of sh2
     }  
     
     Simplex_tree * st_;
   };
-
-
-
-
-
-
-
 
 
 public:
@@ -478,6 +471,8 @@ Filtration_value maximum( Filtration_value a,
                           Filtration_value c )
 { Filtration_value max = ( a < b ) ? b : a;
   return ( ( max < c ) ? c : max ); }
+
+
 
 /** \brief Pointer to a metric space. */
   MetricSpace *                    ms_             ;
