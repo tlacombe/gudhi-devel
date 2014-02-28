@@ -24,4 +24,4 @@ include_directories(. utils combinatorics geometry)
 #	TestContraction test/TestContraction.cxx
 #)
 
-add_executable(TestSimplexTree test_simplex_tree.cpp)
+add_executable(TestSimplexTree TestSimplexTree.cpp)
