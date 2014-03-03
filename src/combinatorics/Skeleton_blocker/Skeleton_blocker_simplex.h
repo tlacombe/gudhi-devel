@@ -1,5 +1,5 @@
-#ifndef GUDHI_SIMPLEX_H
-#define GUDHI_SIMPLEX_H
+#ifndef GUDHI_SKELETON_BLOCKER_SIMPLEX_H
+#define GUDHI_SKELETON_BLOCKER_SIMPLEX_H
 
 #include<cassert>
 #include<iostream>
@@ -8,7 +8,6 @@
 
 
 /**
- *@class Simplex
  *@brief Abstract simplex
  *
  * An abstract simplex is represented as an ordered set of T elements,
@@ -20,7 +19,7 @@
  */
 template <typename T>
 
-class Simplex {
+class Skeleton_blocker_simplex {
 
 private :
 	std::set<T> simplex_set;
@@ -39,7 +38,7 @@ public:
 	/**
 	 * Constructs the empty simplex {}
 	 */
-	Simplex():simplex_set() {}
+	Skeleton_blocker_simplex():simplex_set() {}
 
 	/**
 	 * Clear the simplex
@@ -51,7 +50,7 @@ public:
 	/**
 	 * Constructs the singleton {a}
 	 */
-	Simplex(T a)
+	Skeleton_blocker_simplex(T a)
 	{
 		add_vertex(a);
 	}
@@ -59,7 +58,7 @@ public:
 	/**
 	 * Constructs the edge {a,b}
 	 */
-	Simplex(T a, T b)
+	Skeleton_blocker_simplex(T a, T b)
 	{
 		add_vertex(a); add_vertex(b);
 	}
@@ -67,7 +66,7 @@ public:
 	/**
 	 * Constructs the triangle {a,b,c}
 	 */
-	Simplex(T a, T b, T c)
+	Skeleton_blocker_simplex(T a, T b, T c)
 	{
 		add_vertex(a); add_vertex(b); add_vertex(c);
 	}
@@ -75,7 +74,7 @@ public:
 	/**
 	 * Constructs the tetrahedron {a,b,c,d}
 	 */
-	Simplex(T a, T b, T c, T d)
+	Skeleton_blocker_simplex(T a, T b, T c, T d)
 	{
 		add_vertex(a); add_vertex(b); add_vertex(c); add_vertex(d);
 	}
@@ -83,7 +82,7 @@ public:
 	/**
 	 * Initialize a simplex with a string such as {0,1,2}
 	 */
-	Simplex(std::string token){
+	Skeleton_blocker_simplex(std::string token){
 		clear();
 		if ((token[0] == '{')  && (token[token.size()-1] == '}' ) )
 		{
@@ -130,7 +129,7 @@ public:
 	 * Intersects the simplex with the simplex a:
 	 * \f$ (*this) \leftarrow (*this) \cap a \f$
 	 */
-	void intersection(const Simplex & a){
+	void intersection(const Skeleton_blocker_simplex & a){
 		std::vector<T> v;
 		v.reserve(std::min(simplex_set.size(), a.simplex_set.size()));
 
@@ -146,7 +145,7 @@ public:
 	 * Substracts a from the simplex:
 	 * \f$ (*this) \leftarrow (*this) \setminus a \f$
 	 */
-	void difference(const Simplex & a){
+	void difference(const Skeleton_blocker_simplex & a){
 		std::vector<T> v;
 		v.reserve(simplex_set.size());
 
@@ -163,7 +162,7 @@ public:
 	 * Add vertices of a to the simplex:
 	 * \f$ (*this) \leftarrow (*this) \cup a \f$
 	 */
-	void union_vertices(const Simplex & a){
+	void union_vertices(const Skeleton_blocker_simplex & a){
 		std::vector<T> v;
 		v.reserve(simplex_set.size() + a.simplex_set.size());
 
@@ -241,7 +240,7 @@ public:
 	/**
 	 * @return true iff the simplex contains the simplex a, i.e. iff \f$ a \subset (*this) \f$.
 	 */
-	bool contains(const Simplex & a) const{
+	bool contains(const Skeleton_blocker_simplex & a) const{
 		return includes(simplex_set.cbegin(),simplex_set.cend(),a.simplex_set.cbegin(),a.simplex_set.cend());
 	}
 
@@ -256,7 +255,7 @@ public:
 	/**
 	 * @return \f$ (*this) \cap a = \emptyset \f$.
 	 */
-	bool disjoint(const Simplex& a) const{
+	bool disjoint(const Skeleton_blocker_simplex& a) const{
 		std::vector<T> v;
 		v.reserve(std::min(simplex_set.size(), a.simplex_set.size()));
 
@@ -268,11 +267,11 @@ public:
 	}
 
 
-	bool operator==(const Simplex& other) const{
+	bool operator==(const Skeleton_blocker_simplex& other) const{
 		return (this->simplex_set == other.simplex_set);
 	}
 
-	bool operator!=(const Simplex& other) const{
+	bool operator!=(const Skeleton_blocker_simplex& other) const{
 		return (this->simplex_set != other.simplex_set);
 	}
 
@@ -283,16 +282,16 @@ public:
 	/**
 	 * Display a simplex
 	 */
-	friend std::ostream& operator << (std::ostream& o, const Simplex & sigma)
+	friend std::ostream& operator << (std::ostream& o, const Skeleton_blocker_simplex & sigma)
 	{
 		bool first = true;
-		o << '{';
+		o << "{";
 		for(auto i : sigma)
 		{
-			first? first = false : o << ',';
+			first? first = false : o << ",";
 			o << i;
 		}
-		o << '}';
+		o << "}";
 		return o;
 	}
 

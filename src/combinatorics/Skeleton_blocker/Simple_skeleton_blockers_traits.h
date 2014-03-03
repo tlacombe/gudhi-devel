@@ -10,7 +10,7 @@
 
 #include <string>
 #include <sstream>
-#include "Simplex.h"
+#include "Skeleton_blocker_simplex.h"
 
 
 struct Simple_complex_DS_traits{
@@ -127,8 +127,8 @@ struct Simple_complex_DS_traits{
 	typedef Simple_edge Edge;
 
 
-	typedef Simplex<Vertex_handle> Simplex_handle;
-	typedef Simplex<Root_vertex_handle> Root_simplex_handle;
+	typedef Skeleton_blocker_simplex<Vertex_handle> Simplex_handle;
+	typedef Skeleton_blocker_simplex<Root_vertex_handle> Root_simplex_handle;
 
 };
 

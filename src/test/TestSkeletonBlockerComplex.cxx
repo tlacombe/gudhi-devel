@@ -6,7 +6,7 @@
 #include "Utils.h"
 
 #include "Test.h"
-#include "Skeleton_blocker/Simplex.h"
+//#include "Skeleton_blocker/Simplex.h"
 #include "Skeleton_blocker/Skeleton_blocker_complex.h"
 #include "Skeleton_blocker/Skeleton_blocker_complex_iterators.h"
 #include "Skeleton_blocker/Skeleton_blocker_link_complex.h"
@@ -24,7 +24,7 @@ typedef typename Complex::Root_vertex_handle Root_vertex_handle;
 typedef typename Complex::Simplex_handle Simplex_handle;
 typedef typename Complex::Root_simplex_handle Root_simplex_handle;
 typedef Simplex_handle::Simplex_vertex_const_iterator Simplex_vertex_const_iterator;
-typedef Complex::Complex_const_blocker_iterator ConstBlockerIterator;
+typedef Complex::Const_complex_blocker_iterator ConstBlockerIterator;
 typedef Complex::Complex_vertex_range VertexRange;
 typedef Complex::Complex_vertex_iterator VertexIterator;
 typedef Complex::Complex_edge_range EdgeRange;
@@ -210,12 +210,8 @@ bool test_iterator_blockers(){
 
 	// Print result
 	int num_blockers=0;
-	for(
-			ConstBlockerIterator blockers = complex.const_blocker_range(Vertex_handle(10)).begin() ;
-			blockers != complex.const_blocker_range(Vertex_handle(10)).end();
-			++blockers
-	){
-		PRINT(**blockers) ;
+	for(auto blockers : complex.blocker_range(Vertex_handle(10))){
+		DBGVALUE(*blockers) ;
 		num_blockers++;
 	}
 	return num_blockers==3;

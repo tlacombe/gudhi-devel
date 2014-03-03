@@ -10,7 +10,7 @@
 
 
 #include <map>
-#include "Simplex.h"
+//#include "Simplex.h"
 
 /**
  *@class Skeleton_blocker_complex_visitor
@@ -44,8 +44,8 @@ public:
 	 */
 	virtual void on_swaped_edge(Vertex_handle a,Vertex_handle b,Vertex_handle x)=0;
 
-	virtual void on_add_blocker(const Simplex<Vertex_handle>&) = 0;
-	virtual void on_remove_blocker(const Simplex<Vertex_handle>&) = 0;
+	virtual void on_add_blocker(const Skeleton_blocker_simplex<Vertex_handle>&) = 0;
+	virtual void on_remove_blocker(const Skeleton_blocker_simplex<Vertex_handle>&) = 0;
 };
 
 
@@ -63,8 +63,8 @@ public:
 	void on_remove_edge(Vertex_handle a,Vertex_handle b){}
 	void on_changed_edge(Vertex_handle a,Vertex_handle b){}
 	void on_swaped_edge(Vertex_handle a,Vertex_handle b,Vertex_handle x){}
-	void on_add_blocker(const Simplex<Vertex_handle>&){}
-	void on_remove_blocker(const Simplex<Vertex_handle>&){}
+	void on_add_blocker(const Skeleton_blocker_simplex<Vertex_handle>&){}
+	void on_remove_blocker(const Skeleton_blocker_simplex<Vertex_handle>&){}
 };
 
 
@@ -95,10 +95,10 @@ public:
 	void on_swaped_edge(Vertex_handle a,Vertex_handle b,Vertex_handle x){
 			std::cerr << "on_swaped_edge:"<<a<<","<<b<<","<<x<<std::endl;
 	}
-	void on_add_blocker(const Simplex<Vertex_handle>& b){
+	void on_add_blocker(const Skeleton_blocker_simplex<Vertex_handle>& b){
 		std::cerr << "on_add_blocker:"<<b<<std::endl;
 	}
-	void on_remove_blocker(const Simplex<Vertex_handle>& b){
+	void on_remove_blocker(const Skeleton_blocker_simplex<Vertex_handle>& b){
 		std::cerr << "on_remove_blocker:"<<b<<std::endl;
 	}
 };

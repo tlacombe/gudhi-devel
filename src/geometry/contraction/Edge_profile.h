@@ -7,7 +7,7 @@
 
 #ifndef GUDHI_EDGE_PROFILE_H_
 #define GUDHI_EDGE_PROFILE_H_
-#include "combinatorics/Skeleton_blocker/Simplex.h"
+//#include "combinatorics/Skeleton_blocker/Simplex.h"
 
 
 

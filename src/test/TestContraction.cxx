@@ -6,7 +6,7 @@
  */
 
 #include "Skeleton_blocker/Simple_skeleton_blockers_traits.h"
-#include "Skeleton_blocker/Simplex.h"
+//#include "Skeleton_blocker/Simplex.h"
 #include "contraction/Skeleton_blocker_contractor.h"
 #include "Utils.h"
 #include "iofile.h"
