@@ -9,9 +9,8 @@
 #define GUDHI_SKELETON_BLOCKER_COMPLEX_ITERATORS_H_
 
 /**
- *@class Complex_edge_iterator
  *@brief Iterator on the vertices of a simplicial complex
- *
+ *@remark The increment ++ operators go to the next active vertex.
  */
 template<typename Traits>
 class Skeleton_blocker_complex<Traits>::Complex_vertex_iterator
@@ -43,7 +42,7 @@ public:
 	}
 
 	bool operator!=(const Complex_vertex_iterator& other){
-		return(! (*this == other));
+		return(!(*this == other));
 	}
 private:
 	void gotoNextVertex(){
@@ -82,8 +81,7 @@ public:
 
 
 /**
- *@class Complex_edge_iterator
- *@brief Iterator on edges of a simplicial complex
+ *@brief Iterator on the edges of a simplicial complex.
  *
  */
 template<typename Traits>
@@ -141,7 +139,6 @@ public:
 			++(edge_iterator.first);
 		}
 		return(tmp);
-		// does 'return edge_iterator++' works?
 	}
 
 	Edge_handle operator*()	{
@@ -326,58 +323,54 @@ public:
 	bool is_finished() const{
 		return is_end_;
 	}
-
-
 };
 
 
 
-
-
-/**
- * @brief Iterator through the blockers of a vertex
- */
-template<typename Traits>
-class Skeleton_blocker_complex<Traits>::Complex_const_blocker_iterator{
-	friend class Skeleton_blocker_complex<Traits> ;
-	typedef Skeleton_blocker_complex<Traits> Complex;
-	typedef typename Complex::BlockerMapConstIterator BlockerMapConstIterator;
-
-private:
-	const Complex * complex;
-	BlockerMapConstIterator currentPosition;
-public:
-
-	Complex_const_blocker_iterator():
-		complex(0),
-		currentPosition()
-
-{}
-
-	Complex_const_blocker_iterator(const Skeleton_blocker_complex * complex_,BlockerMapConstIterator position):
-		complex(complex_),
-		currentPosition(position)
-	{}
-
-	bool operator==(const Complex_const_blocker_iterator& other){
-		return
-				currentPosition == other.currentPosition
-				&& complex == (other.complex);
-	}
-
-	bool operator!=(const Complex_const_blocker_iterator& other){
-		return(! (*this == other));
-	}
-
-	Complex_const_blocker_iterator& operator++(){
-		currentPosition++;
-		return(*this);
-	}
-
-	const Simplex_handle* operator*()	{
-		return(currentPosition->second);
-	}
-};
+///**
+// * @brief Iterator through the blockers of a vertex
+// */
+//template<typename Traits>
+//class Skeleton_blocker_complex<Traits>::Complex_const_blocker_iterator{
+//	friend class Skeleton_blocker_complex<Traits> ;
+//	typedef Skeleton_blocker_complex<Traits> Complex;
+//	typedef typename Complex::BlockerMapConstIterator BlockerMapConstIterator;
+//
+//private:
+//	const Complex * complex;
+//	BlockerMapConstIterator currentPosition;
+//public:
+//
+//	Complex_const_blocker_iterator():
+//		complex(0),
+//		currentPosition()
+//
+//{}
+//
+//	Complex_const_blocker_iterator(const Skeleton_blocker_complex * complex_,BlockerMapConstIterator position):
+//		complex(complex_),
+//		currentPosition(position)
+//	{}
+//
+//	bool operator==(const Complex_const_blocker_iterator& other){
+//		return
+//				currentPosition == other.currentPosition
+//				&& complex == (other.complex);
+//	}
+//
+//	bool operator!=(const Complex_const_blocker_iterator& other){
+//		return(! (*this == other));
+//	}
+//
+//	Complex_const_blocker_iterator& operator++(){
+//		currentPosition++;
+//		return(*this);
+//	}
+//
+//	const Simplex_handle* operator*()	{
+//		return(currentPosition->second);
+//	}
+//};
 
 
 
@@ -388,27 +381,32 @@ public:
 // MapIteratorType = BlockerMapConstIterator or BlockerMapIterator
 template<typename Traits>
 template<typename MapIteratorType, typename ReturnType>
-class Skeleton_blocker_complex<Traits>::Complex_blocker_iterator{
+class Skeleton_blocker_complex<Traits>::Complex_blocker_iterator_internal{
 	friend class Skeleton_blocker_complex<Traits> ;
 private:
 	MapIteratorType currentPosition;
 public:
 
-	Complex_blocker_iterator():currentPosition(){}
+	Complex_blocker_iterator_internal():currentPosition(){}
 
-	Complex_blocker_iterator(MapIteratorType position):
+	Complex_blocker_iterator_internal(MapIteratorType position):
 		currentPosition(position)
 	{}
 
-	bool operator==(const Complex_blocker_iterator& other) const{
+	Complex_blocker_iterator_internal& operator=(Complex_blocker_iterator_internal other){
+		this->currentPosition = other.currentPosition;
+		return *this;
+	}
+
+	bool operator==(const Complex_blocker_iterator_internal& other) const{
 		return currentPosition == other.currentPosition;
 	}
 
-	bool operator!=(const Complex_blocker_iterator& other){
+	bool operator!=(const Complex_blocker_iterator_internal& other){
 		return(! (*this == other));
 	}
 
-	Complex_blocker_iterator& operator++(){
+	Complex_blocker_iterator_internal& operator++(){
 		currentPosition++;
 		return(*this);
 	}
@@ -515,25 +513,25 @@ public:
 
 
 
-template<typename Traits>
-class Skeleton_blocker_complex<Traits>::Complex_const_blocker_range {
-private:
-	const Skeleton_blocker_complex* complex_;
-	Vertex_handle v_;
-public:
-	Complex_const_blocker_range(const Skeleton_blocker_complex* complex,Vertex_handle v):complex_(complex),v_(v){
-	}
-
-	Complex_const_blocker_iterator begin(){
-		return Complex_const_blocker_iterator(complex_,complex_->blocker_map.lower_bound(v_));
-
-	}
-
-	Complex_const_blocker_iterator end()
-	{
-		return Complex_const_blocker_iterator(complex_,complex_->blocker_map.upper_bound(v_));
-	}
-};
+//template<typename Traits>
+//class Skeleton_blocker_complex<Traits>::Complex_const_blocker_range {
+//private:
+//	const Skeleton_blocker_complex* complex_;
+//	Vertex_handle v_;
+//public:
+//	Complex_const_blocker_range(const Skeleton_blocker_complex* complex,Vertex_handle v):complex_(complex),v_(v){
+//	}
+//
+//	Complex_const_blocker_iterator begin(){
+//		return Complex_const_blocker_iterator(complex_,complex_->blocker_map.lower_bound(v_));
+//
+//	}
+//
+//	Complex_const_blocker_iterator end()
+//	{
+//		return Complex_const_blocker_iterator(complex_,complex_->blocker_map.upper_bound(v_));
+//	}
+//};
 
 
 

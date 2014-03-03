@@ -134,13 +134,10 @@ public:
 		Simplex_handle edge(a,b);
 
 		// we remove the blockers that are not consistent anymore
-		for (BlockerMapConstIterator blocker = this->blocker_map.lower_bound(a);
-				blocker != this->blocker_map.upper_bound(a);
-				++blocker)
+		for (auto blocker : this->blocker_range(a))
 		{
-			Simplex_handle* tau( blocker->second );
-			if (tau->contains(b)){
-				blockers_to_delete.push_back((tau));
+			if (blocker->contains(b)){
+				blockers_to_delete.push_back(blocker);
 			}
 		}
 		int nb_blockers_removed = blockers_to_delete.size();
@@ -227,7 +224,7 @@ protected:
 	 * is satisfied !
 	 */
 	void tip_blockers(Vertex_handle a, Vertex_handle b, std::vector<Simplex_handle> & buffer) const{
-		for (auto blocker : this->const_blocker_range(a))
+		for (auto const & blocker : this->const_blocker_range(a))
 		{
 			Simplex_handle beta = (*blocker);
 			beta.remove_vertex(a);
@@ -273,8 +270,10 @@ private:
 	 */
 	void remove_blockers(Vertex_handle a, Vertex_handle b){
 		std::vector<Simplex_handle *> blocker_to_delete;
-		for (auto it = this->blocker_map.lower_bound(a); it != this->blocker_map.upper_bound(a); ++it)
-			if ((*it).second->contains(b)) blocker_to_delete.push_back(  (*it).second );
+//		for (auto it = this->blocker_map.lower_bound(a); it != this->blocker_map.upper_bound(a); ++it)
+//			if ((*it).second->contains(b)) blocker_to_delete.push_back(  (*it).second );
+		for (auto blocker : this->blocker_range(a))
+			if (blocker->contains(b)) blocker_to_delete.push_back(blocker);
 		while (!blocker_to_delete.empty())
 		{
 			this->delete_blocker(blocker_to_delete.back());
@@ -342,15 +341,14 @@ public:
 				}
 			}
 		}
+
 		// We delete all blockers a.tau and b.tau of K
 		// after the edge contraction ab ----> a
-		BlockerMapIterator it;
 		std::vector<Simplex_handle *> blocker_to_delete;
-
-		for (it = this->blocker_map.lower_bound(a); it != this->blocker_map.upper_bound(a); ++it)
-			blocker_to_delete.push_back(  (*it).second );
-		for (it = this->blocker_map.lower_bound(b); it != this->blocker_map.upper_bound(b); ++it)
-			blocker_to_delete.push_back(  (*it).second );
+		for(auto bl : this->blocker_range(a))
+			blocker_to_delete.push_back(bl);
+		for(auto bl : this->blocker_range(b))
+			blocker_to_delete.push_back(bl);
 		while (!blocker_to_delete.empty())
 		{
 			this->delete_blocker(blocker_to_delete.back());
@@ -360,17 +358,17 @@ public:
 		// We now proceed to the edge contraction ab ----> a,
 		// modifying the simplicial complex
 
-		// We now update the set of edges
+		// We update the set of edges
 		this->remove_edge(a,b);
 
 
 		// For all edges {b,x} incident to b,
-		// we remove {b,x} and add {a,x} if not already there
+		// we remove {b,x} and add {a,x} if not already there.
 		while (this->degree[b.vertex]> 0)
 		{
 			Vertex_handle x(*(adjacent_vertices(b.vertex, this->skeleton).first));
 			if(!this->contains_edge(a,x))
-				// we 'replace' the edge 'bx' by the edge 'ab'
+				// we 'replace' the edge 'bx' by the edge 'ax'
 				this->swap_edge(a,b,x);
 			else
 				this->remove_edge(b,x);
@@ -378,13 +376,11 @@ public:
 
 		// We remove b
 		this->remove_vertex(b);
-		// We notify the visitor that all edges incident to a had changed
+		// We notify the visitor that all edges incident to 'a' had changed
 		boost_adjacency_iterator v, v_end;
 
 		for (tie(v, v_end) = adjacent_vertices(a.vertex, this->skeleton); v != v_end; ++v)
-		{
 			if (this->visitor) this->visitor->on_changed_edge(a,Vertex_handle(*v));
-		}
 
 		// We add the new blockers through c
 		for(auto block : blocker_to_add)

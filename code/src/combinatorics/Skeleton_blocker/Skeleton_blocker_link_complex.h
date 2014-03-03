@@ -38,11 +38,6 @@ public:
 	typedef typename ComplexType::Simplex_handle Simplex_handle;
 	typedef typename ComplexType::Root_simplex_handle Root_simplex_handle;
 
-	typedef typename ComplexType::BlockerMap BlockerMap;
-	typedef typename ComplexType::BlockerPair BlockerPair;
-	typedef typename ComplexType::BlockerMapIterator BlockerMapIterator;
-	typedef typename ComplexType::BlockerMapConstIterator BlockerMapConstIterator;
-
 	typedef typename ComplexType::Simplex_handle::Simplex_vertex_const_iterator Simplex_handle_iterator;
 	typedef typename ComplexType::Root_simplex_handle::Simplex_vertex_const_iterator Root_simplex_handle_iterator;
 
@@ -84,19 +79,21 @@ protected:
 		// If one blocker minus 'v' is included in alpha then the vertex is not in the link complex.
 		for (auto v_parent : link_vertices_parent){
 			bool new_vertex = true;
-			for (BlockerMapConstIterator beta=parent_complex.blocker_map.lower_bound(v_parent);beta!=parent_complex.blocker_map.upper_bound(v_parent);++beta)
+			for (auto beta : parent_complex.const_blocker_range(v_parent))
 			{
-				auto sigma_parent = beta->second;
-				sigma_parent->remove_vertex(v_parent);
-				if 	(alpha_parent_adress.contains(*sigma_parent)){
+				// the const cast allows to be more efficient
+				// and the sigma_parent is not truly modified since the removed vertex
+				// is readded just after performing a test
+				Simplex_handle &sigma_parent = *(const_cast<Simplex_handle*>(beta));
+				sigma_parent.remove_vertex(v_parent);
+				if 	(alpha_parent_adress.contains(sigma_parent)){
 					new_vertex = false;
 				}
-				sigma_parent->add_vertex(v_parent);
+				sigma_parent.add_vertex(v_parent);
 				if(!new_vertex) break;
 			}
-			if (new_vertex) {
+			if (new_vertex)
 				this->add_vertex(parent_complex.get_id(v_parent));
-			}
 		}
 
 	}
@@ -158,9 +155,12 @@ protected:
 
 			Vertex_handle x_parent = * this->give_equivalent_vertex(parent_complex,x_link);
 
-			for (BlockerMapConstIterator blocker_parent = parent_complex.blocker_map.lower_bound(x_parent); blocker_parent != parent_complex.blocker_map.upper_bound(x_parent); ++blocker_parent){
+//			for (auto blocker_parent = parent_complex.blocker_map.lower_bound(x_parent); blocker_parent != parent_complex.blocker_map.upper_bound(x_parent); ++blocker_parent){
+//				Simplex_handle sigma_parent(*(*blocker_parent).second);
 
-				Simplex_handle sigma_parent(*(*blocker_parent).second);
+			for (auto blocker_parent : parent_complex.const_blocker_range(x_parent)){
+				Simplex_handle sigma_parent(*blocker_parent);
+
 				sigma_parent.difference(alpha_parent);
 
 				if (sigma_parent.dimension()>=2 && sigma_parent.first_vertex() == x_parent){

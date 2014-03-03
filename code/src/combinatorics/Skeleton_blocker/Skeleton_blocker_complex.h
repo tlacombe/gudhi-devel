@@ -21,7 +21,7 @@
 #include "Skeleton_blocker_link_complex.h"
 #include "Skeleton_blocker_link_superior.h"
 #include "Skeleton_blocker_sub_complex.h"
-#include "Simplex.h"
+#include "Skeleton_blocker_simplex.h"
 
 #include "Skeleton_blocker_complex_visitor.h"
 #include "utils/Utils.h"
@@ -58,8 +58,8 @@ public:
 	typedef typename ComplexDS::Vertex Vertex;
 	typedef typename ComplexDS::Edge Edge;
 
-	typedef typename ComplexDS::Vertex_handle Vertex_handle;
 	typedef typename ComplexDS::Root_vertex_handle Root_vertex_handle;
+	typedef typename ComplexDS::Vertex_handle Vertex_handle;
 	typedef typename Root_vertex_handle::boost_vertex_handle boost_vertex_handle;
 	typedef typename ComplexDS::Simplex_handle Simplex_handle;
 	typedef typename ComplexDS::Root_simplex_handle Root_simplex_handle;
@@ -134,6 +134,9 @@ public:
 		skeleton = Graph(copy.skeleton);
 		// we copy the blockers
 		if (!copy.blocker_map.empty()){
+			/*
+			 * TODO faire un itérateur sur tous les blockeurs du complexes
+			 */
 			for (BlockerMapConstIterator dp=copy.blocker_map.begin(); dp!=copy.blocker_map.end(); ++dp){
 				if ( (*dp).first == ( (*dp).second )->first_vertex() ){
 					Simplex_handle* sigma = new Simplex_handle(*(*dp).second);
@@ -466,10 +469,9 @@ public:
 	 * Removes sigma from the blocker map of vertex v
 	 */
 	void remove_blocker(const Simplex_handle * sigma, Vertex_handle v){
-		Complex_const_blocker_iterator blocker;
-		for (
-				blocker = const_blocker_range(v).begin();
-				blocker != const_blocker_range(v).end();
+		Complex_blocker_iterator blocker;
+		for (blocker = blocker_range(v).begin();
+				blocker != blocker_range(v).end();
 				++blocker
 		){
 			if (*blocker == sigma) break;
@@ -518,15 +520,10 @@ public:
 
 		Vertex_handle a = s.first_vertex();
 
-		for ( Complex_const_blocker_iterator	blocker = const_blocker_range(a).begin();
-				blocker != const_blocker_range(a).end();
-				++blocker
-		){
-			if ( s == *((*blocker)) )
+		for (auto blocker : const_blocker_range(a)){
+			if ( s == *blocker )
 				return true;
 		}
-
-
 		return false;
 	}
 
@@ -552,14 +549,11 @@ private:
 	 * is a face of sigma.
 	 */
 	bool blocks(const Simplex_handle & sigma) const{
-		BlockerMapConstIterator lb, ub, tau;
 		for (auto vi : sigma)
 		{
 			// We start by listing all blockers that pass through
 			// one vertex of sigma.
-			lb=blocker_map.lower_bound(vi);
-			ub=blocker_map.upper_bound(vi);
-			for (tau = lb; tau != ub; ++tau)
+			for (auto tau = blocker_map.lower_bound(vi); tau != blocker_map.upper_bound(vi); ++tau)
 				if ( (*tau).first == ( (*tau).second )->first_vertex() )
 					if ( sigma.contains( *(*tau).second ) )
 						return true;
@@ -869,82 +863,74 @@ public:
 	Triangle_range triangle_range()
 	{return Triangle_range(this);}
 
-	/**
-	 * \brief Range over the blockers of the simplicial complex adjacent to a vertex.
-	 * Methods .cbegin() and .cend() return a Complex_const_blocker_iterator.
-	 */
-	friend class Complex_const_blocker_range;
-	class Complex_const_blocker_range;
-
-	/**
-	 * \brief Iterator over the blockers adjacent to a vertex
-	 *
-	 */
-	class Complex_const_blocker_iterator;
-	/**
-	 * Returns a Complex_simplex_range over all blockers of the complex adjacent to the vertex 'v'
-	 */
-	Complex_const_blocker_range const_blocker_range(Vertex_handle v) const
-	{return Complex_const_blocker_range(this,v);}
-
 
 
 public:
-	//	/**
-	//	 * \brief Range over the blockers of the simplicial complex adjacent to a vertex.
-	//	 * Methods .begin() and .end() return a Complex_blocker_iterator.
-	//	 */
-	//template<typename ComplexType> friend class Complex_blocker_range;
-
 
 	/**
 	 * \brief Iterator over the blockers adjacent to a vertex
 	 *
 	 */
 	template<typename MapType, typename ReturnType>
-	class Complex_blocker_iterator;
+	class Complex_blocker_iterator_internal;
 
-	typedef Complex_blocker_iterator<BlockerMapIterator,Simplex_handle*> MyBlockerIterator;
-	typedef Complex_blocker_iterator<BlockerMapConstIterator, Simplex_handle*> MyConstBlockerIterator;
+	typedef Complex_blocker_iterator_internal<
+			typename std::multimap<Vertex_handle,Simplex_handle *>::iterator,
+			Simplex_handle*>
+	Complex_blocker_iterator;
+	typedef Complex_blocker_iterator_internal<
+			typename std::multimap<Vertex_handle,Simplex_handle *>::const_iterator,
+			const Simplex_handle*>
+			Const_complex_blocker_iterator;
 
 
-	// ComplexType should be Skeleton_blocker_complex& or const Skeleton_blocker_complex&
-	template <typename ComplexType>
+	/**
+	 * \brief Range over the blockers of the simplicial complex adjacent to a vertex.
+	 * Methods .begin() and .end() return a Complex_blocker_iterator.
+	 */
 	class Complex_blocker_range{
 	private:
 		Vertex_handle v_;
-		ComplexType complex_;
+		Skeleton_blocker_complex& complex_;
 	public:
-		Complex_blocker_range(ComplexType complex,Vertex_handle v):v_(v),complex_(complex){}
+		Complex_blocker_range(Skeleton_blocker_complex&  complex,Vertex_handle v):v_(v),complex_(complex){}
 
-		MyBlockerIterator begin(){
-			return MyBlockerIterator(complex_.blocker_map.lower_bound(v_));
-
+		Complex_blocker_iterator begin() {
+			return Complex_blocker_iterator(complex_.blocker_map.lower_bound(v_));
 		}
-		MyBlockerIterator end()	{
-			return MyBlockerIterator(complex_.blocker_map.upper_bound(v_));
-		}
-
-		MyConstBlockerIterator begin() const{
-			return MyConstBlockerIterator(complex_.blocker_map.lower_bound(v_));
-
-		}
-		MyConstBlockerIterator end() const{
-			return MyConstBlockerIterator(complex_.blocker_map.upper_bound(v_));
+		Complex_blocker_iterator end() {
+			return Complex_blocker_iterator(complex_.blocker_map.upper_bound(v_));
 		}
 	};
 
-	typedef Complex_blocker_range<Skeleton_blocker_complex&> ComplexBlockerRange;
-	typedef Complex_blocker_range<const Skeleton_blocker_complex&> ConstComplexBlockerRange;
+	/**
+	 * \brief Range over the blockers of the simplicial complex adjacent to a vertex.
+	 * todo explains constant
+	 * Methods .begin() and .end() return a Complex_blocker_iterator.
+	 */
+	class Const_complex_blocker_range{
+	private:
+		Vertex_handle v_;
+		const Skeleton_blocker_complex& complex_;
+	public:
+		Const_complex_blocker_range(const Skeleton_blocker_complex&  complex,Vertex_handle v):v_(v),complex_(complex){}
+
+		Const_complex_blocker_iterator begin() const{
+			return Const_complex_blocker_iterator(complex_.blocker_map.lower_bound(v_));
+		}
+		Const_complex_blocker_iterator end() const{
+			return Const_complex_blocker_iterator(complex_.blocker_map.upper_bound(v_));
+		}
+	};
 
 	/**
 	 * Returns a Complex_simplex_range over all blockers of the complex adjacent to the vertex 'v'
 	 */
-	ConstComplexBlockerRange blocker_range(Vertex_handle v) const
-	{return ConstComplexBlockerRange(*this,v);}
+	Const_complex_blocker_range const_blocker_range(Vertex_handle v) const
+	{return Const_complex_blocker_range(*this,v);}
 
-	ComplexBlockerRange blocker_range(Vertex_handle v)
-	{return ComplexBlockerRange(*this,v);}
+	Complex_blocker_range blocker_range(Vertex_handle v)
+	{return Complex_blocker_range(*this,v);}
 
 	//@}
 

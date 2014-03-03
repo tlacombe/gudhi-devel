@@ -2,6 +2,7 @@
 #define GUDHI_SKELETON_BLOCKER_SUB_COMPLEX_H
 
 #include "Skeleton_blocker_complex.h"
+#include "Skeleton_blocker_simplex.h"
 #include "utils/Utils.h"
 
 /**
@@ -39,13 +40,6 @@ public:
 	typedef typename ComplexType::Simplex_handle Simplex_handle;
 	typedef typename ComplexType::Root_simplex_handle Root_simplex_handle;
 
-	typedef typename ComplexType::BlockerMap BlockerMap;
-	typedef typename ComplexType::BlockerPair BlockerPair;
-	typedef typename ComplexType::BlockerMapIterator BlockerMapIterator;
-	typedef typename ComplexType::BlockerMapConstIterator BlockerMapConstIterator;
-
-
-
 	template<class T> friend class Skeleton_blocker_link_complex;
 
 
@@ -64,7 +58,7 @@ public:
 	 * where 'link1' and 'link2' are subcomplexes of the same complex of type ComplexType
 	 */
 	template<typename T> friend	bool
-	proper_faces_in_union(Simplex<typename T::Root_vertex_handle> & sigma, Skeleton_blocker_sub_complex<T> & link1, Skeleton_blocker_sub_complex<T> & link2);
+	proper_faces_in_union(Skeleton_blocker_simplex<typename T::Root_vertex_handle> & sigma, Skeleton_blocker_sub_complex<T> & link1, Skeleton_blocker_sub_complex<T> & link2);
 
 
 protected:
@@ -186,7 +180,7 @@ bool proper_face_in_union(
 
 template<typename ComplexType>
 bool
-proper_faces_in_union(Simplex<typename ComplexType::Root_vertex_handle> & sigma, Skeleton_blocker_sub_complex<ComplexType> & link1, Skeleton_blocker_sub_complex<ComplexType> & link2)
+proper_faces_in_union(Skeleton_blocker_simplex<typename ComplexType::Root_vertex_handle> & sigma, Skeleton_blocker_sub_complex<ComplexType> & link1, Skeleton_blocker_sub_complex<ComplexType> & link2)
 {
 	typedef typename ComplexType::Vertex_handle  Vertex_handle;
 	std::vector<boost::optional<Vertex_handle> > addresses_sigma_in_link1 = link1.get_addresses(sigma);

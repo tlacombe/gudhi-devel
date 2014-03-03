@@ -14,7 +14,7 @@
 #include <fstream>
 #include <sstream>
 #include "Test.h"
-#include "Skeleton_blocker/Simplex.h"
+//#include "Skeleton_blocker/Simplex.h"
 #include "Skeleton_blocker/Skeleton_blocker_complex.h"
 #include "Skeleton_blocker/Skeleton_blocker_complex_iterators.h"
 #include "Skeleton_blocker/Simplifiable_skeleton_blocker.h"
@@ -28,10 +28,10 @@ template<typename ComplexType> class Skeleton_blocker_sub_complex;
 typedef Simplifiable_Skeleton_blocker<Simple_complex_DS_traits> Complex;
 typedef typename Complex::Vertex_handle Vertex_handle;
 typedef typename Complex::Root_vertex_handle Root_vertex_handle;
-typedef Simplex<Vertex_handle> Address_simplex;
-typedef Simplex<Root_vertex_handle> Id_simplex;
+typedef Skeleton_blocker_simplex<Vertex_handle> Address_simplex;
+typedef Skeleton_blocker_simplex<Root_vertex_handle> Id_simplex;
 typedef Address_simplex::Simplex_vertex_const_iterator AddressSimplexConstIterator;
-typedef Complex::Complex_const_blocker_iterator ConstBlockerIterator;
+typedef Complex::Const_complex_blocker_iterator ConstBlockerIterator;
 // true iff v \in K
 bool assert_vertex(Complex &complex,Vertex_handle v){
 	Address_simplex simplex(v);
