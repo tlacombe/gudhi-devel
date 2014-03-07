@@ -32,9 +32,11 @@ public:
 	typedef typename SkeletonBlockerComplex::boost_vertex_handle boost_vertex_handle;
 	typedef typename SkeletonBlockerComplex::Vertex_handle Vertex_handle;
 	typedef typename SkeletonBlockerComplex::Root_vertex_handle Root_vertex_handle;
-
 	typedef typename SkeletonBlockerComplex::Simplex_handle Simplex_handle;
 	typedef typename SkeletonBlockerComplex::Root_simplex_handle Root_simplex_handle;
+	typedef typename SkeletonBlockerComplex::Blocker_handle Blocker_handle;
+
+
 	typedef typename SkeletonBlockerComplex::Root_simplex_iterator Root_simplex_iterator;
 	typedef typename SkeletonBlockerComplex::Simplex_handle_iterator Simplex_handle_iterator;
 	typedef typename SkeletonBlockerComplex::BlockerMap BlockerMap;
@@ -68,7 +70,7 @@ public:
 		this->remove_blocker(sigma);
 		Skeleton_blocker_link_complex<Simplifiable_Skeleton_blocker<Traits> > link_blocker(*this,*sigma);
 		this->add_blocker(sigma);
-		return link_blocker.is_reducible()==YES;
+		return link_blocker.is_reducible()==CONTRACTIBLE;
 	}
 
 
@@ -85,17 +87,12 @@ public:
 		bool blocker_popable_found=true;
 		while (blocker_popable_found){
 			blocker_popable_found=false;
-			std::list <Simplex_handle*> blockers = this->get_blockers_list();
-			for (
-					typename std::list <Simplex_handle*>::iterator block=blockers.begin();
-					block!=blockers.end();
-					++block)
+			std::list <Blocker_handle> blockers = this->get_blockers_list();
+			for (auto block : blockers)
 			{
-				if (is_popable_blocker(*block)) {
-					//			cout << "A BLOCKER HAD BECOMED POPABLE -> REMOVED\n";
-					nb_blockers_deleted++;
-					//				cout << **block<<" is now 	popable\n";
-					this->delete_blocker(*block);
+				if (is_popable_blocker(block)) {
+					++nb_blockers_deleted;
+					this->delete_blocker(block);
 					blocker_popable_found = true;
 					// some blockers may have become popable
 					// xxx do something more efficient with a queue
@@ -105,7 +102,6 @@ public:
 				}
 			}
 		}
-
 		return nb_blockers_deleted;
 	}
 
@@ -128,7 +124,7 @@ public:
 	 */
 	int remove_star(Vertex_handle a, Vertex_handle b){
 		//	cout << "CollapseEdge("<<a<<","<<b<<")\n";
-		std::list <Simplex_handle*> blockers_to_delete;
+		std::list <Blocker_handle> blockers_to_delete;
 		Edge_handle edge_descriptor;
 		Simplex_handle edge(a,b);
 
@@ -185,10 +181,10 @@ public:
 	 * associated problem is undecidable but it in practice, it can often
 	 * be solved with the help of geometry.
 	 */
-	enum contractible_status{ NO, YES, MAYBE};
+	enum contractible_status{ NOT_CONTRACTIBLE,MAYBE_CONTRACTIBLE,CONTRACTIBLE, };
 	virtual contractible_status is_reducible() const{
-		if (this->is_cone()) return YES;
-		else return MAYBE;
+		if (this->is_cone()) return CONTRACTIBLE;
+		else return MAYBE_CONTRACTIBLE;
 //		return this->is_cone();
 	}
 
@@ -229,7 +225,7 @@ protected:
 	 * Compute simplices beta such that a.beta is an order 0 blocker
 	 * that may be used to construct a new blocker after contracting ab.
 	 * Suppose that the link condition Link(ab) = Link(a) inter Link(b)
-	 * is satisfied !
+	 * is satisfied.
 	 */
 	void tip_blockers(Vertex_handle a, Vertex_handle b, std::vector<Simplex_handle> & buffer) const{
 		for (auto const & blocker : this->const_blocker_range(a))
@@ -277,9 +273,7 @@ private:
 	 * @brief removes all blockers passing through the edge 'ab'
 	 */
 	void remove_blockers(Vertex_handle a, Vertex_handle b){
-		std::vector<Simplex_handle *> blocker_to_delete;
-		//		for (auto it = this->blocker_map.lower_bound(a); it != this->blocker_map.upper_bound(a); ++it)
-		//			if ((*it).second->contains(b)) blocker_to_delete.push_back(  (*it).second );
+		std::vector<Blocker_handle> blocker_to_delete;
 		for (auto blocker : this->blocker_range(a))
 			if (blocker->contains(b)) blocker_to_delete.push_back(blocker);
 		while (!blocker_to_delete.empty())
@@ -393,7 +387,6 @@ public:
 		// We add the new blockers through c
 		for(auto block : blocker_to_add)
 			this->add_blocker(block);
-		//removePopableBlockers();
 	}
 
 	//@}

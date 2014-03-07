@@ -38,6 +38,9 @@ public:
 	typedef typename ComplexType::Simplex_handle Simplex_handle;
 	typedef typename ComplexType::Root_simplex_handle Root_simplex_handle;
 
+	typedef typename ComplexType::Blocker_handle Blocker_handle;
+
+
 	typedef typename ComplexType::Simplex_handle::Simplex_vertex_const_iterator Simplex_handle_iterator;
 	typedef typename ComplexType::Root_simplex_handle::Simplex_vertex_const_iterator Root_simplex_handle_iterator;
 
@@ -108,8 +111,7 @@ protected:
 				++x_link
 		)
 		{
-			auto y_link = x_link;
-			for (++y_link ; y_link != this->vertex_range().end(); ++y_link){
+			for (auto y_link = x_link; ++y_link != this->vertex_range().end(); ){
 				Vertex_handle x_parent = *parent_complex.get_address(this->get_id(*x_link));
 				Vertex_handle y_parent = *parent_complex.get_address(this->get_id(*y_link));
 				if (parent_complex.contains_edge(x_parent,y_parent) ){
@@ -119,7 +121,7 @@ protected:
 							blocker_parent!=parent_complex.blocker_map.upper_bound(x_parent);
 							++blocker_parent)
 					{
-						Simplex_handle* sigma_parent = (*blocker_parent).second;
+						Blocker_handle sigma_parent = (*blocker_parent).second;
 						if 	(sigma_parent->contains(y_parent))
 						{
 							sigma_parent->remove_vertex(x_parent);

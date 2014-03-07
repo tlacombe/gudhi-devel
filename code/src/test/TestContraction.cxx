@@ -64,6 +64,7 @@ double distance(const Point& a,const Point& b){
 // build the Rips complex todo utiliser Euclidean_geometry a la place
 template<typename ComplexType>
 void build_rips(ComplexType& complex, double offset){
+	if (offset<=0) return;
 	auto vertices = complex.vertex_range();
 	for (auto p = vertices.begin(); p != vertices.end(); ++p)
 		for (auto q = p; ++q != vertices.end(); /**/)
@@ -85,12 +86,13 @@ void test_contraction_rips(string name_file, double offset){
 	// load the points
 	if (!read_off_file<Complex>(name_file,complex,true)){
 		std::cerr << "Unable to read file:"<<name_file<<std::endl;
-
 		std::cerr << "current path : ";
 		system("pwd");
 		std::cerr<<endl;
 		return;
 	}
+
+//	TESTVALUE(complex.vertices_to_string());
 
 	clock_t time = clock();
 
