@@ -8,6 +8,11 @@
 #include <iostream>
 
 
+#define TEST(a) std::cout << "TEST: " << (a)<<std::endl
+#define TESTMSG(a,b) std::cout << "TEST: " << a<<b<<std::endl
+#define TESTVALUE(a) std::cout << "TEST: " <<  #a << ": " << a<<std::endl
+
+
 /**
  * Class to perform test
  */

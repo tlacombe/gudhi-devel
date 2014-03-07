@@ -27,7 +27,6 @@ public:
 	virtual void on_add_edge(Vertex_handle a,Vertex_handle b) = 0;
 	virtual void on_remove_edge(Vertex_handle a,Vertex_handle b) = 0;
 
-
 	/**
 	 * @brief Called when an edge changes, during the contraction of
 	 * an edge
@@ -43,9 +42,8 @@ public:
 	 * remove_edge(b,x)
 	 */
 	virtual void on_swaped_edge(Vertex_handle a,Vertex_handle b,Vertex_handle x)=0;
-
 	virtual void on_add_blocker(const Skeleton_blocker_simplex<Vertex_handle>&) = 0;
-	virtual void on_remove_blocker(const Skeleton_blocker_simplex<Vertex_handle>&) = 0;
+	virtual void on_delete_blocker(const Skeleton_blocker_simplex<Vertex_handle>*) = 0;
 };
 
 
@@ -64,7 +62,8 @@ public:
 	void on_changed_edge(Vertex_handle a,Vertex_handle b){}
 	void on_swaped_edge(Vertex_handle a,Vertex_handle b,Vertex_handle x){}
 	void on_add_blocker(const Skeleton_blocker_simplex<Vertex_handle>&){}
-	void on_remove_blocker(const Skeleton_blocker_simplex<Vertex_handle>&){}
+	void on_delete_blocker(const Skeleton_blocker_simplex<Vertex_handle>*){}
+
 };
 
 
@@ -98,8 +97,8 @@ public:
 	void on_add_blocker(const Skeleton_blocker_simplex<Vertex_handle>& b){
 		std::cerr << "on_add_blocker:"<<b<<std::endl;
 	}
-	void on_remove_blocker(const Skeleton_blocker_simplex<Vertex_handle>& b){
-		std::cerr << "on_remove_blocker:"<<b<<std::endl;
+	void on_delete_blocker(const Skeleton_blocker_simplex<Vertex_handle>* b){
+		std::cerr << "on_delete_blocker:"<<b<<std::endl;
 	}
 };
 

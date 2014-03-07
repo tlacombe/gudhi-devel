@@ -47,19 +47,25 @@ public:
 	/**
 	 * @brief Called during the processing phase (when edges are collapsed), for each edge that is selected.
 	 */
-	virtual void on_selected (Profile const &profile, boost::optional< FT > cost, int initial_count, int current_count){}
+	virtual void on_selected (const Profile &profile, boost::optional< FT > cost, int initial_count, int current_count){}
 
 
 	/**
 	 * @brief Called when an edge is about to be contracted and replaced by a vertex whose position is *placement.
 	 */
-	virtual void on_contracting(Profile const &profile, boost::optional< Point > placement){
-	}
+	virtual void on_contracting(const Profile &profile, boost::optional< Point > placement){}
+
+	/**
+	 * @brief Called when after an edge has been contracted onto a new point placement.
+	 * A possibility would to remove popable blockers at this point for instance.
+	 */
+	virtual void on_contracted(const Profile  &profile, boost::optional< Point > placement){}
+
 
 	/**
 	 * @brief Called for each selected edge which cannot be contracted because the ValidContractionPredicate is false
 	 */
-	virtual void on_non_valid(Profile const &profile){}
+	virtual void on_non_valid(const Profile  &profile){}
 
 };
 

@@ -14,17 +14,22 @@
 
 namespace contraction {
 
+
+/**
+ * @brief return a cost corresponding to the squared length of the edge
+ */
 template< typename EdgeProfile> class Edge_length_cost : public Cost_policy<EdgeProfile>{
 public:
 	typedef typename Cost_policy<EdgeProfile>::Cost_type Cost_type;
 	typedef typename EdgeProfile::Point Point;
 	Cost_type operator()(const EdgeProfile& profile, const boost::optional<Point>& placement){
-		Cost_type res;
-		//const Point& a = profile.p0();
-		//const Point& b = profile.p1();
-		//res = CGAL::squared_distance(a,b);
-		// todo length
-		return 1.0;
+		double res = 0;
+		auto p0_coord = profile.p0().begin();
+		auto p1_coord = profile.p1().begin();
+		for(; p0_coord != profile.p0().end(); p0_coord++, p1_coord++){
+			res += (*p0_coord - *p1_coord) * (*p0_coord - *p1_coord);
+		}
+		return res;
 	}
 
 };

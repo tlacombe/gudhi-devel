@@ -62,7 +62,10 @@ class Skeleton_blocker_contractor : public Dummy_complex_visitor<typename Geomet
 public:
 	typedef typename GeometricSimplifiableComplex::Vertex Vertex;
 	typedef typename GeometricSimplifiableComplex::Vertex_handle Vertex_handle;
+	typedef typename GeometricSimplifiableComplex::Simplex_handle Simplex_handle;
+
 	typedef typename GeometricSimplifiableComplex::Root_vertex_handle Root_vertex_handle;
+
 	typedef typename GeometricSimplifiableComplex::Edge Edge;
 	typedef typename GeometricSimplifiableComplex::Edge_handle edge_descriptor;
 	typedef typename GeometricSimplifiableComplex::Complex_edge_iterator EdgeIterator;
@@ -93,33 +96,33 @@ private:
 
 	struct Compare_id
 	{
-		Compare_id() : mAlgorithm(0) {}
+		Compare_id() : algorithm_(0) {}
 
-		Compare_id( Self const* aAlgorithm ) : mAlgorithm(aAlgorithm) {}
+		Compare_id( Self const* aAlgorithm ) : algorithm_(aAlgorithm) {}
 
 		bool operator() ( edge_descriptor const& a, edge_descriptor const& b ) const
 		{
-			return mAlgorithm->get_undirected_edge_id(a) < mAlgorithm->get_undirected_edge_id(b);
+			return algorithm_->get_undirected_edge_id(a) < algorithm_->get_undirected_edge_id(b);
 		}
 
-		Self const* mAlgorithm ;
+		Self const* algorithm_ ;
 	} ;
 
 	struct Compare_cost
 	{
-		Compare_cost() : mAlgorithm(0) {}
+		Compare_cost() : algorithm_(0) {}
 
-		Compare_cost( Self const* aAlgorithm ) : mAlgorithm(aAlgorithm) {}
+		Compare_cost( Self const* aAlgorithm ) : algorithm_(aAlgorithm) {}
 
 		bool operator() ( edge_descriptor const& a, edge_descriptor const& b ) const
 		{
 			// NOTE: A cost is an optional<> value.
 			// Absent optionals are ordered first; that is, "none < T" and "T > none" for any defined T != none.
 			// In consequence, edges with undefined costs will be promoted to the top of the priority queue and poped out first.
-			return mAlgorithm->get_data(a).cost() < mAlgorithm->get_data(b).cost();
+			return algorithm_->get_data(a).cost() < algorithm_->get_data(b).cost();
 		}
 
-		Self const* mAlgorithm ;
+		Self const* algorithm_ ;
 	} ;
 
 	struct Undirected_edge_id : boost::put_get_helper<size_type, Undirected_edge_id>
@@ -129,13 +132,13 @@ private:
 		typedef size_type                        reference;
 		typedef edge_descriptor                  key_type;
 
-		Undirected_edge_id() : mAlgorithm(0) {}
+		Undirected_edge_id() : algorithm_(0) {}
 
-		Undirected_edge_id( Self const* aAlgorithm ) : mAlgorithm(aAlgorithm) {}
+		Undirected_edge_id( Self const* aAlgorithm ) : algorithm_(aAlgorithm) {}
 
-		size_type operator[] ( edge_descriptor const& e ) const { return mAlgorithm->get_undirected_edge_id(e); }
+		size_type operator[] ( edge_descriptor const& e ) const { return algorithm_->get_undirected_edge_id(e); }
 
-		Self const* mAlgorithm ;
+		Self const* algorithm_ ;
 	} ;
 
 	typedef CGAL::Modifiable_priority_queue<edge_descriptor,Compare_cost,Undirected_edge_id> PQ ;
@@ -149,63 +152,65 @@ private:
 	{
 	public :
 
-		Edge_data() : mPQHandle(),mCost() {}
+		Edge_data() : PQHandle_(),cost_() {}
 
-		Cost_type const& cost() const { return mCost ; }
-		Cost_type      & cost()       { return mCost ; }
+		Cost_type const& cost() const { return cost_ ; }
+		Cost_type      & cost()       { return cost_ ; }
 
-		pq_handle PQ_handle() const { return mPQHandle ;}
+		pq_handle PQ_handle() const { return PQHandle_ ;}
 
-		bool is_in_PQ() const { return mPQHandle != PQ::null_handle() ; }
+		bool is_in_PQ() const { return PQHandle_ != PQ::null_handle() ; }
 
-		void set_PQ_handle( pq_handle h ) { mPQHandle = h ; }
+		void set_PQ_handle( pq_handle h ) { PQHandle_ = h ; }
 
-		void reset_PQ_handle() { mPQHandle = PQ::null_handle() ; }
+		void reset_PQ_handle() { PQHandle_ = PQ::null_handle() ; }
 
 	private:
-		pq_handle mPQHandle ;
-		Cost_type mCost ;
+		pq_handle PQHandle_ ;
+		Cost_type cost_ ;
 
 	} ;
 	typedef Edge_data* Edge_data_ptr ;
 	typedef boost::scoped_array<Edge_data> Edge_data_array ;
 
 
-	int get_undirected_edge_id ( edge_descriptor aEdge ) const {
-		return complex_[aEdge].id() ;
+	int get_undirected_edge_id ( edge_descriptor edge ) const {
+		return complex_[edge].id() ;
 	}
 
-	Edge_data& get_data ( edge_descriptor const& aEdge ) const
+	Edge_data& get_data ( edge_descriptor const& edge ) const
 	{
-		return mEdgeDataArray[get_undirected_edge_id(aEdge)];
+		return edge_data_array_[get_undirected_edge_id(edge)];
 	}
 
 	Cost_type get_cost(const Profile & profile){
-		return (*cost_policy)(profile,get_placement(profile));
+		return (*cost_policy_)(profile,get_placement(profile));
 	}
 
-	Profile create_profile(edge_descriptor lEdge){
-		return Profile(complex_,lEdge);
+	Profile create_profile(edge_descriptor edge){
+		return Profile(complex_,edge);
 	}
 
 
-	void insert_in_PQ( edge_descriptor const& aEdge, Edge_data& aData )
+	void insert_in_PQ( edge_descriptor const& edge, Edge_data& data )
 	{
-		aData.set_PQ_handle(mPQ->push(aEdge));
+		data.set_PQ_handle(heap_PQ_->push(edge));
+		++current_num_edges_heap_;
 	}
 
-	void update_in_PQ( edge_descriptor const& aEdge, Edge_data& aData )
+	void update_in_PQ( edge_descriptor const& edge, Edge_data& data )
 	{
-		aData.set_PQ_handle(mPQ->update(aEdge,aData.PQ_handle())) ;
+		data.set_PQ_handle(heap_PQ_->update(edge,data.PQ_handle())) ;
 	}
 
-	void remove_from_PQ( edge_descriptor const& aEdge, Edge_data& aData )
+	void remove_from_PQ( edge_descriptor const& edge, Edge_data& data )
 	{
-		aData.set_PQ_handle(mPQ->erase(aEdge,aData.PQ_handle()));
+		data.set_PQ_handle(heap_PQ_->erase(edge,data.PQ_handle()));
+		--current_num_edges_heap_;
 	}
 
 	boost::optional<edge_descriptor> pop_from_PQ()	{
-		boost::optional<edge_descriptor> rEdge = mPQ->extract_top();
+		boost::optional<edge_descriptor> rEdge = heap_PQ_->extract_top();
 		if ( rEdge )
 		{
 			get_data(*rEdge).reset_PQ_handle();
@@ -234,9 +239,9 @@ private:
 		std::cerr  << "Collecting edges ..."<<std::endl;
 		std::cerr  << lSize<<" edges "<<std::endl;
 
-		mEdgeDataArray.reset( new Edge_data[lSize] ) ;
+		edge_data_array_.reset( new Edge_data[lSize] ) ;
 
-		mPQ.reset( new PQ (lSize, Compare_cost(this), Undirected_edge_id(this) ) ) ;
+		heap_PQ_.reset( new PQ (lSize, Compare_cost(this), Undirected_edge_id(this) ) ) ;
 
 
 		std::size_t id = 0 ;
@@ -246,27 +251,28 @@ private:
 				edge_it != complex_.edge_range().end();
 				++edge_it
 		){
-			edge_descriptor lEdge = *edge_it;
-			complex_[lEdge].id() = id++;
-			Profile const& lProfile = create_profile(lEdge);
-			Edge_data& lData = get_data(lEdge);
-			lData.cost() = get_cost(lProfile) ;
-			insert_in_PQ(lEdge,lData);
-			contraction_visitor->on_collected(lProfile,lData.cost());
+			edge_descriptor edge = *edge_it;
+			complex_[edge].id() = id++;
+			Profile const& lProfile = create_profile(edge);
+			Edge_data& data = get_data(edge);
+			data.cost() = get_cost(lProfile) ;
+			++initial_num_edges_heap_;
+			insert_in_PQ(edge,data);
+			contraction_visitor_->on_collected(lProfile,data.cost());
 
 		}
 	}
 
-	bool should_stop(double lCost,const Profile &lProfile,int mInitialEdgeCount,int mCurrentEdgeCount){
+	bool should_stop(double lCost,const Profile &profile){
 		return false;
 	}
 
-	boost::optional<Point> get_placement(const Profile& lProfile){
-		return (*placement_policy)(lProfile);
+	boost::optional<Point> get_placement(const Profile& profile){
+		return (*placement_policy_)(profile);
 	}
 
-	bool is_collapse_valid( Profile const& aProfile, Placement_type aPlacement ){
-		return (*valid_contraction_policy)(aProfile);
+	bool is_collapse_valid( Profile const& profile, Placement_type placement ){
+		return (*valid_contraction_policy_)(profile,placement);
 	}
 
 
@@ -277,48 +283,49 @@ public:
 	 * While the heap is not empty, it extracts the edge with the minimum
 	 * cost in the heap then try to collapse it.
 	 * It stops when the Stop policy says so or when the number of collapses
-	 * given by 'num_collapses' is reached.
+	 * given by 'num_max_collapses' is reached (if this number is positive).
 	 */
-	void contract_edges(int num_max_loop){
+	void contract_edges(int num_max_collapses=-1){
 
-		DBG("collapse_edges");
+		DBG("Contract edges");
 		DBGVALUE(complex_.num_vertices());
-		int num_loop = 0 ;
+		int num_collapse = 0 ;
 		//
 		// Pops and processes each edge from the PQ
 		//
-		boost::optional<edge_descriptor> lEdge ;
-		while ( (lEdge = pop_from_PQ())&& ((num_loop<num_max_loop)||(num_max_loop<0)))
+		boost::optional<edge_descriptor> edge ;
+		while ( (edge = pop_from_PQ())&& ((num_collapse<num_max_collapses)||(num_max_collapses<0)))
 		{
-			++ num_loop;
+			Profile const& profile = create_profile(*edge);
+			Cost_type cost = get_data(*edge).cost();
+			contraction_visitor_->on_selected(profile,cost,0,0);
 
-			DBG("\n\n--------Pop edge");
+			DBGMSG("---- Pop edge - num vertices :",complex_.num_vertices());
 
-			Profile const& lProfile = create_profile(*lEdge);
-			Cost_type lCost = get_data(*lEdge).cost();
-			contraction_visitor->on_selected(lProfile,lCost,initial_edge_count,mCurrentEdgeCount);
-			if (lCost)
+			if (cost)
 			{
-				DBGMSG("lCost",*lCost);
-				if (should_stop(*lCost,lProfile,initial_edge_count,mCurrentEdgeCount) )
+				DBGMSG("lCost",*cost);
+				if (should_stop(*cost,profile) )
 				{
-					contraction_visitor->on_stop_condition_reached(lProfile);
+					contraction_visitor_->on_stop_condition_reached(profile);
 					DBG("should_stop");
 					break ;
 				}
-				Placement_type lPlacement = get_placement(lProfile);
-				assert(lPlacement);
-				if ( is_collapse_valid(lProfile,lPlacement) )
+				Placement_type placement = get_placement(profile);
+				if ( is_collapse_valid(profile,placement) && placement )
 				{
 					DBG("collapse_valid");
-					// The external function Get_new_vertex_point() is allowed to return an absent point if there is no way to place the vertex
-					// satisfying its constrians. In that case the remaining vertex is simply left unmoved.
-					contract_edge(lProfile,lPlacement);
+					// The external function Get_new_vertex_point() is allowed to return
+					// an absent point if there is no way to place the vertex
+					// satisfying its constrians.
+					// In that case the remaining vertex is simply left unmoved.
+					contract_edge(profile,placement);
+					++ num_collapse;
 				}
 				else
 				{
 					DBG("collapse not valid");
-					contraction_visitor->on_non_valid(lProfile);
+					contraction_visitor_->on_non_valid(profile);
 				}
 			}
 			else
@@ -336,8 +343,8 @@ public:
 	boost::optional<std::pair<edge_descriptor,Placement_type > > top_edge(){
 		boost::optional<std::pair<edge_descriptor,Placement_type > > res;
 
-		if(!mPQ->empty()) {
-			auto edge = mPQ->top();
+		if(!heap_PQ_->empty()) {
+			auto edge = heap_PQ_->top();
 			Profile const& profile = create_profile(edge);
 			Placement_type placement = get_placement(profile);
 			res = make_pair(edge,placement);
@@ -349,12 +356,14 @@ public:
 
 	Skeleton_blocker_contractor(GeometricSimplifiableComplex& complex)
 	:complex_(complex),
-	 cost_policy(new Edge_length_cost<Profile>),
-	 placement_policy(new Middle_placement<Profile>),
-	 valid_contraction_policy(new Link_condition_valid_contraction<Profile>),
-	 contraction_visitor(new Contraction_visitor_())
+	 cost_policy_(new Edge_length_cost<Profile>),
+	 placement_policy_(new Middle_placement<Profile>),
+	 valid_contraction_policy_(new Link_condition_valid_contraction<Profile>),
+	 contraction_visitor_(new Contraction_visitor_()),
+	 initial_num_edges_heap_(0),
+	 current_num_edges_heap_(0)
 	{
-		contraction_visitor->on_started(complex);
+		contraction_visitor_->on_started(complex);
 		complex_.set_visitor(this);
 		collect_edges();
 	}
@@ -366,10 +375,12 @@ public:
 			Contraction_visitor_* contraction_visitor_ = new Contraction_visitor_()
 	):
 		complex_(complex),
-		cost_policy(cost_policy_),
-		placement_policy(placement_policy_),
-		valid_contraction_policy(valid_contraction_policy_),
-		contraction_visitor(contraction_visitor_)
+		cost_policy_(cost_policy_),
+		placement_policy_(placement_policy_),
+		valid_contraction_policy_(valid_contraction_policy_),
+		contraction_visitor_(contraction_visitor_),
+		initial_num_edges_heap_(0),
+		current_num_edges_heap_(0)
 	{
 		complex_.set_visitor(this);
 		collect_edges();
@@ -380,41 +391,39 @@ public:
 
 
 private:
-	void contract_edge( Profile const& aProfile, Placement_type aPlacement ) {
-		//DBGMSG("collapse edge:",aProfile);
-		contraction_visitor->on_contracting(aProfile,aPlacement);
-		if (aPlacement)	{
-			aProfile.v0().point() = *aPlacement;
-			aProfile.v1().point() = *aPlacement;
-		}
-		complex_.contract_edge(aProfile.v0_handle(),aProfile.v1_handle());
+	void contract_edge(const Profile& profile, Placement_type placement ) {
+		contraction_visitor_->on_contracting(profile,placement);
+
+		profile.v0().point() = *placement;
+		profile.v1().point() = *placement; // remark optional since v1 would deactivated
+
+		complex_.contract_edge(profile.v0_handle(),profile.v1_handle());
+
+		// the visitor could do something as complex_.remove_popable_blockers();
+		contraction_visitor_->on_contracted(profile,placement);
 	}
 
 	/**
 	 * @brief we update the cost that has changed and the position in the heap
 	 */
-	void on_changed_edge(Vertex_handle a,Vertex_handle b){
+	void on_changed_edge(Vertex_handle a,Vertex_handle b) override{
 		//1-get the edge_descriptor corresponding to ab
 		//2-change the data in mEdgeArray[ab.id()]
 		//3-update the heap
-		edge_descriptor lEdge = (complex_[std::make_pair(a,b)]).first;
-		Edge_data& lData = get_data(lEdge);
-		Profile const& lProfile = create_profile(lEdge);
-		lData.cost() = get_cost(lProfile) ;
-		if ( lData.is_in_PQ()){
-			update_in_PQ(lEdge,lData);
+		edge_descriptor edge = (complex_[std::make_pair(a,b)]).first;
+		Edge_data& data = get_data(edge);
+		Profile const& profile = create_profile(edge);
+		data.cost() = get_cost(profile) ;
+		if ( data.is_in_PQ()){
+			update_in_PQ(edge,data);
 		}
 		else{
-			insert_in_PQ(lEdge,lData);
+			insert_in_PQ(edge,data);
 		}
 	}
 
 
-	void on_add_edge(Vertex_handle a,Vertex_handle b){
-
-	}
-
-	void on_remove_edge(Vertex_handle a,Vertex_handle b){
+	void on_remove_edge(Vertex_handle a,Vertex_handle b) override{
 
 		edge_descriptor lEdge = (complex_[std::make_pair(a,b)]).first;
 		Edge_data& lData = get_data(lEdge) ;
@@ -429,30 +438,56 @@ private:
 	 * is still there but will be removed on next instruction.
 	 * We assign the index of 'bx' to the edge index of 'ax'
 	 */
-	void on_swaped_edge(Vertex_handle a,Vertex_handle b,Vertex_handle x){
+	void on_swaped_edge(Vertex_handle a,Vertex_handle b,Vertex_handle x) override{
 		std::pair<edge_descriptor,bool> ax_pair = complex_[std::make_pair(a,x)];
 		std::pair<edge_descriptor,bool> bx_pair = complex_[std::make_pair(b,x)];
 		assert(ax_pair.second && bx_pair.second);
 		complex_[ax_pair.first].id() =complex_[bx_pair.first].id();
 	}
 
+	/**
+	 * @brief Called when a blocker is removed.
+	 * All the edges that passes through the blocker may be edge-contractible
+	 * again and are thus reinserted in the heap.
+	 */
+	void on_delete_blocker(const Simplex_handle * blocker) override{
+		// we go for all pairs xy that belongs to the blocker
+		// note that such pairs xy are necessarily edges of the complex
+		// by definition of a blocker
+		for (auto x = blocker->begin(); x!= blocker->end(); ++x){
+			for(auto y = x ; ++y != blocker->end(); ){
+				auto edge_descr = complex_[std::make_pair(*x,*y)].first;
+				Edge_data& data = get_data(edge_descr);
+				Profile const& profile = create_profile(edge_descr);
+				data.cost() = get_cost(profile) ;
+
+				// If the edge is already in the heap
+				// its priority has not changed.
+				// If the edge is not present, we reinsert it
+				// remark : we could also reinsert the edge
+				// only if it is valid
+				if ( !data.is_in_PQ() ){
+					insert_in_PQ(edge_descr,data);
+				}
+			}
+		}
+	}
 
 
 
 private:
 
-	Cost_policy_ * cost_policy;
-	Placement_policy_ * placement_policy;
-	Valid_contraction_policy_* valid_contraction_policy;
+	Cost_policy_ * cost_policy_;
+	Placement_policy_ * placement_policy_;
+	Valid_contraction_policy_* valid_contraction_policy_;
 
-	Contraction_visitor_* contraction_visitor;
+	Contraction_visitor_* contraction_visitor_;
 
-	Edge_data_array mEdgeDataArray ;
+	Edge_data_array edge_data_array_ ;
 
-	boost::scoped_ptr<PQ> mPQ ;
-
-	std::size_t initial_edge_count ;
-	std::size_t mCurrentEdgeCount ;
+	boost::scoped_ptr<PQ> heap_PQ_ ;
+	int initial_num_edges_heap_;
+	int current_num_edges_heap_;
 
 };
 

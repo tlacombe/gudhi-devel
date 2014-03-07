@@ -123,7 +123,7 @@ Skeleton_blocker_sub_complex<ComplexType>::add_vertex(Root_vertex_handle id)
 	(*this)[address].set_id(id);
 	adresses.insert(AddressPair(id,address));
 	this->num_vertices_++;
-	this->degree.push_back(0);
+	this->degree_.push_back(0);
 	return address;
 }
 

@@ -26,4 +26,4 @@ add_executable(
 	TestContraction test/TestContraction.cxx
 )
 
-add_executable(TestSimplexTree test/TestSimplexTree.cpp)
+#add_executable(TestSimplexTree test/TestSimplexTree.cpp)

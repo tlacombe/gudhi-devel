@@ -83,30 +83,29 @@ public:
 	int remove_popable_blockers(){
 		int nb_blockers_deleted=0;
 		bool blocker_popable_found=true;
-		int maxDim=-1;
 		while (blocker_popable_found){
 			blocker_popable_found=false;
 			std::list <Simplex_handle*> blockers = this->get_blockers_list();
-			maxDim=-1;
 			for (
 					typename std::list <Simplex_handle*>::iterator block=blockers.begin();
 					block!=blockers.end();
 					++block)
 			{
-				if (!is_popable_blocker(*block)) {
-					maxDim = std::max(maxDim,(*block)->dimension());
-				}
-				else{
+				if (is_popable_blocker(*block)) {
 					//			cout << "A BLOCKER HAD BECOMED POPABLE -> REMOVED\n";
 					nb_blockers_deleted++;
 					//				cout << **block<<" is now 	popable\n";
 					this->delete_blocker(*block);
 					blocker_popable_found = true;
+					// some blockers may have become popable
+					// xxx do something more efficient with a queue
+					// that receives the neigborhood of an edge and
+					// then the neigborhood of blockers that are poped.
 					break;
 				}
 			}
 		}
-		// some blockers may have become popable
+
 		return nb_blockers_deleted;
 	}
 
@@ -115,7 +114,7 @@ public:
 	 * Remove the star of the vertex 'v'
 	 */
 	void remove_star(Vertex_handle v){
-		while (this->degree[v.vertex] > 0)
+		while (this->degree(v) > 0)
 		{
 			Vertex_handle w( * (adjacent_vertices(v.vertex, this->skeleton).first));
 			this->remove_edge(v,w);
@@ -199,8 +198,9 @@ private:
 	 */
 	bool link_condition(Vertex_handle a, Vertex_handle b) const{
 		for (auto blocker : this->const_blocker_range(a))
-			if ( blocker->contains(b) )
+			if ( blocker->contains(b) ){
 				return false;
+			}
 		return true;
 	}
 
@@ -270,8 +270,8 @@ private:
 	 */
 	void remove_blockers(Vertex_handle a, Vertex_handle b){
 		std::vector<Simplex_handle *> blocker_to_delete;
-//		for (auto it = this->blocker_map.lower_bound(a); it != this->blocker_map.upper_bound(a); ++it)
-//			if ((*it).second->contains(b)) blocker_to_delete.push_back(  (*it).second );
+		//		for (auto it = this->blocker_map.lower_bound(a); it != this->blocker_map.upper_bound(a); ++it)
+		//			if ((*it).second->contains(b)) blocker_to_delete.push_back(  (*it).second );
 		for (auto blocker : this->blocker_range(a))
 			if (blocker->contains(b)) blocker_to_delete.push_back(blocker);
 		while (!blocker_to_delete.empty())
@@ -289,8 +289,8 @@ public:
 	 * it removes first all blockers passing through 'ab'
 	 */
 	void contract_edge(Vertex_handle a, Vertex_handle b){
-		DBG("contract edge");
-		DBGVALUE(a); DBGVALUE(b);
+		if (a.vertex>b.vertex) std::swap(a,b);
+
 		// if some blockers passes through 'ab', we remove them.
 		if (!link_condition(a,b)){
 			remove_blockers(a,b);
@@ -364,7 +364,7 @@ public:
 
 		// For all edges {b,x} incident to b,
 		// we remove {b,x} and add {a,x} if not already there.
-		while (this->degree[b.vertex]> 0)
+		while (this->degree(b)> 0)
 		{
 			Vertex_handle x(*(adjacent_vertices(b.vertex, this->skeleton).first));
 			if(!this->contains_edge(a,x))
