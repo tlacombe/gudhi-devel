@@ -37,7 +37,7 @@ public:
 	std::string vertices_to_string() {
 		std::ostringstream stream;
 		for(auto vertex : this->vertex_range()){
-			stream << "("<<(*this)[vertex].get_id().vertex<<" -- ";//<<(*this)[vertex].point()<<")\n";
+			stream << (*this)[vertex].get_id().vertex<<" -- ";//<<(*this)[vertex].point()<<")\n";
 		}
 		stream<< std::endl;
 		return stream.str();

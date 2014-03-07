@@ -105,7 +105,7 @@ protected:
 	 * This quantity is updated when adding/removing edge (useful because the operation
 	 * list.size() is done in linear time).
 	 */
-	std::vector<boost_vertex_handle> degree;
+	std::vector<boost_vertex_handle> degree_;
 	Graph skeleton; /** 1-skeleton of the simplicial complex. */
 
 	/** Each vertex can access to the blockers passing through it. */
@@ -130,7 +130,7 @@ public:
 		clear();
 		// xxx need an abstract factory or something to copy the visitor
 		visitor = NULL;
-		degree = copy.degree;
+		degree_ = copy.degree_;
 		skeleton = Graph(copy.skeleton);
 		// we copy the blockers
 		if (!copy.blocker_map.empty()){
@@ -150,7 +150,7 @@ public:
 		clear();
 		// xxx need an abstract factory or something to copy the visitor
 		visitor = NULL;
-		degree = copy.degree;
+		degree_ = copy.degree_;
 		skeleton = Graph(copy.skeleton);
 		// we copy the blockers
 		if (!copy.blocker_map.empty()){
@@ -182,7 +182,7 @@ public:
 		// the user... not great do a shared_ptr instead
 		visitor = NULL;
 
-		degree.clear();
+		degree_.clear();
 		num_vertices_ =0;
 
 		// Desallocate the blockers
@@ -239,7 +239,7 @@ public:
 		// are identical for every vertices
 		(*this)[address].set_id(Root_vertex_handle(address.vertex));
 		num_vertices_++;
-		degree.push_back(0);
+		degree_.push_back(0);
 		if (visitor) visitor->on_add_vertex(address);
 		return address;
 	}
@@ -254,7 +254,7 @@ public:
 		boost::clear_vertex(address.vertex,skeleton);
 		(*this)[address].deactivate();
 		num_vertices_--;
-		degree[address.vertex]=-1;
+		degree_[address.vertex]=-1;
 		if (visitor) visitor->on_remove_vertex(address);
 	}
 
@@ -308,6 +308,11 @@ public:
 		return (*this)[local].get_id();
 	}
 
+
+	int degree(Vertex_handle local) const{
+		return degree_[local.vertex];
+	}
+
 	//@}
 
 	/** @name Edges operations
@@ -333,6 +338,14 @@ public:
 		return skeleton[edge_descriptor];
 	}
 
+	Vertex_handle first_vertex(Edge_handle edge_descriptor) const{
+		return (*this)[(*this)[edge_descriptor].first()];
+	}
+
+	Vertex_handle second_vertex(Edge_handle edge_descriptor) const{
+		return (*this)[(*this)[edge_descriptor].second()];
+	}
+
 	/**
 	 * @brief returns the simplex made with the two vertices of the edge
 	 */
@@ -353,8 +366,8 @@ public:
 		{
 			edge_descr = boost::add_edge(a.vertex,b.vertex,skeleton).first;
 			(*this)[edge_descr].setId(get_id(a),get_id(b));
-			degree[a.vertex]++;
-			degree[b.vertex]++;
+			degree_[a.vertex]++;
+			degree_[b.vertex]++;
 			if (visitor) visitor->on_add_edge(a,b);
 		}
 		return edge_descr;
@@ -382,8 +395,8 @@ public:
 			if (visitor) visitor->on_remove_edge(a,b);
 			//		if (heapCollapse.Contains(edge)) heapCollapse.Delete(edge);
 			boost::remove_edge(a.vertex,b.vertex,skeleton);
-			degree[a.vertex]--;
-			degree[b.vertex]--;
+			degree_[a.vertex]--;
+			degree_[b.vertex]--;
 		}
 		return edge;
 	}
@@ -490,20 +503,18 @@ public:
 	 * s has to belongs to the set of blockers
 	 */
 	void remove_blocker(const Simplex_handle * sigma){
-		if (visitor) visitor->on_remove_blocker(*sigma);
 		for (auto vertex : *sigma){
 			remove_blocker(sigma,vertex);
 		}
 		num_blockers_--;
 	}
 
-
-
 	/**
 	 * Removes the simplex s from the set of blockers
 	 * and desallocate s.
 	 */
 	void delete_blocker(Simplex_handle * sigma){
+		if (visitor) visitor->on_delete_blocker(sigma);
 		remove_blocker(sigma);
 		delete sigma;
 	}
@@ -747,7 +758,7 @@ public:
 				// we check if the current vertex belongs to a blocker
 				if (blocker_map.find(v)==blocker_map.end()){
 					//				if (out_degree(v, skeleton) == num_vertices() -1)
-					if (degree[v.vertex] == num_vertices() -1)
+					if (degree_[v.vertex] == num_vertices() -1)
 
 						// we check if the current vertex is linked to all others vertices of the complex
 						return true;
@@ -835,10 +846,10 @@ public:
 
 	typedef Triangle_around_vertex_iterator<Superior_link> Superior_triangle_around_vertex_iterator;
 
-	Triangle_around_vertex_range<Link> triangle_range(Vertex_handle v)
+	Triangle_around_vertex_range<Link> triangle_range(Vertex_handle v) const
 									{return Triangle_around_vertex_range<Link>(this,v);}
 
-	Triangle_around_vertex_range<Superior_link> superior_triangle_range(Vertex_handle v)
+	Triangle_around_vertex_range<Superior_link> superior_triangle_range(Vertex_handle v) const
 									{return Triangle_around_vertex_range<Superior_link>(this,v);}
 
 

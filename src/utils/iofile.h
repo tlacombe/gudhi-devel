@@ -25,23 +25,23 @@
  */
 void
 read_points(std::string file_name,
-	          std::vector< std::vector< double > > &points)
+		std::vector< std::vector< double > > &points)
 {	
-  std::ifstream in_file (file_name.c_str(),std::ios::in);
-  if(!in_file.is_open()) {
-    std::cerr << "Unable to open file " << file_name << std::endl;
-    return;}
-	
-  std::string line;
-  double x;
-  while( getline (in_file,line) )
-    {
-      std::vector<double> point;
-      std::istringstream iss(line);
-      while(iss >> x) {point.push_back(x);}
-      points.push_back(point);		
-    }
-  in_file.close();
+	std::ifstream in_file (file_name.c_str(),std::ios::in);
+	if(!in_file.is_open()) {
+		std::cerr << "Unable to open file " << file_name << std::endl;
+		return;}
+
+	std::string line;
+	double x;
+	while( getline (in_file,line) )
+	{
+		std::vector<double> point;
+		std::istringstream iss(line);
+		while(iss >> x) {point.push_back(x);}
+		points.push_back(point);
+	}
+	in_file.close();
 }
 
 
@@ -101,6 +101,7 @@ bool general_read_off_file(const std::string & file_name, Complex& complex){
 	ifs >> tempBuf;
 	if (strcmp(tempBuf, "OFF") != 0) {
 		goodLoad = false;
+		std::cerr << "No OFF preambule\n";
 	}
 
 	// Read the sizes for our two arrays, and the third
@@ -115,6 +116,7 @@ bool general_read_off_file(const std::string & file_name, Complex& complex){
 			// important for later deleting our temporary
 			// storage.
 			goodLoad      = false;
+			std::cerr << "tempNumPoints < 1 || tempNumFaces < 1\n";
 			tempNumPoints = 0;
 			tempNumFaces  = 0;
 		} else {
@@ -194,22 +196,28 @@ class Geometric_flag_complex_wrapper{
 	typedef typename Complex::Vertex_handle Vertex_handle;
 	typedef typename Complex::Point Point;
 
+	const bool load_only_points_;
+
 public:
-	Geometric_flag_complex_wrapper(Complex& complex):complex_(complex){}
+	Geometric_flag_complex_wrapper(Complex& complex,bool load_only_points = false):
+		complex_(complex),
+		load_only_points_(load_only_points)
+{}
 
 
 	void add_vertex(double* xyz){
 		Point p(3);
 		for(int i=0;i<3;++i)
-		p[i] = xyz[i];
+			p[i] = xyz[i];
 		complex_.add_vertex(p);
 	}
 
-
 	void add_face(int dimension ,int* vertices){
-		for (int i = 0; i<dimension ; ++i)
-			for (int j = i+1; j<dimension ; ++j)
-				complex_.add_edge(Vertex_handle(vertices[i]),Vertex_handle(vertices[j]));
+		if (!load_only_points_){
+			for (int i = 0; i<dimension ; ++i)
+				for (int j = i+1; j<dimension ; ++j)
+					complex_.add_edge(Vertex_handle(vertices[i]),Vertex_handle(vertices[j]));
+		}
 	}
 };
 
@@ -218,11 +226,12 @@ public:
 
 /**
  * @brief Read a mesh into a OFF file
+ * load_only_points should be true if only the points have to be loaded.
  */
 template<typename Complex>
-bool read_off_file(std::string file_name,Complex &complex){
+bool read_off_file(std::string file_name,Complex &complex,bool load_only_points = false){
 	complex.clear();
-	Geometric_flag_complex_wrapper<Complex> complex_wrapper(complex);
+	Geometric_flag_complex_wrapper<Complex> complex_wrapper(complex,load_only_points);
 	return general_read_off_file(file_name,complex_wrapper);
 
 }

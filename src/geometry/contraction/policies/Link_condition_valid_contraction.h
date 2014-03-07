@@ -18,8 +18,9 @@ namespace contraction {
 template< typename EdgeProfile> class Link_condition_valid_contraction : public Valid_contraction_policy<EdgeProfile>{
 public:
 	typedef typename EdgeProfile::edge_descriptor edge_descriptor;
+	typedef typename EdgeProfile::Point Point;
 	//typedef typename EdgeProfile::edge_descriptor edge_descriptor;
-	bool operator()(const EdgeProfile& profile){
+	bool operator()(const EdgeProfile& profile,const boost::optional<Point>& placement){
 		edge_descriptor edge(profile.edge());
 		DBGMSG("Link_condition_valid_contraction:",profile.complex().link_condition(edge));
 		return profile.complex().link_condition(edge);

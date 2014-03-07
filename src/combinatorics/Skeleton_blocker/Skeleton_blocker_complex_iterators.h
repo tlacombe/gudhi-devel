@@ -165,19 +165,19 @@ private:
 	typedef Skeleton_blocker_complex Complex;
 	typedef typename Skeleton_blocker_complex<Traits>::Complex_edge_iterator Complex_edge_iterator;
 
-	Complex* complex_;
+	const Complex* complex_;
 	Vertex_handle v_;
 	LinkType link_;
 	Complex_edge_iterator current_edge_;
 	bool is_end_;
 public:
-	Triangle_around_vertex_iterator(Skeleton_blocker_complex<Traits>* complex,Vertex_handle v):
+	Triangle_around_vertex_iterator(const Skeleton_blocker_complex<Traits>* complex,Vertex_handle v):
 		complex_(complex),v_(v),link_(*complex,v_),current_edge_(link_.edge_range().begin()),is_end_(current_edge_ == link_.edge_range().end()){
 }
 	/**
 	 * @brief ugly hack to get an iterator to the end
 	 */
-	Triangle_around_vertex_iterator(Skeleton_blocker_complex<Traits>* complex,Vertex_handle v,bool is_end):
+	Triangle_around_vertex_iterator(const Skeleton_blocker_complex<Traits>* complex,Vertex_handle v,bool is_end):
 		complex_(complex),v_(v),link_(),is_end_(true){
 	}
 
@@ -239,7 +239,7 @@ private:
 	typedef Skeleton_blocker_complex<Traits> Complex;
 	typedef Complex::Superior_triangle_around_vertex_iterator STAVI;
 
-	Complex* complex_;
+	const Complex* complex_;
 	Complex_vertex_iterator current_vertex_;
 	STAVI current_triangle_;
 	bool is_end_;
@@ -248,7 +248,7 @@ public:
 	/*
 	 * @remark  assume that the complex is non-empty
 	 */
-	Triangle_iterator(Skeleton_blocker_complex<Traits>* complex):
+	Triangle_iterator(const Skeleton_blocker_complex<Traits>* complex):
 		complex_(complex),
 		current_vertex_(complex->vertex_range().begin()),
 		current_triangle_(complex,*current_vertex_), // xxx this line is problematic is the complex is empty
@@ -262,7 +262,7 @@ public:
 	 * @brief ugly hack to get an iterator to the end
 	 * @remark  assume that the complex is non-empty
 	 */
-	Triangle_iterator(Skeleton_blocker_complex<Traits>* complex,bool is_end):
+	Triangle_iterator(const Skeleton_blocker_complex<Traits>* complex,bool is_end):
 		complex_(complex),
 		current_vertex_(complex->vertex_range().begin()),
 		current_triangle_(complex->superior_triangle_range(*current_vertex_).end()), // xxx this line is problematic is the complex is empty
@@ -468,10 +468,10 @@ private:
 	typedef Skeleton_blocker_complex<Traits> Complex;
 	typedef Complex::Triangle_around_vertex_iterator<LinkType> Tavi;
 	typedef typename Skeleton_blocker_complex<Traits>::Vertex_handle Vertex_handle;
-	Complex* complex_;
+	const Complex* complex_;
 	Vertex_handle v_;
 public:
-	Triangle_around_vertex_range(Skeleton_blocker_complex<Traits>* complex,Vertex_handle v):
+	Triangle_around_vertex_range(const Skeleton_blocker_complex<Traits>* complex,Vertex_handle v):
 		complex_(complex),v_(v){
 	}
 
@@ -493,7 +493,7 @@ private:
 	typedef Skeleton_blocker_complex<Traits> Complex;
 	typedef Complex::Triangle_iterator Triangle_iterator;
 	typedef typename Skeleton_blocker_complex<Traits>::Vertex_handle Vertex_handle;
-	Complex* complex_;
+	const Complex* complex_;
 public:
 	Triangle_range(Skeleton_blocker_complex<Traits>* complex):
 		complex_(complex){

@@ -8,6 +8,7 @@
 #ifndef GUDHI_DUMMY_VALID_CONTRACTION_H_
 #define GUDHI_DUMMY_VALID_CONTRACTION_H_
 
+
 namespace contraction {
 
 
@@ -15,7 +16,8 @@ namespace contraction {
 
 template< typename EdgeProfile> class Dummy_valid_contraction : public Valid_contraction_policy<EdgeProfile>{
 public:
-	bool operator()(const EdgeProfile& profile){
+	typedef typename EdgeProfile::Point Point;
+	bool operator()(const EdgeProfile& profile,const boost::optional<Point>& placement){
 		return true;
 	}
 };

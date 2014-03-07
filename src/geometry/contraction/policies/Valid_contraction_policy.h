@@ -15,7 +15,7 @@ public:
 	typedef typename EdgeProfile::edge_descriptor edge_descriptor;
 	typedef typename EdgeProfile::Vertex Vertex;
 
-	virtual bool operator()(const EdgeProfile& profile)=0;
+	virtual bool operator()(const EdgeProfile& profile,const boost::optional<Point>& placement)=0;
 	virtual ~Valid_contraction_policy(){};
 };
 
