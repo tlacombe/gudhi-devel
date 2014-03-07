@@ -68,7 +68,7 @@ public:
 		this->remove_blocker(sigma);
 		Skeleton_blocker_link_complex<Simplifiable_Skeleton_blocker<Traits> > link_blocker(*this,*sigma);
 		this->add_blocker(sigma);
-		return link_blocker.is_reducible();
+		return link_blocker.is_reducible()==YES;
 	}
 
 
@@ -178,10 +178,18 @@ public:
 
 	/**
 	 * Test if the complex is reducible using a strategy defined in the class
-	 * (by default it tests if the complex is a cone
+	 * (by default it tests if the complex is a cone)
+	 * Note that NO could be returned if some invariant ensures that the complex
+	 * is not a point (for instance if the euler characteristic is different from 1).
+	 * This function will surely have to return MAYBE in some case because the
+	 * associated problem is undecidable but it in practice, it can often
+	 * be solved with the help of geometry.
 	 */
-	virtual bool is_reducible() const{
-		return this->is_cone();
+	enum contractible_status{ NO, YES, MAYBE};
+	virtual contractible_status is_reducible() const{
+		if (this->is_cone()) return YES;
+		else return MAYBE;
+//		return this->is_cone();
 	}
 
 
