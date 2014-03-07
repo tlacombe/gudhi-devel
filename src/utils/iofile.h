@@ -13,6 +13,7 @@
 #include <vector>
 #include <cstdio>
 #include <cstring>
+#include <list>
 
 /**
  * \brief Read a set of points to turn it
@@ -51,7 +52,7 @@ read_points(std::string file_name,
 /**
  * @brief OFF reader, save the content of the file (vertices and maximal faces) in 'complex'.
  * The class Complex has to handle the following operations:
- * - void add_vertex(double[3])
+ * - void add_vertex(double[dim],int dim)
  * - void add_face(int dimension ,int[dimension] vertices)
  * Source from : http://www.holmes3d.net/graphics/offfiles/OFFLoading.txt
  *
@@ -67,6 +68,7 @@ bool general_read_off_file(const std::string & file_name, Complex& complex){
 	int tempNumPoints   = 0;	// Number of x,y,z coordinate triples
 	int tempNumFaces    = 0;	// Number of polygon sets
 	int tempNumEdges    = 0;	// Unused, except for reading.
+	int tempDimPoints   = 0;
 	double** tempPoints = NULL;	// An array of x,y,z coordinates.
 	int** tempFaces = NULL;		// An array of arrays of point
 	// pointers. Each entry in this
@@ -110,13 +112,13 @@ bool general_read_off_file(const std::string & file_name, Complex& complex){
 	// we setup our temporary arrays.
 	if (goodLoad) {
 		ifs >> tempNumPoints >> tempNumFaces >> tempNumEdges;
-		if (tempNumPoints < 1 || tempNumFaces < 1) {
+		if (tempNumPoints < 1 || tempNumFaces < 0) {
 			// If either of these were negative, we make
 			// sure that both are set to zero. This is
 			// important for later deleting our temporary
 			// storage.
 			goodLoad      = false;
-			std::cerr << "tempNumPoints < 1 || tempNumFaces < 1\n";
+			std::cerr << "tempNumPoints < 1 || tempNumFaces < 0\n";
 			tempNumPoints = 0;
 			tempNumFaces  = 0;
 		} else {
@@ -128,9 +130,38 @@ bool general_read_off_file(const std::string & file_name, Complex& complex){
 
 	if (goodLoad) {
 		// Load all of the points.
-		for (i = 0; i < tempNumPoints; i++) {
-			tempPoints[i] = new double[3];
-			ifs >> tempPoints[i][0] >> tempPoints[i][1] >> tempPoints[i][2];
+
+		// we start by loading the first one
+		// the case is difference because then we dont know the dimension by advance
+		// we discover the point dimension by reading the first line
+		std::string lineFirstPoint;
+		std::getline(ifs, lineFirstPoint);
+		assert(lineFirstPoint.empty());
+		goodLoad = std::getline(ifs, lineFirstPoint);
+		if(!goodLoad)
+			std::cerr<<"Cant read the first point\n";
+		std::istringstream lineFirstPointStream(lineFirstPoint);
+
+		// we store the first point in a temporary list
+		std::list<double> firstTempPoint;
+		double coord;
+		while(lineFirstPointStream>>coord){
+			firstTempPoint.push_back(coord);
+			++tempDimPoints;
+		}
+		// we store the point in our points array
+		tempPoints[0]=new double[tempDimPoints];
+		for( int j = 0 ; j<tempDimPoints; ++j){
+			tempPoints[0][j] = firstTempPoint.front();
+			firstTempPoint.pop_front();
+		}
+
+		// now, we know the dimension and can read safely other points
+		for (i = 1; i < tempNumPoints; i++) {
+			tempPoints[i] = new double[tempDimPoints];
+			for (int j = 0 ; j<tempDimPoints ; ++j){
+				ifs>>tempPoints[i][j];
+			}
 		}
 
 		// Load all of the faces.
@@ -160,7 +191,7 @@ bool general_read_off_file(const std::string & file_name, Complex& complex){
 	if (goodLoad) {
 		// we save vertices first in the complex
 		for (i = 0; i < tempNumPoints; i++)
-			complex.add_vertex(tempPoints[i]);
+			complex.add_vertex(tempPoints[i],tempDimPoints);
 
 		// we save faces
 		for (i = 0; i < tempNumFaces; i++) {
@@ -205,9 +236,9 @@ public:
 {}
 
 
-	void add_vertex(double* xyz){
-		Point p(3);
-		for(int i=0;i<3;++i)
+	void add_vertex(double* xyz,int dim){
+		Point p(dim);
+		for(int i=0;i<dim;++i)
 			p[i] = xyz[i];
 		complex_.add_vertex(p);
 	}

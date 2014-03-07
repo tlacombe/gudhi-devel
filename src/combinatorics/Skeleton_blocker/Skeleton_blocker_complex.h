@@ -62,6 +62,10 @@ public:
 	typedef typename ComplexDS::Vertex_handle Vertex_handle;
 	typedef typename Root_vertex_handle::boost_vertex_handle boost_vertex_handle;
 	typedef typename ComplexDS::Simplex_handle Simplex_handle;
+	typedef Simplex_handle* Blocker_handle;
+
+
+
 	typedef typename ComplexDS::Root_simplex_handle Root_simplex_handle;
 	typedef typename Root_simplex_handle::Simplex_vertex_const_iterator Root_simplex_iterator;
 	typedef typename Simplex_handle::Simplex_vertex_const_iterator Simplex_handle_iterator;
@@ -139,7 +143,7 @@ public:
 			 */
 			for (BlockerMapConstIterator dp=copy.blocker_map.begin(); dp!=copy.blocker_map.end(); ++dp){
 				if ( (*dp).first == ( (*dp).second )->first_vertex() ){
-					Simplex_handle* sigma = new Simplex_handle(*(*dp).second);
+					Blocker_handle sigma = new Simplex_handle(*(*dp).second);
 					add_blocker(sigma);
 				}
 			}
@@ -156,7 +160,7 @@ public:
 		if (!copy.blocker_map.empty()){
 			for (BlockerMapConstIterator dp=copy.blocker_map.begin(); dp!=copy.blocker_map.end(); ++dp){
 				if ( (*dp).first == ( (*dp).second )->first_vertex() ){
-					Simplex_handle* sigma = new Simplex_handle(*((*dp).second));
+					Blocker_handle sigma = new Simplex_handle(*((*dp).second));
 					add_blocker(sigma);
 				}
 			}
@@ -191,7 +195,6 @@ public:
 			delete_blocker(blocker_map.begin()->second);
 		}
 		num_blockers_ = 0;
-
 
 		blocker_map.clear();
 		skeleton.clear();
@@ -276,17 +279,6 @@ public:
 		else
 			return (*this)[address].is_active();
 	}
-
-	/**
-	 * @return true iff the simplicial complex contains all vertices of simplex sigma
-	 */
-	bool contains_vertices(Simplex_handle* sigma) const{
-		for (auto i = sigma->begin() ; i != sigma->end() ; ++i)
-			if (!contains_vertex(*i))
-				return false;
-		return true;
-	}
-
 
 	/**
 	 * Given an Id return the address of the vertex having this Id in the complex.
@@ -376,7 +368,7 @@ public:
 	/**
 	 * @brief Adds all edges of simplex sigma to the simplicial complex.
 	 */
-	void add_edges(Simplex_handle & sigma){
+	void add_edges(const Simplex_handle & sigma){
 		Simplex_handle_iterator i, j;
 		for (i = sigma.begin() ; i != sigma.end() ; ++i)
 			for (j = i, j++ ; j != sigma.end() ; ++j)
@@ -428,8 +420,7 @@ public:
 	bool contains_edges(const Simplex_handle & sigma) const{
 		for (auto i = sigma.begin() ; i != sigma.end() ; ++i){
 			if(!contains_vertex(*i)) return false;
-			auto j=i;
-			for (++j ; j != sigma.end() ; ++j){
+			for (auto j=i; ++j != sigma.end() ; ){
 				if (!contains_edge(*i,*j))
 					return false;
 			}
@@ -461,18 +452,18 @@ public:
 	/**
 	 * Adds the simplex s to the set of blockers
 	 */
-	void add_blocker(Simplex_handle * sigma){
-		if (contains_blocker(*sigma))
+	void add_blocker(Blocker_handle blocker){
+		if (contains_blocker(*blocker))
 		{
 			//		cout << "ATTEMPT TO ADD A BLOCKER ALREADY THERE ---> BLOCKER IGNORED" << endl;
 			return;
 		}
 		else{
 			num_blockers_++;
-			auto vertex = sigma->begin();
-			while(vertex != sigma->end())
+			auto vertex = blocker->begin();
+			while(vertex != blocker->end())
 			{
-				blocker_map.insert(BlockerPair(*vertex,sigma));
+				blocker_map.insert(BlockerPair(*vertex,blocker));
 				++vertex;
 			}
 		}
@@ -519,8 +510,21 @@ public:
 		delete sigma;
 	}
 
+	/**
+	 * @return true iff s is a blocker of the simplicial complex
+	 */
+	bool contains_blocker(const Blocker_handle s) const{
+		if (s->dimension()<2)
+			return false;
 
+		Vertex_handle a = s->first_vertex();
 
+		for (auto blocker : const_blocker_range(a)){
+			if ( s == *blocker )
+				return true;
+		}
+		return false;
+	}
 
 	/**
 	 * @return true iff s is a blocker of the simplicial complex
@@ -542,8 +546,8 @@ public:
 	/**
 	 * @returns the list of blockers of the simplex
 	 */
-	std::list<Simplex_handle*> get_blockers_list(){
-		std::list <Simplex_handle*> res;
+	std::list<Blocker_handle> get_blockers_list(){
+		std::list <Blocker_handle> res;
 		for (BlockerMapConstIterator dp=blocker_map.begin(); dp!=blocker_map.end(); ++dp){
 			// check if it is the first time we encounter the blocker
 			if ( (*dp).first == ( (*dp).second )->first_vertex() ){
@@ -601,42 +605,42 @@ protected:
 
 	/**
 	 * @brief Add to simplex n all vertices which are
-	 * neighbours of alpha: \f$ n \leftarrow n \cup N(alpha) \f$
+	 * neighbours of alpha: \f$ res \leftarrow res \cup N(alpha) \f$
 	 * If 'keep_only_superior' is true then only vertices that are greater than alpha are added.
 	 *
 	 */
-	virtual void add_neighbours(const Simplex_handle &alpha, Simplex_handle & n,bool keep_only_superior=false) const{
-		n.clear();
+	virtual void add_neighbours(const Simplex_handle &alpha, Simplex_handle & res,bool keep_only_superior=false) const{
+		res.clear();
 		// ----------------------------
 		// Compute vertices in the link
 		// we compute the intersection of N(alpha_i) and store it in n
 		// ----------------------------
 		auto alpha_vertex = alpha.begin();
-		add_neighbours(*alpha_vertex,n,keep_only_superior);
+		add_neighbours(*alpha_vertex,res,keep_only_superior);
 		for (alpha_vertex = (alpha.begin())++ ; alpha_vertex != alpha.end() ; ++alpha_vertex)
 		{
-			keep_neighbours(*alpha_vertex,n,keep_only_superior);
+			keep_neighbours(*alpha_vertex,res,keep_only_superior);
 		}
 	}
 
 	/**
 	 * @brief Eliminates from simplex n all vertices which are
-	 * not neighbours of v: \f$ n \leftarrow n \cap N(v) \f$
+	 * not neighbours of v: \f$ res \leftarrow res \cap N(v) \f$
 	 */
-	virtual void keep_neighbours(Vertex_handle v, Simplex_handle& n,bool keep_only_superior=false) const{
+	virtual void keep_neighbours(Vertex_handle v, Simplex_handle& res,bool keep_only_superior=false) const{
 		Simplex_handle nv;
 		add_neighbours(v,nv,keep_only_superior);
-		n.intersection(nv);
+		res.intersection(nv);
 	}
 
 	/**
 	 * @brief Eliminates from simplex n all vertices which are
-	 * neighbours of v: \f$ n \leftarrow n \setminus N(v) \f$
+	 * neighbours of v: \f$ res \leftarrow res \setminus N(v) \f$
 	 */
-	virtual void remove_neighbours(Vertex_handle v, Simplex_handle & n,bool keep_only_superior=false) const{
+	virtual void remove_neighbours(Vertex_handle v, Simplex_handle & res,bool keep_only_superior=false) const{
 		Simplex_handle nv;
 		add_neighbours(v,nv,keep_only_superior);
-		n.difference(nv);
+		res.difference(nv);
 	}
 
 
@@ -738,7 +742,7 @@ public:
 	/**
 	 * @return the number of connected components in the graph of the 1-skeleton
 	 */
-	int num_connected_components(){
+	int num_connected_components() const{
 		int num_vert_collapsed = skeleton.vertex_set().size() - num_vertices();
 		std::vector<int> component(skeleton.vertex_set().size());
 		return boost::connected_components(this->skeleton,&component[0]) - num_vert_collapsed;
@@ -887,11 +891,11 @@ public:
 
 	typedef Complex_blocker_iterator_internal<
 			typename std::multimap<Vertex_handle,Simplex_handle *>::iterator,
-			Simplex_handle*>
+			Blocker_handle>
 	Complex_blocker_iterator;
 	typedef Complex_blocker_iterator_internal<
 			typename std::multimap<Vertex_handle,Simplex_handle *>::const_iterator,
-			const Simplex_handle*>
+			const Blocker_handle>
 			Const_complex_blocker_iterator;
 
 
@@ -949,7 +953,7 @@ public:
 	 */
 	//@{
 public:
-	std::string to_string(){
+	std::string to_string() const{
 		std::ostringstream stream;
 		stream<<num_vertices()<<" vertices:\n"<<vertices_to_string()<<std::endl;
 		stream<<num_edges()<<" edges:\n"<<edges_to_string()<<std::endl;
@@ -957,7 +961,7 @@ public:
 		return stream.str();
 	}
 
-	virtual std::string vertices_to_string() {
+	virtual std::string vertices_to_string() const{
 		std::ostringstream stream;
 		for(auto vertex : vertex_range())
 			stream << "("<<(*this)[vertex].get_id()<<"),";
@@ -965,7 +969,7 @@ public:
 		return stream.str();
 	}
 
-	std::string edges_to_string() {
+	std::string edges_to_string() const{
 		std::ostringstream stream;
 		for(auto edge : edge_range())
 			stream <<edge<<" id = "<< (*this)[edge].id()<< std::endl;
