@@ -68,8 +68,9 @@ void build_rips(ComplexType& complex, double offset){
 	auto vertices = complex.vertex_range();
 	for (auto p = vertices.begin(); p != vertices.end(); ++p)
 		for (auto q = p; ++q != vertices.end(); /**/)
-			if (distance(complex[*p].point(),complex[*q].point()) < 2*offset)
+			if (distance(complex[*p].point(),complex[*q].point()) < 2*offset){
 				complex.add_edge(*p,*q);
+			}
 }
 
 // visitor that remove popable blockers after an edge contraction

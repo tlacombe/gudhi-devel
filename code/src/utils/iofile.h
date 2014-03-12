@@ -139,7 +139,8 @@ bool general_read_off_file(const std::string & file_name, Complex& complex){
 		std::getline(ifs, lineFirstPoint);
 		assert(lineFirstPoint.empty());
 //		xxx do sthing else, incompatible with clang compil
-//		goodLoad = std::getline(ifs, lineFirstPoint);
+//		goodLoad =
+		std::getline(ifs, lineFirstPoint);
 //		if(!goodLoad)
 //			std::cerr<<"Cant read the first point\n";
 		std::istringstream lineFirstPointStream(lineFirstPoint);
