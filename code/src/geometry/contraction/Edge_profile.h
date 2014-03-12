@@ -15,8 +15,9 @@ namespace contraction {
 template<typename GeometricSimplifiableComplex> class Edge_profile{
 
 public:
-
 	typedef GeometricSimplifiableComplex Complex;
+	typedef typename Complex::GeometryTrait GeometryTrait;
+
 	typedef typename GeometricSimplifiableComplex::Vertex_handle Vertex_handle;
 	typedef typename GeometricSimplifiableComplex::Root_vertex_handle Root_vertex_handle;
 

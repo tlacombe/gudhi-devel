@@ -97,13 +97,14 @@ struct Simple_complex_DS_traits{
 	class Simple_edge {
 		Root_vertex_handle a_;
 		Root_vertex_handle b_;
-		int id_;
+		int index_;
 	public:
 
-		Simple_edge():a_(-1),b_(-1),id_(-1){}
+		Simple_edge():a_(-1),b_(-1),index_(-1){}
 
-		int& id(){return id_;}
-		int id() const {return id_;}
+		///xxx todo changer en index!
+		int& index(){return index_;}
+		int index() const {return index_;}
 
 		void setId(Root_vertex_handle a,Root_vertex_handle b){
 			a_ = a;
@@ -119,7 +120,7 @@ struct Simple_complex_DS_traits{
 		}
 
 		friend std::ostream& operator << (std::ostream& o, const Simple_edge & v){
-			o << "("<<v.a_<<","<<v.b_<<" - id = "<<v.id();
+			o << "("<<v.a_<<","<<v.b_<<" - id = "<<v.index();
 			return o;
 		}
 	};

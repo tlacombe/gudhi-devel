@@ -288,7 +288,8 @@ public:
 		o << "{";
 		for(auto i : sigma)
 		{
-			first? first = false : o << ",";
+			if(first) first = false ;
+			else o << ",";
 			o << i;
 		}
 		o << "}";

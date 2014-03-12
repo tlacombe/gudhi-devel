@@ -113,7 +113,7 @@ bool test_iterator_edge(){
 			++edge_it,++num_edges_seen
 	){
 		Edge_handle edge = *edge_it;
-		int id = complex[edge].id();
+		int id = complex[edge].index();
 		cerr << "edge_it :"<<complex[edge]<<" -- id="<<id<<endl;
 	}
 
@@ -212,6 +212,7 @@ bool test_iterator_blockers(){
 	int num_blockers=0;
 	for(auto blockers : complex.blocker_range(Vertex_handle(10))){
 		DBGVALUE(*blockers) ;
+		*blockers;
 		num_blockers++;
 	}
 	return num_blockers==3;

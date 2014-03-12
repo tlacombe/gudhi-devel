@@ -14,6 +14,7 @@
 #include <cstdio>
 #include <cstring>
 #include <list>
+#include <cassert>
 
 /**
  * \brief Read a set of points to turn it
@@ -137,9 +138,10 @@ bool general_read_off_file(const std::string & file_name, Complex& complex){
 		std::string lineFirstPoint;
 		std::getline(ifs, lineFirstPoint);
 		assert(lineFirstPoint.empty());
-		goodLoad = std::getline(ifs, lineFirstPoint);
-		if(!goodLoad)
-			std::cerr<<"Cant read the first point\n";
+//		xxx do sthing else, incompatible with clang compil
+//		goodLoad = std::getline(ifs, lineFirstPoint);
+//		if(!goodLoad)
+//			std::cerr<<"Cant read the first point\n";
 		std::istringstream lineFirstPointStream(lineFirstPoint);
 
 		// we store the first point in a temporary list

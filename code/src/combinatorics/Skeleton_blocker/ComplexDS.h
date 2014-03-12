@@ -96,11 +96,9 @@ struct ComplexDS
 		 * @brief Allows to modify the index of the edge.
 		 * The indices of the edge are used to store heap information
 		 * in the edge contraction algorithm.
-		 *
-		 * \todo renommer en index afin d'eviter l'ambiguite avec la méthode setId
 		 */
-		int& id();
-		int id() const;
+		int& index();
+		int index() const;
 
 		/**
 		 * @brief Allows to modify vertices of the edge.

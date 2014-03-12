@@ -63,6 +63,9 @@ public:
 	typedef typename GeometricSimplifiableComplex::Vertex Vertex;
 	typedef typename GeometricSimplifiableComplex::Vertex_handle Vertex_handle;
 	typedef typename GeometricSimplifiableComplex::Simplex_handle Simplex_handle;
+	typedef typename GeometricSimplifiableComplex::Simplex_handle_iterator Simplex_handle_iterator;
+
+
 
 	typedef typename GeometricSimplifiableComplex::Root_vertex_handle Root_vertex_handle;
 
@@ -175,7 +178,7 @@ private:
 
 
 	int get_undirected_edge_id ( edge_descriptor edge ) const {
-		return complex_[edge].id() ;
+		return complex_[edge].index() ;
 	}
 
 	Edge_data& get_data ( edge_descriptor const& edge ) const
@@ -252,7 +255,7 @@ private:
 				++edge_it
 		){
 			edge_descriptor edge = *edge_it;
-			complex_[edge].id() = id++;
+			complex_[edge].index() = id++;
 			Profile const& lProfile = create_profile(edge);
 			Edge_data& data = get_data(edge);
 			data.cost() = get_cost(lProfile) ;
@@ -442,7 +445,7 @@ private:
 		std::pair<edge_descriptor,bool> ax_pair = complex_[std::make_pair(a,x)];
 		std::pair<edge_descriptor,bool> bx_pair = complex_[std::make_pair(b,x)];
 		assert(ax_pair.second && bx_pair.second);
-		complex_[ax_pair.first].id() =complex_[bx_pair.first].id();
+		complex_[ax_pair.first].index() =complex_[bx_pair.first].index();
 	}
 
 	/**
@@ -454,8 +457,38 @@ private:
 		// we go for all pairs xy that belongs to the blocker
 		// note that such pairs xy are necessarily edges of the complex
 		// by definition of a blocker
-		for (auto x = blocker->begin(); x!= blocker->end(); ++x){
-			for(auto y = x ; ++y != blocker->end(); ){
+//		DBGVALUE(*blocker);
+
+//		// boucle 2
+//		//      gros bug -> pourquoi ce code loop???
+//		// blocker est constant et ne devrais pas etre modifié pourtant
+//		for ( Simplex_handle_iterator x = blocker->begin(); x!= blocker->end(); ++x){
+//			DBGMSG("\n\nloopx, bl:",*blocker);
+//			DBGMSG("loopx, x:",*x);
+//
+//			for(Simplex_handle_iterator y = x ; ++y != blocker->end(); ){
+//				auto edge_descr = complex_[std::make_pair(*x,*y)].first;
+//				Edge_data& data = get_data(edge_descr);
+//				Profile const& profile = create_profile(edge_descr);
+//
+//				// cette ligne fait looper
+//				data.cost() = get_cost(profile) ;
+//				if ( !data.is_in_PQ() ){
+//					insert_in_PQ(edge_descr,data);
+//				}
+//
+//				DBGMSG("  loopy, x:",*x);
+//				DBGMSG("  loopy, y:",*y);
+//			}
+//
+//			DBGMSG("loopx end, x:",*x);
+//		}
+
+////		//boucle 3
+////		// todo bug ce code ne loop pas mais moins efficace
+		Simplex_handle blocker_copy(*blocker);
+		for (auto x = blocker_copy.begin(); x!= blocker_copy.end(); ++x){
+			for(auto y=x ; ++y != blocker_copy.end(); ){
 				auto edge_descr = complex_[std::make_pair(*x,*y)].first;
 				Edge_data& data = get_data(edge_descr);
 				Profile const& profile = create_profile(edge_descr);
@@ -472,7 +505,6 @@ private:
 			}
 		}
 	}
-
 
 
 private:

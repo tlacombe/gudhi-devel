@@ -190,7 +190,6 @@ public:
 		num_vertices_ =0;
 
 		// Desallocate the blockers
-
 		while (!blocker_map.empty()){
 			delete_blocker(blocker_map.begin()->second);
 		}
@@ -277,7 +276,7 @@ public:
 		if (!address)
 			return false;
 		else
-			return (*this)[address].is_active();
+			return (*this)[*address].is_active();
 	}
 
 	/**
@@ -318,7 +317,7 @@ public:
 	 * - an edge handle that is valid and describes ab iff the edge is present.
 	 * - a boolean which is true is the edge was founded.
 	 */
-	std::pair<Edge_handle,bool> operator[](const std::pair<Vertex_handle,Vertex_handle>& ab){
+	std::pair<Edge_handle,bool> operator[](const std::pair<Vertex_handle,Vertex_handle>& ab) const{
 		return boost::edge(ab.first.vertex,ab.second.vertex,skeleton);
 	}
 
@@ -436,7 +435,7 @@ public:
 	 * Adds the 2-blocker abc
 	 */
 	void add_blocker(Vertex_handle a, Vertex_handle b, Vertex_handle c){
-		Simplex_handle * sigma = new Simplex_handle(a,b,c);
+		Blocker_handle sigma = new Simplex_handle(a,b,c);
 		add_blocker(sigma);
 		if (visitor) visitor->on_add_blocker(*sigma);
 	}
@@ -445,7 +444,7 @@ public:
 	 * Adds the 3-blocker abcd
 	 */
 	void add_blocker(Vertex_handle a, Vertex_handle b, Vertex_handle c, Vertex_handle d){
-		Simplex_handle * sigma = new Simplex_handle(a,b,c,d);
+		Blocker_handle sigma = new Simplex_handle(a,b,c,d);
 		add_blocker(sigma);
 	}
 
@@ -472,7 +471,7 @@ public:
 	/**
 	 * Removes sigma from the blocker map of vertex v
 	 */
-	void remove_blocker(const Simplex_handle * sigma, Vertex_handle v){
+	void remove_blocker(const Blocker_handle sigma, Vertex_handle v){
 		Complex_blocker_iterator blocker;
 		for (blocker = blocker_range(v).begin();
 				blocker != blocker_range(v).end();
@@ -493,7 +492,7 @@ public:
 	 * Removes the simplex s from the set of blockers.
 	 * s has to belongs to the set of blockers
 	 */
-	void remove_blocker(const Simplex_handle * sigma){
+	void remove_blocker(const Blocker_handle sigma){
 		for (auto vertex : *sigma){
 			remove_blocker(sigma,vertex);
 		}
@@ -504,7 +503,7 @@ public:
 	 * Removes the simplex s from the set of blockers
 	 * and desallocate s.
 	 */
-	void delete_blocker(Simplex_handle * sigma){
+	void delete_blocker(Blocker_handle sigma){
 		if (visitor) visitor->on_delete_blocker(sigma);
 		remove_blocker(sigma);
 		delete sigma;
@@ -545,13 +544,32 @@ public:
 
 	/**
 	 * @returns the list of blockers of the simplex
+	 *
+	 * @todo a enlever et faire un iterateur sur tous les blockers a la place
 	 */
-	std::list<Blocker_handle> get_blockers_list(){
-		std::list <Blocker_handle> res;
+	std::set<Blocker_handle> get_blockers(){
+		std::set<Blocker_handle> res;
 		for (BlockerMapConstIterator dp=blocker_map.begin(); dp!=blocker_map.end(); ++dp){
 			// check if it is the first time we encounter the blocker
 			if ( (*dp).first == ( (*dp).second )->first_vertex() ){
-				res.push_back((*dp).second);
+				res.insert((*dp).second);
+			}
+		}
+		return res;
+	}
+
+
+	/**
+	 * @returns the list of blockers of the simplex
+	 *
+	 * @todo a enlever et faire un iterateur sur tous les blockers a la place
+	 */
+	std::set<const Blocker_handle> get_blockers() const{
+		std::set<const Blocker_handle> res;
+		for (BlockerMapConstIterator dp=blocker_map.begin(); dp!=blocker_map.end(); ++dp){
+			// check if it is the first time we encounter the blocker
+			if ( (*dp).first == ( (*dp).second )->first_vertex() ){
+				res.insert((*dp).second);
 			}
 		}
 		return res;
@@ -585,7 +603,7 @@ private:
 	//@{
 
 
-protected:
+public:
 	/**
 	 * @brief Adds to simplex n the neighbours of v:
 	 * \f$ n \leftarrow n \cup N(v) \f$
@@ -656,6 +674,8 @@ public:
 	/**
 	 * @brief Compute the local vertices of 's' in the current complex
 	 * If one of them is not present in the complex then the return value is uninitialized.
+	 *
+	 * xxx rename get_address et place un using dans sub_complex
 	 */
 	boost::optional<Simplex_handle>	get_simplex_address(const Root_simplex_handle& s) const
 	{
@@ -972,7 +992,7 @@ public:
 	std::string edges_to_string() const{
 		std::ostringstream stream;
 		for(auto edge : edge_range())
-			stream <<edge<<" id = "<< (*this)[edge].id()<< std::endl;
+			stream << "("<< (*this)[edge].first()<<","<< (*this)[edge].second() << ")"<<" id = "<< (*this)[edge].index()<< std::endl;
 		stream<< std::endl;
 		return stream.str();
 	}
