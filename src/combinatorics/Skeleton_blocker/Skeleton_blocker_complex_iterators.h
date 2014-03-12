@@ -275,7 +275,6 @@ public:
 		complex_ = other.complex_;
 		Complex_vertex_iterator current_vertex_;
 		STAVI current_triangle_;
-		bool is_end_;
 		return *this;
 	}
 

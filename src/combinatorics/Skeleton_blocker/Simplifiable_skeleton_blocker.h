@@ -66,7 +66,7 @@ public:
 	 * A blocker 'sigma' is then "popable" if the link of 'sigma'
 	 * in L is reducible.
 	 */
-	virtual bool is_popable_blocker(Simplex_handle *sigma){
+	virtual bool is_popable_blocker(Blocker_handle sigma){
 		this->remove_blocker(sigma);
 		Skeleton_blocker_link_complex<Simplifiable_Skeleton_blocker<Traits> > link_blocker(*this,*sigma);
 		this->add_blocker(sigma);
@@ -87,7 +87,7 @@ public:
 		bool blocker_popable_found=true;
 		while (blocker_popable_found){
 			blocker_popable_found=false;
-			std::list <Blocker_handle> blockers = this->get_blockers_list();
+			auto blockers = this->get_blockers();
 			for (auto block : blockers)
 			{
 				if (is_popable_blocker(block)) {
@@ -315,7 +315,7 @@ public:
 		tip_blockers(a,b,vector_alpha);
 		tip_blockers(b,a,vector_beta);
 
-		std::vector<Simplex_handle *> blocker_to_add;
+		std::vector<Blocker_handle> blocker_to_add;
 		for (auto alpha = vector_alpha.begin(); alpha != vector_alpha.end(); ++alpha){
 			for (auto beta = vector_beta.begin(); beta != vector_beta.end(); ++beta)
 			{
@@ -324,7 +324,7 @@ public:
 				if ( this->contains(sigma) &&
 						proper_faces_in_union<SkeletonBlockerComplex>(sigma_id,link_a,link_b))
 				{
-					Simplex_handle * blocker = new Simplex_handle(sigma);
+					Blocker_handle blocker = new Simplex_handle(sigma);
 					blocker->add_vertex(a);
 					bool found=false;
 					// we check that the blocker is not already there
@@ -346,7 +346,7 @@ public:
 
 		// We delete all blockers a.tau and b.tau of K
 		// after the edge contraction ab ----> a
-		std::vector<Simplex_handle *> blocker_to_delete;
+		std::vector<Blocker_handle> blocker_to_delete;
 		for(auto bl : this->blocker_range(a))
 			blocker_to_delete.push_back(bl);
 		for(auto bl : this->blocker_range(b))

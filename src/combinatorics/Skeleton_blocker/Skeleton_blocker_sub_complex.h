@@ -29,20 +29,28 @@ template<typename ComplexType>
 class Skeleton_blocker_sub_complex : public ComplexType
 {
 
-public:
+protected:
+
+	template<class T> friend class Skeleton_blocker_link_complex;
+
 	typedef typename ComplexType::Graph Graph;
 	typedef typename ComplexType::Edge_handle Edge_handle;
 
 	typedef typename ComplexType::boost_vertex_handle boost_vertex_handle;
+
+
+public:
+	using ComplexType::add_vertex;
+	using ComplexType::add_edge;
+	using ComplexType::add_blocker;
 
 	typedef typename ComplexType::Vertex_handle Vertex_handle;
 	typedef typename ComplexType::Root_vertex_handle Root_vertex_handle;
 	typedef typename ComplexType::Simplex_handle Simplex_handle;
 	typedef typename ComplexType::Root_simplex_handle Root_simplex_handle;
 
-	template<class T> friend class Skeleton_blocker_link_complex;
 
-
+protected:
 	/**
 	 * @brief Returns true iff the simplex formed by all vertices contained in 'addresses_sigma_in_link'
 	 * but 'vertex_to_be_ignored' is in 'link'
@@ -60,36 +68,122 @@ public:
 	template<typename T> friend	bool
 	proper_faces_in_union(Skeleton_blocker_simplex<typename T::Root_vertex_handle> & sigma, Skeleton_blocker_sub_complex<T> & link1, Skeleton_blocker_sub_complex<T> & link2);
 
-
-protected:
 	typedef std::map<Root_vertex_handle,Vertex_handle> IdAddressMap;
 	typedef typename IdAddressMap::value_type AddressPair;
 	typedef typename IdAddressMap::iterator IdAddressMapIterator;
 	typedef typename IdAddressMap::const_iterator IdAddressMapConstIterator;
 	std::map<Root_vertex_handle,Vertex_handle> adresses;
 
+
+public:
 	/**
 	 * Add a vertex 'global' of K to L. When added to L, this vertex will receive
 	 * another number, addresses(global), its local adress.
 	 * return the adress where the vertex lay on L.
+	 * The vertex corresponding to 'global' must not be already present
+	 * in the complex.
 	 */
-	Vertex_handle add_vertex(Root_vertex_handle global);
+	Vertex_handle add_vertex(Root_vertex_handle global){
+		assert(!this->contains_vertex(global));
+		Vertex_handle address(boost::add_vertex(this->skeleton));
+		(*this)[address].activate();
+		(*this)[address].set_id(global);
+		adresses.insert(AddressPair(global,address));
+		this->num_vertices_++;
+		this->degree_.push_back(0);
+		return address;
+	}
 
-private:
+
 	/**
-	 * Constructs a subcomplex which is empty
+	 * Add an edge (v1_root,v2_root) to the sub-complex.
+	 * It assumes that both vertices corresponding to v1_root and v2_root are present
+	 * in the sub-complex.
 	 */
-	Skeleton_blocker_sub_complex(){};
+	void add_edge(Root_vertex_handle v1_root,Root_vertex_handle v2_root){
+		auto v1_sub(this->get_address(v1_root));
+		auto v2_sub(this->get_address(v2_root));
+		assert(v1_sub && v2_sub);
+		this->ComplexType::add_edge(*v1_sub,*v2_sub);
+	}
+
+	/**
+	 * Add a blocker to the sub-complex.
+	 * It assumes that all vertices of blocker_root are present
+	 * in the sub-complex.
+	 */
+	void add_blocker(const Root_simplex_handle& blocker_root){
+		auto blocker_sub = this->get_address(blocker_root);
+		assert(blocker_sub);
+		this->add_blocker(new Simplex_handle(*blocker_sub));
+	}
+
 
 
 public:
-	void clear();
+	/**
+	 * Constructs a subcomplex which is empty
+	 */
+	Skeleton_blocker_sub_complex(){}
+
+
+
+	/**
+	 * Constructs the restricted complex of 'parent_complex' to
+	 * vertices of 'simplex'.
+	 */
+	friend void make_restricted_complex(const ComplexType & parent_complex,const Simplex_handle& simplex,Skeleton_blocker_sub_complex & result){
+		result.clear();
+		// add vertices to the sub complex
+		for (auto x : simplex){
+			auto x_local = result.add_vertex(parent_complex[x].get_id());
+			result[x_local] = parent_complex[x];
+		}
+
+		// add edges to the sub complex
+		for (auto x : simplex){
+			// x_neigh is the neighbor of x intersected with vertices_simplex
+			Simplex_handle x_neigh;
+			parent_complex.add_neighbours(x,x_neigh,true);
+			x_neigh.intersection(simplex);
+			for (auto y : x_neigh){
+				result.add_edge(parent_complex[x].get_id(),parent_complex[y].get_id());
+			}
+		}
+
+//		// add blockers to the sub complex
+//		//xxx remplacer ac un iterateur sur les blockers
+//		for (auto blocker=parent_complex.blocker_map.begin(); blocker!=parent_complex.blocker_map.end(); ++blocker){
+//					// check if it is the first time we encounter the blocker
+//					if ( (*blocker).first == ( (*blocker).second )->first_vertex() ){
+//						if (simplex.contains(*(*blocker).second)){
+//							Root_simplex_handle blocker_root(parent_complex.get_id(*(*blocker).second));
+//							Simplex_handle blocker_restr(* result.get_simplex_address(blocker_root));
+//							result.add_blocker( new Simplex_handle(blocker_restr));
+//						}
+//					}
+//		}
+	}
+
+
+
+	void clear(){
+		adresses.clear();
+		ComplexType::clear();
+	}
 
 	/**
 	 * Compute the local vertex in L corresponding to the vertex global in K.
 	 * runs in O(log n) if n = num_vertices()
 	 */
-	boost::optional<Vertex_handle> get_address(Root_vertex_handle global) const;
+	boost::optional<Vertex_handle> get_address(Root_vertex_handle global) const{
+		boost::optional<Vertex_handle> res;
+		IdAddressMapConstIterator it = adresses.find(global);
+		if (it == adresses.end()) res.reset();
+		else  res=(*it).second;
+		return res;
+
+	}
 
 	//	/**
 	//	 * Allocates a simplex in L corresponding to the simplex s in K
@@ -113,38 +207,6 @@ private:
 
 };
 
-
-template<typename ComplexType>
-typename ComplexType::Vertex_handle
-Skeleton_blocker_sub_complex<ComplexType>::add_vertex(Root_vertex_handle id)
-{
-	Vertex_handle address(boost::add_vertex(this->skeleton));
-	(*this)[address].activate();
-	(*this)[address].set_id(id);
-	adresses.insert(AddressPair(id,address));
-	this->num_vertices_++;
-	this->degree_.push_back(0);
-	return address;
-}
-
-
-template<typename ComplexType>
-boost::optional<typename ComplexType::Vertex_handle>
-Skeleton_blocker_sub_complex<ComplexType>::get_address(typename ComplexType::Root_vertex_handle i) const
-{
-	boost::optional<Vertex_handle> res;
-	IdAddressMapConstIterator it = adresses.find(i);
-	if (it == adresses.end()) res.reset();
-	else  res=(*it).second;
-	return res;
-}
-
-template<typename ComplexType>
-void
-Skeleton_blocker_sub_complex<ComplexType>::clear(){
-	adresses.clear();
-	ComplexType::clear();
-}
 
 
 /**

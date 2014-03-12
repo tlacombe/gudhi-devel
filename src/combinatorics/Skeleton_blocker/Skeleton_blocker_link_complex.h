@@ -29,6 +29,9 @@ class Skeleton_blocker_link_complex : public Skeleton_blocker_sub_complex<Comple
 
 	typedef typename ComplexType::boost_vertex_handle boost_vertex_handle;
 
+
+
+
 	bool only_superior_vertices;
 
 public:
@@ -87,7 +90,9 @@ protected:
 				// the const cast allows to be more efficient
 				// and the sigma_parent is not truly modified since the removed vertex
 				// is readded just after performing a test
-				Simplex_handle &sigma_parent = *(const_cast<Simplex_handle*>(beta));
+//				Simplex_handle &sigma_parent = *(const_cast<Simplex_handle*>(beta));
+				Simplex_handle sigma_parent = *((beta));
+
 				sigma_parent.remove_vertex(v_parent);
 				if 	(alpha_parent_adress.contains(sigma_parent)){
 					new_vertex = false;
