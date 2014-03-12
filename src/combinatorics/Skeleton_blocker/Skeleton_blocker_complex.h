@@ -234,7 +234,7 @@ public:
 	/**
 	 * @brief Adds a vertex to the simplicial complex and returns its Vertex_handle.
 	 */
-	virtual Vertex_handle add_vertex(){
+	Vertex_handle add_vertex(){
 		Vertex_handle address(boost::add_vertex(skeleton));
 		(*this)[address].activate();
 		// safe since we now that we are in the root complex and the field 'address' and 'id'

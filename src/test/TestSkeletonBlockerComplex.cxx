@@ -211,8 +211,7 @@ bool test_iterator_blockers(){
 	// Print result
 	int num_blockers=0;
 	for(auto blockers : complex.blocker_range(Vertex_handle(10))){
-		DBGVALUE(*blockers) ;
-		*blockers;
+		TESTVALUE(*blockers) ;
 		num_blockers++;
 	}
 	return num_blockers==3;
