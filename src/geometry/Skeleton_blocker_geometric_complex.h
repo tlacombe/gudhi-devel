@@ -12,21 +12,21 @@
 #include "utils/Utils.h"
 #include "combinatorics/Skeleton_blocker/Skeleton_blocker_simplifiable_complex.h"
 
-template<typename ComplexGeometricTraits>
-class Skeleton_blocker_geometric_complex : public Skeleton_blocker_simplifiable_complex<ComplexGeometricTraits>
+template<typename SkeletonBlockerGeometricDS>
+class Skeleton_blocker_geometric_complex : public Skeleton_blocker_simplifiable_complex<SkeletonBlockerGeometricDS>
 {
 public:
 
-	typedef typename ComplexGeometricTraits::GeometryTrait GeometryTrait;
+	typedef typename SkeletonBlockerGeometricDS::GeometryTrait GeometryTrait;
 
-	typedef Skeleton_blocker_simplifiable_complex<ComplexGeometricTraits> SimplifiableSkeletonblocker;
+	typedef Skeleton_blocker_simplifiable_complex<SkeletonBlockerGeometricDS> SimplifiableSkeletonblocker;
 
 	typedef typename SimplifiableSkeletonblocker::Vertex_handle Vertex_handle;
 	typedef typename SimplifiableSkeletonblocker::Root_vertex_handle Root_vertex_handle;
 
 	typedef typename SimplifiableSkeletonblocker::Graph_vertex Graph_vertex;
 
-	typedef typename ComplexGeometricTraits::Point Point;
+	typedef typename SkeletonBlockerGeometricDS::Point Point;
 
 
 	void add_vertex(const Point& point){

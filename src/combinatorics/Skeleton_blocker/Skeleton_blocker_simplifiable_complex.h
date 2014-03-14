@@ -314,7 +314,7 @@ public:
 		tip_blockers(a,b,vector_alpha);
 		tip_blockers(b,a,vector_beta);
 
-		std::vector<Blocker_handle> blocker_to_add;
+		std::vector<Simplex_handle> blocker_to_add;
 		for (auto alpha = vector_alpha.begin(); alpha != vector_alpha.end(); ++alpha){
 			for (auto beta = vector_beta.begin(); beta != vector_beta.end(); ++beta)
 			{
@@ -323,8 +323,8 @@ public:
 				if ( this->contains(sigma) &&
 						proper_faces_in_union<SkeletonBlockerComplex>(sigma_id,link_a,link_b))
 				{
-					Blocker_handle blocker = new Simplex_handle(sigma);
-					blocker->add_vertex(a);
+//					Blocker_handle blocker = new Simplex_handle(sigma);
+					sigma.add_vertex(a);
 					bool found=false;
 					// we check that the blocker is not already there
 					/**
@@ -332,13 +332,13 @@ public:
 					 */
 					for(auto block : blocker_to_add)
 					{
-						if(*block==*blocker){
+						if(block==sigma){
 							found = true;
 							break;
 						}
 					}
 					if (!found)
-						blocker_to_add.push_back(blocker);
+						blocker_to_add.push_back(sigma);
 				}
 			}
 		}
