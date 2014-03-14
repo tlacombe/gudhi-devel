@@ -397,8 +397,8 @@ private:
 	void contract_edge(const Profile& profile, Placement_type placement ) {
 		contraction_visitor_->on_contracting(profile,placement);
 
-		profile.v0().point() = *placement;
-		profile.v1().point() = *placement; // remark optional since v1 would deactivated
+		profile.complex().point(profile.v0_handle()) = *placement;
+		profile.complex().point(profile.v1_handle()) = *placement; // remark optional since v1 would deactivated
 
 		complex_.contract_edge(profile.v0_handle(),profile.v1_handle());
 
