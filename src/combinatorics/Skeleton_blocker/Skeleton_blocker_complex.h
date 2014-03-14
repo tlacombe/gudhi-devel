@@ -55,8 +55,8 @@ class Skeleton_blocker_complex
 public:
 
 
-	typedef typename SkeletonBlockerDS::Vertex Vertex;
-	typedef typename SkeletonBlockerDS::Edge Edge;
+	typedef typename SkeletonBlockerDS::Graph_vertex Graph_vertex;
+	typedef typename SkeletonBlockerDS::Graph_edge Graph_edge;
 
 	typedef typename SkeletonBlockerDS::Root_vertex_handle Root_vertex_handle;
 	typedef typename SkeletonBlockerDS::Vertex_handle Vertex_handle;
@@ -77,8 +77,8 @@ protected:
 			< boost::listS,
 			boost::vecS,
 			boost::undirectedS,
-			Vertex,
-			Edge
+			Graph_vertex,
+			Graph_edge
 			> Graph;
 	typedef typename boost::graph_traits<Graph>::vertex_iterator boost_vertex_iterator;
 	typedef typename boost::graph_traits<Graph>::edge_iterator boost_edge_iterator;
@@ -225,11 +225,11 @@ public:
 		return *local;
 	}
 
-	Vertex& operator[](Vertex_handle address){
+	Graph_vertex& operator[](Vertex_handle address){
 		return skeleton[address.vertex];
 	}
 
-	const Vertex& operator[](Vertex_handle address) const{
+	const Graph_vertex& operator[](Vertex_handle address) const{
 		return skeleton[address.vertex];
 	}
 
@@ -323,11 +323,11 @@ public:
 		return boost::edge(ab.first.vertex,ab.second.vertex,skeleton);
 	}
 
-	Edge& operator[](Edge_handle edge_descriptor){
+	Graph_edge& operator[](Edge_handle edge_descriptor){
 		return skeleton[edge_descriptor];
 	}
 
-	const Edge& operator[](Edge_handle edge_descriptor) const{
+	const Graph_edge& operator[](Edge_handle edge_descriptor) const{
 		return skeleton[edge_descriptor];
 	}
 

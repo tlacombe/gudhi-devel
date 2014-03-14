@@ -23,7 +23,7 @@ public:
 
 
 	typedef typename GeometricSimplifiableComplex::Edge_handle edge_descriptor;
-	typedef typename GeometricSimplifiableComplex::Vertex Vertex;
+	typedef typename GeometricSimplifiableComplex::Graph_vertex Graph_vertex;
 	typedef typename GeometricSimplifiableComplex::Point Point;
 
 
@@ -40,8 +40,8 @@ public:
 		return edge_;
 	}
 
-	Vertex& v0() const{return complex_[v0_handle()];}
-	Vertex& v1() const{return complex_[v1_handle()];}
+	Graph_vertex& v0() const{return complex_[v0_handle()];}
+	Graph_vertex& v1() const{return complex_[v1_handle()];}
 
 
 	Vertex_handle v0_handle() const{

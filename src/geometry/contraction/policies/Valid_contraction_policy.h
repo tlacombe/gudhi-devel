@@ -13,7 +13,7 @@ template< typename EdgeProfile> class Valid_contraction_policy{
 public:
 	typedef typename EdgeProfile::Point Point;
 	typedef typename EdgeProfile::edge_descriptor edge_descriptor;
-	typedef typename EdgeProfile::Vertex Vertex;
+	typedef typename EdgeProfile::Graph_vertex Graph_vertex;
 
 	virtual bool operator()(const EdgeProfile& profile,const boost::optional<Point>& placement)=0;
 	virtual ~Valid_contraction_policy(){};

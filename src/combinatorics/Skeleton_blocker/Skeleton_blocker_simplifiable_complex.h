@@ -24,7 +24,7 @@ public:
 
 	typedef Skeleton_blocker_complex<Traits> SkeletonBlockerComplex;
 
-	typedef typename SkeletonBlockerComplex::Edge Edge;
+	typedef typename SkeletonBlockerComplex::Graph_edge Graph_edge;
 
 	typedef typename SkeletonBlockerComplex::boost_adjacency_iterator boost_adjacency_iterator;
 	typedef typename SkeletonBlockerComplex::Edge_handle Edge_handle;
@@ -213,7 +213,7 @@ public:
 	 * or equivalently iff no blocker contains e.
 	 */
 	bool link_condition(Edge_handle & e) const{
-		const Edge& edge = (*this)[e];
+		const Graph_edge& edge = (*this)[e];
 		Vertex_handle a(*this->get_address(edge.first()));
 		Vertex_handle b(*this->get_address(edge.second()));
 		return link_condition(a,b);

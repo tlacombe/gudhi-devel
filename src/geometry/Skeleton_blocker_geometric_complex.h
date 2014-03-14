@@ -24,7 +24,7 @@ public:
 	typedef typename SimplifiableSkeletonblocker::Vertex_handle Vertex_handle;
 	typedef typename SimplifiableSkeletonblocker::Root_vertex_handle Root_vertex_handle;
 
-	typedef typename SimplifiableSkeletonblocker::Vertex Vertex;
+	typedef typename SimplifiableSkeletonblocker::Graph_vertex Graph_vertex;
 
 	typedef typename ComplexGeometricTraits::Point Point;
 
