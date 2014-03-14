@@ -34,22 +34,31 @@ public:
 		(*this)[ad].point() = point;
 	}
 
-//	std::string vertices_to_string() {
-//		std::ostringstream stream;
-//		for(auto vertex : this->vertex_range()){
-//			stream << (*this)[vertex].get_id().vertex<<" -- ";
-//
-////			stream<<"(";
-////			for (auto x : (*this)[vertex].point()){
-////				stream<<x<<",";
-////			}
-////			stream<<")"<<std::endl;
-//
-//			//<<(*this)[vertex].point()<<")\n";
-//		}
-//		stream<< std::endl;
-//		return stream.str();
-//	}
+
+	const Point& point(Vertex_handle v) const{
+		return (*this)[v].point();
+	}
+
+	Point& point(Vertex_handle v) {
+		return (*this)[v].point();
+	}
+
+	//	std::string vertices_to_string() {
+	//		std::ostringstream stream;
+	//		for(auto vertex : this->vertex_range()){
+	//			stream << (*this)[vertex].get_id().vertex<<" -- ";
+	//
+	////			stream<<"(";
+	////			for (auto x : (*this)[vertex].point()){
+	////				stream<<x<<",";
+	////			}
+	////			stream<<")"<<std::endl;
+	//
+	//			//<<(*this)[vertex].point()<<")\n";
+	//		}
+	//		stream<< std::endl;
+	//		return stream.str();
+	//	}
 
 };
 

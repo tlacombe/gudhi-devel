@@ -118,6 +118,11 @@ struct ComplexDS
 		friend ostream& operator << (ostream& o, const Simple_edge & v);
 	};
 
+
+	// @todo todo faire les concepts correspondants
+	typedef unspecified Simplex_handle;
+	typedef unspecified Root_simplex_handle;
+
 };
 
 

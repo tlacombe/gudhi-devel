@@ -112,6 +112,8 @@ protected:
 	std::vector<boost_vertex_handle> degree_;
 	Graph skeleton; /** 1-skeleton of the simplicial complex. */
 
+
+public: //xxx remove des qu'il y aura des iterateurs sur tous les blockers
 	/** Each vertex can access to the blockers passing through it. */
 	BlockerMap blocker_map;
 
@@ -547,12 +549,12 @@ public:
 	 *
 	 * @todo a enlever et faire un iterateur sur tous les blockers a la place
 	 */
-	std::set<Blocker_handle> get_blockers(){
-		std::set<Blocker_handle> res;
+	std::list<Blocker_handle> get_blockers(){
+		std::list<Blocker_handle> res;
 		for (BlockerMapConstIterator dp=blocker_map.begin(); dp!=blocker_map.end(); ++dp){
 			// check if it is the first time we encounter the blocker
 			if ( (*dp).first == ( (*dp).second )->first_vertex() ){
-				res.insert((*dp).second);
+				res.push_back((*dp).second);
 			}
 		}
 		return res;
@@ -564,12 +566,12 @@ public:
 	 *
 	 * @todo a enlever et faire un iterateur sur tous les blockers a la place
 	 */
-	std::set<const Blocker_handle> get_blockers() const{
-		std::set<const Blocker_handle> res;
+	std::list<const Blocker_handle> get_blockers() const{
+		std::list<const Blocker_handle> res;
 		for (BlockerMapConstIterator dp=blocker_map.begin(); dp!=blocker_map.end(); ++dp){
 			// check if it is the first time we encounter the blocker
 			if ( (*dp).first == ( (*dp).second )->first_vertex() ){
-				res.insert((*dp).second);
+				res.push_back((*dp).second);
 			}
 		}
 		return res;
@@ -940,7 +942,6 @@ public:
 
 	/**
 	 * \brief Range over the blockers of the simplicial complex adjacent to a vertex.
-	 * todo explains constant
 	 * Methods .begin() and .end() return a Complex_blocker_iterator.
 	 */
 	class Const_complex_blocker_range{
@@ -959,7 +960,7 @@ public:
 	};
 
 	/**
-	 * Returns a Complex_simplex_range over all blockers of the complex adjacent to the vertex 'v'
+	 * Returns a Complex_simplex_range over all blockers of the complex adjacent to the vertex 'v'.
 	 */
 	Const_complex_blocker_range const_blocker_range(Vertex_handle v) const
 	{return Const_complex_blocker_range(*this,v);}

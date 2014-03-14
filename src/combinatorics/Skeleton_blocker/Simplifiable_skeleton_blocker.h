@@ -329,7 +329,7 @@ public:
 					bool found=false;
 					// we check that the blocker is not already there
 					/**
-					 * @todo TODO faire un set
+					 * @todo TODO faire un set avec une relation de comparaison less(simplex* s1,simplex *s2) = *s1<*s2
 					 */
 					for(auto block : blocker_to_add)
 					{
