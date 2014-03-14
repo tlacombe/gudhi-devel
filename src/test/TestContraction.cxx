@@ -6,7 +6,7 @@
  */
 #include <ctime>
 
-#include "Skeleton_blocker/Simple_skeleton_blockers_traits.h"
+#include "Skeleton_blocker/Skeleton_blocker_simple_traits.h"
 //#include "Skeleton_blocker/Simplex.h"
 #include "contraction/Skeleton_blocker_contractor.h"
 #include "Utils.h"
@@ -36,7 +36,7 @@ struct Geometry_trait{
 
 typedef Geometry_trait::Point Point;
 
-typedef Simple_complex_geometry_traits<Geometry_trait> Complex_geometric_traits;
+typedef Skeleton_blocker_simple_geometric_traits<Geometry_trait> Complex_geometric_traits;
 
 typedef Skeleton_blocker_geometric_complex< Complex_geometric_traits > Complex;
 

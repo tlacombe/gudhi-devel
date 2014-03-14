@@ -1,19 +1,19 @@
 /*
- * Simple_skeleton_blockers_traits.h
+ * Skeleton_blocker_simple_traits.h
  *
  *  Created on: Feb 11, 2014
  *      Author: dsalinas
  */
 
-#ifndef GUDHI_SIMPLE_SKELETON_BLOCKERS_TRAITS_H_
-#define GUDHI_SIMPLE_SKELETON_BLOCKERS_TRAITS_H_
+#ifndef GUDHI_SKELETON_BLOCKERS_SIMPLE_TRAITS_H_
+#define GUDHI_SKELETON_BLOCKERS_SIMPLE_TRAITS_H_
 
 #include <string>
 #include <sstream>
 #include "Skeleton_blocker_simplex.h"
 
 
-struct Simple_complex_DS_traits{
+struct Skeleton_blocker_simple_traits{
 	/**
 	 * @brief global and local handle similar to <a href="http://www.boost.org/doc/libs/1_38_0/libs/graph/doc/subgraph.html">boost subgraphs</a>.
 	 * In gross, vertices are stored in a vector.
@@ -139,13 +139,13 @@ struct Simple_complex_DS_traits{
 
 
 template<typename GT>
-struct Simple_complex_geometry_traits : public Simple_complex_DS_traits {
+struct Skeleton_blocker_simple_geometric_traits : public Skeleton_blocker_simple_traits {
 public:
 
 	typedef GT GeometryTrait;
 	typedef typename GeometryTrait::Point Point;
-	typedef typename Simple_complex_DS_traits::Root_vertex_handle Root_vertex_handle;
-	typedef typename Simple_complex_DS_traits::Vertex Simple_vertex;
+	typedef typename Skeleton_blocker_simple_traits::Root_vertex_handle Root_vertex_handle;
+	typedef typename Skeleton_blocker_simple_traits::Vertex Simple_vertex;
 
 	class Simple_geometric_vertex : public Simple_vertex{
 		template<class ComplexGeometricTraits> friend class Skeleton_blocker_geometric_complex;
@@ -156,9 +156,9 @@ public:
 	};
 
 	typedef Simple_geometric_vertex Vertex;
-	typedef Simple_complex_DS_traits::Edge Edge;
+	typedef Skeleton_blocker_simple_traits::Edge Edge;
 };
 
 
 
-#endif /* GUDHI_SIMPLE_SKELETON_BLOCKERS_TRAITS_H_ */
+#endif /* GUDHI_SKELETON_BLOCKERS_SIMPLE_TRAITS_H_ */

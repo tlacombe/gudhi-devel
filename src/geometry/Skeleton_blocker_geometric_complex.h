@@ -10,16 +10,16 @@
 
 
 #include "utils/Utils.h"
-#include "combinatorics/Skeleton_blocker/Simplifiable_skeleton_blocker.h"
+#include "combinatorics/Skeleton_blocker/Skeleton_blocker_simplifiable_complex.h"
 
 template<typename ComplexGeometricTraits>
-class Skeleton_blocker_geometric_complex : public Simplifiable_Skeleton_blocker<ComplexGeometricTraits>
+class Skeleton_blocker_geometric_complex : public Skeleton_blocker_simplifiable_complex<ComplexGeometricTraits>
 {
 public:
 
 	typedef typename ComplexGeometricTraits::GeometryTrait GeometryTrait;
 
-	typedef Simplifiable_Skeleton_blocker<ComplexGeometricTraits> SimplifiableSkeletonblocker;
+	typedef Skeleton_blocker_simplifiable_complex<ComplexGeometricTraits> SimplifiableSkeletonblocker;
 
 	typedef typename SimplifiableSkeletonblocker::Vertex_handle Vertex_handle;
 	typedef typename SimplifiableSkeletonblocker::Root_vertex_handle Root_vertex_handle;

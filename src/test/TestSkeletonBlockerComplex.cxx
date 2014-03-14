@@ -11,14 +11,14 @@
 #include "Skeleton_blocker/Skeleton_blocker_complex_iterators.h"
 #include "Skeleton_blocker/Skeleton_blocker_link_complex.h"
 #include "Skeleton_blocker/Skeleton_blocker_link_superior.h"
-#include "Skeleton_blocker/Simple_skeleton_blockers_traits.h"
+#include "Skeleton_blocker/Skeleton_blocker_simple_traits.h"
 //#include "Simple_vertex.h"
 //#include "Simple_edge.h"
 
 using namespace std;
 
 template<typename ComplexType> class Skeleton_blocker_link_complex;
-typedef Skeleton_blocker_complex<Simple_complex_DS_traits> Complex;
+typedef Skeleton_blocker_complex<Skeleton_blocker_simple_traits> Complex;
 typedef typename Complex::Vertex_handle Vertex_handle;
 typedef typename Complex::Root_vertex_handle Root_vertex_handle;
 typedef typename Complex::Simplex_handle Simplex_handle;

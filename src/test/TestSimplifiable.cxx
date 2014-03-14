@@ -17,15 +17,15 @@
 //#include "Skeleton_blocker/Simplex.h"
 #include "Skeleton_blocker/Skeleton_blocker_complex.h"
 #include "Skeleton_blocker/Skeleton_blocker_complex_iterators.h"
-#include "Skeleton_blocker/Simplifiable_skeleton_blocker.h"
-#include "Skeleton_blocker/Simple_skeleton_blockers_traits.h"
+#include "Skeleton_blocker/Skeleton_blocker_simplifiable_complex.h"
+#include "Skeleton_blocker/Skeleton_blocker_simple_traits.h"
 
 
 using namespace std;
 
 
 template<typename ComplexType> class Skeleton_blocker_sub_complex;
-typedef Simplifiable_Skeleton_blocker<Simple_complex_DS_traits> Complex;
+typedef Skeleton_blocker_simplifiable_complex<Skeleton_blocker_simple_traits> Complex;
 typedef typename Complex::Vertex_handle Vertex_handle;
 typedef typename Complex::Root_vertex_handle Root_vertex_handle;
 typedef Skeleton_blocker_simplex<Vertex_handle> Address_simplex;
