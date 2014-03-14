@@ -145,8 +145,7 @@ public:
 			 */
 			for (BlockerMapConstIterator dp=copy.blocker_map.begin(); dp!=copy.blocker_map.end(); ++dp){
 				if ( (*dp).first == ( (*dp).second )->first_vertex() ){
-					Blocker_handle sigma = new Simplex_handle(*(*dp).second);
-					add_blocker(sigma);
+					add_blocker(*(*dp).second);
 				}
 			}
 		}
@@ -437,29 +436,51 @@ public:
 	 * Adds the 2-blocker abc
 	 */
 	void add_blocker(Vertex_handle a, Vertex_handle b, Vertex_handle c){
-		Blocker_handle sigma = new Simplex_handle(a,b,c);
-		add_blocker(sigma);
-		if (visitor) visitor->on_add_blocker(*sigma);
+		add_blocker(Simplex_handle(a,b,c));
 	}
 
 	/**
 	 * Adds the 3-blocker abcd
 	 */
 	void add_blocker(Vertex_handle a, Vertex_handle b, Vertex_handle c, Vertex_handle d){
-		Blocker_handle sigma = new Simplex_handle(a,b,c,d);
-		add_blocker(sigma);
+		add_blocker(Simplex_handle(a,b,c,d));
 	}
 
+	/**
+	 * Adds the simplex s to the set of blockers
+	 */
+	void add_blocker(const Simplex_handle& blocker){
+		if (contains_blocker(blocker))
+		{
+			//std::cerr << "ATTEMPT TO ADD A BLOCKER ALREADY THERE ---> BLOCKER IGNORED" << endl;
+			return;
+		}
+		else{
+			if (visitor) visitor->on_add_blocker(blocker);
+			Blocker_handle blocker_pt = new Simplex_handle(blocker);
+			num_blockers_++;
+			auto vertex = blocker_pt->begin();
+			while(vertex != blocker_pt->end())
+			{
+				blocker_map.insert(BlockerPair(*vertex,blocker_pt));
+				++vertex;
+			}
+		}
+	}
+
+
+protected:
 	/**
 	 * Adds the simplex s to the set of blockers
 	 */
 	void add_blocker(Blocker_handle blocker){
 		if (contains_blocker(*blocker))
 		{
-			//		cout << "ATTEMPT TO ADD A BLOCKER ALREADY THERE ---> BLOCKER IGNORED" << endl;
+			//std::cerr << "ATTEMPT TO ADD A BLOCKER ALREADY THERE ---> BLOCKER IGNORED" << endl;
 			return;
 		}
 		else{
+			if (visitor) visitor->on_add_blocker(*blocker);
 			num_blockers_++;
 			auto vertex = blocker->begin();
 			while(vertex != blocker->end())
@@ -470,6 +491,8 @@ public:
 		}
 	}
 
+
+protected:
 	/**
 	 * Removes sigma from the blocker map of vertex v
 	 */
@@ -490,6 +513,7 @@ public:
 		}
 	}
 
+public:
 	/**
 	 * Removes the simplex s from the set of blockers.
 	 * s has to belongs to the set of blockers
@@ -514,7 +538,7 @@ public:
 	/**
 	 * @return true iff s is a blocker of the simplicial complex
 	 */
-	bool contains_blocker(const Blocker_handle s) const{
+	bool contains_blocker(Blocker_handle s) const{
 		if (s->dimension()<2)
 			return false;
 

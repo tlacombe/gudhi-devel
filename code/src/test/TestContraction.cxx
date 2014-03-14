@@ -6,7 +6,7 @@
  */
 #include <ctime>
 
-#include "Skeleton_blocker/Skeleton_blocker_simple_traits.h"
+#include "Skeleton_blocker/Skeleton_blocker_simple_geometric_traits.h"
 //#include "Skeleton_blocker/Simplex.h"
 #include "contraction/Skeleton_blocker_contractor.h"
 #include "Utils.h"

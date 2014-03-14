@@ -96,8 +96,11 @@ bool test_contraction2(){
 	Complex complex(n);
 	build_complete(n,complex);
 	complex.remove_edge(Vertex_handle(b),Vertex_handle(x));
-	Address_simplex* blocker =
-			new Address_simplex(Vertex_handle(a),Vertex_handle(y),Vertex_handle(z));
+	Address_simplex blocker;
+	blocker.add_vertex(Vertex_handle(a));
+	blocker.add_vertex(Vertex_handle(y));
+	blocker.add_vertex(Vertex_handle(z));
+
 	complex.add_blocker(blocker);
 
 	// Print result
@@ -222,8 +225,8 @@ bool test_remove_popable_blockers(){
 	K.add_vertex();
 	K.add_edge(Vertex_handle(3),Vertex_handle(4));
 	K.add_edge(Vertex_handle(2),Vertex_handle(4));
-	Address_simplex *sigma1=new Address_simplex(Vertex_handle(1),Vertex_handle(2),Vertex_handle(3));
-	Address_simplex *sigma2=new Address_simplex(Vertex_handle(2),Vertex_handle(3),Vertex_handle(4));
+	Address_simplex sigma1=Address_simplex(Vertex_handle(1),Vertex_handle(2),Vertex_handle(3));
+	Address_simplex sigma2=Address_simplex(Vertex_handle(2),Vertex_handle(3),Vertex_handle(4));
 
 	K.add_blocker(sigma1);
 	K.add_blocker(sigma2);
@@ -245,8 +248,8 @@ bool test_remove_popable_blockers(){
 	K.add_edge(Vertex_handle(2),Vertex_handle(5));
 	K.add_edge(Vertex_handle(3),Vertex_handle(5));
 	K.add_edge(Vertex_handle(4),Vertex_handle(5));
-	sigma1=new Address_simplex(Vertex_handle(1),Vertex_handle(2),Vertex_handle(3));
-	sigma2=new Address_simplex(Vertex_handle(2),Vertex_handle(3),Vertex_handle(4));
+	sigma1=Address_simplex(Vertex_handle(1),Vertex_handle(2),Vertex_handle(3));
+	sigma2=Address_simplex(Vertex_handle(2),Vertex_handle(3),Vertex_handle(4));
 
 	K.add_blocker(sigma1);
 	K.add_blocker(sigma2);

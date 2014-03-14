@@ -204,9 +204,10 @@ bool test_iterator_blockers(){
 		for (int j=i+1;j<15;j++)
 			complex.add_edge(Vertex_handle(i),Vertex_handle(j));
 	}
-	complex.add_blocker(new Simplex_handle(Vertex_handle(10),Vertex_handle(11),Vertex_handle(12)));
-	complex.add_blocker(new Simplex_handle(Vertex_handle(2),Vertex_handle(1),Vertex_handle(10)));
-	complex.add_blocker(new Simplex_handle(Vertex_handle(10),Vertex_handle(9),Vertex_handle(15)));
+
+	complex.add_blocker(Simplex_handle(Vertex_handle(10),Vertex_handle(11),Vertex_handle(12)));
+	complex.add_blocker(Simplex_handle(Vertex_handle(2),Vertex_handle(1),Vertex_handle(10)));
+	complex.add_blocker(Simplex_handle(Vertex_handle(10),Vertex_handle(9),Vertex_handle(15)));
 
 	// Print result
 	int num_blockers=0;
@@ -323,7 +324,7 @@ bool test_link3(){
 		for (int j=i+1;j<15;j++)
 			K.add_edge(Vertex_handle(i),Vertex_handle(j));
 	}
-	K.add_blocker(new Simplex_handle(Vertex_handle(10),Vertex_handle(11),Vertex_handle(12)));
+	K.add_blocker(Vertex_handle(10),Vertex_handle(11),Vertex_handle(12));
 	alpha = Simplex_handle(Vertex_handle(12),Vertex_handle(14));
 	Skeleton_blocker_link_complex<Complex> L(K,alpha);
 	// Complexes built
@@ -356,7 +357,7 @@ bool test_link4(){
 		for (int j=i+1;j<15;j++)
 			K.add_edge(Vertex_handle(i),Vertex_handle(j));
 	}
-	K.add_blocker(new Simplex_handle(Vertex_handle(10),Vertex_handle(11),Vertex_handle(12),Vertex_handle(13)));
+	K.add_blocker(Vertex_handle(10),Vertex_handle(11),Vertex_handle(12),Vertex_handle(13));
 	Simplex_handle alpha(Vertex_handle(12),Vertex_handle(14));
 	Skeleton_blocker_link_complex<Complex> L(K,alpha);
 	// Complexes built
@@ -381,7 +382,7 @@ bool test_link5(){
 	Complex K(0,new Print_complex_visitor<Vertex_handle>());
 	// Build the complexes
 	buildComplete(4,K);
-	K.add_blocker(new Simplex_handle(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2),Vertex_handle(3)));
+	K.add_blocker(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2),Vertex_handle(3));
 
 	Simplex_handle alpha(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2));
 
