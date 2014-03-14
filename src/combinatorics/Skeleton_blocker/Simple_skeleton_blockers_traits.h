@@ -148,9 +148,9 @@ public:
 	typedef typename Simple_complex_DS_traits::Vertex Simple_vertex;
 
 	class Simple_geometric_vertex : public Simple_vertex{
+		template<class ComplexGeometricTraits> friend class Skeleton_blocker_geometric_complex;
 	private:
 		Point point_;
-	public:
 		Point& point(){	return point_; }
 		const Point& point() const {	return point_; }
 	};

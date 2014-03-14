@@ -54,9 +54,9 @@ public:
 		return *complex_.get_address(root);
 	}
 
-	const Point& p0() const {return v0().point();}
+	const Point& p0() const {return complex_.point(v0_handle());}
 
-	const Point& p1() const {return v1().point();}
+	const Point& p1() const {return complex_.point(v1_handle());}
 
 	friend std::ostream& operator << (std::ostream& o, const Edge_profile & v){
 		o << "v0:"<<v.v0_handle() << " v1:"<<v.v1_handle();
