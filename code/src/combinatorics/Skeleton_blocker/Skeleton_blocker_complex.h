@@ -34,18 +34,18 @@
  * - the graph of its 1-skeleton;
  * - its set of blockers.
  *
- * The graph is a boost graph templated with ComplexDS::Vertex and ComplexDS::Edge.
+ * The graph is a boost graph templated with SkeletonBlockerDS::Vertex and SkeletonBlockerDS::Edge.
  *
- * One can access vertices through ComplexDS::Vertex_handle, edges through ComplexDS::Edge_handle and
+ * One can access vertices through SkeletonBlockerDS::Vertex_handle, edges through SkeletonBlockerDS::Edge_handle and
  * simplices through Simplex_handle.
  * @todo TODO Simplex_handle are not classic handle
  *
- * The ComplexDS::Root_vertex_handle serves in the case of a subcomplex (see class Skeleton_blocker_sub_complex)
+ * The SkeletonBlockerDS::Root_vertex_handle serves in the case of a subcomplex (see class Skeleton_blocker_sub_complex)
  * to access to the address of one vertex in the parent complex.
  *
  * @todo TODO constants iterator
  */
-template<class ComplexDS>
+template<class SkeletonBlockerDS>
 class Skeleton_blocker_complex
 {
 	template<class ComplexType> friend class Skeleton_blocker_link_complex;
@@ -55,18 +55,18 @@ class Skeleton_blocker_complex
 public:
 
 
-	typedef typename ComplexDS::Vertex Vertex;
-	typedef typename ComplexDS::Edge Edge;
+	typedef typename SkeletonBlockerDS::Vertex Vertex;
+	typedef typename SkeletonBlockerDS::Edge Edge;
 
-	typedef typename ComplexDS::Root_vertex_handle Root_vertex_handle;
-	typedef typename ComplexDS::Vertex_handle Vertex_handle;
+	typedef typename SkeletonBlockerDS::Root_vertex_handle Root_vertex_handle;
+	typedef typename SkeletonBlockerDS::Vertex_handle Vertex_handle;
 	typedef typename Root_vertex_handle::boost_vertex_handle boost_vertex_handle;
-	typedef typename ComplexDS::Simplex_handle Simplex_handle;
+	typedef typename SkeletonBlockerDS::Simplex_handle Simplex_handle;
 	typedef Simplex_handle* Blocker_handle;
 
 
 
-	typedef typename ComplexDS::Root_simplex_handle Root_simplex_handle;
+	typedef typename SkeletonBlockerDS::Root_simplex_handle Root_simplex_handle;
 	typedef typename Root_simplex_handle::Simplex_vertex_const_iterator Root_simplex_iterator;
 	typedef typename Simplex_handle::Simplex_vertex_const_iterator Simplex_handle_iterator;
 
@@ -867,8 +867,8 @@ public:
 	{return Triangle_around_vertex_range<LinkType>(this,v);}
 	 */
 
-	typedef Skeleton_blocker_link_complex<Skeleton_blocker_complex<ComplexDS> > Link;
-	typedef Skeleton_blocker_link_superior<Skeleton_blocker_complex<ComplexDS> > Superior_link;
+	typedef Skeleton_blocker_link_complex<Skeleton_blocker_complex<SkeletonBlockerDS> > Link;
+	typedef Skeleton_blocker_link_superior<Skeleton_blocker_complex<SkeletonBlockerDS> > Superior_link;
 
 	typedef Triangle_around_vertex_iterator<Superior_link> Superior_triangle_around_vertex_iterator;
 

@@ -1,12 +1,12 @@
 /*
- * Simplifiable_skeleton_blockers.h
+ * Skeleton_blocker_simplifiable_complex.h
  *
  *  Created on: Feb 4, 2014
  *      Author: dsalinas
  */
 
-#ifndef GUDHI_SIMPLIFIABLE_SKELETON_BLOCKERS_H_
-#define GUDHI_SIMPLIFIABLE_SKELETON_BLOCKERS_H_
+#ifndef GUDHI_SKELETON_BLOCKERS_SIMPLIFIABLE_COMPLEX_H_
+#define GUDHI_SKELETON_BLOCKERS_SIMPLIFIABLE_COMPLEX_H_
 
 #include "Skeleton_blocker_sub_complex.h"
 
@@ -16,12 +16,11 @@
  *  by a skeleton/blockers pair.
  */
 template<typename Traits>
-class Simplifiable_Skeleton_blocker : public Skeleton_blocker_complex<Traits>
+class Skeleton_blocker_simplifiable_complex : public Skeleton_blocker_complex<Traits>
 {
 	template<class ComplexType> friend class Skeleton_blocker_sub_complex;
 
 public:
-
 
 	typedef Skeleton_blocker_complex<Traits> SkeletonBlockerComplex;
 
@@ -50,13 +49,13 @@ public:
 	/** @name Constructors / Destructors / Initialization
 	 */
 	//@{
-	Simplifiable_Skeleton_blocker(int num_vertices_ = 0,Visitor* visitor_=NULL):
+	Skeleton_blocker_simplifiable_complex(int num_vertices_ = 0,Visitor* visitor_=NULL):
 		Skeleton_blocker_complex<Traits>(num_vertices_,visitor_){	}
 	//@}
 
 
 
-	virtual ~Simplifiable_Skeleton_blocker(){
+	virtual ~Skeleton_blocker_simplifiable_complex(){
 	}
 
 	/**
@@ -68,7 +67,7 @@ public:
 	 */
 	virtual bool is_popable_blocker(Blocker_handle sigma){
 		this->remove_blocker(sigma);
-		Skeleton_blocker_link_complex<Simplifiable_Skeleton_blocker<Traits> > link_blocker(*this,*sigma);
+		Skeleton_blocker_link_complex<Skeleton_blocker_simplifiable_complex<Traits> > link_blocker(*this,*sigma);
 		this->add_blocker(sigma);
 		return link_blocker.is_reducible()==CONTRACTIBLE;
 	}
@@ -396,4 +395,4 @@ public:
 
 
 
-#endif /* GUDHI_SIMPLIFIABLE_SKELETON_BLOCKERS_H_ */
+#endif /* GUDHI_SKELETON_BLOCKERS_SIMPLIFIABLE_COMPLEX_H_ */

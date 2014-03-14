@@ -1,20 +1,20 @@
 /*
- * ComplexDS.h
+ * SkeletonBlockerDS.h
  *
  *  Created on: Feb 20, 2014 
  *      Author: David Salinas
  *  Copyright 2013 INRIA. All rights reserved
  */
 
-#ifndef GUDHI_COMPLEXDS_H_
-#define GUDHI_COMPLEXDS_H_
+#ifndef GUDHI_SKELETONBLOCKERDS_H_
+#define GUDHI_SKELETONBLOCKERDS_H_
 
 /** \brief Concept defining the ComplexDS trait that must be passed to
  * the template class Skeleton_blockers_complex
  *
  *
  */
-struct ComplexDS
+struct SkeletonBlockerDS
 {
 	/**
 	 * @todo faire un default value pour les vertex_handle
@@ -128,4 +128,4 @@ struct ComplexDS
 
 
 
-#endif /* GUDHI_COMPLEXDS_H_ */
+#endif /* GUDHI_SKELETONBLOCKERDS_H_ */
