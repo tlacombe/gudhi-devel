@@ -71,8 +71,6 @@ struct Skeleton_blocker_simple_traits{
 		}
 	};
 
-	//typedef Simple_vertex<Root_vertex_handle> Vertex;
-
 
 	class Simple_vertex {
 		bool is_active_;
@@ -97,7 +95,7 @@ struct Skeleton_blocker_simple_traits{
 			return o;
 		}
 	};
-	typedef Simple_vertex Vertex;
+	typedef Simple_vertex Graph_vertex;
 
 	class Simple_edge {
 		Root_vertex_handle a_;
@@ -129,13 +127,11 @@ struct Skeleton_blocker_simple_traits{
 		}
 	};
 
-	typedef Simple_edge Edge;
+	typedef Simple_edge Graph_edge;
 
 	typedef Skeleton_blocker_simplex<Vertex_handle> Simplex_handle;
 	typedef Skeleton_blocker_simplex<Root_vertex_handle> Root_simplex_handle;
-
 };
-
 
 
 template<typename GT>
@@ -145,7 +141,7 @@ public:
 	typedef GT GeometryTrait;
 	typedef typename GeometryTrait::Point Point;
 	typedef typename Skeleton_blocker_simple_traits::Root_vertex_handle Root_vertex_handle;
-	typedef typename Skeleton_blocker_simple_traits::Vertex Simple_vertex;
+	typedef typename Skeleton_blocker_simple_traits::Graph_vertex Simple_vertex;
 
 	class Simple_geometric_vertex : public Simple_vertex{
 		template<class ComplexGeometricTraits> friend class Skeleton_blocker_geometric_complex;
@@ -155,8 +151,8 @@ public:
 		const Point& point() const {	return point_; }
 	};
 
-	typedef Simple_geometric_vertex Vertex;
-	typedef Skeleton_blocker_simple_traits::Edge Edge;
+	typedef Simple_geometric_vertex Graph_vertex;
+	typedef Skeleton_blocker_simple_traits::Graph_edge Graph_edge;
 };
 
 

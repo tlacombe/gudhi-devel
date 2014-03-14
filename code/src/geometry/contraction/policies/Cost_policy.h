@@ -16,7 +16,7 @@ namespace contraction {
 template< typename EdgeProfile> class Cost_policy{
 public:
 	typedef typename EdgeProfile::Point Point;
-	typedef typename EdgeProfile::Vertex Vertex;
+	typedef typename EdgeProfile::Graph_vertex Graph_vertex;
 
 	typedef boost::optional<double> Cost_type;
 

@@ -66,7 +66,7 @@ struct SkeletonBlockerDS
 	 * A Vertex must be Default Constructible and Equality Comparable.
 	 *
 	 */
-	struct Vertex{
+	struct Graph_vertex{
 		/** \brief Used to deactivate a vertex for example when contracting an edge.
 		 * It allows in some cases to remove the vertex at low cost.
 		 */
@@ -83,7 +83,7 @@ struct SkeletonBlockerDS
 		void set_id(Root_vertex_handle i);
 		Root_vertex_handle get_id() const;
 		virtual string to_string() const ;
-		friend ostream& operator << (ostream& o, const Vertex & v);
+		friend ostream& operator << (ostream& o, const Graph_vertex & v);
 	};
 
 
@@ -91,7 +91,7 @@ struct SkeletonBlockerDS
 	 * \brief The type of edges that are stored the boost graph.
 	 * An Edge must be Default Constructible and Equality Comparable.
 	 */
-	struct Edge{
+	struct Graph_edge{
 		/**
 		 * @brief Allows to modify the index of the edge.
 		 * The indices of the edge are used to store heap information

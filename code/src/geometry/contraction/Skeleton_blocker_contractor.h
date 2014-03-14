@@ -60,7 +60,7 @@ class Skeleton_blocker_contractor : public Dummy_complex_visitor<typename Geomet
 	GeometricSimplifiableComplex& complex_;
 
 public:
-	typedef typename GeometricSimplifiableComplex::Vertex Vertex;
+	typedef typename GeometricSimplifiableComplex::Graph_vertex Graph_vertex;
 	typedef typename GeometricSimplifiableComplex::Vertex_handle Vertex_handle;
 	typedef typename GeometricSimplifiableComplex::Simplex_handle Simplex_handle;
 	typedef typename GeometricSimplifiableComplex::Simplex_handle_iterator Simplex_handle_iterator;
@@ -69,7 +69,7 @@ public:
 
 	typedef typename GeometricSimplifiableComplex::Root_vertex_handle Root_vertex_handle;
 
-	typedef typename GeometricSimplifiableComplex::Edge Edge;
+	typedef typename GeometricSimplifiableComplex::Graph_edge Graph_edge;
 	typedef typename GeometricSimplifiableComplex::Edge_handle edge_descriptor;
 	typedef typename GeometricSimplifiableComplex::Complex_edge_iterator EdgeIterator;
 	typedef typename GeometricSimplifiableComplex::Point Point;
