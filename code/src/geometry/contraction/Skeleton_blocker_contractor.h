@@ -274,7 +274,7 @@ private:
 		return (*placement_policy_)(profile);
 	}
 
-	bool is_collapse_valid( Profile const& profile, Placement_type placement ){
+	bool is_contraction_valid( Profile const& profile, Placement_type placement ){
 		return (*valid_contraction_policy_)(profile,placement);
 	}
 
@@ -284,20 +284,20 @@ public:
 	 * \brief Contract edges.
 	 *
 	 * While the heap is not empty, it extracts the edge with the minimum
-	 * cost in the heap then try to collapse it.
-	 * It stops when the Stop policy says so or when the number of collapses
-	 * given by 'num_max_collapses' is reached (if this number is positive).
+	 * cost in the heap then try to contract it.
+	 * It stops when the Stop policy says so or when the number of contractions
+	 * given by 'num_max_contractions' is reached (if this number is positive).
 	 */
-	void contract_edges(int num_max_collapses=-1){
+	void contract_edges(int num_max_contractions=-1){
 
 		DBG("Contract edges");
 		DBGVALUE(complex_.num_vertices());
-		int num_collapse = 0 ;
+		int num_contraction = 0 ;
 		//
 		// Pops and processes each edge from the PQ
 		//
 		boost::optional<edge_descriptor> edge ;
-		while ( (edge = pop_from_PQ())&& ((num_collapse<num_max_collapses)||(num_max_collapses<0)))
+		while ( (edge = pop_from_PQ())&& ((num_contraction<num_max_contractions)||(num_max_contractions<0)))
 		{
 			Profile const& profile = create_profile(*edge);
 			Cost_type cost = get_data(*edge).cost();
@@ -315,19 +315,19 @@ public:
 					break ;
 				}
 				Placement_type placement = get_placement(profile);
-				if ( is_collapse_valid(profile,placement) && placement )
+				if ( is_contraction_valid(profile,placement) && placement )
 				{
-					DBG("collapse_valid");
+					DBG("contraction_valid");
 					// The external function Get_new_vertex_point() is allowed to return
 					// an absent point if there is no way to place the vertex
 					// satisfying its constrians.
 					// In that case the remaining vertex is simply left unmoved.
 					contract_edge(profile,placement);
-					++ num_collapse;
+					++ num_contraction;
 				}
 				else
 				{
-					DBG("collapse not valid");
+					DBG("contraction not valid");
 					contraction_visitor_->on_non_valid(profile);
 				}
 			}

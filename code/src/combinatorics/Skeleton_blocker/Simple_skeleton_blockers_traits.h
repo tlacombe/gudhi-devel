@@ -27,6 +27,10 @@ struct Simple_complex_DS_traits{
 		explicit Root_vertex_handle(boost_vertex_handle val = -1 ):vertex(val){}
 		boost_vertex_handle vertex;
 
+		bool operator!=( const Root_vertex_handle& other) const{
+			return ! this->vertex == other.vertex;
+		}
+
 		bool operator==( const Root_vertex_handle& other) const{
 			return this->vertex == other.vertex;
 		}
@@ -50,6 +54,10 @@ struct Simple_complex_DS_traits{
 
 		bool operator==( const Vertex_handle& other) const{
 			return this->vertex == other.vertex;
+		}
+
+		bool operator!=( const Vertex_handle& other) const{
+			return this->vertex != other.vertex;
 		}
 
 		bool operator<(const Vertex_handle& other) const{
@@ -91,9 +99,6 @@ struct Simple_complex_DS_traits{
 	};
 	typedef Simple_vertex Vertex;
 
-
-	// todo pkoi on stocke les id plutot que des addresses??
-	// urgent a voir si on aurait pas mieux fait de stocker des addresses
 	class Simple_edge {
 		Root_vertex_handle a_;
 		Root_vertex_handle b_;
@@ -102,7 +107,6 @@ struct Simple_complex_DS_traits{
 
 		Simple_edge():a_(-1),b_(-1),index_(-1){}
 
-		///xxx todo changer en index!
 		int& index(){return index_;}
 		int index() const {return index_;}
 
@@ -127,7 +131,6 @@ struct Simple_complex_DS_traits{
 
 	typedef Simple_edge Edge;
 
-
 	typedef Skeleton_blocker_simplex<Vertex_handle> Simplex_handle;
 	typedef Skeleton_blocker_simplex<Root_vertex_handle> Root_simplex_handle;
 
@@ -149,7 +152,6 @@ public:
 		Point point_;
 	public:
 		Point& point(){	return point_; }
-
 		const Point& point() const {	return point_; }
 	};
 

@@ -45,7 +45,7 @@ public:
 	virtual void on_collected (const Profile &profile, boost::optional< FT > cost){}
 
 	/**
-	 * @brief Called during the processing phase (when edges are collapsed), for each edge that is selected.
+	 * @brief Called during the processing phase (when edges are contracted), for each edge that is selected.
 	 */
 	virtual void on_selected (const Profile &profile, boost::optional< FT > cost, int initial_count, int current_count){}
 
