@@ -31,7 +31,7 @@ typedef typename Complex::Root_vertex_handle Root_vertex_handle;
 typedef Skeleton_blocker_simplex<Vertex_handle> Address_simplex;
 typedef Skeleton_blocker_simplex<Root_vertex_handle> Id_simplex;
 typedef Address_simplex::Simplex_vertex_const_iterator AddressSimplexConstIterator;
-typedef Complex::Const_complex_blocker_iterator ConstBlockerIterator;
+typedef Complex::Const_complex_blocker_around_vertex_iterator ConstBlockerIterator;
 // true iff v \in K
 bool assert_vertex(Complex &complex,Vertex_handle v){
 	Address_simplex simplex(v);

@@ -43,6 +43,17 @@ public:
 		return (*this)[v].point();
 	}
 
+	const Point& point(Root_vertex_handle global_v) const{
+		Vertex_handle local_v ( (*this)[global_v]) ;
+		return (*this)[local_v].point();
+	}
+
+	Point& point(Root_vertex_handle global_v) {
+		Vertex_handle local_v ( (*this)[global_v]) ;
+		return (*this)[local_v].point();
+	}
+
+
 	//	std::string vertices_to_string() {
 	//		std::ostringstream stream;
 	//		for(auto vertex : this->vertex_range()){

@@ -163,17 +163,25 @@ public:
 		//		}
 
 		// add blockers to the sub complex
-		//xxx remplacer ac un iterateur sur les blockers
-		for (auto blocker : parent_complex.blocker_map){
+		for (auto blocker : parent_complex.const_blocker_range()){
 			// check if it is the first time we encounter the blocker
-			if ( (blocker).first == ( (blocker).second )->first_vertex() ){
-				if (simplex.contains(*(blocker).second)){
-					Root_simplex_handle blocker_root(parent_complex.get_id(*(blocker).second));
-					Simplex_handle blocker_restr(* result.get_simplex_address(blocker_root));
-					result.add_blocker( new Simplex_handle(blocker_restr));
-				}
+			if (simplex.contains(*blocker)){
+				Root_simplex_handle blocker_root(parent_complex.get_id(*(blocker)));
+				Simplex_handle blocker_restr(* result.get_simplex_address(blocker_root));
+				result.add_blocker( new Simplex_handle(blocker_restr));
 			}
 		}
+
+		//		for (auto blocker : parent_complex.blocker_map){
+		//			// check if it is the first time we encounter the blocker
+		//			if ( (blocker).first == ( (blocker).second )->first_vertex() ){
+		//				if (simplex.contains(*(blocker).second)){
+		//					Root_simplex_handle blocker_root(parent_complex.get_id(*(blocker).second));
+		//					Simplex_handle blocker_restr(* result.get_simplex_address(blocker_root));
+		//					result.add_blocker( new Simplex_handle(blocker_restr));
+		//				}
+		//			}
+		//		}
 	}
 
 
