@@ -122,20 +122,20 @@ protected:
 				if (parent_complex.contains_edge(x_parent,y_parent) ){
 					// we check that there is no blocker subset of alpha passing trough x and y
 					bool new_edge=true;
-					for (auto blocker_parent=parent_complex.blocker_map.lower_bound(x_parent);
-							blocker_parent!=parent_complex.blocker_map.upper_bound(x_parent);
-							++blocker_parent)
+					for (auto blocker_parent : parent_complex.const_blocker_range(x_parent))
 					{
-						Blocker_handle sigma_parent = (*blocker_parent).second;
-						if 	(sigma_parent->contains(y_parent))
+//						Simplex_handle sigma_parent& = *blocker_parent;
+						// --> more efficient but may invalidate iterators and is not const
+						Simplex_handle sigma_parent(*blocker_parent);
+						if 	(sigma_parent.contains(y_parent))
 						{
-							sigma_parent->remove_vertex(x_parent);
-							sigma_parent->remove_vertex(y_parent);
-							if(alpha_parent_adress.contains(*sigma_parent )){
+							sigma_parent.remove_vertex(x_parent);
+							sigma_parent.remove_vertex(y_parent);
+							if(alpha_parent_adress.contains(sigma_parent )){
 								new_edge = false;
 							}
-							sigma_parent->add_vertex(x_parent);
-							sigma_parent->add_vertex(y_parent);
+							sigma_parent.add_vertex(x_parent);
+							sigma_parent.add_vertex(y_parent);
 							if (!new_edge) break;
 						}
 					}

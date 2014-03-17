@@ -24,7 +24,7 @@ typedef typename Complex::Root_vertex_handle Root_vertex_handle;
 typedef typename Complex::Simplex_handle Simplex_handle;
 typedef typename Complex::Root_simplex_handle Root_simplex_handle;
 typedef Simplex_handle::Simplex_vertex_const_iterator Simplex_vertex_const_iterator;
-typedef Complex::Const_complex_blocker_iterator ConstBlockerIterator;
+typedef Complex::Const_complex_blocker_around_vertex_iterator ConstBlockerIterator;
 typedef Complex::Complex_vertex_range VertexRange;
 typedef Complex::Complex_vertex_iterator VertexIterator;
 typedef Complex::Complex_edge_range EdgeRange;
@@ -208,6 +208,7 @@ bool test_iterator_blockers(){
 	complex.add_blocker(Simplex_handle(Vertex_handle(10),Vertex_handle(11),Vertex_handle(12)));
 	complex.add_blocker(Simplex_handle(Vertex_handle(2),Vertex_handle(1),Vertex_handle(10)));
 	complex.add_blocker(Simplex_handle(Vertex_handle(10),Vertex_handle(9),Vertex_handle(15)));
+	complex.add_blocker(Simplex_handle(Vertex_handle(1),Vertex_handle(9),Vertex_handle(8)));
 
 	// Print result
 	int num_blockers=0;
@@ -215,9 +216,16 @@ bool test_iterator_blockers(){
 		TESTVALUE(*blockers) ;
 		num_blockers++;
 	}
-	return num_blockers==3;
+	bool test = (num_blockers==3);
 
-
+	num_blockers=0;
+	DBG("second loop");
+	for (auto blockers : complex.blocker_range()){
+		TESTVALUE(*blockers) ;
+		num_blockers++;
+	}
+	test = test && (num_blockers==4) ;
+	return test;
 }
 
 

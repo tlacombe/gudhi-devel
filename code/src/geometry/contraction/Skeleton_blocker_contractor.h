@@ -303,7 +303,7 @@ public:
 			Cost_type cost = get_data(*edge).cost();
 			contraction_visitor_->on_selected(profile,cost,0,0);
 
-			DBGMSG("---- Pop edge - num vertices :",complex_.num_vertices());
+			DBGMSG("\n\n---- Pop edge - num vertices :",complex_.num_vertices());
 
 			if (cost)
 			{

@@ -12,7 +12,9 @@
 #include <sstream>
 #include "Skeleton_blocker_simplex.h"
 
-
+/**
+ * @extends SkeletonBlockerDS
+ */
 struct Skeleton_blocker_simple_traits{
 	/**
 	 * @brief global and local handle similar to <a href="http://www.boost.org/doc/libs/1_38_0/libs/graph/doc/subgraph.html">boost subgraphs</a>.

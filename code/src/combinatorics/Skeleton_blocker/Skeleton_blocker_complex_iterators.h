@@ -45,30 +45,30 @@ public:
 		return(!(*this == other));
 	}
 private:
-	void gotoNextVertex(){
+	void goto_next_vertex(){
 		if(!finished()){
 			++vertexIterator.first;
 			bool is_active = (complex->skeleton[*vertexIterator.first]).is_active();
-			if(!is_active) gotoNextVertex();
+			if(!is_active) goto_next_vertex();
 		}
 	}
 
 public:
 	Complex_vertex_iterator& operator++(){
-		gotoNextVertex();
+		goto_next_vertex();
 		return(*this);
 	}
 
 	Complex_vertex_iterator operator++(int){
 		Complex_vertex_iterator tmp(*this);
-		gotoNextVertex();
+		goto_next_vertex();
 		return(tmp);
 	}
 
 	Vertex_handle  operator*()	{
 		// these two lines are just in case the first vertex isnt active
 		bool is_active = (complex->skeleton[*vertexIterator.first]).is_active();
-		if(!is_active) gotoNextVertex();
+		if(!is_active) goto_next_vertex();
 		return(Vertex_handle(*(vertexIterator.first)));
 	}
 
@@ -337,23 +337,23 @@ public:
 //
 //private:
 //	const Complex * complex;
-//	BlockerMapConstIterator currentPosition;
+//	BlockerMapConstIterator current_position;
 //public:
 //
 //	Complex_const_blocker_iterator():
 //		complex(0),
-//		currentPosition()
+//		current_position()
 //
 //{}
 //
 //	Complex_const_blocker_iterator(const Skeleton_blocker_complex * complex_,BlockerMapConstIterator position):
 //		complex(complex_),
-//		currentPosition(position)
+//		current_position(position)
 //	{}
 //
 //	bool operator==(const Complex_const_blocker_iterator& other){
 //		return
-//				currentPosition == other.currentPosition
+//				current_position == other.current_position
 //				&& complex == (other.complex);
 //	}
 //
@@ -362,12 +362,12 @@ public:
 //	}
 //
 //	Complex_const_blocker_iterator& operator++(){
-//		currentPosition++;
+//		current_position++;
 //		return(*this);
 //	}
 //
 //	const Simplex_handle* operator*()	{
-//		return(currentPosition->second);
+//		return(current_position->second);
 //	}
 //};
 
@@ -380,38 +380,103 @@ public:
 // MapIteratorType = BlockerMapConstIterator or BlockerMapIterator
 template<typename Traits>
 template<typename MapIteratorType, typename ReturnType>
-class Skeleton_blocker_complex<Traits>::Complex_blocker_iterator_internal{
+class Skeleton_blocker_complex<Traits>::Blocker_iterator_around_vertex_internal{
 	friend class Skeleton_blocker_complex<Traits> ;
 private:
-	MapIteratorType currentPosition;
+	MapIteratorType current_position;
 public:
 
-	Complex_blocker_iterator_internal():currentPosition(){}
+	Blocker_iterator_around_vertex_internal():current_position(){}
 
-	Complex_blocker_iterator_internal(MapIteratorType position):
-		currentPosition(position)
+	Blocker_iterator_around_vertex_internal(MapIteratorType position):
+		current_position(position)
 	{}
 
-	Complex_blocker_iterator_internal& operator=(Complex_blocker_iterator_internal other){
-		this->currentPosition = other.currentPosition;
+	Blocker_iterator_around_vertex_internal& operator=(Blocker_iterator_around_vertex_internal other){
+		this->current_position = other.current_position;
 		return *this;
 	}
 
-	bool operator==(const Complex_blocker_iterator_internal& other) const{
-		return currentPosition == other.currentPosition;
+	bool operator==(const Blocker_iterator_around_vertex_internal& other) const{
+		return current_position == other.current_position;
 	}
 
-	bool operator!=(const Complex_blocker_iterator_internal& other){
+	bool operator!=(const Blocker_iterator_around_vertex_internal& other){
 		return(! (*this == other));
 	}
 
-	Complex_blocker_iterator_internal& operator++(){
-		currentPosition++;
+	Blocker_iterator_around_vertex_internal& operator++(){
+		current_position++;
 		return(*this);
 	}
 
 	ReturnType operator*()	{
-		return(currentPosition->second);
+		return(current_position->second);
+	}
+};
+
+
+
+
+/**
+ * @brief Iterator through the blockers of a vertex
+ */
+// ReturnType = const Simplex_handle* or Simplex_handle*
+// MapIteratorType = BlockerMapConstIterator or BlockerMapIterator
+template<typename Traits>
+template<typename MapIteratorType, typename ReturnType>
+class Skeleton_blocker_complex<Traits>::Blocker_iterator_internal{
+	friend class Skeleton_blocker_complex<Traits> ;
+private:
+	MapIteratorType current_position;
+	MapIteratorType end_of_map;
+public:
+
+	Blocker_iterator_internal():current_position(){}
+
+	Blocker_iterator_internal(MapIteratorType position,MapIteratorType end_of_map_ ):
+		current_position(position), end_of_map(end_of_map_)
+	{	}
+
+	Blocker_iterator_internal& operator=(Blocker_iterator_internal other){
+		this->current_position = other.current_position;
+		this->end_of_map = other.end_of_map;
+		return *this;
+	}
+
+	bool operator==(const Blocker_iterator_internal& other) const{
+		return current_position == other.current_position;
+	}
+
+	bool operator!=(const Blocker_iterator_internal& other){
+		return(! (*this == other));
+	}
+
+	Blocker_iterator_internal& operator++(){
+		goto_next_blocker();
+		return(*this);
+	}
+
+	ReturnType operator*()	{
+		// If the current vertex is not the first vertex of the current blocker then we already have
+		// seen sigma this blocker and we look for the next one.
+		return(current_position->second);
+	}
+
+private:
+	/**
+	 * Let the current pair be (v,sigma) where v is a vertex and sigma is a blocker.
+	 * If v is not the first vertex of sigma then we already have seen sigma as a blocker
+	 * and we look for the next one.
+	 */
+	void goto_next_blocker(){
+		do {
+			++current_position;
+		} while (!(current_position == end_of_map) && !first_time_blocker_is_seen());
+	}
+
+	bool first_time_blocker_is_seen() const{
+		return current_position->first  == current_position->second->first_vertex();
 	}
 };
 
