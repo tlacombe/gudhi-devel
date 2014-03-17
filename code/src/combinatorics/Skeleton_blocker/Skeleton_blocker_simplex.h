@@ -8,12 +8,12 @@
 
 
 /**
- *@brief Abstract simplex
+ *@brief Abstract simplex used in skeleton blockers data-structure.
  *
  * An abstract simplex is represented as an ordered set of T elements,
  * each element representing a vertex.
  * 
- * The element representing a vertex can be a 'ComplexDS::Vertex_handle' or a  'ComplexDS::Root_vertex_handle'
+ * The element representing a vertex can be SkeletonBlockerDS::Vertex_handle or SkeletonBlockerDS::Root_vertex_handle.
  *
  *
  */

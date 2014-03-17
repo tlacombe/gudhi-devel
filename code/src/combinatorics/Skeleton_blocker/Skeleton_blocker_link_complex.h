@@ -30,9 +30,9 @@ class Skeleton_blocker_link_complex : public Skeleton_blocker_sub_complex<Comple
 	typedef typename ComplexType::boost_vertex_handle boost_vertex_handle;
 
 
+private:
 
-
-	bool only_superior_vertices;
+	bool only_superior_vertices_;
 
 public:
 	typedef typename ComplexType::Vertex_handle Vertex_handle;
@@ -51,17 +51,17 @@ public:
 
 
 
-	Skeleton_blocker_link_complex(bool only_superior_vertices_=false):only_superior_vertices(only_superior_vertices_){
+	Skeleton_blocker_link_complex(bool only_superior_vertices_=false):only_superior_vertices_(only_superior_vertices_){
 	}
 
 	Skeleton_blocker_link_complex(const ComplexType & parent_complex, Simplex_handle& alpha_parent_adress,bool only_superior_vertices_ = false)
-	:only_superior_vertices(only_superior_vertices_) {
+	:only_superior_vertices_(only_superior_vertices_) {
 		build_link(parent_complex,alpha_parent_adress);
 	}
 
 	Skeleton_blocker_link_complex(const ComplexType & parent_complex, Vertex_handle a_parent_adress, bool only_superior_vertices_ = false)
-	:only_superior_vertices(only_superior_vertices_){
-		only_superior_vertices = only_superior_vertices_ ;
+	:only_superior_vertices_(only_superior_vertices_){
+		only_superior_vertices_ = only_superior_vertices_ ;
 		Simplex_handle alpha_simplex(a_parent_adress);
 		build_link(parent_complex,alpha_simplex);
 	}
@@ -146,6 +146,7 @@ protected:
 		}
 	}
 
+
 	/**
 	 * @brief : Given an address in the current complex, it returns the
 	 * corresponding address in 'other_complex'.
@@ -204,7 +205,7 @@ public:
 	 * If the boolean only_superior_vertices is true, then the link is computed only
 	 * with vertices that are greater than  vertices of alpha_parent_adress.
 	 */
-	void build_link(const ComplexType & parent_complex, Simplex_handle& alpha_parent_adress)
+	void build_link(const ComplexType & parent_complex, Simplex_handle& alpha_parent_adress,bool only_superior_vertices =false)
 	{
 		compute_link_vertices(parent_complex,alpha_parent_adress,only_superior_vertices);
 		compute_link_edges(parent_complex,alpha_parent_adress);

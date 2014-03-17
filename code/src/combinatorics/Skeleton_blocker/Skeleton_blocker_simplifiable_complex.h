@@ -74,6 +74,41 @@ public:
 
 
 
+
+private:
+	/**
+	 * @returns the list of blockers of the simplex
+	 *
+	 * @todo a enlever et faire un iterateur sur tous les blockers a la place
+	 */
+	std::list<Blocker_handle> get_blockers(){
+		std::list<Blocker_handle> res;
+		for (auto blocker : this->blocker_range()){
+			res.push_back(blocker);
+		}
+		return res;
+	}
+
+
+	/**
+	 * @returns the list of blockers of the simplex
+	 *
+	 * @todo a enlever et faire un iterateur sur tous les blockers a la place
+	 */
+	std::list<const Blocker_handle> get_blockers() const{
+		std::list<const Blocker_handle> res;
+		for (auto blocker : this->blocker_range()){
+			res.push_back(blocker);
+		}
+		return res;
+	}
+
+
+
+
+
+public:
+
 	/**
 	 * Removes all the popable blockers of the complex and delete them.
 	 * Doing so, it push edge that may have become contractible because of the suppression
@@ -184,7 +219,7 @@ public:
 	virtual contractible_status is_reducible() const{
 		if (this->is_cone()) return CONTRACTIBLE;
 		else return MAYBE_CONTRACTIBLE;
-//		return this->is_cone();
+		//		return this->is_cone();
 	}
 
 
@@ -323,7 +358,7 @@ public:
 				if ( this->contains(sigma) &&
 						proper_faces_in_union<SkeletonBlockerComplex>(sigma_id,link_a,link_b))
 				{
-//					Blocker_handle blocker = new Simplex_handle(sigma);
+					//					Blocker_handle blocker = new Simplex_handle(sigma);
 					sigma.add_vertex(a);
 					bool found=false;
 					// we check that the blocker is not already there

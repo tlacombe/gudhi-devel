@@ -17,9 +17,9 @@
 
 #include "Edge_profile.h"
 #include "policies/Cost_policy.h"
-#include "policies/Edge_length_cost.h" //xxx remove
+#include "policies/Edge_length_cost.h"
 #include "policies/Placement_policy.h"
-#include "policies/Middle_placement.h" //xxx remove
+#include "policies/First_vertex_placement.h"
 
 #include "policies/Valid_contraction_policy.h"
 #include "policies/Dummy_valid_contraction.h" //xxx remove
@@ -55,7 +55,7 @@ template<class GeometricSimplifiableComplex
 //   ,class ShouldStop
 //        ,class Visitor
 >
-class Skeleton_blocker_contractor : public Dummy_complex_visitor<typename GeometricSimplifiableComplex::Vertex_handle>{
+class Skeleton_blocker_contractor : private Dummy_complex_visitor<typename GeometricSimplifiableComplex::Vertex_handle>{
 
 	GeometricSimplifiableComplex& complex_;
 
@@ -357,10 +357,16 @@ public:
 		return res;
 	}
 
+	/**
+	 * @brief Constructor with default policies.
+	 *
+	 * @details The default cost, placement, valid and visitor policies
+	 * are respectively : the edge length, the first point, the link condition
+	 */
 	Skeleton_blocker_contractor(GeometricSimplifiableComplex& complex)
 	:complex_(complex),
 	 cost_policy_(new Edge_length_cost<Profile>),
-	 placement_policy_(new Middle_placement<Profile>),
+	 placement_policy_(new First_vertex_placement<Profile>),
 	 valid_contraction_policy_(new Link_condition_valid_contraction<Profile>),
 	 contraction_visitor_(new Contraction_visitor_()),
 	 initial_num_edges_heap_(0),
@@ -371,6 +377,9 @@ public:
 		collect_edges();
 	}
 
+	/**
+	 * @brief Constructor with customed policies.
+	 */
 	Skeleton_blocker_contractor(GeometricSimplifiableComplex& complex,
 			Cost_policy_ *cost_policy_,
 			Placement_policy_ * placement_policy_,
@@ -406,6 +415,7 @@ private:
 		contraction_visitor_->on_contracted(profile,placement);
 	}
 
+private:
 	/**
 	 * @brief we update the cost that has changed and the position in the heap
 	 */
@@ -425,7 +435,7 @@ private:
 		}
 	}
 
-
+private:
 	void on_remove_edge(Vertex_handle a,Vertex_handle b) override{
 
 		edge_descriptor lEdge = (complex_[std::make_pair(a,b)]).first;
@@ -435,7 +445,7 @@ private:
 			remove_from_PQ(lEdge,lData) ;
 		}
 	}
-
+private:
 	/**
 	 * @brief Called when the edge 'ax' has been added while the edge 'bx'
 	 * is still there but will be removed on next instruction.
@@ -447,7 +457,7 @@ private:
 		assert(ax_pair.second && bx_pair.second);
 		complex_[ax_pair.first].index() =complex_[bx_pair.first].index();
 	}
-
+private:
 	/**
 	 * @brief Called when a blocker is removed.
 	 * All the edges that passes through the blocker may be edge-contractible
@@ -457,35 +467,35 @@ private:
 		// we go for all pairs xy that belongs to the blocker
 		// note that such pairs xy are necessarily edges of the complex
 		// by definition of a blocker
-//		DBGVALUE(*blocker);
+		//		DBGVALUE(*blocker);
 
-//		// boucle 2
-//		//      gros bug -> pourquoi ce code loop???
-//		// blocker est constant et ne devrais pas etre modifié pourtant
-//		for ( Simplex_handle_iterator x = blocker->begin(); x!= blocker->end(); ++x){
-//			DBGMSG("\n\nloopx, bl:",*blocker);
-//			DBGMSG("loopx, x:",*x);
-//
-//			for(Simplex_handle_iterator y = x ; ++y != blocker->end(); ){
-//				auto edge_descr = complex_[std::make_pair(*x,*y)].first;
-//				Edge_data& data = get_data(edge_descr);
-//				Profile const& profile = create_profile(edge_descr);
-//
-//				// cette ligne fait looper
-//				data.cost() = get_cost(profile) ;
-//				if ( !data.is_in_PQ() ){
-//					insert_in_PQ(edge_descr,data);
-//				}
-//
-//				DBGMSG("  loopy, x:",*x);
-//				DBGMSG("  loopy, y:",*y);
-//			}
-//
-//			DBGMSG("loopx end, x:",*x);
-//		}
+		//		// boucle 2
+		//		//      gros bug -> pourquoi ce code loop???
+		//		// blocker est constant et ne devrais pas etre modifié pourtant
+		//		for ( Simplex_handle_iterator x = blocker->begin(); x!= blocker->end(); ++x){
+		//			DBGMSG("\n\nloopx, bl:",*blocker);
+		//			DBGMSG("loopx, x:",*x);
+		//
+		//			for(Simplex_handle_iterator y = x ; ++y != blocker->end(); ){
+		//				auto edge_descr = complex_[std::make_pair(*x,*y)].first;
+		//				Edge_data& data = get_data(edge_descr);
+		//				Profile const& profile = create_profile(edge_descr);
+		//
+		//				// cette ligne fait looper
+		//				data.cost() = get_cost(profile) ;
+		//				if ( !data.is_in_PQ() ){
+		//					insert_in_PQ(edge_descr,data);
+		//				}
+		//
+		//				DBGMSG("  loopy, x:",*x);
+		//				DBGMSG("  loopy, y:",*y);
+		//			}
+		//
+		//			DBGMSG("loopx end, x:",*x);
+		//		}
 
-////		//boucle 3
-////		// todo bug ce code ne loop pas mais moins efficace
+		////		//boucle 3
+		////		// todo bug ce code ne loop pas mais moins efficace
 		Simplex_handle blocker_copy(*blocker);
 		for (auto x = blocker_copy.begin(); x!= blocker_copy.end(); ++x){
 			for(auto y=x ; ++y != blocker_copy.end(); ){

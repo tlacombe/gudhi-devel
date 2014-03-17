@@ -10,8 +10,11 @@
 
 #include <string>
 #include <sstream>
-#include "Skeleton_blocker_simple_traits.h"
+#include "combinatorics/Skeleton_blocker/Skeleton_blocker_simple_traits.h"
 
+/**
+ * @extends SkeletonBlockerGeometricDS
+ */
 template<typename GT>
 struct Skeleton_blocker_simple_geometric_traits : public Skeleton_blocker_simple_traits {
 public:
