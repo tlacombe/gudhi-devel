@@ -9,9 +9,8 @@
 #ifndef GUDHI_SKELETONBLOCKERDS_H_
 #define GUDHI_SKELETONBLOCKERDS_H_
 
-/** \brief Concept defining the ComplexDS trait that must be passed to
+/** \brief Concept that must be passed to
  * the template class Skeleton_blockers_complex
- *
  *
  */
 struct SkeletonBlockerDS
@@ -19,7 +18,6 @@ struct SkeletonBlockerDS
 	/**
 	 * @todo faire un default value pour les vertex_handle
 	 */
-
 
 	/**
 	 * @brief index that allows to find the vertex in the boost graph
@@ -119,8 +117,14 @@ struct SkeletonBlockerDS
 	};
 
 
-	// @todo todo faire les concepts correspondants
+	/**
+	 * @brief A set of vertices that represents a simplex in the current complex.
+	 */
 	typedef unspecified Simplex_handle;
+
+	/**
+	 * @brief A set of vertices that represents a simplex in the parent complex.
+	 */
 	typedef unspecified Root_simplex_handle;
 
 };

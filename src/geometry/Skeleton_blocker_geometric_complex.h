@@ -12,6 +12,11 @@
 #include "utils/Utils.h"
 #include "combinatorics/Skeleton_blocker/Skeleton_blocker_simplifiable_complex.h"
 
+/**
+ * @brief Class that represents a geometric complex that can be simplified.
+ * The class allows access to points of vertices.
+ *
+ */
 template<typename SkeletonBlockerGeometricDS>
 class Skeleton_blocker_geometric_complex : public Skeleton_blocker_simplifiable_complex<SkeletonBlockerGeometricDS>
 {
@@ -29,16 +34,25 @@ public:
 	typedef typename SkeletonBlockerGeometricDS::Point Point;
 
 
+	/**
+	 * @brief Add a vertex to the complex with its associated point.
+	 */
 	void add_vertex(const Point& point){
 		Vertex_handle ad = SimplifiableSkeletonblocker::add_vertex();
 		(*this)[ad].point() = point;
 	}
 
 
+	/**
+	 * @brief Returns the Point associated to the vertex v.
+	 */
 	const Point& point(Vertex_handle v) const{
 		return (*this)[v].point();
 	}
 
+	/**
+	 * @brief Returns the Point associated to the vertex v.
+	 */
 	Point& point(Vertex_handle v) {
 		return (*this)[v].point();
 	}

@@ -34,16 +34,16 @@
  * - the graph of its 1-skeleton;
  * - its set of blockers.
  *
- * The graph is a boost graph templated with SkeletonBlockerDS::Vertex and SkeletonBlockerDS::Edge.
+ * The graph is a boost graph templated with SkeletonBlockerDS::Graph_vertex and SkeletonBlockerDS::Graph_edge.
  *
- * One can access vertices through SkeletonBlockerDS::Vertex_handle, edges through SkeletonBlockerDS::Edge_handle and
- * simplices through Simplex_handle.
- * @todo TODO Simplex_handle are not classic handle
+ * One can accesses to vertices via SkeletonBlockerDS::Vertex_handle, to edges via Skeleton_blocker_complex::Edge_handle and
+ * simplices via SkeletonBlockerDS::Simplex_handle.
  *
  * The SkeletonBlockerDS::Root_vertex_handle serves in the case of a subcomplex (see class Skeleton_blocker_sub_complex)
  * to access to the address of one vertex in the parent complex.
  *
- * @todo TODO constants iterator
+ * @todo TODO Simplex_handle are not classic handle
+ *
  */
 template<class SkeletonBlockerDS>
 class Skeleton_blocker_complex
@@ -87,6 +87,9 @@ protected:
 	typedef typename boost::graph_traits<Graph>::adjacency_iterator boost_adjacency_iterator;
 
 public:
+	/**
+	 * Handle to an edge of the complex.
+	 */
 	typedef typename boost::graph_traits<Graph>::edge_descriptor Edge_handle;
 
 
@@ -105,9 +108,12 @@ protected:
 	Visitor* visitor;
 
 	/**
-	 * @brief If 'x' is a Vertex_handle of a vertex in the complex then degree[x] = d is its degree
-	 * This quantity is updated when adding/removing edge (useful because the operation
-	 * list.size() is done in linear time).
+	 * @details If 'x' is a Vertex_handle of a vertex in the complex then degree[x] = d is its degree.
+	 *
+	 * This quantity is updated when adding/removing edge.
+	 *
+	 * This is useful because the operation
+	 * list.size() is done in linear time.
 	 */
 	std::vector<boost_vertex_handle> degree_;
 	Graph skeleton; /** 1-skeleton of the simplicial complex. */
@@ -279,6 +285,17 @@ public:
 			return (*this)[*address].is_active();
 	}
 
+
+	/**
+	 * @return true iff the simplicial complex contains all vertices
+	 * of simplex sigma
+	 */
+	bool contains_vertices(const Simplex_handle & sigma) const{
+		for (auto vertex : sigma)
+			if(!contains_vertex(vertex)) return false;
+		return true;
+	}
+
 	/**
 	 * Given an Id return the address of the vertex having this Id in the complex.
 	 * For a simplicial complex, the address is the id but it may not be the case for a SubComplex.
@@ -401,16 +418,6 @@ public:
 		return boost::edge(a.vertex,b.vertex,skeleton).second;
 	}
 
-
-	/**
-	 * @return true iff the simplicial complex contains all vertices
-	 * of simplex sigma
-	 */
-	bool contains_vertices(const Simplex_handle & sigma) const{
-		for (auto vertex : sigma)
-			if(!contains_vertex(vertex)) return false;
-		return true;
-	}
 
 	/**
 	 * @return true iff the simplicial complex contains all vertices
@@ -568,40 +575,6 @@ public:
 	}
 
 
-	/**
-	 * @returns the list of blockers of the simplex
-	 *
-	 * @todo a enlever et faire un iterateur sur tous les blockers a la place
-	 */
-	std::list<Blocker_handle> get_blockers(){
-		std::list<Blocker_handle> res;
-		for (BlockerMapConstIterator dp=blocker_map.begin(); dp!=blocker_map.end(); ++dp){
-			// check if it is the first time we encounter the blocker
-			if ( (*dp).first == ( (*dp).second )->first_vertex() ){
-				res.push_back((*dp).second);
-			}
-		}
-		return res;
-	}
-
-
-	/**
-	 * @returns the list of blockers of the simplex
-	 *
-	 * @todo a enlever et faire un iterateur sur tous les blockers a la place
-	 */
-	std::list<const Blocker_handle> get_blockers() const{
-		std::list<const Blocker_handle> res;
-		for (BlockerMapConstIterator dp=blocker_map.begin(); dp!=blocker_map.end(); ++dp){
-			// check if it is the first time we encounter the blocker
-			if ( (*dp).first == ( (*dp).second )->first_vertex() ){
-				res.push_back((*dp).second);
-			}
-		}
-		return res;
-	}
-
-
 private:
 	/**
 	 * @return true iff a blocker of the simplicial complex
@@ -627,8 +600,9 @@ private:
 public:
 	/**
 	 * @brief Adds to simplex n the neighbours of v:
-	 * \f$ n \leftarrow n \cup N(v) \f$
-	 * If 'keep_only_superior' is true then only vertices that are greater than v are added.
+	 * \f$ n \leftarrow n \cup N(v) \f$.
+	 *
+	 * If keep_only_superior is true then only vertices that are greater than v are added.
 	 */
 	virtual void add_neighbours(Vertex_handle v, Simplex_handle & n,bool keep_only_superior=false) const{
 		boost_adjacency_iterator ai, ai_end;
@@ -644,7 +618,8 @@ public:
 
 	/**
 	 * @brief Add to simplex n all vertices which are
-	 * neighbours of alpha: \f$ res \leftarrow res \cup N(alpha) \f$
+	 * neighbours of alpha: ie \f$ res \leftarrow res \cup N(alpha) \f$.
+	 *
 	 * If 'keep_only_superior' is true then only vertices that are greater than alpha are added.
 	 *
 	 */
@@ -664,7 +639,10 @@ public:
 
 	/**
 	 * @brief Eliminates from simplex n all vertices which are
-	 * not neighbours of v: \f$ res \leftarrow res \cap N(v) \f$
+	 * not neighbours of v: \f$ res \leftarrow res \cap N(v) \f$.
+	 *
+	 * If 'keep_only_superior' is true then only vertices that are greater than v are keeped.
+	 *
 	 */
 	virtual void keep_neighbours(Vertex_handle v, Simplex_handle& res,bool keep_only_superior=false) const{
 		Simplex_handle nv;
@@ -674,7 +652,10 @@ public:
 
 	/**
 	 * @brief Eliminates from simplex n all vertices which are
-	 * neighbours of v: \f$ res \leftarrow res \setminus N(v) \f$
+	 * neighbours of v: \f$ res \leftarrow res \setminus N(v) \f$.
+	 *
+	 * If 'keep_only_superior' is true then only vertices that are greater than v are added.
+	 *
 	 */
 	virtual void remove_neighbours(Vertex_handle v, Simplex_handle & res,bool keep_only_superior=false) const{
 		Simplex_handle nv;
@@ -717,8 +698,8 @@ public:
 	}
 
 	/**
-	 * @return a simplex with vertices which are the id of vertices of the
-	 * argument
+	 * @brief returns a simplex with vertices which are the id of vertices of the
+	 * argument.
 	 */
 	Root_simplex_handle get_id(const Simplex_handle& local_simplex) const{
 		Root_simplex_handle global_simplex;
@@ -732,7 +713,7 @@ public:
 
 
 	/**
-	 * @return true iff the simplex s belongs to the simplicial
+	 * @brief returns true iff the simplex s belongs to the simplicial
 	 * complex.
 	 */
 	virtual bool contains(const Simplex_handle & s) const{
@@ -746,42 +727,42 @@ public:
 	}
 
 	/*
-	 * @return true iff the complex is empty
+	 * @brief returnrs true iff the complex is empty.
 	 */
 	bool empty() const{
 		return num_vertices()==0;
 	}
 
 	/*
-	 * @return the number of vertices in the complex
+	 * @brief returns the number of vertices in the complex.
 	 */
 	int num_vertices() const{
 		return num_vertices_;
 	}
 
 	/*
-	 * @return the number of edges in the complex
+	 * @brief returns the number of edges in the complex.
 	 */
 	int num_edges() const{
 		return boost::num_edges(skeleton);
 	}
 
 	/*
-	 * @return the number of blockers in the complex
+	 * @brief returns the number of blockers in the complex.
 	 */
 	int num_blockers() const{
 		return num_blockers_;
 	}
 
 	/*
-	 * @return true iff the graph of the 1-skeleton of the complex is complete
+	 * @brief returns true iff the graph of the 1-skeleton of the complex is complete.
 	 */
 	bool complete() const{
 		return (num_vertices()*(num_vertices()-1))/2 == num_edges();
 	}
 
 	/**
-	 * @return the number of connected components in the graph of the 1-skeleton
+	 * @brief returns the number of connected components in the graph of the 1-skeleton.
 	 */
 	int num_connected_components() const{
 		int num_vert_collapsed = skeleton.vertex_set().size() - num_vertices();
@@ -790,8 +771,8 @@ public:
 	}
 
 	/**
-	 * Test if the complex is a cone
-	 * runs in O(n) if n is the number of vertices
+	 * @brief %Test if the complex is a cone.
+	 * @details Runs in O(n) if n is the number of vertices.
 	 */
 	bool is_cone() const{
 		if (num_vertices()==0) return false;
@@ -832,7 +813,7 @@ public:
 	 */
 	class Complex_vertex_iterator;
 	/**
-	 * Returns a Complex_vertex_range over all vertices of the complex
+	 * @brief Returns a Complex_vertex_range over all vertices of the complex
 	 */
 	Complex_vertex_range vertex_range() const
 	{return Complex_vertex_range(this);}
@@ -858,8 +839,7 @@ public:
 	class Complex_edge_iterator;
 
 	/**
-	 * Returns a Complex_edge_range over all edges of the
-	 * simplicial complex
+	 * @brief Returns a Complex_edge_range over all edges of the simplicial complex
 	 */
 	Complex_edge_range edge_range() const
 	{return Complex_edge_range(this);}
@@ -889,28 +869,24 @@ public:
 	template<typename LinkType>
 	class Triangle_around_vertex_iterator;
 
-	/**
-	 * Returns a Triangle_around_vertex_range over all triangles around
-	 * a vertex of the simplicial complex.
-	 * The template LinkType has to either Skeleton_blocker_link_complex
-	 * or Skeleton_blocker_link_superior if one just wants the triangles whose
-	 * vertices are greater than 'v'.
-	 */
-	/*template<typename LinkType>
-	Triangle_around_vertex_range<LinkType> triangle_range(Vertex_handle v) const
-	{return Triangle_around_vertex_range<LinkType>(this,v);}
-	 */
-
 	typedef Skeleton_blocker_link_complex<Skeleton_blocker_complex<SkeletonBlockerDS> > Link;
 	typedef Skeleton_blocker_link_superior<Skeleton_blocker_complex<SkeletonBlockerDS> > Superior_link;
 
 	typedef Triangle_around_vertex_iterator<Superior_link> Superior_triangle_around_vertex_iterator;
 
-	Triangle_around_vertex_range<Link> triangle_range(Vertex_handle v) const
-											{return Triangle_around_vertex_range<Link>(this,v);}
 
+	/**@brief Returns a Triangle_around_vertex_range over all triangles around
+	 * a vertex of the simplicial complex.
+	 */
+	Triangle_around_vertex_range<Link> triangle_range(Vertex_handle v) const
+													{return Triangle_around_vertex_range<Link>(this,v);}
+
+
+	/**@brief Returns a Triangle_around_vertex_range over superior triangles
+	 * around a vertex of the simplicial complex.
+	 */
 	Triangle_around_vertex_range<Superior_link> superior_triangle_range(Vertex_handle v) const
-											{return Triangle_around_vertex_range<Superior_link>(this,v);}
+													{return Triangle_around_vertex_range<Superior_link>(this,v);}
 
 
 
@@ -929,7 +905,7 @@ public:
 	class Triangle_iterator;
 
 	/**
-	 * Returns a Triangle_range over all triangles of the simplicial complex.
+	 * @brief Returns a Triangle_range over all triangles of the simplicial complex.
 	 */
 	Triangle_range triangle_range()
 	{return Triangle_range(this);}
@@ -1001,11 +977,14 @@ public:
 	};
 
 	/**
-	 * Returns a Complex_simplex_range over all blockers of the complex adjacent to the vertex 'v'.
+	 * @brief Returns a Const_complex_blocker_around_vertex_range over all blockers of the complex adjacent to the vertex v.
 	 */
 	Const_complex_blocker_around_vertex_range const_blocker_range(Vertex_handle v) const
 	{return Const_complex_blocker_around_vertex_range(*this,v);}
 
+	/**
+	 * @brief Returns a Complex_blocker_around_vertex_range over all blockers of the complex adjacent to the vertex v.
+	 */
 	Complex_blocker_around_vertex_range blocker_range(Vertex_handle v)
 	{return Complex_blocker_around_vertex_range(*this,v);}
 
@@ -1070,11 +1049,15 @@ public:
 	};
 
 	/**
-	 * @brief Returns a Complex_simplex_range over all blockers of the complex.
+	 * @brief Returns a Const_complex_blocker_range over all blockers of the complex.
 	 */
 	Const_complex_blocker_range const_blocker_range() const
 	{return Const_complex_blocker_range(*this);}
 
+
+	/**
+	 * @brief Returns a Complex_blocker_range over all blockers of the complex.
+	 */
 	Complex_blocker_range blocker_range()
 	{return Complex_blocker_range(*this);}
 
