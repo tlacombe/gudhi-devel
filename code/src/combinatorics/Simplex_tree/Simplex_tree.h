@@ -15,8 +15,7 @@
 #include "Simplex_tree_siblings.h"
 #include "Simplex_tree_iterators.h" 
 #include "boost/iterator/transform_iterator.hpp"
-#include "../topology/Persistent_cohomology.h"
-
+#include "topology/Persistent_cohomology.h"
 
 /**
  * \brief Simplex tree data structure.
@@ -26,13 +25,16 @@
  $ furnished by MetricSpace.
  *
  * \implements SimplexDataFilteredSimplicialComplexDS.*/
-template < class MetricSpace >
+template < class MetricSpace
+         , typename FiltrationValueType = typename MetricSpace::FT
+         , typename SimplexKeyType = int
+         >
  class Simplex_tree {
 
-  friend class Simplex_tree_node_explicit_storage < Simplex_tree< MetricSpace > >;
-  friend class Simplex_vertex_iterator< Simplex_tree < MetricSpace > >;
-  friend class Boundary_simplex_iterator< Simplex_tree < MetricSpace > >;
-  friend class Complex_simplex_iterator< Simplex_tree < MetricSpace > >;
+  friend class Simplex_tree_node_explicit_storage     < Simplex_tree < MetricSpace > >;
+  friend class Simplex_tree_simplex_vertex_iterator   < Simplex_tree < MetricSpace > >;
+  friend class Simplex_tree_boundary_simplex_iterator < Simplex_tree < MetricSpace > >;
+  friend class Simplex_tree_complex_simplex_iterator  < Simplex_tree < MetricSpace > >;
 
   template < class T > friend class Persistent_cohomology;
 
@@ -42,24 +44,30 @@ template < class MetricSpace >
 public:
  /** The values of the filtration have the type of the distance type defined
  * in MetricSpace.*/ 
-  typedef typename MetricSpace::FT                    Filtration_value;
+  typedef FiltrationValueType                         Filtration_value;
+/** \brief Type of data stored in each simplex. */
+  typedef SimplexKeyType                              Simplex_key;
+
   typedef typename MetricSpace::Vertex                Vertex;   
- /** \brief Type of data stored in each simplex. */
-  typedef int                                         Simplex_data;
+ 
+
+
 
 private:
   typedef typename MetricSpace::Space_vertex_iterator Space_vertex_iterator;
   typedef typename MetricSpace::Space_vertex_range    Space_vertex_range;
 
- 
-  /** \brief Node in the simplex tree.*/ 
+public:
+   /** \brief Node in the simplex tree.*/ 
   typedef Simplex_tree_node_explicit_storage < Simplex_tree >   Node;
   /** \brief Set of nodes sharing a same parent in the simplex tree. */
-  typedef Simplex_tree_siblings < Vertex
-                                , Filtration_value
-                                , Node
+  typedef Simplex_tree_siblings < 
+  // Vertex
+  //                               , Filtration_value
+  //                               , Node
+                                  Simplex_tree
                                 , boost::container::flat_map< Vertex, Node > 
-                                >                                               Siblings;
+                                >                                Siblings;
   /** \todo Didn't manage to define the Dictionary type in Simplex_tree because
   * of the mutual dependence of Siblings and Node.*/
   typedef typename Siblings::Dictionary                Dictionary;
@@ -71,28 +79,29 @@ private:
   typedef typename Dictionary_it::value_type           Dit_value_t;
 
 // Simplex Tree Iterators
-  typedef Simplex_vertex_iterator < Simplex_tree >               Simplex_vertex_it;
-  typedef boost::iterator_range < Simplex_vertex_it >            Simplex_vertex_rg;
-  typedef Boundary_simplex_iterator < Simplex_tree >             Boundary_simplex_it;
-  typedef boost::iterator_range < Boundary_simplex_it >          Boundary_simplex_rg;
-  typedef Complex_simplex_iterator < Simplex_tree >              Complex_simplex_it;
-  typedef boost::iterator_range < Complex_simplex_it >           Complex_simplex_rg;
-  typedef typename std::vector < Simplex_handle >::iterator      Filtration_simplex_it; 
-  typedef boost::iterator_range < Filtration_simplex_it >        Filtration_simplex_rg;
+  typedef Simplex_tree_simplex_vertex_iterator < Simplex_tree >   Simplex_vertex_iterator     ;
+  typedef boost::iterator_range < Simplex_vertex_iterator >       Simplex_vertex_range        ;
+  typedef Simplex_tree_boundary_simplex_iterator < Simplex_tree > Boundary_simplex_iterator   ;
+  typedef boost::iterator_range < Boundary_simplex_iterator >     Boundary_simplex_range      ;
+  typedef Simplex_tree_complex_simplex_iterator < Simplex_tree >  Complex_simplex_iterator    ;
+  typedef boost::iterator_range < Complex_simplex_iterator >      Complex_simplex_range       ;
+  typedef typename std::vector < Simplex_handle >::iterator       Filtration_simplex_iterator ; 
+  typedef boost::iterator_range < Filtration_simplex_iterator >   Filtration_simplex_range    ;
 
   struct return_first {
     Vertex operator()(const Dit_value_t& p_sh) const {return p_sh.first;}  
   };
-  typedef boost::transform_iterator< return_first, Dictionary_it > Complex_vertex_iterator;
-  typedef boost::iterator_range < Complex_vertex_iterator >        Complex_vertex_range;
+  typedef boost::transform_iterator < return_first, Dictionary_it > Complex_vertex_iterator;
+  typedef boost::iterator_range < Complex_vertex_iterator >         Complex_vertex_range;
 
 public:
 /** \brief Returns a range over the vertices of the complex.
 *
 * The iterators have 'value type' Vertex.*/
 Complex_vertex_range complex_vertex_range()
-{ return Complex_vertex_range(boost::make_transform_iterator(root_.members_.begin(),return_first())
-    , boost::make_transform_iterator(root_.members_.end(),return_first())  );
+{
+ return Complex_vertex_range( boost::make_transform_iterator(root_.members_.begin(),return_first())
+                            , boost::make_transform_iterator(root_.members_.end(),return_first()) );
 }
 
 /** \brief Returns a range over the sequence of all simplices in
@@ -100,9 +109,9 @@ Complex_vertex_range complex_vertex_range()
 *
 * The iterators have 'value type' Simplex_handle. In the case of the 
 * Simplex_tree, the traversal of the tree is depth-first.*/
- Complex_simplex_rg complex_simplex_range()
- { return Complex_simplex_rg (Complex_simplex_it(this),
-   Complex_simplex_it() ); }
+ Complex_simplex_range complex_simplex_range()
+ { return Complex_simplex_range ( Complex_simplex_iterator(this),
+                                  Complex_simplex_iterator() ); }
 
 /** \brief Returns a range over the sequence of all simplices in
 * the filtered simplicial complex, in the order of the filtration.
@@ -110,10 +119,12 @@ Complex_vertex_range complex_vertex_range()
 * The iterators have 'value type' Simplex_handle. If the filtration
 * has not been initialized yet, the method initializes it (i.e.
 * order the simplices).*/
-  Filtration_simplex_rg filtration_simplex_range() 
-  { if(filtration_vect_.size() == 0) { initialize_filtration(); }
-  return Filtration_simplex_rg(filtration_vect_.begin(),
-   filtration_vect_.end());}
+  Filtration_simplex_range filtration_simplex_range() 
+  { 
+    if(filtration_vect_.empty()) { initialize_filtration(); }
+    return Filtration_simplex_range ( filtration_vect_.begin(),
+                                   filtration_vect_.end());  
+  }
 
 /** \brief Returns a range over the sequence of vertices of a simplex.
  *
@@ -121,9 +132,9 @@ Complex_vertex_range complex_vertex_range()
  * vertices are visited is the decreasing order, which is consequenlty
  * equal to \f$(-1)^{\text{dim} \sigma}\f$ the 
  * canonical orientation on the simplex.*/
- Simplex_vertex_rg simplex_vertex_range(Simplex_handle sh)
- { return Simplex_vertex_rg (Simplex_vertex_it(this,sh),
-   Simplex_vertex_it(this));}
+ Simplex_vertex_range simplex_vertex_range(Simplex_handle sh)
+ { return Simplex_vertex_range (Simplex_vertex_iterator(this,sh),
+   Simplex_vertex_iterator(this));}
 
 /** \brief Returns a range over the simplices of the boundary of a simplex, i.e.
  * the set of codimension \f$1\f$ subsimplices of the simplex.
@@ -139,9 +150,9 @@ Complex_vertex_range complex_vertex_range()
  * of the simplex.
  *
  * The iterators have 'value type' Simplex_handle.*/
- Boundary_simplex_rg boundary_simplex_range(Simplex_handle sh)
- { return Boundary_simplex_rg ( Boundary_simplex_it(this,sh),
-                                Boundary_simplex_it(this) );  }
+ Boundary_simplex_range boundary_simplex_range(Simplex_handle sh)
+ { return Boundary_simplex_range ( Boundary_simplex_iterator(this,sh),
+                                   Boundary_simplex_iterator(this) );  }
 
 /** \brief Empty constructor.*/
  Simplex_tree( MetricSpace & ms ) 
@@ -166,8 +177,11 @@ void rec_delete(Siblings * sib)
 
 public:
 /** Returns the data associated to a simplex.*/
-Simplex_data simplex_data(Simplex_handle sh)
-{ return sh->second.data(); }
+Simplex_key simplex_to_key(Simplex_handle sh)
+{ return sh->second.key(); }
+/** Returns the simplex associated to a key.*/
+Simplex_handle key_to_simplex(Simplex_key key)
+{ return filtration_vect_[key]; }
 /** Returns the filtration value of a simplex.*/
 Filtration_value filtration(Simplex_handle sh)
 { return sh->second.filtration(); }
@@ -177,7 +191,7 @@ Simplex_handle null_simplex() {return root_.members_.end(); }
 
 Vertex null_vertex() { return -1; }
 
-Simplex_data null_data() { return -1; }
+Simplex_key null_key() { return -1; }
 
 /** Returns a pointer to the root nodes of the simplex tree.*/
 Siblings *      root()          { return &root_; }
@@ -190,6 +204,13 @@ size_t          nb_vertices()   { return root_.members_.size(); }
 * Does not count the empty simplex.*/
 size_t          nb_simplices()  { return size_cpx_; }
 
+
+void display_simplex(Simplex_handle sh)
+{
+  std::cout << "   " << "[" << filtration(sh) << "] "; 
+    for( auto vertex : simplex_vertex_range(sh) ) 
+      { std::cout << vertex << " "; } 
+}
 
 
 /** 
@@ -245,18 +266,22 @@ Simplex_handle find_vertex(Vertex v)
 * Will be automatically called when calling filtration_simplex_range()
 * if the filtration has not been initialized yet.*/ 
 void initialize_filtration()
-{ filtration_vect_.reserve(size_cpx_);
+{ 
+//  std::cout << "initialize filtration \n";
+  filtration_vect_.reserve(size_cpx_);
   for(auto sh : complex_simplex_range()) { filtration_vect_.push_back(sh); }
   stable_sort(filtration_vect_.begin(),filtration_vect_.end(),is_before_in_filtration(this));
+  Simplex_key tmp_key = 0;
+  for(auto sh : filtration_vect_) { assign_key(sh,tmp_key); ++tmp_key; }
 };
 
 private:
 /** \brief Returns true if sh1 is a subface of sh2, or is equal to sh2.*/
   bool is_subface(Simplex_handle sh1, Simplex_handle sh2)
-  { Simplex_vertex_rg rg1 = simplex_vertex_range(sh1);
-    Simplex_vertex_rg rg2 = simplex_vertex_range(sh2);
-    Simplex_vertex_it it1 = rg1.begin();
-    Simplex_vertex_it it2 = rg2.begin();
+  { Simplex_vertex_range rg1 = simplex_vertex_range(sh1);
+    Simplex_vertex_range rg2 = simplex_vertex_range(sh2);
+    Simplex_vertex_iterator it1 = rg1.begin();
+    Simplex_vertex_iterator it2 = rg2.begin();
     while(it1 != rg1.end() && it2 != rg2.end()) {
       if(*it1 < *it2) { ++it2; }
       else { if(*it1 == *it2) {++it1; ++it2;}
@@ -284,8 +309,8 @@ private:
 
 public:
 
-void assign_data(Simplex_handle sh, Simplex_data key)
-{ sh->second.assign_data(key);}
+void assign_key(Simplex_handle sh, Simplex_key key)
+{ sh->second.assign_key(key);}
 
 /** \brief Returns the dimension of a simplex.*/
 int dimension(Simplex_handle sh)

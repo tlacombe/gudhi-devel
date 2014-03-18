@@ -26,7 +26,9 @@ bool test_points_extraction(string filename)
   return true;
 }
 
-bool test_flag_complex_construction(string filename)
+bool test_flag_complex_construction ( string filename
+                                    , double threshold 
+                                    , int max_dim )
 {
   Point_range points;              //read the points from the file
   read_points( filename, points ); //and turn them into a Point_range
@@ -36,15 +38,26 @@ bool test_flag_complex_construction(string filename)
   ms.init(points);
 
   // Create a NeighborGraph with the space:
-  double threshold = 100; //max distance between neighbors
   Rips_graph_naive< Euclidean_geometry< Point > > ng( ms, threshold );
 
+
+  clock_t start, end;
   //Construct the Simplex Tree
   Simplex_tree< Euclidean_geometry< Point > > st ( ms );
+  start = clock();
   st.insert_graph ( ng ); //insert the graph in the simplex tree as 1-skeleton
+  end = clock();
 
-  int max_dim = 10;
+  cout << "Insert the 1-skeleton in the simplex tree in "
+       << (double)(end-start)/CLOCKS_PER_SEC << " s. \n";
+
+  start = clock();
   st.expansion ( max_dim ); //expand the 1-skeleton until dimension max_dim
+  end = clock();
+
+  cout << "Expand the simplex tree in "
+       << (double)(end-start)/CLOCKS_PER_SEC << " s. \n";
+
 
   cout << "Information of the Simplex Tree: " << endl;
   cout << "  Number of vertices = " << st.nb_vertices() << " ";
@@ -54,7 +67,9 @@ bool test_flag_complex_construction(string filename)
   return true;
 }
 
-bool test_simplex_tree_iterators(string filename)
+bool test_simplex_tree_iterators ( string filename
+                                 , double threshold
+                                 , int max_dim )
 {
   Point_range points;              //read the points from the file
   read_points( filename, points ); //and turn them into a Point_range
@@ -64,14 +79,12 @@ bool test_simplex_tree_iterators(string filename)
   ms.init(points);
 
   // Create a NeighborGraph with the space:
-  double threshold = 100; //max distance between neighbors
   Rips_graph_naive< Euclidean_geometry< Point > > ng( ms, threshold );
 
   //Construct the Simplex Tree
   Simplex_tree< Euclidean_geometry< Point > > st ( ms );
   st.insert_graph ( ng ); //insert the graph in the simplex tree as 1-skeleton
 
-  int max_dim = 10;
   st.expansion ( max_dim ); //expand the 1-skeleton until dimension max_dim
 
   cout << "Iterator on vertices: ";
@@ -118,10 +131,15 @@ bool test_simplex_tree_iterators(string filename)
 
 int main (int argc, char * const argv[]) 
 {
-  string test_points = "../test/Simplex_tree_points.dat";
-  test_points_extraction(test_points);
-  test_flag_complex_construction(test_points);
-  test_simplex_tree_iterators(test_points);
+  if (argc != 4) {
+    std::cerr << "Usage: " << argv[0] 
+    << " path_to_data_points threshold dim_expansion \n";  
+    return -1;
+  }
+ 
+  test_points_extraction(argv[1]);
+  test_flag_complex_construction(argv[1],atof(argv[2]),atoi(argv[3]));
+  test_simplex_tree_iterators(argv[1],atof(argv[2]),atoi(argv[3]));
 
   return 0;
 }

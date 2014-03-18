@@ -16,33 +16,37 @@
 /**
  * 
  */
-template < class Vertex
-         , class Filtration_value
-         , class Node
+template < 
+// class Vertex
+//          , class Filtration_value
+//          , class Node
+          class SimplexTree
          , class MapContainer >// < Vertex, Node >
        //   >//, class Dictionary > 
 class Simplex_tree_siblings {
 public:
+  friend SimplexTree;
 
-  typedef  MapContainer                                     Dictionary;
+  typedef typename SimplexTree::Vertex Vertex;
+  typedef typename SimplexTree::Filtration_value  Filtration_value;
+  typedef typename SimplexTree::Node Node;
+  typedef  MapContainer                           Dictionary;
   typedef typename MapContainer::iterator         Dictionary_it;
 
 //typedef boost::container::flat_map< Vertex, Node > Dictionary;
   
   // Default constructor
-  Simplex_tree_siblings() :
-  oncles_(NULL),
-  parent_(-1),
-  members_()
-  {}
+  Simplex_tree_siblings() 
+  : oncles_(NULL)
+  , parent_(-1)
+  , members_() {}
   
   // Construct with values
   Simplex_tree_siblings(Simplex_tree_siblings  * oncles,
-                        Vertex                   parent ) :
-  oncles_(oncles),
-  parent_(parent),
-  members_()
-  {}
+                        Vertex                   parent )
+  : oncles_(oncles)
+  , parent_(parent)
+  , members_() {}
   
   /**
    * 'members' is sorted and unique.
