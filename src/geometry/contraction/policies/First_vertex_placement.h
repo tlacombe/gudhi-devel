@@ -21,7 +21,6 @@ template< typename EdgeProfile> class First_vertex_placement : public Placement_
 public:
 	typedef typename EdgeProfile::Point Point;
 	typedef typename EdgeProfile::edge_descriptor edge_descriptor;
-	typedef typename EdgeProfile::Vertex Vertex;
 
 	typedef typename Placement_policy<EdgeProfile>::Placement_type Placement_type;
 

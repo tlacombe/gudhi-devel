@@ -45,12 +45,12 @@ public:
 	Skeleton_blocker_link_superior()
 		:Skeleton_blocker_link_complex<ComplexType>(true)
 		 {
-
 		 }
 
 	Skeleton_blocker_link_superior(const ComplexType & parent_complex, Simplex_handle& alpha_parent_adress)
 		:Skeleton_blocker_link_complex<ComplexType>(parent_complex,alpha_parent_adress,true)
-		 {	}
+		 {
+		 }
 
 	Skeleton_blocker_link_superior(const ComplexType & parent_complex, Vertex_handle a_parent_adress)
 	:Skeleton_blocker_link_complex<ComplexType>(parent_complex,a_parent_adress,true)

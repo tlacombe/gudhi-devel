@@ -24,6 +24,9 @@ public:
 	typedef typename Skeleton_blocker_simple_traits::Root_vertex_handle Root_vertex_handle;
 	typedef typename Skeleton_blocker_simple_traits::Graph_vertex Simple_vertex;
 
+	/**
+	 * @brief Vertex with a point attached.
+	 */
 	class Simple_geometric_vertex : public Simple_vertex{
 		template<class ComplexGeometricTraits> friend class Skeleton_blocker_geometric_complex;
 	private:

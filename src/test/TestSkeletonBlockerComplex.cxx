@@ -84,13 +84,13 @@ bool test_simplex(){
 
 
 bool test_iterator_vertices(){
-	VertexIterator vIt;
 	int n = 10;
 	Complex complex(10);
 	cerr << "complex.num_vertices():"<<complex.num_vertices()<<endl;
 	int num_vertex_seen = 0;
-	for(vIt = complex.vertex_range().begin(); vIt != complex.vertex_range().end(); ++vIt,++num_vertex_seen){
-		cerr << "vIt:"<<*vIt<<endl;
+	for(auto vi :complex.vertex_range()){
+		cerr << "vertex:"<<vi<<endl;
+		++num_vertex_seen;
 	}
 	return num_vertex_seen == n;
 }
@@ -122,11 +122,9 @@ bool test_iterator_edge(){
 
 
 bool test_iterator_triangles(){
-	// Make convenient labels for the vertices
-	//enum { a, b, c, d, e, f, g , n };
 	const int n = 7;
 	Complex complex(n);
-	//create a "ring" around 'a'
+	//create a "ring" around '0'
 	for(int i=1;i<n;i++)
 		complex.add_edge(Vertex_handle(0),Vertex_handle(i));
 	for(int i=1;i<n-1;i++)
@@ -137,20 +135,22 @@ bool test_iterator_triangles(){
 
 	int num_triangles_seen=0;
 	//for (auto t : complex.triangle_range(5)){
-	for (auto t =complex.triangle_range(5).begin() ; t!= complex.triangle_range(5).end(); ++t){
-		PRINT((complex.triangle_range(5).end()).finished());
-		PRINT(*t);
+	TEST("triangles around 5 (should be 2 of them):");
+	for (auto t : complex.triangle_range(5)){
+		PRINT(t);
 		++num_triangles_seen;
 	}
 	bool test = (num_triangles_seen==2);
 
 	num_triangles_seen=0;
+	TEST("triangles around 0 (should be 6 of them):");
 	for (auto t : complex.triangle_range(0)){
 		PRINT(t);
 		++num_triangles_seen;
 	}
 	test = test&&(num_triangles_seen==6);
 
+	TEST("superior triangles around 0 (should be 6 of them):");
 	num_triangles_seen=0;
 	for (auto t : complex.superior_triangle_range(0)){
 		PRINT(t);
@@ -158,6 +158,8 @@ bool test_iterator_triangles(){
 	}
 	test = test&&(num_triangles_seen==6);
 
+	// bug
+	TEST("superior triangles around 1 (should be 0 of them):");
 	num_triangles_seen=0;
 	for (auto t : complex.superior_triangle_range(1)){
 		PRINT(t);
@@ -165,20 +167,22 @@ bool test_iterator_triangles(){
 	}
 	test = test&&(num_triangles_seen==0);
 
+	assert(test);
+
 	// we now add another triangle
 	complex.add_vertex();
 	complex.add_edge(Vertex_handle(4),Vertex_handle(7));
 	complex.add_edge(Vertex_handle(3),Vertex_handle(7));
 	complex.add_blocker(Vertex_handle(0),Vertex_handle(1),Vertex_handle(6));
-	PRINT("---------------------------complex.triangle_range(3)");
 	num_triangles_seen=0;
+	TEST("superior triangles around 3 (should be 1 of them):");
 	for (auto t : complex.superior_triangle_range(3)){
 		PRINT(t);
 		++num_triangles_seen;
 	}
 	test = test&&(num_triangles_seen==1);
 
-	PRINT("---------------------------complex.triangle_range()");
+	TEST("triangles (should be 6 of them):");
 	num_triangles_seen=0;
 	for (auto t : complex.triangle_range()){
 		PRINT(t);
@@ -186,7 +190,6 @@ bool test_iterator_triangles(){
 	}
 	test = test&&(num_triangles_seen==6);
 	PRINT(num_triangles_seen);
-
 
 	return test;
 
@@ -219,7 +222,6 @@ bool test_iterator_blockers(){
 	bool test = (num_blockers==3);
 
 	num_blockers=0;
-	DBG("second loop");
 	for (auto blockers : complex.blocker_range()){
 		TESTVALUE(*blockers) ;
 		num_blockers++;
