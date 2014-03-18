@@ -13,33 +13,27 @@
 #include <vector>
 #include <iostream>
 
-template < class V
-         , class F
-         , class N
-         , class MC >
-class Simplex_tree_siblings;
-
 /**
  * \brief Node of a simplex tree with filtration value
- * and simplex data.
+ * and simplex key.
  *
- * It stores explicitely its own filtration value and its own Simplex_data.
+ * It stores explicitely its own filtration value and its own Simplex_key.
  */
 template < class SimplexTree > 
 class Simplex_tree_node_explicit_storage {
   public:
-friend SimplexTree;
+  friend SimplexTree;
 
   typedef typename SimplexTree::Siblings         Siblings;
   typedef typename SimplexTree::Filtration_value Filtration_value;
-  typedef typename SimplexTree::Simplex_data     Simplex_data;
+  typedef typename SimplexTree::Simplex_key      Simplex_key;
 
   //private:
   //friend class Simplex_tree; 
   // Default constructor.
   Simplex_tree_node_explicit_storage() :
   children_(NULL),
-  simplex_data_(-1),
+  simplex_key_(-1),
   filtration_(0) {}
 
  /* Simplex_tree_node_explicit_storage( Filtration_value filtration ) :
@@ -52,11 +46,11 @@ friend SimplexTree;
   Simplex_tree_node_explicit_storage(Siblings * sib,
                                      Filtration_value filtration) :
   children_(sib),
-  simplex_data_(-1),
+  simplex_key_(-1),
   filtration_(filtration) {}
 
 
-  void assign_data(Simplex_data key) { simplex_data_ = key; }
+  void assign_key(Simplex_key key) { simplex_key_ = key; }
 
   /**
    * Return true if the node has children,
@@ -68,33 +62,25 @@ friend SimplexTree;
   /**
    * Assign a children to the node
    */
-  void 
-  assign_children (Siblings *      children)
-  { children_ = children; }
+  void assign_children (Siblings * children) { children_ = children; }
   /**
    *
    */
-  void assign_filtration(double filtration_value)
-  {  filtration_ = filtration_value;  }
+  void assign_filtration(double filtration_value) { filtration_ = filtration_value; }
   
-  Filtration_value filtration()
-  { return filtration_; }
+  Filtration_value filtration() { return filtration_; }
 
   /** Careful -> has_children() must be true*/
-  Siblings *     children()
-  { return children_; }
+  Siblings * children() { return children_; }
   
-  Simplex_data simplex_data()
-  { return simplex_data_; }
+  Simplex_key key() { return simplex_key_; }
   
-  Simplex_data data() { return simplex_data_; }
-
 private:  
    Siblings *              children_;
   
   // Data attached to simplex, explicit storage
-  Simplex_data             simplex_data_;
-  Filtration_value         filtration_;   //value in the filtration
+  Simplex_key             simplex_key_;
+  Filtration_value        filtration_;   //value in the filtration
   
 };
 

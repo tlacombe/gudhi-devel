@@ -16,6 +16,7 @@
 #include <list>
 #include <cassert>
 
+
 /**
  * \brief Read a set of points to turn it
  * into a vector< vector<double> > by filling points
