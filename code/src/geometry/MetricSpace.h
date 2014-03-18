@@ -10,7 +10,7 @@
 /** \brief Concept defining a discrete metric space. 
  *
  * The metric space contains a finite set of elements defined by
- * a type Vertex, and a distance between each pair of Vertices is
+ * a type Vertex_handle, and a distance between each pair of Vertices is
  * defined.
  *
  * Remark: the distance may be more general, like a similarity 
@@ -21,12 +21,12 @@
  * and \f$0\f$ otherwise. */
  struct MetricSpace
  {
-/** \brief Vertex type representing an element of the metric space.
+/** \brief Vertex_handle type representing an element of the metric space.
   *
   * The set of Vertices must be totally ordered with <.
-  * A Vertex must be Default Constructible, Assignable, and Equality Comparable.
+  * A Vertex_handle must be Default Constructible, Assignable, and Equality Comparable.
   */
-  typedef unspecified Vertex;
+  typedef unspecified Vertex_handle;
   /** \brief Iterator over Vertices.*/
   //typedef unspecified    Space_vertex_iterator ;
   /** \brief Range of Vertices.*/
@@ -38,14 +38,14 @@
   */
   //Vertex_range space_vertex_range();
 
-/** \brief Returns a specific Vertex which is different from all
+/** \brief Returns a specific Vertex_handle which is different from all
   * the Vertices represented in the MetricSpace.
   *
   * The output of null_vertex() is comparable with < with the other
   * Vertices.
   * Computing a distance involving the output of null_vertex() will
   * result in an undefined behavior.*/
-  Vertex null_vertex();
+  Vertex_handle null_vertex();
 
 /** \brief Distance value type.
   *
@@ -54,6 +54,6 @@
   typedef unspecified FT;
   
 /** \brief Distance function between two Vertices.*/
-  FT distance( Vertex u, Vertex v );
+  FT distance( Vertex_handle u, Vertex_handle v );
 
 };

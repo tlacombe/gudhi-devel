@@ -60,9 +60,9 @@ bool test_flag_complex_construction ( string filename
 
 
   cout << "Information of the Simplex Tree: " << endl;
-  cout << "  Number of vertices = " << st.nb_vertices() << " ";
+  cout << "  Number of vertices = " << st.num_vertices() << " ";
   cout << "    for " << points.size() << " points " << endl;
-  cout << "  Number of simplices = " << st.nb_simplices() << endl;
+  cout << "  Number of simplices = " << st.num_simplices() << endl;
   cout << endl << endl;
   return true;
 }

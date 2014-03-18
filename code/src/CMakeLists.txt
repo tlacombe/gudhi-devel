@@ -12,7 +12,6 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
 
 include_directories(. utils combinatorics geometry topology)
 
-
 add_executable(	TestSkeletonBlockerComplex test/TestSkeletonBlockerComplex.cxx)
 add_executable(	TestSimplifiable test/TestSimplifiable.cxx)
 add_executable(	TestContraction test/TestContraction.cxx)
