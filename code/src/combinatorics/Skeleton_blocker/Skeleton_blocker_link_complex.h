@@ -51,17 +51,16 @@ public:
 
 
 
-	Skeleton_blocker_link_complex(bool only_superior_vertices_=false):only_superior_vertices_(only_superior_vertices_){
+	Skeleton_blocker_link_complex(bool only_superior_vertices=false):only_superior_vertices_(only_superior_vertices){
 	}
 
-	Skeleton_blocker_link_complex(const ComplexType & parent_complex, Simplex_handle& alpha_parent_adress,bool only_superior_vertices_ = false)
-	:only_superior_vertices_(only_superior_vertices_) {
+	Skeleton_blocker_link_complex(const ComplexType & parent_complex, Simplex_handle& alpha_parent_adress,bool only_superior_vertices = false)
+	:only_superior_vertices_(only_superior_vertices) {
 		build_link(parent_complex,alpha_parent_adress);
 	}
 
-	Skeleton_blocker_link_complex(const ComplexType & parent_complex, Vertex_handle a_parent_adress, bool only_superior_vertices_ = false)
-	:only_superior_vertices_(only_superior_vertices_){
-		only_superior_vertices_ = only_superior_vertices_ ;
+	Skeleton_blocker_link_complex(const ComplexType & parent_complex, Vertex_handle a_parent_adress, bool only_superior_vertices = false)
+	:only_superior_vertices_(only_superior_vertices){
 		Simplex_handle alpha_simplex(a_parent_adress);
 		build_link(parent_complex,alpha_simplex);
 	}
@@ -205,9 +204,9 @@ public:
 	 * If the boolean only_superior_vertices is true, then the link is computed only
 	 * with vertices that are greater than  vertices of alpha_parent_adress.
 	 */
-	void build_link(const ComplexType & parent_complex, Simplex_handle& alpha_parent_adress,bool only_superior_vertices =false)
+	void build_link(const ComplexType & parent_complex, Simplex_handle& alpha_parent_adress)
 	{
-		compute_link_vertices(parent_complex,alpha_parent_adress,only_superior_vertices);
+		compute_link_vertices(parent_complex,alpha_parent_adress,only_superior_vertices_);
 		compute_link_edges(parent_complex,alpha_parent_adress);
 		compute_link_blockers(parent_complex,alpha_parent_adress);
 	}

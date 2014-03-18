@@ -12,12 +12,12 @@
  *@brief Iterator on the vertices of a simplicial complex
  *@remark The increment ++ operators go to the next active vertex.
  */
-template<typename Traits>
-class Skeleton_blocker_complex<Traits>::Complex_vertex_iterator
+template<typename SkeletonBlockerDS>
+class Skeleton_blocker_complex<SkeletonBlockerDS>::Complex_vertex_iterator
 {
-	friend class Skeleton_blocker_complex<Traits> ;
+	friend class Skeleton_blocker_complex<SkeletonBlockerDS> ;
 private:
-	const Skeleton_blocker_complex<Traits>* complex;
+	const Skeleton_blocker_complex<SkeletonBlockerDS>* complex;
 	std::pair<boost_vertex_iterator, boost_vertex_iterator> vertexIterator;
 
 
@@ -26,7 +26,7 @@ public:
 	}
 
 private:
-	Complex_vertex_iterator(const Skeleton_blocker_complex<Traits>* complex_):
+	Complex_vertex_iterator(const Skeleton_blocker_complex<SkeletonBlockerDS>* complex_):
 		complex(complex_),
 		vertexIterator(vertices(complex_->skeleton))
 {
@@ -84,15 +84,15 @@ public:
  *@brief Iterator on the edges of a simplicial complex.
  *
  */
-template<typename Traits>
-class Skeleton_blocker_complex<Traits>::Complex_edge_iterator
+template<typename SkeletonBlockerDS>
+class Skeleton_blocker_complex<SkeletonBlockerDS>::Complex_edge_iterator
 {
-	friend class Skeleton_blocker_complex<Traits> ;
+	friend class Skeleton_blocker_complex<SkeletonBlockerDS> ;
 
 	template<typename L>
-	friend class Skeleton_blocker_complex<Traits>::Triangle_around_vertex_iterator;
+	friend class Skeleton_blocker_complex<SkeletonBlockerDS>::Triangle_around_vertex_iterator;
 
-	typedef Skeleton_blocker_complex<Traits> Complex;
+	typedef Skeleton_blocker_complex<SkeletonBlockerDS> Complex;
 	typedef typename Complex::boost_edge_iterator boost_edge_iterator;
 	typedef typename Complex::Edge_handle Edge_handle;
 
@@ -105,7 +105,7 @@ public:
 
 	Complex_edge_iterator():complex(NULL){
 	}
-	Complex_edge_iterator(const Skeleton_blocker_complex<Traits>* complex_):
+	Complex_edge_iterator(const Skeleton_blocker_complex<SkeletonBlockerDS>* complex_):
 		complex(complex_),
 		edge_iterator(boost::edges(complex_->skeleton))
 	{
@@ -154,16 +154,16 @@ public:
  * adjacent to a vertex of the simplicial complex.
  * \remark Will be removed soon -> dont look
  */
-template<typename Traits>
+template<typename SkeletonBlockerDS>
 template<typename LinkType>
-class Skeleton_blocker_complex<Traits>::Triangle_around_vertex_iterator{
+class Skeleton_blocker_complex<SkeletonBlockerDS>::Triangle_around_vertex_iterator{
 
 private:
 	typedef typename LinkType::Vertex_handle Vertex_handle;
 	typedef typename LinkType::Root_vertex_handle Root_vertex_handle;
 	typedef typename LinkType::Simplex_handle Simplex_handle;
 	typedef Skeleton_blocker_complex Complex;
-	typedef typename Skeleton_blocker_complex<Traits>::Complex_edge_iterator Complex_edge_iterator;
+	typedef typename Skeleton_blocker_complex<SkeletonBlockerDS>::Complex_edge_iterator Complex_edge_iterator;
 
 	const Complex* complex_;
 	Vertex_handle v_;
@@ -171,13 +171,13 @@ private:
 	Complex_edge_iterator current_edge_;
 	bool is_end_;
 public:
-	Triangle_around_vertex_iterator(const Skeleton_blocker_complex<Traits>* complex,Vertex_handle v):
+	Triangle_around_vertex_iterator(const Skeleton_blocker_complex<SkeletonBlockerDS>* complex,Vertex_handle v):
 		complex_(complex),v_(v),link_(*complex,v_),current_edge_(link_.edge_range().begin()),is_end_(current_edge_ == link_.edge_range().end()){
 }
 	/**
 	 * @brief ugly hack to get an iterator to the end
 	 */
-	Triangle_around_vertex_iterator(const Skeleton_blocker_complex<Traits>* complex,Vertex_handle v,bool is_end):
+	Triangle_around_vertex_iterator(const Skeleton_blocker_complex<SkeletonBlockerDS>* complex,Vertex_handle v,bool is_end):
 		complex_(complex),v_(v),link_(),is_end_(true){
 	}
 
@@ -228,15 +228,15 @@ public:
  * \remark Will be removed soon -> dont look
  *
  */
-template<typename Traits>
-class Skeleton_blocker_complex<Traits>::Triangle_iterator{
+template<typename SkeletonBlockerDS>
+class Skeleton_blocker_complex<SkeletonBlockerDS>::Triangle_iterator{
 
 private:
-	typedef typename Skeleton_blocker_complex<Traits>::Vertex_handle Vertex_handle;
-	typedef typename Skeleton_blocker_complex<Traits>::Root_vertex_handle Root_vertex_handle;
-	typedef typename Skeleton_blocker_complex<Traits>::Simplex_handle Simplex_handle;
-	typedef typename Skeleton_blocker_complex<Traits>::Complex_vertex_iterator Complex_vertex_iterator;
-	typedef Skeleton_blocker_complex<Traits> Complex;
+	typedef typename Skeleton_blocker_complex<SkeletonBlockerDS>::Vertex_handle Vertex_handle;
+	typedef typename Skeleton_blocker_complex<SkeletonBlockerDS>::Root_vertex_handle Root_vertex_handle;
+	typedef typename Skeleton_blocker_complex<SkeletonBlockerDS>::Simplex_handle Simplex_handle;
+	typedef typename Skeleton_blocker_complex<SkeletonBlockerDS>::Complex_vertex_iterator Complex_vertex_iterator;
+	typedef Skeleton_blocker_complex<SkeletonBlockerDS> Complex;
 	typedef Complex::Superior_triangle_around_vertex_iterator STAVI;
 
 	const Complex* complex_;
@@ -248,7 +248,7 @@ public:
 	/*
 	 * @remark  assume that the complex is non-empty
 	 */
-	Triangle_iterator(const Skeleton_blocker_complex<Traits>* complex):
+	Triangle_iterator(const Skeleton_blocker_complex<SkeletonBlockerDS>* complex):
 		complex_(complex),
 		current_vertex_(complex->vertex_range().begin()),
 		current_triangle_(complex,*current_vertex_), // xxx this line is problematic is the complex is empty
@@ -262,7 +262,7 @@ public:
 	 * @brief ugly hack to get an iterator to the end
 	 * @remark  assume that the complex is non-empty
 	 */
-	Triangle_iterator(const Skeleton_blocker_complex<Traits>* complex,bool is_end):
+	Triangle_iterator(const Skeleton_blocker_complex<SkeletonBlockerDS>* complex,bool is_end):
 		complex_(complex),
 		current_vertex_(complex->vertex_range().begin()),
 		current_triangle_(complex->superior_triangle_range(*current_vertex_).end()), // xxx this line is problematic is the complex is empty
@@ -329,10 +329,10 @@ public:
 ///**
 // * @brief Iterator through the blockers of a vertex
 // */
-//template<typename Traits>
-//class Skeleton_blocker_complex<Traits>::Complex_const_blocker_iterator{
-//	friend class Skeleton_blocker_complex<Traits> ;
-//	typedef Skeleton_blocker_complex<Traits> Complex;
+//template<typename SkeletonBlockerDS>
+//class Skeleton_blocker_complex<SkeletonBlockerDS>::Complex_const_blocker_iterator{
+//	friend class Skeleton_blocker_complex<SkeletonBlockerDS> ;
+//	typedef Skeleton_blocker_complex<SkeletonBlockerDS> Complex;
 //	typedef typename Complex::BlockerMapConstIterator BlockerMapConstIterator;
 //
 //private:
@@ -378,10 +378,10 @@ public:
  */
 // ReturnType = const Simplex_handle* or Simplex_handle*
 // MapIteratorType = BlockerMapConstIterator or BlockerMapIterator
-template<typename Traits>
+template<typename SkeletonBlockerDS>
 template<typename MapIteratorType, typename ReturnType>
-class Skeleton_blocker_complex<Traits>::Blocker_iterator_around_vertex_internal{
-	friend class Skeleton_blocker_complex<Traits> ;
+class Skeleton_blocker_complex<SkeletonBlockerDS>::Blocker_iterator_around_vertex_internal{
+	friend class Skeleton_blocker_complex<SkeletonBlockerDS> ;
 private:
 	MapIteratorType current_position;
 public:
@@ -423,10 +423,10 @@ public:
  */
 // ReturnType = const Simplex_handle* or Simplex_handle*
 // MapIteratorType = BlockerMapConstIterator or BlockerMapIterator
-template<typename Traits>
+template<typename SkeletonBlockerDS>
 template<typename MapIteratorType, typename ReturnType>
-class Skeleton_blocker_complex<Traits>::Blocker_iterator_internal{
-	friend class Skeleton_blocker_complex<Traits> ;
+class Skeleton_blocker_complex<SkeletonBlockerDS>::Blocker_iterator_internal{
+	friend class Skeleton_blocker_complex<SkeletonBlockerDS> ;
 private:
 	MapIteratorType current_position;
 	MapIteratorType end_of_map;
@@ -485,12 +485,12 @@ private:
 
 
 
-template<typename Traits>
-class Skeleton_blocker_complex<Traits>::Complex_vertex_range {
+template<typename SkeletonBlockerDS>
+class Skeleton_blocker_complex<SkeletonBlockerDS>::Complex_vertex_range {
 private:
-	const Skeleton_blocker_complex<Traits>* complex_;
+	const Skeleton_blocker_complex<SkeletonBlockerDS>* complex_;
 public:
-	Complex_vertex_range(const Skeleton_blocker_complex<Traits>* complex):complex_(complex){
+	Complex_vertex_range(const Skeleton_blocker_complex<SkeletonBlockerDS>* complex):complex_(complex){
 	}
 
 	Complex_vertex_iterator begin(){
@@ -504,8 +504,8 @@ public:
 	}
 };
 
-template<typename Traits>
-class Skeleton_blocker_complex<Traits>::Complex_edge_range {
+template<typename SkeletonBlockerDS>
+class Skeleton_blocker_complex<SkeletonBlockerDS>::Complex_edge_range {
 private:
 	const Skeleton_blocker_complex* complex_;
 public:
@@ -525,17 +525,17 @@ public:
 };
 
 
-template<typename Traits>
+template<typename SkeletonBlockerDS>
 template<typename LinkType>
-class Skeleton_blocker_complex<Traits>::Triangle_around_vertex_range {
+class Skeleton_blocker_complex<SkeletonBlockerDS>::Triangle_around_vertex_range {
 private:
-	typedef Skeleton_blocker_complex<Traits> Complex;
+	typedef Skeleton_blocker_complex<SkeletonBlockerDS> Complex;
 	typedef Complex::Triangle_around_vertex_iterator<LinkType> Tavi;
-	typedef typename Skeleton_blocker_complex<Traits>::Vertex_handle Vertex_handle;
+	typedef typename Skeleton_blocker_complex<SkeletonBlockerDS>::Vertex_handle Vertex_handle;
 	const Complex* complex_;
 	Vertex_handle v_;
 public:
-	Triangle_around_vertex_range(const Skeleton_blocker_complex<Traits>* complex,Vertex_handle v):
+	Triangle_around_vertex_range(const Skeleton_blocker_complex<SkeletonBlockerDS>* complex,Vertex_handle v):
 		complex_(complex),v_(v){
 	}
 
@@ -551,15 +551,15 @@ public:
 };
 
 
-template<typename Traits>
-class Skeleton_blocker_complex<Traits>::Triangle_range {
+template<typename SkeletonBlockerDS>
+class Skeleton_blocker_complex<SkeletonBlockerDS>::Triangle_range {
 private:
-	typedef Skeleton_blocker_complex<Traits> Complex;
+	typedef Skeleton_blocker_complex<SkeletonBlockerDS> Complex;
 	typedef Complex::Triangle_iterator Triangle_iterator;
-	typedef typename Skeleton_blocker_complex<Traits>::Vertex_handle Vertex_handle;
+	typedef typename Skeleton_blocker_complex<SkeletonBlockerDS>::Vertex_handle Vertex_handle;
 	const Complex* complex_;
 public:
-	Triangle_range(Skeleton_blocker_complex<Traits>* complex):
+	Triangle_range(Skeleton_blocker_complex<SkeletonBlockerDS>* complex):
 		complex_(complex){
 	}
 
@@ -577,8 +577,8 @@ public:
 
 
 
-//template<typename Traits>
-//class Skeleton_blocker_complex<Traits>::Complex_const_blocker_range {
+//template<typename SkeletonBlockerDS>
+//class Skeleton_blocker_complex<SkeletonBlockerDS>::Complex_const_blocker_range {
 //private:
 //	const Skeleton_blocker_complex* complex_;
 //	Vertex_handle v_;

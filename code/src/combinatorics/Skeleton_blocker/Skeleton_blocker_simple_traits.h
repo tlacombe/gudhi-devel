@@ -30,7 +30,7 @@ struct Skeleton_blocker_simple_traits{
 		boost_vertex_handle vertex;
 
 		bool operator!=( const Root_vertex_handle& other) const{
-			return ! this->vertex == other.vertex;
+			return ! (this->vertex == other.vertex);
 		}
 
 		bool operator==( const Root_vertex_handle& other) const{

@@ -15,14 +15,14 @@
  *  \brief Class that allows simplification operation on a simplicial complex represented
  *  by a skeleton/blockers pair.
  */
-template<typename Traits>
-class Skeleton_blocker_simplifiable_complex : public Skeleton_blocker_complex<Traits>
+template<typename SkeletonBlockerDS>
+class Skeleton_blocker_simplifiable_complex : public Skeleton_blocker_complex<SkeletonBlockerDS>
 {
 	template<class ComplexType> friend class Skeleton_blocker_sub_complex;
 
 public:
 
-	typedef Skeleton_blocker_complex<Traits> SkeletonBlockerComplex;
+	typedef Skeleton_blocker_complex<SkeletonBlockerDS> SkeletonBlockerComplex;
 
 	typedef typename SkeletonBlockerComplex::Graph_edge Graph_edge;
 
@@ -50,7 +50,7 @@ public:
 	 */
 	//@{
 	Skeleton_blocker_simplifiable_complex(int num_vertices_ = 0,Visitor* visitor_=NULL):
-		Skeleton_blocker_complex<Traits>(num_vertices_,visitor_){	}
+		Skeleton_blocker_complex<SkeletonBlockerDS>(num_vertices_,visitor_){	}
 	//@}
 
 
@@ -67,9 +67,9 @@ public:
 	 */
 	virtual bool is_popable_blocker(Blocker_handle sigma){
 		this->remove_blocker(sigma);
-		Skeleton_blocker_link_complex<Skeleton_blocker_simplifiable_complex<Traits> > link_blocker(*this,*sigma);
+		Skeleton_blocker_link_complex<Skeleton_blocker_simplifiable_complex<SkeletonBlockerDS> > link_blocker(*this,*sigma);
 		this->add_blocker(sigma);
-		return link_blocker.is_reducible()==CONTRACTIBLE;
+		return link_blocker.is_contractible()==CONTRACTIBLE;
 	}
 
 
@@ -206,17 +206,17 @@ public:
 		}
 	}
 
+	enum contractible_status{ NOT_CONTRACTIBLE,MAYBE_CONTRACTIBLE,CONTRACTIBLE, };
 	/**
-	 * Test if the complex is reducible using a strategy defined in the class
+	 * @brief %Test if the complex is reducible using a strategy defined in the class
 	 * (by default it tests if the complex is a cone)
-	 * Note that NO could be returned if some invariant ensures that the complex
+	 * @details Note that NO could be returned if some invariant ensures that the complex
 	 * is not a point (for instance if the euler characteristic is different from 1).
 	 * This function will surely have to return MAYBE in some case because the
 	 * associated problem is undecidable but it in practice, it can often
 	 * be solved with the help of geometry.
 	 */
-	enum contractible_status{ NOT_CONTRACTIBLE,MAYBE_CONTRACTIBLE,CONTRACTIBLE, };
-	virtual contractible_status is_reducible() const{
+	virtual contractible_status is_contractible() const{
 		if (this->is_cone()) return CONTRACTIBLE;
 		else return MAYBE_CONTRACTIBLE;
 		//		return this->is_cone();
@@ -339,7 +339,7 @@ public:
 		// 3) every proper face of alpha.beta in Link(a) \cup Link(b)
 		// 4) alpha.beta in K
 
-		typedef Skeleton_blocker_link_complex<Skeleton_blocker_complex<Traits> > LinkComplexType;
+		typedef Skeleton_blocker_link_complex<Skeleton_blocker_complex<SkeletonBlockerDS> > LinkComplexType;
 
 		LinkComplexType link_a(*this,a);
 		LinkComplexType link_b(*this,b);

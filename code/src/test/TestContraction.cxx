@@ -93,8 +93,6 @@ void test_contraction_rips(string name_file, double offset){
 		return;
 	}
 
-//	TESTVALUE(complex.vertices_to_string());
-
 	clock_t time = clock();
 
 	TEST("build the Rips complex");
@@ -109,7 +107,7 @@ void test_contraction_rips(string name_file, double offset){
 	time = clock();
 
 	auto cost_policy = new Edge_length_cost<Profile>;
-	auto placement_policy = new Middle_placement<Profile>;
+	auto placement_policy = new First_vertex_placement<Profile>;
 	auto valid_contraction_policy= new Link_condition_valid_contraction<Profile>;
 	auto contraction_visitor = new Contraction_visitor_remove_popable();
 	Complex_contractor contractor(complex,cost_policy,placement_policy,valid_contraction_policy,contraction_visitor);
@@ -122,6 +120,7 @@ void test_contraction_rips(string name_file, double offset){
 	TESTVALUE(complex.num_blockers());
 
 	std::cerr << "Edge contractions took "<< ( (float)(clock()-time))/CLOCKS_PER_SEC << " seconds\n";
+
 }
 
 
