@@ -48,7 +48,7 @@ public:
 /** \brief Type of data stored in each simplex. */
   typedef SimplexKeyType                              Simplex_key;
 
-  typedef typename MetricSpace::Vertex                Vertex;   
+  typedef typename MetricSpace::Vertex_handle         Vertex_handle;   
  
 
 
@@ -66,7 +66,7 @@ public:
   //                               , Filtration_value
   //                               , Node
                                   Simplex_tree
-                                , boost::container::flat_map< Vertex, Node > 
+                                , boost::container::flat_map< Vertex_handle, Node > 
                                 >                                Siblings;
   /** \todo Didn't manage to define the Dictionary type in Simplex_tree because
   * of the mutual dependence of Siblings and Node.*/
@@ -89,7 +89,7 @@ private:
   typedef boost::iterator_range < Filtration_simplex_iterator >   Filtration_simplex_range    ;
 
   struct return_first {
-    Vertex operator()(const Dit_value_t& p_sh) const {return p_sh.first;}  
+    Vertex_handle operator()(const Dit_value_t& p_sh) const {return p_sh.first;}  
   };
   typedef boost::transform_iterator < return_first, Dictionary_it > Complex_vertex_iterator;
   typedef boost::iterator_range < Complex_vertex_iterator >         Complex_vertex_range;
@@ -97,7 +97,7 @@ private:
 public:
 /** \brief Returns a range over the vertices of the complex.
 *
-* The iterators have 'value type' Vertex.*/
+* The iterators have 'value type' Vertex_handle.*/
 Complex_vertex_range complex_vertex_range()
 {
  return Complex_vertex_range( boost::make_transform_iterator(root_.members_.begin(),return_first())
@@ -128,7 +128,7 @@ Complex_vertex_range complex_vertex_range()
 
 /** \brief Returns a range over the sequence of vertices of a simplex.
  *
- * The iterators have 'value type' Vertex. The order in which the 
+ * The iterators have 'value type' Vertex_handle. The order in which the 
  * vertices are visited is the decreasing order, which is consequenlty
  * equal to \f$(-1)^{\text{dim} \sigma}\f$ the 
  * canonical orientation on the simplex.*/
@@ -157,59 +157,70 @@ Complex_vertex_range complex_vertex_range()
 /** \brief Empty constructor.*/
  Simplex_tree( MetricSpace & ms ) 
  : ms_(&ms)
- , nb_vertices_(0)
- , size_cpx_(0)
+ , num_vertices_(0)
+ , num_simplices_(0)
  , root_() 
- , filtration_vect_() {root_.parent_ = null_vertex();}
+ , filtration_vect_()
+ , dimension_(-1)    { root_.parent_ = ms.null_vertex(); }
 
 /** \brief Destructor; deallocates the whole tree structure.*/
 ~Simplex_tree() 
-{ for(auto sh = root_.members().begin(); sh != root_.members().end(); ++sh)
-    { if(has_children(sh)) {rec_delete(sh->second.children());} }
+{ 
+  for(auto sh = root_.members().begin(); sh != root_.members().end(); ++sh)
+   {
+     if(has_children(sh)) { rec_delete(sh->second.children()); } 
+   }
 }
 private:
 /** Recursive deletion.*/
 void rec_delete(Siblings * sib)
 { for(auto sh = sib->members().begin(); sh != sib->members().end(); ++sh)
-  { if(has_children(sh)) {rec_delete(sh->second.children());} }
+    { 
+      if(has_children(sh)) { rec_delete(sh->second.children()); } 
+    }
   delete sib;
 }
 
 public:
-/** Returns the data associated to a simplex.*/
-Simplex_key simplex_to_key(Simplex_handle sh)
+/** Returns the key associated to a simplex.*/
+Simplex_key    key      ( Simplex_handle sh )
 { return sh->second.key(); }
 /** Returns the simplex associated to a key.*/
-Simplex_handle key_to_simplex(Simplex_key key)
+Simplex_handle simplex  ( Simplex_key key )
 { return filtration_vect_[key]; }
 /** Returns the filtration value of a simplex.*/
 Filtration_value filtration(Simplex_handle sh)
 { return sh->second.filtration(); }
+/** Returns an upper bound of the filtration values of the simplices.*/
+Filtration_value filtration()
+{ return threshold_; }
 
 /** \todo flat_map and valid iterators ?*/
-Simplex_handle null_simplex() {return root_.members_.end(); }
-
-Vertex null_vertex() { return -1; }
-
-Simplex_key null_key() { return -1; }
-
+Simplex_handle  null_simplex()  { return root_.members_.end(); }
+/** \brief Returns a key considered as NULL.*/
+Simplex_key     null_key()      { return -1; }
+/** \brief Returns a Vertex_handle identified as "null".
+  *
+  * It is identical to null_vertex() defined in MetricSpace.*/
+Vertex_handle          null_vertex()   { return ms_->null_vertex(); }
 /** Returns a pointer to the root nodes of the simplex tree.*/
 Siblings *      root()          { return &root_; }
 /** Returns a pointer to the geometry traits.*/
 MetricSpace *   ms()            { return ms_; }
 /** \brief Returns the number of vertices in the complex.*/
-size_t          nb_vertices()   { return root_.members_.size(); }
+size_t          num_vertices()   { return root_.members_.size(); }
 /** \brief Returns the number of simplices in the complex.
-*
-* Does not count the empty simplex.*/
-size_t          nb_simplices()  { return size_cpx_; }
+  *
+  * Does not count the empty simplex.*/
+size_t          num_simplices()  { return num_simplices_; }
+
 
 
 void display_simplex(Simplex_handle sh)
 {
   std::cout << "   " << "[" << filtration(sh) << "] "; 
-    for( auto vertex : simplex_vertex_range(sh) ) 
-      { std::cout << vertex << " "; } 
+  for( auto vertex : simplex_vertex_range(sh) ) 
+    { std::cout << vertex << " "; } 
 }
 
 
@@ -226,7 +237,7 @@ void display_simplex(Simplex_handle sh)
 * \todo Simplex_tree find and insert.
 */
 //template <class RandomAccessVertexRange >
-Simplex_handle find(std::vector< Vertex > & s)
+Simplex_handle find(std::vector< Vertex_handle > & s)
 { 
   if(s.begin() == s.end()) std::cerr << "Empty simplex \n";
 
@@ -234,7 +245,7 @@ Simplex_handle find(std::vector< Vertex > & s)
 
   Siblings *     tmp_sib = &root_;
   Dictionary_it  tmp_dit;
-  Vertex last = s[s.size()-1];
+  Vertex_handle last = s[s.size()-1];
   for(auto v : s) {
     tmp_dit = tmp_sib->members_.find(v);
     if(tmp_dit == tmp_sib->members_.end())   { return null_simplex(); }
@@ -245,7 +256,7 @@ Simplex_handle find(std::vector< Vertex > & s)
 }   
 
 /** \brief Faster way to find a vertex*/
-Simplex_handle find_vertex(Vertex v)
+Simplex_handle find_vertex(Vertex_handle v)
 { return root_.members_.begin()+v; }
 
 /** \todo Simplex_tree::insert() */
@@ -268,7 +279,7 @@ Simplex_handle find_vertex(Vertex v)
 void initialize_filtration()
 { 
 //  std::cout << "initialize filtration \n";
-  filtration_vect_.reserve(size_cpx_);
+  filtration_vect_.reserve(num_simplices_);
   for(auto sh : complex_simplex_range()) { filtration_vect_.push_back(sh); }
   stable_sort(filtration_vect_.begin(),filtration_vect_.end(),is_before_in_filtration(this));
   Simplex_key tmp_key = 0;
@@ -319,27 +330,31 @@ int dimension(Simplex_handle sh)
   while(curr_sib != NULL) { ++dim; curr_sib = curr_sib->oncles(); }
   return dim-1; 
 }
+/** \brief Returns an upper bound on the dimension of the simplicial complex.*/
+int dimension()
+{ return dimension_; }
 
 
 
 private:
+/** Returns the two Simplex_handle corresponding to the endpoints of
+* and edge. sh must point to a 1-dimensional simplex.*/
  std::pair<Simplex_handle,Simplex_handle> endpoints(Simplex_handle sh)
   { return std::pair<Simplex_handle,Simplex_handle>(root_.members_.find(sh->first)
                                   , root_.members_.find(self_siblings(sh)->parent()) ); }
-
 
 /** \brief Returns true iff the simplex is a vertex (dim 0).*/
   bool is_vertex(Simplex_handle sh) { return (self_siblings(sh)->oncles() == NULL); }
 /** \brief Returns true iff the simplex is an edge (dim 1).*/
   bool is_edge(Simplex_handle sh)
   { Siblings sib = self_siblings(sh)->oncles();
-    return (sib != NULL && sib->oncles() == NULL); 
-  }
-
+    return (sib != NULL && sib->oncles() == NULL); }
+/** \brief Returns true iff the node in the simplex tree pointed by
+  * sh has children.*/
   bool has_children(Simplex_handle sh)
   { return (sh->second.children()->parent() == sh->first); }
 
-// Returns the Siblings containg a simplex.*/
+/** Returns the Siblings containing a simplex.*/
   Siblings * self_siblings(Simplex_handle sh)
   { if(sh->second.children()->parent() == sh->first) return sh->second.children()->oncles();
     else                                             return sh->second.children(); }
@@ -347,10 +362,6 @@ private:
  void print(Simplex_handle sh, std::ostream& os = std::cout)
  { for(auto v : simplex_vertex_range(sh)) {os << v << " ";} 
  os << std::endl;}
-
-
-
-
 
 public:
 /**
@@ -372,12 +383,13 @@ public:
 template< class NeighborGraph >
  void insert_graph( NeighborGraph & ng )
  {
-  assert(size_cpx_ == 0);
+  assert(num_simplices_ == 0);
 
+  dimension_ = 1;
   root_.members_.reserve(ng.size_graph());
   for(auto v : ms_->space_vertex_range())
     { root_.members_.insert(root_.members_.end(),
-      std::pair<Vertex,Node>(v,Node(&root_,0.))); }
+      std::pair<Vertex_handle,Node>(v,Node(&root_,0.))); }
   for(Dictionary_it sh = root_.members().begin(); //all root simplices, ie vertices.
     sh != root_.members().end(); ++sh) 
   {  //traverses the neighbor vertices
@@ -394,12 +406,12 @@ template< class NeighborGraph >
     }
   }
  // Update size of the complex
-  this->size_cpx_ += this->root_.size();
+  this->num_simplices_ += this->root_.size();
   for(Simplex_handle sh = root_.members().begin(); //all root simplices, ie vertices.
     sh != root_.members().end(); ++sh) 
     { if(has_children(sh)) 
-      { size_cpx_ += sh->second.children()->size(); }  }
-    }
+      { num_simplices_ += sh->second.children()->size(); }  }
+  }
 /**
   * \brief Expands the Simplex_tree containing only a graph
   * until dimension max_dim.
@@ -417,6 +429,7 @@ template< class NeighborGraph >
   */
   void expansion(int max_dim)
   {
+    dimension_ = max_dim;
     for(Dictionary_it root_it = root_.members_.begin();
       root_it != root_.members_.end(); ++root_it)
     {
@@ -428,13 +441,13 @@ template< class NeighborGraph >
 private:
 // Recursive expansion of the simplex tree.
 /** \todo Not thread-safe: use non-static?*/
-void siblings_expansion(Siblings * siblings, //must contain elements
-  int k)
+void siblings_expansion ( Siblings * siblings, //must contain elements
+                          int        k)
 {
   if(k == 0) return;
   Dictionary_it next = siblings->members().begin(); ++next;
 
-  static std::vector< std::pair<Vertex , Node> > inter; // <-------static
+  static std::vector< std::pair<Vertex_handle , Node> > inter; // <-------static
   for(Dictionary_it s_h = siblings->members().begin();
     s_h != siblings->members().end(); ++s_h,++next)
   {
@@ -448,7 +461,7 @@ void siblings_expansion(Siblings * siblings, //must contain elements
                      root_sh->second.children()->members().end(),
                      s_h->second.filtration());
         if(inter.size() != 0)
-          { this->size_cpx_ += inter.size();
+          { this->num_simplices_ += inter.size();
           Siblings * new_sib = new Siblings(siblings,   //oncles
                                             s_h->first, //parent
                                             inter);     //boost::container::ordered_unique_range_t
@@ -460,25 +473,28 @@ void siblings_expansion(Siblings * siblings, //must contain elements
        }
      }
    }
-// Intersects Dictionary 1 [begin1;end1) with Dictionary 2 [begin2,end2) 
-// and assigns the maximal possible Filtration_value to the Nodes.
-   void intersection(std::vector< std::pair< Vertex, Node > > &   intersection,
-    Dictionary_it                                begin1,
-    Dictionary_it                                end1,
-    Dictionary_it                                begin2,
-    Dictionary_it                                end2,
-    Filtration_value                             filtration)
-   {
+/** Intersects Dictionary 1 [begin1;end1) with Dictionary 2 [begin2,end2) 
+  * and assigns the maximal possible Filtration_value to the Nodes.*/
+void intersection ( std::vector< std::pair< Vertex_handle, Node > > &   intersection
+                  , Dictionary_it                                begin1
+                  , Dictionary_it                                end1
+                  , Dictionary_it                                begin2
+                  , Dictionary_it                                end2
+                  , Filtration_value                             filtration )
+{
   if(begin1 == end1 || begin2 == end2) return;// 0;
   while( true ) 
   {
     if( begin1->first == begin2->first )
     {
-      intersection.push_back(std::pair< Vertex, Node >(begin1->first,
-       Node(NULL,
-        maximum(begin1->second.filtration(),
-          begin2->second.filtration(),
-          filtration))));
+      intersection.push_back(std::pair< Vertex_handle, Node >( begin1->first,
+                                                        Node( NULL
+                                                            , maximum( begin1->second.filtration()
+                                                                     , begin2->second.filtration()
+                                                                     , filtration )
+                                                              ) 
+                                                        )
+                            );
       ++begin1;  ++begin2;
       if( begin1 == end1 || begin2 == end2 ) return;
     }
@@ -489,8 +505,8 @@ void siblings_expansion(Siblings * siblings, //must contain elements
       else { ++begin2; if(begin2 == end2) return;}
     }
   }
-}    
-/** \internal Maximum over 3 values.*/
+}
+/** Maximum over 3 values.*/
 Filtration_value maximum( Filtration_value a, 
                           Filtration_value b, 
                           Filtration_value c )
@@ -498,22 +514,22 @@ Filtration_value maximum( Filtration_value a,
   return ( ( max < c ) ? c : max ); }
 
 
-
 /** \brief Pointer to a metric space. */
-  MetricSpace *                    ms_             ;
-/** \brief Threshold for the filtration function. */
-//  Filtration_value                 rho_max_        ;
+  MetricSpace *                    ms_              ;
+/** \brief Upper bound on the filtration values of the simplices.*/
+  Filtration_value                 threshold_       ;
 /** \brief Number of vertices. The set of vertices is static.*/      
-  int                              nb_vertices_    ;
+  size_t                           num_vertices_    ;
 /** \brief Total number of simplices in the complex, without the empty simplex.*/
-  int                              size_cpx_       ;
+  size_t                           num_simplices_   ;
 /** \brief Set of simplex tree Nodes representing the vertices.*/  
-//  std::vector< Node >              root_           ;
-  Siblings                         root_;
+  Siblings                         root_            ;
 /** \brief Simplices ordered according to a filtration*/  
-  std::vector< Simplex_handle >    filtration_vect_;
+  std::vector< Simplex_handle >    filtration_vect_ ;
+/** \brief Upper bound on the dimension of the simplicial complex.*/
+  int                              dimension_       ;
 /** \brief A NULL Simplex_handle; useful for the implementation.*/  
-//    Simplex_handle                   NULL_sh_        ;
+//    Simplex_handle                 NULL_sh_        ;
 };
 
 
@@ -543,7 +559,7 @@ std::ostream& operator<<(std::ostream& os,
 {
   os << "Simplex Tree: \n";
   os << "Size Cpx   = " << obj.size_complex() << std::endl;
-  os << "nb_V       = " << obj.nb_vertices() << std::endl;
+  os << "num_V       = " << obj.num_vertices() << std::endl;
   os << std::endl;
   os << obj.root();
 return os;

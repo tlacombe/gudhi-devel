@@ -28,13 +28,13 @@
 template < class Point >       // A Point is a range of coordinates.  
 class Euclidean_geometry {
 public:
-/** Vertex type.*/
-  typedef int                                            Vertex;
+/** Vertex_handle type.*/
+  typedef int                                            Vertex_handle;
 /** \brief Distance value type.*/
   typedef double                                         FT;
  
 /** Iterator over the Vertices in the space, and corresponding range.*/
-  typedef boost::counting_iterator< Vertex >             Space_vertex_iterator;
+  typedef boost::counting_iterator< Vertex_handle >      Space_vertex_iterator;
   typedef boost::iterator_range< Space_vertex_iterator > Space_vertex_range;
 
 /** \brief Construct a Euclidean Space containing no points.*/
@@ -52,7 +52,7 @@ void init ( Point_range & points )
 }
 
 /** \brief Returns the number of elements in the metric space.*/
-size_t nb_elements() { return point_set_.size(); }
+size_t num_elements() { return point_set_.size(); }
 
 /** \brief Returns the dimension of the Euclidean space.*/
 int dimension()
@@ -60,32 +60,33 @@ int dimension()
   return point_set_.begin().size();
 }
 
-/** \brief Returns a Vertex that is different from all other 
+/** \brief Returns a Vertex_handle that is different from all other 
   * Vertices in the space.*/
-Vertex null_vertex() { return -1; }
+Vertex_handle null_vertex() { return -1; }
 
 /** \brief Returns a range over all Vertices of the metric space.
   *
-  * Iterators 'value_type' must be Vertex.*/
+  * Iterators 'value_type' must be Vertex_handle.*/
 Space_vertex_range space_vertex_range()
 { return Space_vertex_range( Space_vertex_iterator(0),
   Space_vertex_iterator(point_set_.size()) ); }
 
 /** \brief Returns the Euclidean distance between the points
-  * associated to Vertex u and Vertex v.*/ 
-FT distance(Vertex u, Vertex v) 
-{ return Euclidean_distance(vertex_to_point(u),
-  vertex_to_point(v)); }
+  * associated to Vertex_handle u and Vertex_handle v.*/ 
+FT distance ( Vertex_handle u
+            , Vertex_handle v ) 
+{ return Euclidean_distance ( point(u)
+                            , point(v) ); }
 
 /** Returns true iff d(u,v) < dist. */
-  bool closer_than(Vertex u, Vertex v, FT dist)
+  bool closer_than ( Vertex_handle u, Vertex_handle v, FT dist )
   { return squared_distance(u,v) <= dist*dist; }
 
 private:
-/** Returns the point corresponding to a given Vertex.
+/** Returns the point corresponding to a given Vertex_handle.
 * This allows the correspondance between combinatorial
 * vertices and geometric points.*/
-Point & vertex_to_point(Vertex u)
+Point & point ( Vertex_handle u )
 { return point_set_[u]; }
 /** \brief Euclidean distance.*/
 FT Euclidean_distance ( Point &p1, Point &p2 )
@@ -94,12 +95,13 @@ FT Euclidean_distance ( Point &p1, Point &p2 )
 *
 * Faster to compute than Euclidean distance and
 * enough for comparison.*/
-FT squared_distance ( Vertex u, Vertex v)
-{ return squared_distance( vertex_to_point(u),
-  vertex_to_point(v));}
+FT squared_distance ( Vertex_handle u, Vertex_handle v )
+{ return squared_distance ( point(u),
+                            point(v));}
 
 FT squared_distance ( Point &p1, Point &p2 )
-{ double squared_distance = 0.;
+{ 
+  double squared_distance = 0.;
   typename Point::iterator p1_it = p1.begin();
   typename Point::iterator p2_it = p2.begin();
   for(; p1_it != p1.end(); p1_it++, p2_it++)
@@ -107,7 +109,7 @@ FT squared_distance ( Point &p1, Point &p2 )
   return squared_distance; }
 
 /** \brief Point set represented as a vector of Points.*/
-std::vector< Point >  point_set_;   //property map Vertex -> Point
+std::vector< Point >  point_set_;   //property map Vertex_handle -> Point
 
 };
 

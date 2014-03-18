@@ -13,73 +13,49 @@
 #include "boost/container/flat_map.hpp"
 #include "Simplex_tree_node_explicit_storage.h"
 
-/**
- * 
- */
-template < 
-// class Vertex
-//          , class Filtration_value
-//          , class Node
-          class SimplexTree
-         , class MapContainer >// < Vertex, Node >
-       //   >//, class Dictionary > 
+/** \brief Data structure to store a set of nodes in a SimplexTree sharing
+ * the same parent node.*/
+template < class SimplexTree
+         , class MapContainer >
 class Simplex_tree_siblings {
-public:
+  public:
   friend SimplexTree;
 
-  typedef typename SimplexTree::Vertex Vertex;
+  typedef typename SimplexTree::Vertex_handle     Vertex_handle;
   typedef typename SimplexTree::Filtration_value  Filtration_value;
-  typedef typename SimplexTree::Node Node;
+  typedef typename SimplexTree::Node              Node;
   typedef  MapContainer                           Dictionary;
   typedef typename MapContainer::iterator         Dictionary_it;
 
-//typedef boost::container::flat_map< Vertex, Node > Dictionary;
-  
-  // Default constructor
+  /** Default constructor.*/
   Simplex_tree_siblings() 
   : oncles_(NULL)
   , parent_(-1)
   , members_() {}
   
-  // Construct with values
+  /** Constructor with values.*/
   Simplex_tree_siblings(Simplex_tree_siblings  * oncles,
-                        Vertex                   parent )
+                        Vertex_handle            parent )
   : oncles_(oncles)
   , parent_(parent)
   , members_() {}
   
-  /**
-   * 'members' is sorted and unique.
-   */
-  Simplex_tree_siblings(Simplex_tree_siblings * oncles,
-                        Vertex                  parent,
-                        std::vector< std::pair< Vertex, Node > > & members) :
-  oncles_(oncles),
-  parent_(parent),
-  members_(boost::container::ordered_unique_range,members.begin(),members.end())
+  /** \brief Constructor with initialized set of members.
+    *
+    * 'members' must be sorted and unique.*/
+  Simplex_tree_siblings(Simplex_tree_siblings *                           oncles,
+                        Vertex_handle                                     parent,
+                        std::vector< std::pair< Vertex_handle, Node > > & members) 
+  : oncles_ ( oncles )
+  , parent_ ( parent )
+  , members_ ( boost::container::ordered_unique_range
+             , members.begin()
+             , members.end() )
   {
     for(auto map_it = members_.begin();
         map_it != members_.end(); map_it++)
     {  map_it->second.assign_children(this);  }
   }
-  
-  
-
-  /**
-   * Construct with initialized set of members
-   */
-  /*Simplex_tree_siblings(Simplex_tree_siblings * oncles,
-                        Vertex                  parent, 
-                        Dictionary            & init_members) :
-  oncles_(oncles),
-  parent_(parent)
-  {
-    members_ = Dictionary(init_members);
-    for(auto map_it = members_.begin();
-        map_it != members_.end(); map_it++)
-    {  map_it->second.assign_children(this);  }
-  }*/
-    
   
   /**
    * \brief Inserts a Node in the set of siblings nodes.
@@ -88,28 +64,25 @@ public:
    * between input filtration_value and the value already 
    * present in the node.
    */
-  void 
-  insert(Vertex v,
-         Filtration_value filtration_value)
+  void insert ( Vertex_handle     v
+              , Filtration_value  filtration_value )
   {
     typename Dictionary::iterator sh = members_.find(v);
     if(sh != members_.end() &&  sh->second.filtration() > filtration_value)
     { sh->second.assign_filtration(filtration_value);
       return; }
     if(sh == members_.end()) 
-    {  members_.insert(std::pair< Vertex, Node >( v, Node(this,filtration_value) )); 
+    {  members_.insert(std::pair< Vertex_handle, Node >( v, Node(this,filtration_value) )); 
       return; }
   }
 
-  typename Dictionary::iterator find(Vertex v)
-  { return members_.find(v);  }
-    
-  /**********************/  
+  typename Dictionary::iterator find( Vertex_handle v )
+  { return members_.find(v); }
   
   Simplex_tree_siblings * oncles()
   {  return oncles_;  }
   
-  Vertex parent()
+  Vertex_handle parent()
   {  return parent_;  }
   
   Dictionary & members()
@@ -118,10 +91,9 @@ public:
   size_t size() { return members_.size(); }
 
 
-//private:
-  Simplex_tree_siblings        * oncles_;
-  Vertex                         parent_;
-  Dictionary                     members_;
+  Simplex_tree_siblings        * oncles_  ;
+  Vertex_handle                  parent_  ;
+  Dictionary                     members_ ;
   
 };
 

@@ -15,25 +15,25 @@
 /** \brief Iterator over the vertices of a simplex
 * in a SimplexTree.
 *
-* Forward iterator, 'value_type' is SimplexTree::Vertex.*/
+* Forward iterator, 'value_type' is SimplexTree::Vertex_handle.*/
 template < class SimplexTree >
 class Simplex_tree_simplex_vertex_iterator 
 : public boost::iterator_facade < Simplex_tree_simplex_vertex_iterator < SimplexTree >
-                                , typename SimplexTree::Vertex const
+                                , typename SimplexTree::Vertex_handle const
                                 , boost::forward_traversal_tag
-                                , typename SimplexTree::Vertex const
+                                , typename SimplexTree::Vertex_handle const
                                 >
 {
 public:
   typedef typename SimplexTree::Simplex_handle Simplex_handle;
   typedef typename SimplexTree::Siblings       Siblings;
-  typedef typename SimplexTree::Vertex         Vertex;
+  typedef typename SimplexTree::Vertex_handle  Vertex_handle;
 
   Simplex_tree_simplex_vertex_iterator (SimplexTree * st) :   //any end() iterator
   sib_(NULL), v_(st->null_vertex()) {}
 
   Simplex_tree_simplex_vertex_iterator( SimplexTree *  st,
-    Simplex_handle sh) :
+                                        Simplex_handle sh) :
   sib_(st->self_siblings(sh)),
   v_(sh->first)    {}
 
@@ -43,12 +43,12 @@ private:
   bool equal (Simplex_tree_simplex_vertex_iterator const &other) const
   { return sib_ == other.sib_ && v_ == other.v_; }
 
-  Vertex const& dereference() const { return v_; }
+  Vertex_handle const& dereference() const { return v_; }
 
   void increment () { v_ = sib_->parent(); sib_ = sib_->oncles();}
 
   Siblings *    sib_;
-  Vertex        v_;
+  Vertex_handle        v_;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -65,7 +65,7 @@ class Simplex_tree_boundary_simplex_iterator
 {
 public:
   typedef typename SimplexTree::Simplex_handle  Simplex_handle;
-  typedef typename SimplexTree::Vertex          Vertex;
+  typedef typename SimplexTree::Vertex_handle   Vertex_handle;
   typedef typename SimplexTree::Siblings        Siblings;
 
 // any end() iterator
@@ -73,7 +73,7 @@ public:
   last_(st->null_vertex()), sib_(NULL) {}
 
   Simplex_tree_boundary_simplex_iterator ( SimplexTree *  st,
-                              Simplex_handle sh ) :
+                                           Simplex_handle sh ) :
   suffix_(), st_(st)
   { 
     last_          = sh->first;
@@ -97,7 +97,7 @@ private:
     if(sib_ == NULL) { last_ = st_->null_vertex(); return; }
     
     Siblings * for_sib = sib_;
-    for(typename std::vector< Vertex >::reverse_iterator rit = suffix_.rbegin();
+    for(typename std::vector< Vertex_handle >::reverse_iterator rit = suffix_.rbegin();
       rit != suffix_.rend(); ++rit)
     {
       sh_ = for_sib->find(*rit);
@@ -109,12 +109,12 @@ private:
     sib_ = sib_->oncles();
   }
 
-  Vertex                   last_   ; //last vertex of the simplex
-  Vertex                   next_   ; //next vertex to push in suffix_
-  std::vector< Vertex >    suffix_ ;
-  Siblings *               sib_    ; //where the next search will start from
-  Simplex_handle           sh_     ; //current Simplex_handle in the boundary
-  SimplexTree *            st_     ; //simplex containing the simplicial complex
+  Vertex_handle                   last_   ; //last vertex of the simplex
+  Vertex_handle                   next_   ; //next vertex to push in suffix_
+  std::vector< Vertex_handle >    suffix_ ;
+  Siblings *                      sib_    ; //where the next search will start from
+  Simplex_handle                  sh_     ; //current Simplex_handle in the boundary
+  SimplexTree *                   st_     ; //simplex containing the simplicial complex
 };
 /*---------------------------------------------------------------------------*/
 /** \brief Iterator over the simplices of a simplicial complex.
@@ -130,7 +130,7 @@ class Simplex_tree_complex_simplex_iterator
 public:
   typedef typename SimplexTree::Simplex_handle Simplex_handle;
   typedef typename SimplexTree::Siblings       Siblings;
-  typedef typename SimplexTree::Vertex         Vertex;
+  typedef typename SimplexTree::Vertex_handle         Vertex_handle;
 
 //any end() iterator
   Simplex_tree_complex_simplex_iterator() : st_(NULL) {}

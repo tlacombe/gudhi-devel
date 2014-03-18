@@ -24,7 +24,7 @@
 
 /** \brief Computes the persistent cohomology of a filtered simplicial complex.
 *
-*
+* The implementation is based on the Compressed Annotation Matrix.
 */
  template < class SimplexDataFilteredSimplicialComplexDS
           //, class ArithmeticModifier //only furnishes modifiers and creators
@@ -65,23 +65,21 @@
 // try splay_set
  
 
-
 typedef std::vector< std::pair<Simplex_key, Arith_element > > A_ds_type;
 
 
 /** \brief Initializes the Persistent_cohomology class.
 *
-* Computes multi-field persistence in the fields of
-* characteristic ranging from min_char to max_char.
+* 
 */
 Persistent_cohomology ( Complex_ds & cpx )
 : cpx_(&cpx)
-, dim_max(100)                           // <-- dim_max
+, dim_max(cpx.dimension())            // <-- dim_max
 //, min_persistence_(1000)
 , ar_pivot_()                         //initialize the field structure.
-, ds_rank_(cpx_->nb_simplices())
-, ds_parent_(cpx_->nb_simplices())
-, ds_repr_(cpx_->nb_simplices(),NULL)
+, ds_rank_(cpx_->num_simplices())
+, ds_parent_(cpx_->num_simplices())
+, ds_repr_(cpx_->num_simplices(),NULL)
 , dsets_(&ds_rank_[0],&ds_parent_[0]) //init CAM disjoint sets
 , cam_()
 , transverse_idx_()
@@ -92,7 +90,7 @@ Persistent_cohomology ( Complex_ds & cpx )
    //concept for simplex_key_t ?
   for(auto sh : cpx_->filtration_simplex_range())
     {
-      dsets_.make_set(cpx_->simplex_to_key(sh));
+      dsets_.make_set(cpx_->key(sh));
     }
 }
 
@@ -117,7 +115,7 @@ Persistent_cohomology ( Complex_ds & cpx )
 void compute_persistent_cohomology ()
 {
   // Show progress: initialization
-  boost::progress_display show_progress(cpx_->nb_simplices());
+  boost::progress_display show_progress(cpx_->num_simplices());
 
   int const dim_max = 10;
   for( auto sh : cpx_->filtration_simplex_range() )
@@ -150,8 +148,8 @@ void update_cohomology_groups_edge ( Simplex_handle sigma )
   Simplex_handle u,v;
   boost::tie(u,v) = cpx_->endpoints(sigma);
   
-  Simplex_key ku = dsets_.find_set( cpx_->simplex_to_key(u) ); 
-  Simplex_key kv = dsets_.find_set( cpx_->simplex_to_key(v) );
+  Simplex_key ku = dsets_.find_set( cpx_->key(u) ); 
+  Simplex_key kv = dsets_.find_set( cpx_->key(v) );
 
   if(ku != kv ) {        // destroys a connected component
 
@@ -216,7 +214,7 @@ void update_cohomology_groups ( Simplex_handle sigma
   {
  //    std::cout << "      --- "; cpx_->display_simplex(sh); std::cout << "     ";
 
-    key = cpx_->simplex_to_key(sh);
+    key = cpx_->key(sh);
 
 //    std::cout << " (" << key << ") ";
 
@@ -345,11 +343,11 @@ void create_cocycle ( Simplex_handle sigma
                     , Arith_element x )
 {
 
-   // std::cout << "Creator of cocycle: " << cpx_->simplex_to_key(sigma);
+   // std::cout << "Creator of cocycle: " << cpx_->key(sigma);
    // std::cout << std::endl;
 
 
-  Simplex_key key = cpx_->simplex_to_key(sigma);
+  Simplex_key key = cpx_->key(sigma);
   //creates a column containing only one cell.
   Column * new_col  = new Column (key); 
   Cell   * new_cell = new Cell (key, x, new_col);
@@ -389,7 +387,7 @@ void destroy_cocycle ( Simplex_handle sigma
   //create a persistent pair
   persistent_pairs_.push_back (
       boost::tuple<Simplex_handle,Simplex_handle,Arith_element> ( 
-                                      cpx_->key_to_simplex(death_key)      //creator
+                                      cpx_->simplex(death_key)      //creator
                                     , sigma                                //destructor
                                     , ar_pivot_.multiplicative_identity() )//fields coeff in for
                               );                                           //which the interval exists 
