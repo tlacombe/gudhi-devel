@@ -144,6 +144,7 @@ public:
 	 * Remove the star of the vertex 'v'
 	 */
 	void remove_star(Vertex_handle v){
+		// xxx enlever les blockers
 		while (this->degree(v) > 0)
 		{
 			Vertex_handle w( * (adjacent_vertices(v.vertex, this->skeleton).first));

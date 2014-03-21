@@ -6,6 +6,8 @@
  *  Copyright 2014 INRIA. All rights reserved.
  *
  */
+#ifndef GUDHI_IOFILE_H_
+#define GUDHI_IOFILE_H_
 
 #include <iostream>
 #include <fstream>
@@ -26,7 +28,7 @@
  * X21 X22 ... X2d
  * etc
  */
-void
+inline void
 read_points(std::string file_name,
 		std::vector< std::vector< double > > &points)
 {	
@@ -270,3 +272,6 @@ bool read_off_file(std::string file_name,Complex &complex,bool load_only_points 
 	return general_read_off_file(file_name,complex_wrapper);
 
 }
+
+
+#endif

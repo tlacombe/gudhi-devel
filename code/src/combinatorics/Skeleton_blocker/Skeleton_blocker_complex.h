@@ -127,6 +127,7 @@ protected:
 
 public:
 
+	/////////////////////////////////////////////////////////////////////////////
 	/** @name Constructors / Destructors / Initialization
 	 */
 	//@{
@@ -212,10 +213,12 @@ public:
 	//@}
 
 
+
+
+	/////////////////////////////////////////////////////////////////////////////
 	/** @name Vertices operations
 	 */
 	//@{
-
 
 public:
 
@@ -258,6 +261,7 @@ public:
 	 * @remark In fact, it just deactivates the vertex.
 	 */
 	void remove_vertex(Vertex_handle address){
+		assert(contains_vertex(address));
 		// We remove b
 		boost::clear_vertex(address.vertex,skeleton);
 		(*this)[address].deactivate();
@@ -279,10 +283,7 @@ public:
 	 */
 	bool contains_vertex(Root_vertex_handle u) const{
 		boost::optional<Vertex_handle> address = get_address(u);
-		if (!address)
-			return false;
-		else
-			return (*this)[*address].is_active();
+		return address &&  (*this)[*address].is_active();
 	}
 
 
@@ -323,6 +324,7 @@ public:
 
 	//@}
 
+	/////////////////////////////////////////////////////////////////////////////
 	/** @name Edges operations
 	 */
 	//@{
@@ -333,32 +335,37 @@ public:
 	 * @brief returns a pair that consists in :
 	 * - an edge handle that is valid and describes ab iff the edge is present.
 	 * - a boolean which is true is the edge was founded.
+	 * todo renvoyer un optional pour etre consistant avec les autres methodes
 	 */
-	std::pair<Edge_handle,bool> operator[](const std::pair<Vertex_handle,Vertex_handle>& ab) const{
-		return boost::edge(ab.first.vertex,ab.second.vertex,skeleton);
+	boost::optional<Edge_handle> operator[](const std::pair<Vertex_handle,Vertex_handle>& ab) const{
+		boost::optional<Edge_handle> res;
+		std::pair<Edge_handle,bool> edge_pair(boost::edge(ab.first.vertex,ab.second.vertex,skeleton));
+		if (edge_pair.second)
+			res = edge_pair.first;
+		return res;
 	}
 
-	Graph_edge& operator[](Edge_handle edge_descriptor){
-		return skeleton[edge_descriptor];
+	Graph_edge& operator[](Edge_handle edge_handle){
+		return skeleton[edge_handle];
 	}
 
-	const Graph_edge& operator[](Edge_handle edge_descriptor) const{
-		return skeleton[edge_descriptor];
+	const Graph_edge& operator[](Edge_handle edge_handle) const{
+		return skeleton[edge_handle];
 	}
 
-	Vertex_handle first_vertex(Edge_handle edge_descriptor) const{
-		return (*this)[(*this)[edge_descriptor].first()];
+	Vertex_handle first_vertex(Edge_handle edge_handle) const{
+		return (*this)[(*this)[edge_handle].first()];
 	}
 
-	Vertex_handle second_vertex(Edge_handle edge_descriptor) const{
-		return (*this)[(*this)[edge_descriptor].second()];
+	Vertex_handle second_vertex(Edge_handle edge_handle) const{
+		return (*this)[(*this)[edge_handle].second()];
 	}
 
 	/**
 	 * @brief returns the simplex made with the two vertices of the edge
 	 */
-	Simplex_handle get_vertices(Edge_handle edge_descriptor) const{
-		auto edge((*this)[edge_descriptor]);
+	Simplex_handle get_vertices(Edge_handle edge_handle) const{
+		auto edge((*this)[edge_handle]);
 		return Simplex_handle((*this)[edge.first()],(*this)[edge.second()]);
 	}
 
@@ -367,18 +374,20 @@ public:
 	 */
 	Edge_handle add_edge(Vertex_handle a, Vertex_handle b){
 		assert(contains_vertex(a) && contains_vertex(b));
-		std::pair<Edge_handle,bool> pair_descr_bool = (*this)[std::make_pair(a,b)];
-		Edge_handle edge_descr;
-		bool edge_present = pair_descr_bool.second;
-		if (edge_present== false)
+
+		auto edge_handle((*this)[std::make_pair(a,b)]);
+//		std::pair<Edge_handle,bool> pair_descr_bool = (*this)[std::make_pair(a,b)];
+//		Edge_handle edge_descr;
+//		bool edge_present = pair_descr_bool.second;
+		if (!edge_handle)
 		{
-			edge_descr = boost::add_edge(a.vertex,b.vertex,skeleton).first;
-			(*this)[edge_descr].setId(get_id(a),get_id(b));
+			edge_handle = boost::add_edge(a.vertex,b.vertex,skeleton).first;
+			(*this)[*edge_handle].setId(get_id(a),get_id(b));
 			degree_[a.vertex]++;
 			degree_[b.vertex]++;
 			if (visitor) visitor->on_add_edge(a,b);
 		}
-		return edge_descr;
+		return *edge_handle;
 	}
 
 	/**
@@ -435,6 +444,9 @@ public:
 	}
 	//@}
 
+
+
+	/////////////////////////////////////////////////////////////////////////////
 	/** @name Blockers operations
 	 */
 	//@{
@@ -592,10 +604,12 @@ private:
 	//@}
 
 
+
+
+	/////////////////////////////////////////////////////////////////////////////
 	/** @name Neighbourhood access
 	 */
 	//@{
-
 
 public:
 	/**
@@ -662,12 +676,10 @@ public:
 		add_neighbours(v,nv,keep_only_superior);
 		res.difference(nv);
 	}
-
-
-
 	//@}
 
 
+	/////////////////////////////////////////////////////////////////////////////
 	/** @name Operations on the simplicial complex
 	 */
 	//@{
@@ -795,6 +807,10 @@ public:
 
 	//@}
 
+
+
+
+	/////////////////////////////////////////////////////////////////////////////
 	/** @name Vertex iterators
 	 */
 	//@{
@@ -1063,6 +1079,11 @@ public:
 
 	//@}
 
+
+
+
+
+	/////////////////////////////////////////////////////////////////////////////
 	/** @name Print and IO methods
 	 */
 	//@{
