@@ -293,11 +293,13 @@ public:
 		DBG("Contract edges");
 		DBGVALUE(complex_.num_vertices());
 		int num_contraction = 0 ;
+
+		bool unspecified_num_contractions = (num_max_contractions == -1);
 		//
 		// Pops and processes each edge from the PQ
 		//
 		boost::optional<edge_descriptor> edge ;
-		while ( (edge = pop_from_PQ())&& ((num_contraction<num_max_contractions)||(num_max_contractions<0)))
+		while ( (edge = pop_from_PQ())&& ((num_contraction<num_max_contractions)||(unspecified_num_contractions)))
 		{
 			Profile const& profile = create_profile(*edge);
 			Cost_type cost = get_data(*edge).cost();
@@ -423,26 +425,28 @@ private:
 		//1-get the edge_descriptor corresponding to ab
 		//2-change the data in mEdgeArray[ab.id()]
 		//3-update the heap
-		edge_descriptor edge = (complex_[std::make_pair(a,b)]).first;
-		Edge_data& data = get_data(edge);
-		Profile const& profile = create_profile(edge);
+		boost::optional<edge_descriptor> ab(complex_[std::make_pair(a,b)]);
+		assert(ab);
+		Edge_data& data = get_data(*ab);
+		Profile const& profile = create_profile(*ab);
 		data.cost() = get_cost(profile) ;
 		if ( data.is_in_PQ()){
-			update_in_PQ(edge,data);
+			update_in_PQ(*ab,data);
 		}
 		else{
-			insert_in_PQ(edge,data);
+			insert_in_PQ(*ab,data);
 		}
 	}
 
 private:
 	void on_remove_edge(Vertex_handle a,Vertex_handle b) override{
 
-		edge_descriptor lEdge = (complex_[std::make_pair(a,b)]).first;
-		Edge_data& lData = get_data(lEdge) ;
+		boost::optional<edge_descriptor> ab((complex_[std::make_pair(a,b)]));
+		assert(ab);
+		Edge_data& lData = get_data(*ab) ;
 		if ( lData.is_in_PQ() )
 		{
-			remove_from_PQ(lEdge,lData) ;
+			remove_from_PQ(*ab,lData) ;
 		}
 	}
 private:
@@ -452,10 +456,10 @@ private:
 	 * We assign the index of 'bx' to the edge index of 'ax'
 	 */
 	void on_swaped_edge(Vertex_handle a,Vertex_handle b,Vertex_handle x) override{
-		std::pair<edge_descriptor,bool> ax_pair = complex_[std::make_pair(a,x)];
-		std::pair<edge_descriptor,bool> bx_pair = complex_[std::make_pair(b,x)];
-		assert(ax_pair.second && bx_pair.second);
-		complex_[ax_pair.first].index() =complex_[bx_pair.first].index();
+		boost::optional<edge_descriptor> ax(complex_[std::make_pair(a,x)]);
+		boost::optional<edge_descriptor> bx(complex_[std::make_pair(b,x)]);
+		assert(ax&& bx);
+		complex_[*ax].index() =complex_[*bx].index();
 	}
 private:
 	/**
@@ -499,9 +503,10 @@ private:
 		Simplex_handle blocker_copy(*blocker);
 		for (auto x = blocker_copy.begin(); x!= blocker_copy.end(); ++x){
 			for(auto y=x ; ++y != blocker_copy.end(); ){
-				auto edge_descr = complex_[std::make_pair(*x,*y)].first;
-				Edge_data& data = get_data(edge_descr);
-				Profile const& profile = create_profile(edge_descr);
+				auto edge_descr(complex_[std::make_pair(*x,*y)]);
+				assert(edge_descr);
+				Edge_data& data = get_data(*edge_descr);
+				Profile const& profile = create_profile(*edge_descr);
 				data.cost() = get_cost(profile) ;
 
 				// If the edge is already in the heap
@@ -510,7 +515,7 @@ private:
 				// remark : we could also reinsert the edge
 				// only if it is valid
 				if ( !data.is_in_PQ() ){
-					insert_in_PQ(edge_descr,data);
+					insert_in_PQ(*edge_descr,data);
 				}
 			}
 		}
