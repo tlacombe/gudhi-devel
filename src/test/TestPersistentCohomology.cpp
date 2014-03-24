@@ -14,6 +14,8 @@
 #include "combinatorics/Simplex_tree/Simplex_tree.h"
 #include "topology/Persistent_cohomology.h"
 
+#include "topology/compare_diagrams.h"
+
 using namespace std;
 
 typedef vector< double >                          Point;
@@ -24,11 +26,22 @@ typedef Simplex_tree< Metric_space >              Simplicial_cpx;
 typedef Persistent_cohomology< Simplicial_cpx >   PcoH;
 
 int main (int argc, char * const argv[]) {
+
+
+
+
+std::cout << "\n \n \n \n \n \n";
+compare_diagrams ( "/Users/cmaria/Desktop/gudhi_diag.txt"
+               //  , "/Users/cmaria/Desktop/dio_diag.txt" );
+                  , "/Users/cmaria/Desktop/diag_steve.txt" );
+return 0;
+
+
   clock_t start, end;
 
 // Construct a filtered Rips complex:
   string filename = "../data/Bro_fp.dat";
-  double threshold = 0.7; //max distance between neighbors
+  double threshold = 0.75; //max distance between neighbors
   int max_dim = 5;
 
   Point_range points;              //read the points from the file
@@ -57,17 +70,19 @@ int main (int argc, char * const argv[]) {
   cout << "Expand the simplex tree in: "
        << (double)(end-start)/CLOCKS_PER_SEC << " s. \n";
 
+  cout << "Num simplices = " << st.num_simplices() << endl;
 
 
-  // cout << "Iterator on Simplices in the filtration, with -key- and [filtration value]:" << endl;
-  // for( auto f_simplex : st.filtration_simplex_range() )
-  // { 
-  //   cout << st.simplex_to_key(f_simplex) << "   " << "[" << st.filtration(f_simplex) << "] "; 
-  //   for( auto vertex : st.simplex_vertex_range(f_simplex) ) 
-  //     { cout << vertex << " "; } cout << endl;
-  // }
-
-
+  ofstream outfil;
+  outfil.open ("/Users/cmaria/Desktop/st_fil.txt");
+  cout << "Iterator on Simplices in the filtration, with [filtration value]:" << endl;
+  for( auto f_simplex : st.filtration_simplex_range() )
+  { 
+    outfil << st.dimension(f_simplex) << " ";
+    for( auto vertex : st.simplex_vertex_range(f_simplex) ) { outfil << vertex << " "; } 
+    outfil << st.filtration(f_simplex) << " \n"; 
+  }
+  outfil.close();
 
 
   start = clock();
@@ -77,6 +92,7 @@ int main (int argc, char * const argv[]) {
        << (double)(end-start)/CLOCKS_PER_SEC << " s. \n";
 
 
+
   start = clock();
   pcoh.compute_persistent_cohomology ();
   end = clock();
@@ -84,7 +100,24 @@ int main (int argc, char * const argv[]) {
   cout << "Compute persistent cohomology in: " 
        << (double)(end-start)/CLOCKS_PER_SEC << " s. \n";
 
- // pcoh.output_diagram();
+
+  ofstream outdiag;
+  outdiag.open ("/Users/cmaria/Desktop/gudhi_diag.txt");
+  pcoh.output_diagram(outdiag);
+  outdiag.close();
+
+
+
+
+// std::cout << "\n \n \n \n \n \n";
+// compare_diagrams ( "/Users/cmaria/Desktop/gudhi_diag.txt"
+//                //  , "/Users/cmaria/Desktop/dio_diag.txt" );
+//                   , "/Users/cmaria/Desktop/diag_steve.txt" );
+// return 0;
+
+
+
+
 
   return 0;
 }

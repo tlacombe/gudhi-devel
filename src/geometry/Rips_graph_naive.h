@@ -90,6 +90,8 @@ class Rips_graph_naive
   size_t size_graph()
   { return ms_->num_elements(); }
 
+  FT threshold() {return threshold_;}
+
   private:
   MetricSpace *   ms_;
   FT              threshold_;
