@@ -24,7 +24,7 @@ class Simplex_tree_siblings {
   typedef typename SimplexTree::Vertex_handle     Vertex_handle;
   typedef typename SimplexTree::Filtration_value  Filtration_value;
   typedef typename SimplexTree::Node              Node;
-  typedef  MapContainer                           Dictionary;
+  typedef MapContainer                            Dictionary;
   typedef typename MapContainer::iterator         Dictionary_it;
 
   /** Default constructor.*/

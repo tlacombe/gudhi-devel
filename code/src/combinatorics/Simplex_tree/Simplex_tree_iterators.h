@@ -130,7 +130,7 @@ class Simplex_tree_complex_simplex_iterator
 public:
   typedef typename SimplexTree::Simplex_handle Simplex_handle;
   typedef typename SimplexTree::Siblings       Siblings;
-  typedef typename SimplexTree::Vertex_handle         Vertex_handle;
+  typedef typename SimplexTree::Vertex_handle  Vertex_handle;
 
 //any end() iterator
   Simplex_tree_complex_simplex_iterator() : st_(NULL) {}
@@ -142,9 +142,10 @@ public:
     else
    {
     sh_ = st->root()->members().begin();
+    sib_ = st->root();
     while(st->has_children(sh_)) 
       { sib_ = sh_->second.children();
-        sh_ = sib_->members().begin();}
+        sh_ = sib_->members().begin(); }
     }
   }
 private:
@@ -182,5 +183,83 @@ private:
   Siblings *         sib_;
   SimplexTree *      st_;
 };
+
+/** \brief Iterator over the simplices of the skeleton of a given
+* dimension of the simplicial complex.
+*
+* Forward iterator, value_type is SimplexTree::Simplex_handle.*/
+template < class SimplexTree >
+class Simplex_tree_skeleton_simplex_iterator 
+: public boost::iterator_facade < Simplex_tree_skeleton_simplex_iterator< SimplexTree >
+                                , typename SimplexTree::Simplex_handle const 
+                                , boost::forward_traversal_tag
+                                >
+{
+public:
+  typedef typename SimplexTree::Simplex_handle Simplex_handle;
+  typedef typename SimplexTree::Siblings       Siblings;
+  typedef typename SimplexTree::Vertex_handle  Vertex_handle;
+
+//any end() iterator
+  Simplex_tree_skeleton_simplex_iterator() : st_(NULL) {}
+
+  Simplex_tree_skeleton_simplex_iterator( SimplexTree * st
+                                        , int dim_skel ) 
+  : st_(st) 
+  , dim_skel_(dim_skel)
+  , curr_dim_(0)
+  {
+    if(st == NULL || st->root() == NULL || st->root()->members().empty())  { st_ = NULL; }
+    else
+   {
+    sh_ = st->root()->members().begin();
+    sib_ = st->root();
+    while(st->has_children(sh_) && curr_dim_ < dim_skel_) 
+      { sib_ = sh_->second.children();
+        sh_ = sib_->members().begin();
+        ++curr_dim_; }
+    }
+  }
+private:
+  friend class boost::iterator_core_access;
+
+// valid when iterating along the SAME boundary.
+  bool equal (Simplex_tree_skeleton_simplex_iterator const& other) const
+  {
+    if(other.st_ == NULL) { return (st_ == NULL); }
+    if(st_ == NULL)       { return false; }
+    return (&(sh_->second) == &(other.sh_->second));
+  }
+
+  Simplex_handle const& dereference () const { return sh_; }
+
+// Depth first traversal of the skeleton.
+  void increment ()
+  {
+    ++sh_;
+    if(sh_ == sib_->members().end())
+    {
+      if(sib_->oncles() == NULL) { st_ = NULL; return; } //reach the end
+      sh_ = sib_->oncles()->members().find(sib_->parent());
+      sib_ = sib_->oncles();
+      --curr_dim_;    
+      return; 
+    }
+    while(st_->has_children(sh_) && curr_dim_ < dim_skel_) 
+    {
+     sib_ = sh_->second.children();
+     sh_ = sib_->members().begin(); 
+     ++curr_dim_;
+    }
+  }
+
+  Simplex_handle     sh_;
+  Siblings *         sib_;
+  SimplexTree *      st_;
+  int                dim_skel_;
+  int                curr_dim_;
+};
+
+
 
 #endif // SIMPLEX_TREE_ITERATORS_H

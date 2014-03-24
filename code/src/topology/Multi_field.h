@@ -73,12 +73,11 @@ void plus_times_equal ( Element & x, Element y, Element w )
 
 // operator= defined on Element
 
-
 /** Returns y * w */
 Element times ( Element y, int w ) { 
   Element res = (y * w) % Prime;
-  if(res > 0) return res;
-  else return res+Prime; 
+  if(res < 0) return res+Prime;
+  else return res; 
 }
 
 void plus_equal(Element & x, Element y) { x = ((x+y)%Prime); }
@@ -90,11 +89,12 @@ Element multiplicative_identity ( Element P = Prime ) { return 1; }
 /** Returns the inverse in the field. Modifies P.*/
 Element inverse ( Element x
                 , Element & P ) 
-{
- //std::cout << "   inverse: " << x << " " << inverse_[x] << std::endl;
- P = 1; return inverse_[ x ]; 
+{ P = 1; return inverse_[ x ]; 
+}  // <------ return the product of field characteristic for which x is invertible
 
-}
+
+
+
 /** Returns -x * y.*/
 Element times_minus ( Element x, Element y ) 
 { 
@@ -118,8 +118,8 @@ std::vector< Element > inverse_;
 };
 
 /**
-*
-*/
+  *
+  */
 class Field_Q {
 
 };

@@ -14,8 +14,6 @@
 #include "boost/intrusive/set.hpp"
 #include "boost/intrusive/list.hpp"
 
-//using namespace boost::intrusive;
-
 template < typename SimplexKey
          , typename ArithmeticElement 
          >
