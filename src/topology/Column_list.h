@@ -53,6 +53,8 @@ private:
   , coefficient_(x)
   , self_col_(self_col) {}
 
+  ~Cam_matrix_cell() {}
+
   SimplexKey                   key_;
   ArithmeticElement            coefficient_;
   Column      *                self_col_;
@@ -91,17 +93,23 @@ private:
     class_key_ = key;
     col_ = Col_type();
   }
-
+public:
+ /** Copy constructor.*/
+ Cam_column_list( Cam_column_list const &other )
+ : class_key_(other.class_key_)
+ , col_() 
+ { if(!other.col_.empty()) std::cerr << "Copying a non-empty column.\n"; } 
+private:
 ~Cam_column_list()
 {
-  typename Col_type::iterator it = col_.begin();
-  Cell * cell_tmp;
-  while(it != col_.end())
-  {
-    cell_tmp = &(*it);
-    ++it;
-    delete cell_tmp; 
-  }
+//   typename Col_type::iterator it = col_.begin();
+//   Cell * cell_tmp;
+//   while(it != col_.end())
+//   {
+//     cell_tmp = &(*it);
+//     ++it;
+//     delete cell_tmp; 
+//   }
 }
 
 /** \brief Returns true iff the column is null.*/

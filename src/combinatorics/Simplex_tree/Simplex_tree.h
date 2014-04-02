@@ -447,11 +447,11 @@ template< class OneSkeletonGraph >
 
     auto sh = find_vertex((Vertex_handle)u);
     if(! has_children(sh) ) { sh->second.assign_children(new Siblings(&root_,sh->first)); }
-    auto res = sh->second.children()->members().emplace( (Vertex_handle)v
-                                                       , Node( sh->second.children()
-                                                             , (Filtration_value)boost::get( edge_filtration_tag()
-                                                                                           , skel_graph
-                                                                                           , *e_it)   )); 
+    sh->second.children()->members().emplace( (Vertex_handle)v
+                                             , Node( sh->second.children()
+                                                   , (Filtration_value)boost::get( edge_filtration_tag()
+                                                                                 , skel_graph
+                                                                                       , *e_it)   )); 
   }
 }
 
