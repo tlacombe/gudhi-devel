@@ -69,7 +69,7 @@ Vertex_handle null_vertex() { return -1; }
   * Iterators 'value_type' must be Vertex_handle.*/
 Space_vertex_range space_vertex_range()
 { return Space_vertex_range( Space_vertex_iterator(0),
-  Space_vertex_iterator(point_set_.size()) ); }
+                             Space_vertex_iterator(point_set_.size()) ); }
 
 /** \brief Returns the Euclidean distance between the points
   * associated to Vertex_handle u and Vertex_handle v.*/ 

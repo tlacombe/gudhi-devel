@@ -43,7 +43,7 @@
   typedef typename Complex_ds::Simplex_handle       Simplex_handle;
   typedef typename Complex_ds::Filtration_value     Filtration_value;
 
-  typedef Field_Zp < 3 >                            ArithmeticModifier;
+  typedef Field_Zp < 2 >                            ArithmeticModifier;
   typedef typename ArithmeticModifier::Element      Arith_element;
 
 // Compressed Annotation Matrix types:
@@ -95,7 +95,7 @@ Persistent_cohomology ( Complex_ds & cpx
 //, column_pool_(new boost::object_pool< Column > ()) // memory pools for the CAM
 {
   if( persistence_dim_max ) { ++dim_max_; }
-  //Type Simplex_key must be int
+  // Type Simplex_key must be int
   for(auto sh : cpx_->filtration_simplex_range())
   { dsets_.make_set(cpx_->key(sh)); }
 }

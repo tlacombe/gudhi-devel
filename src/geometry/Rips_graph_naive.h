@@ -54,7 +54,8 @@ class Rips_graph_naive
    : ms_(ms), v_(v), threshold_(threshold) {}
 
     bool operator() (const Vertex_handle u) const
-    { return ms_->closer_than(u,v_,threshold_); }
+    { if(u != v_) return ms_->closer_than(u,v_,threshold_); 
+      return false; }
 
     MetricSpace *  ms_        ;
     Vertex_handle  v_         ;

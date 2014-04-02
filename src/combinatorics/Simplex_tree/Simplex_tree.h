@@ -12,10 +12,11 @@
 
 #include <algorithm>
 #include <boost/container/flat_map.hpp>
+#include <boost/iterator/transform_iterator.hpp>
+#include <boost/graph/adjacency_list.hpp>
 #include "Simplex_tree_node_explicit_storage.h"
 #include "Simplex_tree_siblings.h"
-#include "Simplex_tree_iterators.h" 
-#include "boost/iterator/transform_iterator.hpp"
+#include "Simplex_tree_iterators.h"
 #include "topology/Persistent_cohomology.h"
 
 /**
@@ -26,36 +27,40 @@
  $ furnished by MetricSpace.
  *
  * \implements SimplexDataFilteredSimplicialComplexDS.*/
-template < class MetricSpace
-         , typename FiltrationValueType = typename MetricSpace::FT
-         , typename SimplexKeyType = int
+template < typename FiltrationValueType = double
+         , typename SimplexKeyType      = int    //must be a signed integer type
+         , typename VertexHandleType    = int    //must be a signed interger type, int convertible to it
+//         , bool ContiguousVertexHandles = true   //true is Vertex_handles are exactly the set [0;n)
          >
  class Simplex_tree {
 
-  friend class Simplex_tree_node_explicit_storage     < Simplex_tree < MetricSpace > >;
-  friend class Simplex_tree_simplex_vertex_iterator   < Simplex_tree < MetricSpace > >;
-  friend class Simplex_tree_boundary_simplex_iterator < Simplex_tree < MetricSpace > >;
-  friend class Simplex_tree_complex_simplex_iterator  < Simplex_tree < MetricSpace > >;
-  friend class Simplex_tree_skeleton_simplex_iterator < Simplex_tree < MetricSpace > >;
+  friend class Simplex_tree_node_explicit_storage     < Simplex_tree < FiltrationValueType
+                                                                     , SimplexKeyType
+                                                                     , VertexHandleType > >;
+  friend class Simplex_tree_simplex_vertex_iterator   < Simplex_tree < FiltrationValueType
+                                                                     , SimplexKeyType
+                                                                     , VertexHandleType > >;
+  friend class Simplex_tree_boundary_simplex_iterator < Simplex_tree < FiltrationValueType
+                                                                     , SimplexKeyType
+                                                                     , VertexHandleType > >;
+  friend class Simplex_tree_complex_simplex_iterator  < Simplex_tree < FiltrationValueType
+                                                                     , SimplexKeyType
+                                                                     , VertexHandleType > >;
+  friend class Simplex_tree_skeleton_simplex_iterator < Simplex_tree < FiltrationValueType
+                                                                     , SimplexKeyType
+                                                                     , VertexHandleType > >;
 
   template < class T > friend class Persistent_cohomology;
 
-
-
-// Metric Space types  
 public:
- /** The values of the filtration have the type of the distance type defined
- * in MetricSpace.*/ 
   typedef FiltrationValueType                         Filtration_value;
 /** \brief Type of data stored in each simplex. */
   typedef SimplexKeyType                              Simplex_key;
-
-  typedef typename MetricSpace::Vertex_handle         Vertex_handle;   
- 
+  typedef VertexHandleType                            Vertex_handle;   
 
 private:
-  typedef typename MetricSpace::Space_vertex_iterator Space_vertex_iterator;
-  typedef typename MetricSpace::Space_vertex_range    Space_vertex_range;
+  // typedef typename MetricSpace::Space_vertex_iterator Space_vertex_iterator;
+  // typedef typename MetricSpace::Space_vertex_range    Space_vertex_range;
 
 public:
    /** \brief Node in the simplex tree.*/ 
@@ -156,17 +161,16 @@ Complex_vertex_range complex_vertex_range()
                                    Boundary_simplex_iterator(this) );  }
 
 /** \brief Empty constructor.*/
- Simplex_tree( MetricSpace & ms ) 
- : ms_(&ms)
+ Simplex_tree () 
+ : null_vertex_(-1)
  , threshold_(0)
- , num_vertices_(0)
  , num_simplices_(0)
- , root_() 
+ , root_(NULL,null_vertex_)
  , filtration_vect_()
- , dimension_(-1)    { root_.parent_ = ms.null_vertex(); }
+ , dimension_(-1) {}
 
 /** \brief Destructor; deallocates the whole tree structure.*/
-~Simplex_tree() 
+~Simplex_tree()
 { 
   for(auto sh = root_.members().begin(); sh != root_.members().end(); ++sh)
    {
@@ -209,11 +213,9 @@ Simplex_key     null_key()      { return -1; }
 /** \brief Returns a Vertex_handle identified as "null".
   *
   * It is identical to null_vertex() defined in MetricSpace.*/
-Vertex_handle   null_vertex()   { return ms_->null_vertex(); }
+Vertex_handle   null_vertex()   { return null_vertex_; }
 /** Returns a pointer to the root nodes of the simplex tree.*/
 Siblings *      root()          { return &root_; }
-/** Returns a pointer to the geometry traits.*/
-MetricSpace *   ms()            { return ms_; }
 /** \brief Returns the number of vertices in the complex.*/
 size_t          num_vertices()   { return root_.members_.size(); }
 /** \brief Returns the number of simplices in the complex.
@@ -379,55 +381,80 @@ private:
  os << std::endl;}
 
 public:
-/**
- * \brief Inserts a 1-skeleton in an empty Simplex_tree.
+
+
+// Now you can use your new property tag in the definition of properties just as you would one of the builtin tags.
+
+//   typedef property<capacity_t, int> Cap;
+//   typedef property<flow_t, int, Cap> EdgeProperty;
+//   typedef adjacency_list<vecS, vecS, no_property, EdgeProperty> Graph;
+// Just as before, the property maps for these properties can be obtained from the graph via the get(Property, g) function.
+
+//   property_map<Graph, capacity_t>::type capacity
+//     = get(capacity_t(), G);
+//   property_map<Graph, flow_t>::type flow
+//     = get(flow_t(), G);
+
+
+
+/** \brief Inserts a 1-skeleton in an empty Simplex_tree.
  *
- * Inserts all vertices and edges given by NeighborGraph, 
- * which is a model of boost::AdjacencyGraph whose graph has
- * vertices the Vertices of MetricSpace.
+ * Inserts all vertices and edges given by a OneSkeletonGraph, 
+ * which is a model of boost::AdjacencyGraph.
  *
  * The Simplex_tree must contain no simplex when the method is
  * called.
  *
- * \todo With a flat_map, ms_->space_vertex_range needs to be
- * a boost::container::ordered_unique_range.
+ * The type OneSkeletonGraph must be a model of 
+ * boost::EdgeListGraph and boost::PropertyGraph.
  *
- * \todo Works on a range of points. + easily parallelizable.
- * attention static vector => not thread safe in intersection.
- */
-template< class NeighborGraph >
- void insert_graph( NeighborGraph & ng )
+ * boost::graph_traits<OneSkeletonGraph>::vertex_descriptor 
+ *                                    must be convertible to VertexHandleType.
+ * boost::graph_traits<OneSkeletonGraph>::directed_category
+ *                                    must be undirected_tag. */
+template< class OneSkeletonGraph >
+ void insert_graph( OneSkeletonGraph & skel_graph )
  {
-  assert(num_simplices_ == 0);
+  assert(num_simplices_ == 0); //the simplex tree must be empty
+  
+  if(boost::num_vertices(skel_graph) == 0) return;
 
-  threshold_ = ng.threshold();
-  dimension_ = 1;
-  root_.members_.reserve(ng.size_graph());
-  for(auto v : ms_->space_vertex_range())
-    { root_.members_.insert(root_.members_.end(),
-      std::pair<Vertex_handle,Node>(v,Node(&root_,0.))); }
-  for(Dictionary_it sh = root_.members().begin(); //all root simplices, ie vertices.
-    sh != root_.members().end(); ++sh) 
-  {  //traverses the neighbor vertices
-    for(auto neigh : ng.adjacent_vertices(sh->first)) 
-    {
-      if(sh->first < neigh) 
-      {
-        if(! has_children(sh))
-          { sh->second.assign_children(new Siblings(&root_,sh->first)); }
-        sh->second.children()->members()[neigh] = 
-        Node(sh->second.children(),
-         ms_->distance(sh->first,neigh));
-      }
-    }
+  if(num_edges(skel_graph) == 0) { dimension_ = 0; }
+  else                           { dimension_ = 1; }
+
+  num_simplices_ = boost::num_vertices(skel_graph) + boost::num_edges(skel_graph);
+  
+  root_.members_.reserve(boost::num_vertices(skel_graph));
+  
+  typename boost::graph_traits<OneSkeletonGraph>::vertex_iterator v_it, v_it_end;
+  for(tie(v_it,v_it_end) = boost::vertices(skel_graph);
+      v_it != v_it_end; ++v_it)
+  {
+    root_.members_.emplace_hint( root_.members_.end()
+                               , (Vertex_handle)(*v_it)
+                               , Node(&root_ 
+                                     ,(Filtration_value)boost::get( vertex_filtration_tag()
+                                                                  , skel_graph
+                                                                  , *v_it) ) );
   }
- // Update size of the complex
-  this->num_simplices_ += this->root_.size();
-  for(Simplex_handle sh = root_.members().begin(); //all root simplices, ie vertices.
-    sh != root_.members().end(); ++sh) 
-    { if(has_children(sh)) 
-      { num_simplices_ += sh->second.children()->size(); }  }
+
+  typename boost::graph_traits<OneSkeletonGraph>::edge_iterator e_it, e_it_end;
+  for(tie(e_it,e_it_end) = boost::edges(skel_graph);
+      e_it != e_it_end; ++e_it)
+  {
+    auto u = source( *e_it, skel_graph ); auto v = target( *e_it, skel_graph );
+    if( u > v ) { auto tmp = u; u = v; v = tmp; } // u < v
+
+    auto sh = find_vertex((Vertex_handle)u);
+    if(! has_children(sh) ) { sh->second.assign_children(new Siblings(&root_,sh->first)); }
+    auto res = sh->second.children()->members().emplace( (Vertex_handle)v
+                                                       , Node( sh->second.children()
+                                                             , (Filtration_value)boost::get( edge_filtration_tag()
+                                                                                           , skel_graph
+                                                                                           , *e_it)   )); 
   }
+}
+
 /**
   * \brief Expands the Simplex_tree containing only a graph
   * until dimension max_dim.
@@ -530,17 +557,18 @@ Filtration_value maximum( Filtration_value a,
   return ( ( max < c ) ? c : max ); }
 
 
-/** \brief Pointer to a metric space. */
-  MetricSpace *                    ms_              ;
+
+
+  Vertex_handle null_vertex_;
 /** \brief Upper bound on the filtration values of the simplices.*/
   Filtration_value                 threshold_       ;
 /** \brief Number of vertices. The set of vertices is static.*/      
-  size_t                           num_vertices_    ;
+//  size_t                           num_vertices_    ;
 /** \brief Total number of simplices in the complex, without the empty simplex.*/
   size_t                           num_simplices_   ;
 /** \brief Set of simplex tree Nodes representing the vertices.*/  
   Siblings                         root_            ;
-/** \brief Simplices ordered according to a filtration*/  
+/** \brief Simplices ordered according to a filtration.*/  
   std::vector< Simplex_handle >    filtration_vect_ ;
 /** \brief Upper bound on the dimension of the simplicial complex.*/
   int                              dimension_       ;
