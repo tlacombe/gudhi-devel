@@ -14,7 +14,7 @@
 #include "combinatorics/Simplex_tree/Simplex_tree.h"
 #include "topology/Persistent_cohomology.h"
 
-#include "topology/compare_diagrams.h"
+//#include "topology/compare_diagrams.h"
 
 using namespace std;
 
