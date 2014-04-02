@@ -99,7 +99,12 @@ int main (int argc, char * const argv[]) {
   cout << "                  Construction time per simplex = " << 
   ((double)(end-start)/CLOCKS_PER_SEC) / (double)st.num_simplices() << endl;
 
-
+  start = clock();
+  st.initialize_filtration();
+  end = clock();
+  cout << "Order the simplices according to the filtration in: "
+       << (double)(end-start)/CLOCKS_PER_SEC << " s. \n";
+  
   start = clock();
   PcoH pcoh (st);
   end = clock();
@@ -107,7 +112,7 @@ int main (int argc, char * const argv[]) {
        << (double)(end-start)/CLOCKS_PER_SEC << " s. \n";
 
   start = clock();
-  pcoh.compute_persistent_cohomology ();
+  pcoh.compute_persistent_cohomology (0.5);
   end = clock();
 
   cout << "Compute persistent cohomology in: " 
