@@ -15,11 +15,9 @@
 #include <boost/intrusive/set.hpp>
 #include <boost/pending/disjoint_sets.hpp>
 #include <boost/intrusive/list.hpp>
-
-#include "Column_list.h"
-#include "Multi_field.h"
-
 #include <boost/pool/object_pool.hpp>
+ 
+#include "Persistent_cohomology/Column_list.h"
 
 /** \brief Computes the persistent cohomology of a filtered simplicial complex.
 *
@@ -31,7 +29,7 @@
 * \todo Memory allocation policy: classic, use a mempool, etc.
 */
  template < class FilteredSimplicialComplexDS
-          //, class ArithmeticModifier //only furnishes modifiers and creators
+          , class ArithmeticModifier //only furnishes modifiers and creators
           >
  class Persistent_cohomology {
  public:
@@ -42,7 +40,7 @@
   typedef typename Complex_ds::Simplex_handle       Simplex_handle;
   typedef typename Complex_ds::Filtration_value     Filtration_value;
 
-  typedef Field_Zp < 2 >                            ArithmeticModifier;
+//  typedef Field_Zp < 2 >                            ArithmeticModifier;
   typedef typename ArithmeticModifier::Element      Arith_element;
 
 // Compressed Annotation Matrix types:
@@ -371,7 +369,7 @@ void update_cohomology_groups ( Simplex_handle sigma
                                               , prod );     // Modifies "prod"
     /*  
       <----------
-      return the charcteristic of fields for which x is invertible.
+      return the characteristic of fields for which x is invertible.
       put it in the Persistent_interval.
     */
       if( inv_x != ar_pivot_.additive_identity() )

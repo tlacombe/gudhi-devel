@@ -1,53 +1,11 @@
 /*
- *  Multi_field.h
+ *  Field_Zp.h
  *  Gudhi
  *
- *  Created by Clément Maria on 15/02/14.
- *  Copyright 2014 INRIA. All rights reserved.
+ *  Created by Clément Maria on 02/28/14.
+ *  Copyright 2013 INRIA. All rights reserved.
  *
  */
-
-#ifndef GUDHI_MULTI_FIELD_H
-#define GUDHI_MULTI_FIELD_H
-
-
-//#include "boost/pool.hpp" 
-
-
-/**
-*
-*/
-template < int P , int Q >
-class Multi_field {
-  typedef uint64_t    Element;
-
-  Multi_field ()
-  { /* ... */ }
-
-  /** Set x <- x + w * y*/
-  void plus_equal(Element & x, Element y, int w);
-  /** Returns 0.*/
-  Element additive_identity() { return 0; };
-  /** Returns the partial identity w.r.t. all fields.*/
-  Element multiplicative_identity(); // as if prod == product of all primes
-  /** Returns the partial identity w.r.t. prod.*/
-  Element multiplicative_identity(Element prod);
-  /** Computes the partial inverse of x w.r.t. prod. <- modifies prod */
-  Element inverse ( Element x, Element prod ); // <-- modifies prod
-    
-  bool is_one ( Element x );
-  bool is_zero ( Element x );
-  /** Returns the product of the characteristic of the fields in the multi-field
-  * structure.*/
-  Element characteristic() { return prod_primes; }
-
-private:
-  Element prod_primes; //product of all characteristics
-
-};
-
-
-
 
 /** \brief */
 template < int Prime = 11 >
@@ -116,32 +74,3 @@ private:
 std::vector< Element > inverse_;
 //boost::object_pool< Column_cell > * cell_pool_;
 };
-
-/**
-  *
-  */
-class Field_Q {
-
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-#endif // GUDHI_MULTI_FIELD_H 
-
-
-
-
-
-
-
-
