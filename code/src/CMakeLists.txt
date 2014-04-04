@@ -3,20 +3,29 @@ project(GUDHI)
 
 find_package(Boost		REQUIRED COMPONENTS)
 
-#set(CMAKE_CXX_FLAGS "-std=c++11 -g -Wpedantic -Wall -lboost_system")
-set(CMAKE_CXX_FLAGS "-std=c++11 -O3 -lboost_system")
-
-
-#g++-4.9 -std=c++0x -g -Wpedantic -Wall ../main.cpp;
+#set(CMAKE_CXX_FLAGS "-std=c++11 -O3 -lboost_system -lgmpxx -lgmp")
+set(CMAKE_CXX_FLAGS "-std=c++11 -g -Wpedantic -Wall -lboost_system -lgmpxx -lgmp")
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g -ggdb")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
 
-include_directories(. utils combinatorics geometry topology)
+include_directories(. utils combinatorics geometry topology 
+                      Nearest_neighbors/include/gudhi
+                      Simplex_tree/include/gudhi
+                      Persistent_cohomology/include/gudhi 
+                      Hasse_complex/include/gudhi 
+                      utilities/include/gudhi )
 
 #add_executable ( TestSkeletonBlockerComplex test/TestSkeletonBlockerComplex.cxx )
 #add_executable ( TestSimplifiable           test/TestSimplifiable.cxx )
 #add_executable ( TestContraction            test/TestContraction.cxx )
 #add_executable ( TestSimplexTree            test/TestSimplexTree.cpp )
-add_executable ( TestPersistentCohomology   test/TestPersistentCohomology.cpp )
-#add_executable ( demo   test/DemoPersistentCohomology.cpp )
+
+add_executable ( TestPersistentCohomology   Persistent_cohomology/test/TestPersistentCohomology.cpp )
+target_link_libraries( TestPersistentCohomology gmpxx )
+
+add_executable( TestSimplexTree Simplex_tree/test/TestSimplexTree.cpp )
+add_executable( TestIo utilities/test/TestIo.cpp )
+
+
+#g++-4.9 -std=c++0x -g -Wpedantic -Wall ../main.cpp;

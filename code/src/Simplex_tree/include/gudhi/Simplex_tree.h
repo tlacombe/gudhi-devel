@@ -14,10 +14,13 @@
 #include <boost/container/flat_map.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/graph/adjacency_list.hpp>
-#include "Simplex_tree_node_explicit_storage.h"
-#include "Simplex_tree_siblings.h"
-#include "Simplex_tree_iterators.h"
-#include "topology/Persistent_cohomology.h"
+
+#include "Simplex_tree/Simplex_tree_node_explicit_storage.h"
+#include "Simplex_tree/Simplex_tree_siblings.h"
+#include "Simplex_tree/Simplex_tree_iterators.h"
+
+#include "Persistent_cohomology.h"
+#include "graph_simplicial_complex.h"
 
 /**
  * \brief Simplex tree data structure.
@@ -50,7 +53,7 @@ template < typename FiltrationValueType = double
                                                                      , SimplexKeyType
                                                                      , VertexHandleType > >;
 
-  template < class T > friend class Persistent_cohomology;
+  template < class T1, class T2 > friend class Persistent_cohomology;
 
 public:
   typedef FiltrationValueType                         Filtration_value;
@@ -268,8 +271,32 @@ Simplex_handle find(std::vector< Vertex_handle > & s)
 Simplex_handle find_vertex(Vertex_handle v)
 { return root_.members_.begin()+v; }
 
-/** \todo Simplex_tree::insert() */
-//Simplex_handle insert(); //input a vertex_range
+/**
+*/
+std::pair< Simplex_handle, bool > 
+insert ( std::vector< Vertex_handle > & simplex
+       , Filtration_value               filtration )
+{
+  if(simplex.empty()) { return std::pair< Simplex_handle, bool >(null_simplex(),true); }
+  
+  sort(simplex.begin(),simplex.end()); //must be sorted in increasing order
+
+  Siblings * curr_sib = &root_;
+  std::pair< Dictionary_it, bool > res_insert;
+  typename std::vector<Vertex_handle>::iterator vi;
+  for( vi = simplex.begin(); vi != simplex.end()-1; ++vi ) {
+      
+    res_insert = curr_sib->members_.emplace(*vi, Node(curr_sib,filtration));
+    if(!(has_children(res_insert.first))) 
+      { res_insert.first->second.children_ = new Siblings(curr_sib, *vi); }  
+    curr_sib = res_insert.first->second.children_;
+  }
+  res_insert = curr_sib->members_.emplace(*vi, Node(curr_sib,filtration));
+  if(res_insert.second) 
+    { res_insert.first->second.filtration_ = std::min( filtration
+                                                     , res_insert.first->second.filtration_) ;}
+  return res_insert;
+}
 
 /** \brief Initializes the filtrations, i.e. inserts a Simplex_handle 
 * for every simplex in the simplicial complex and sort the
@@ -433,7 +460,7 @@ template< class OneSkeletonGraph >
     root_.members_.emplace_hint( root_.members_.end()
                                , (Vertex_handle)(*v_it)
                                , Node(&root_ 
-                                     ,(Filtration_value)boost::get( vertex_filtration_tag()
+                                     ,(Filtration_value)boost::get( vertex_filtration_t()
                                                                   , skel_graph
                                                                   , *v_it) ) );
   }
@@ -443,13 +470,13 @@ template< class OneSkeletonGraph >
       e_it != e_it_end; ++e_it)
   {
     auto u = source( *e_it, skel_graph ); auto v = target( *e_it, skel_graph );
-    if( u > v ) { auto tmp = u; u = v; v = tmp; } // u < v
+    if( u > v ) { std::swap(u,v); } // u < v
 
     auto sh = find_vertex((Vertex_handle)u);
     if(! has_children(sh) ) { sh->second.assign_children(new Siblings(&root_,sh->first)); }
     sh->second.children()->members().emplace( (Vertex_handle)v
                                              , Node( sh->second.children()
-                                                   , (Filtration_value)boost::get( edge_filtration_tag()
+                                                   , (Filtration_value)boost::get( edge_filtration_t()
                                                                                  , skel_graph
                                                                                        , *e_it)   )); 
   }

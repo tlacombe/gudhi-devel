@@ -10,6 +10,7 @@
 #ifndef GUDHI_EUCLIDEAN_GEOMETRY_H
 #define GUDHI_EUCLIDEAN_GEOMETRY_H
 
+#include <vector>
 #include "boost/container/container_fwd.hpp"
 #include "boost/iterator/counting_iterator.hpp"
 #include "boost/range/counting_range.hpp"
