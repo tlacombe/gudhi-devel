@@ -40,7 +40,7 @@ class Cam_matrix_cell
 : public base_hook_cam_h
 , public base_hook_cam_v
 {
-private:
+public:
   template < class T1, class T2 > friend class Persistent_cohomology;
   friend class Cam_column_list < SimplexKey , ArithmeticElement >;
 
@@ -53,7 +53,7 @@ private:
   , coefficient_(x)
   , self_col_(self_col) {}
 
-  ~Cam_matrix_cell() {}
+ // ~Cam_matrix_cell() {}
 
   SimplexKey                   key_;
   ArithmeticElement            coefficient_;
@@ -99,18 +99,18 @@ public:
  : col_()
  , class_key_(other.class_key_)
  { if(!other.col_.empty()) std::cerr << "Copying a non-empty column.\n"; } 
-  private:
-  ~Cam_column_list()
-  {
-  //   typename Col_type::iterator it = col_.begin();
-  //   Cell * cell_tmp;
-  //   while(it != col_.end())
-  //   {
-  //     cell_tmp = &(*it);
-  //     ++it;
-  //     delete cell_tmp; 
-  //   }
-  }
+
+  // ~Cam_column_list()
+  // {
+  // //   typename Col_type::iterator it = col_.begin();
+  // //   Cell * cell_tmp;
+  // //   while(it != col_.end())
+  // //   {
+  // //     cell_tmp = &(*it);
+  // //     ++it;
+  // //     delete cell_tmp; 
+  // //   }
+  // }
 
 /** \brief Returns true iff the column is null.*/
   bool is_null() { return col_.empty(); }

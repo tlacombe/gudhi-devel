@@ -26,8 +26,7 @@
 *
 * \todo Filter for simplices (dimension for example)
 * \todo Filter for intervals (length)
-* \todo Memory allocation policy: classic, use a mempool, etc.
-*/
+* \todo Memory allocation policy: classic, use a mempool, etc.*/
  template < class FilteredSimplicialComplexDS
           , class ArithmeticModifier //only furnishes modifiers and creators
           >
@@ -39,10 +38,7 @@
   typedef typename Complex_ds::Simplex_key          Simplex_key;
   typedef typename Complex_ds::Simplex_handle       Simplex_handle;
   typedef typename Complex_ds::Filtration_value     Filtration_value;
-
-//  typedef Field_Zp < 2 >                            ArithmeticModifier;
   typedef typename ArithmeticModifier::Element      Arith_element;
-
 // Compressed Annotation Matrix types:
   // Column type
   typedef Cam_column_list < Simplex_key
@@ -77,17 +73,18 @@
   * of faces in the simplicial complex. Default is false.
   */
 Persistent_cohomology ( Complex_ds & cpx 
+                    //  , int          nb_primes
                       , bool         persistence_dim_max = false )
 : cpx_    (&cpx)
 , dim_max_(cpx.dimension())                   // upper bound on the dimension of the simplices
-, ar_pivot_()                                 // initialize the field structure.
+, ar_pivot_()                                 // initialize the field coefficient structure.
 , ds_rank_  (cpx_->num_simplices())           // union-find
 , ds_parent_(cpx_->num_simplices())           // union-find
 , ds_repr_  (cpx_->num_simplices(),NULL)      // union-find -> annotation vectors
 , dsets_(&ds_rank_[0],&ds_parent_[0])         // union-find
 , cam_()                                      // collection of annotation vectors
 , zero_cocycles_()                            // union-find -> Simplex_key of creator for 0-homology
-, transverse_idx_()  //, transverse_idx_(cpx_->num_simplices(),NULL) // key -> row
+, transverse_idx_()                           // key -> row
 , persistent_pairs_() 
 , interval_length_policy(&cpx,0)
 , column_pool_(new boost::object_pool< Column > ()) // memory pools for the CAM
@@ -99,23 +96,23 @@ Persistent_cohomology ( Complex_ds & cpx
   { dsets_.make_set(cpx_->key(sh)); }
 }
 
-// ~Persistent_cohomology()
-// { deleting the pools destroys everything they have allocated
+~Persistent_cohomology()
+{ 
+// //  deleting the pools destroys everything they have allocated
+// // delete an element: remove from lists first...
+// // or do everything by hand...?
+
 // //Clean the remaining columns in the matrix.
-//   Column * col_tmp;
-//   for(auto cam_it = cam_.begin(); cam_it != cam_.end(); )
-//   {
-//     col_tmp = &(*cam_it);
-//     ++cam_it;
-//     delete col_tmp;
-//   }
-// //Clean the transversal lists
-//   for(auto transverse_it = transverse_idx_.begin();
-//       transverse_it != transverse_idx_.end(); ++transverse_it)
-//   { delete transverse_it->second; }
-// delete column_pool_;
-// delete cell_pool_;
-// }
+  for(auto & cam_ref : cam_) { cam_ref.col_.clear(); }
+//Clean the transversal lists
+  for( auto & transverse_ref : transverse_idx_ )
+  {  transverse_ref.second.row_->clear(); delete transverse_ref.second.row_; }
+ 
+
+
+  delete column_pool_;
+  delete cell_pool_;
+}
 
 struct length_interval {
   length_interval ( Complex_ds * cpx
@@ -139,12 +136,14 @@ struct length_interval {
 void compute_persistent_cohomology ( Filtration_value min_interval_length = 0 )
 {
   interval_length_policy.set_length(min_interval_length);
-
   // Compute all finite intervals
   for( auto sh : cpx_->filtration_simplex_range() )
   {
-    int dim_simplex = cpx_->dimension(sh);
 
+  //  display_cam();
+
+
+    int dim_simplex = cpx_->dimension(sh);
     switch(dim_simplex) {
       case 0 :                                              break;
       case 1 : update_cohomology_groups_edge( sh )        ; break;
@@ -153,49 +152,32 @@ void compute_persistent_cohomology ( Filtration_value min_interval_length = 0 )
   }
   // Compute infinite intervals of dimension 0
   Simplex_key key;
-  for(auto sh : cpx_->skeleton_simplex_range(0)) //for all vertices
-  {
-    key = cpx_->key(sh);  
-    //if the vertex is representative of its union-find tree and of its
-    //connected component as a homology feature, add an interval.
-    if( key == dsets_.find_set(key) 
-        && zero_cocycles_.find(key) == zero_cocycles_.end() )
+  for(auto v_sh : cpx_->skeleton_simplex_range(0)) //for all 0-dimensional simplices
+  { 
+    key = cpx_->key(v_sh);
+    if( ds_parent_[key] == key  //root of its tree
+        && zero_cocycles_.find(key) == zero_cocycles_.end() ) 
     {
-
-      persistent_pairs_.push_back( Persistent_interval ( sh
+      persistent_pairs_.push_back( Persistent_interval ( cpx_->simplex(key)
                                                        , cpx_->null_simplex()
-                                                       , ar_pivot_.multiplicative_identity() )
-                                  );
+                                                       , ar_pivot_.characteristic() )
+                                 );
     }
   }
   for( auto zero_idx : zero_cocycles_ )
   {
     persistent_pairs_.push_back( Persistent_interval ( cpx_->simplex(zero_idx.second)
                                                      , cpx_->null_simplex()
-                                                     , ar_pivot_.multiplicative_identity() )
-                                );
+                                                     , ar_pivot_.characteristic() )
+                               );
   }
+
 // Compute infinite interval of dimension > 0  
-// traverse the whole remaining matrix    <----------------- not MF safe
-  std::map< Simplex_key,Arith_element > infinite_cocycles;
-  typename std::map< Simplex_key,Arith_element >::iterator inf_coc_it;
-  for(auto column_it = cam_.begin();
-      column_it != cam_.end(); ++column_it)
+  for(auto cocycle : transverse_idx_)
   {
-    for(auto cell_it = column_it->col_.begin();
-        cell_it != column_it->col_.end(); ++cell_it)
-    {
-      inf_coc_it = infinite_cocycles.find(cell_it->key_);
-      if( inf_coc_it == infinite_cocycles.end() )
-      { infinite_cocycles[cell_it->key_] = 1; }
-    }
-  }
-  //                                      <----------------- not MF safe    inf_coc.second...
-  for(auto inf_coc : infinite_cocycles) 
-  {
-    persistent_pairs_.push_back( Persistent_interval ( cpx_->simplex (inf_coc.first)
+    persistent_pairs_.push_back( Persistent_interval ( cpx_->simplex (cocycle.first)
                                                      , cpx_->null_simplex()
-                                                     , inf_coc.second ) );
+                                                     , cocycle.second.characteristics_ ) );
   }
 }
 
@@ -229,15 +211,14 @@ void update_cohomology_groups_edge ( Simplex_handle sigma )
     if (map_it_v == zero_cocycles_.end()) { idx_coc_v = kv;               }
     else                                  { idx_coc_v = map_it_v->second; }
 
-    if(idx_coc_u < idx_coc_v) // Kill cocycle [idx_coc_v], which is younger.   
+    if(cpx_->filtration(cpx_->simplex(idx_coc_u)) 
+        < cpx_->filtration(cpx_->simplex(idx_coc_v)) ) // Kill cocycle [idx_coc_v], which is younger. 
       {
         if(interval_length_policy(cpx_->simplex(idx_coc_v),sigma)) {
-          persistent_pairs_.push_back (
-              boost::tuple<Simplex_handle,Simplex_handle,Arith_element> ( 
-                                                          cpx_->simplex(idx_coc_v)
-                                                        , sigma
-                                                        , ar_pivot_.multiplicative_identity() 
-                                                    )
+          persistent_pairs_.push_back ( Persistent_interval ( cpx_->simplex(idx_coc_v)
+                                                            , sigma
+                                                            , ar_pivot_.characteristic() 
+                                                            )
                                       );
         }
     // Maintain the index of the 0-cocycle alive.
@@ -250,12 +231,10 @@ void update_cohomology_groups_edge ( Simplex_handle sigma )
     else // Kill cocycle [idx_coc_u], which is younger.
       {
         if(interval_length_policy(cpx_->simplex(idx_coc_u),sigma)) {
-          persistent_pairs_.push_back (
-              boost::tuple<Simplex_handle,Simplex_handle,Arith_element> ( 
-                                                          cpx_->simplex(idx_coc_u)
-                                                        , sigma
-                                                        , ar_pivot_.multiplicative_identity() 
-                                                    )
+          persistent_pairs_.push_back ( Persistent_interval ( cpx_->simplex(idx_coc_u)
+                                                            , sigma
+                                                            , ar_pivot_.characteristic() 
+                                                            )
                                       );
         }
     // Maintain the index of the 0-cocycle alive.
@@ -268,7 +247,7 @@ void update_cohomology_groups_edge ( Simplex_handle sigma )
     cpx_->assign_key(sigma,cpx_->null_key()); 
   }
   else { // If ku == kv, same connected component: create a 1-cocycle class.
-    create_cocycle( sigma, ar_pivot_.multiplicative_identity() ); 
+    create_cocycle( sigma, ar_pivot_.multiplicative_identity(), ar_pivot_.characteristic() ); 
   } 
 }
 
@@ -321,16 +300,15 @@ void annotation_of_the_boundary(std::map< Simplex_key, Arith_element > & map_a_d
           result_insert_a_ds = map_a_ds.insert(std::pair< Simplex_key
                                                         , Arith_element >(cell_ref.key_ , w_y));
           if( !(result_insert_a_ds.second) )   //if cell_ref.key_ already a Key in map_a_ds
-            { 
-              ar_pivot_.plus_equal(result_insert_a_ds.first->second, w_y); 
-              if(result_insert_a_ds.first->second == ar_pivot_.additive_identity())
-                { map_a_ds.erase(result_insert_a_ds.first); }
-            }
+          { 
+            ar_pivot_.plus_equal(result_insert_a_ds.first->second, w_y); 
+            if(result_insert_a_ds.first->second == ar_pivot_.additive_identity())
+              {  map_a_ds.erase(result_insert_a_ds.first); }
+          }
         }
       }
     }  
   }
-
 }
 
 /** \brief Update the cohomology groups under the insertion of a simplex.
@@ -340,14 +318,14 @@ void update_cohomology_groups ( Simplex_handle sigma
                               , int dim_sigma )
 {
 //Compute the annotation of the boundary of sigma:
-  std::map< Simplex_key, Arith_element >              map_a_ds;
+  std::map< Simplex_key, Arith_element >            map_a_ds;
   annotation_of_the_boundary(map_a_ds, sigma, dim_sigma );
-
 // Update the cohomology groups:
   if( map_a_ds.empty() ) {  // sigma is a creator in all fields represented in ar_pivot_
-    if(dim_sigma < dim_max_) { create_cocycle( sigma, ar_pivot_.multiplicative_identity() );}
+    if(dim_sigma < dim_max_) { create_cocycle ( sigma
+                                              , ar_pivot_.multiplicative_identity() 
+                                              , ar_pivot_.characteristic() );}
   }
-
   else {                    // sigma is a destructor in at least a field in ar_pivot_
  // Convert map_a_ds to a vector
     A_ds_type a_ds; //admits reverse iterators
@@ -359,29 +337,27 @@ void update_cohomology_groups ( Simplex_handle sigma
     }
 
    
-
+    Arith_element inv_x, charac;
     Arith_element prod = ar_pivot_.characteristic(); // Product of characteristic of the fields
     for( auto a_ds_rit = a_ds.rbegin(); 
          (a_ds_rit != a_ds.rend()) && (prod != ar_pivot_.multiplicative_identity());
          ++a_ds_rit )
     {
-      Arith_element inv_x = ar_pivot_.inverse ( a_ds_rit->second
-                                              , prod );     // Modifies "prod"
-    /*  
-      <----------
-      return the characteristic of fields for which x is invertible.
-      put it in the Persistent_interval.
-    */
+      std::tie(inv_x,charac) = ar_pivot_.inverse ( a_ds_rit->second
+                                                 , prod );   
+
       if( inv_x != ar_pivot_.additive_identity() )
-        {
-          destroy_cocycle ( sigma
-                          , a_ds
-                          , a_ds_rit->first
-                          , inv_x );
-        }
+      {
+        destroy_cocycle ( sigma
+                        , a_ds
+                        , a_ds_rit->first
+                        , inv_x 
+                        , charac );
+        prod /= charac;
+      }
     }
     if( prod != ar_pivot_.multiplicative_identity() && dim_sigma < dim_max_ )
-      { create_cocycle( sigma , ar_pivot_.multiplicative_identity(prod) ); }
+      { create_cocycle( sigma , ar_pivot_.multiplicative_identity(prod), prod ); }
   }
 }
 
@@ -393,7 +369,8 @@ void update_cohomology_groups ( Simplex_handle sigma
   * The new cocycle has value 0 on every simplex except on sigma
   * where it worths 1.*/
 void create_cocycle ( Simplex_handle sigma
-                    , Arith_element x )
+                    , Arith_element  x 
+                    , Arith_element  charac )
 {
   Simplex_key key = cpx_->key(sigma);
   // Create a column containing only one cell,
@@ -407,7 +384,7 @@ void create_cocycle ( Simplex_handle sigma
   // Update the disjoint sets data structure.
   Hcell * new_hcell = new Hcell;
   new_hcell->push_back(*new_cell);
-  transverse_idx_[key] = new_hcell; //insert the new row
+  transverse_idx_[key] = cocycle(charac,new_hcell); //insert the new row
   ds_repr_[key] = new_col;
 }
 
@@ -422,72 +399,86 @@ void create_cocycle ( Simplex_handle sigma
 void destroy_cocycle ( Simplex_handle   sigma
                      , A_ds_type const& a_ds 
                      , Simplex_key      death_key
-                     , Arith_element &  inv_x )
+                     , Arith_element    inv_x
+                     , Arith_element    charac )
 {
+  
+//   std::cout << "Killer " << cpx_->key(sigma) << "  killing cocycle " << death_key << " with \n";
+//   std::cout << "      a_ds = ";
+//   for(auto ads_cell : a_ds)
+//     { std::cout <<"[" << ads_cell.first << ":" << ads_cell.second <<"] ";}
+// std::cout << std::endl;
+
+
+
   // Create a finite persistent interval
   if(interval_length_policy(cpx_->simplex(death_key),sigma)) {
     persistent_pairs_.push_back ( Persistent_interval ( cpx_->simplex(death_key) //creator
                                                       , sigma                    //destructor
-                                                      , ar_pivot_.multiplicative_identity() )//fields 
-                                );                                   // for which the interval exists 
+                                                      , charac )                //fields 
+                                );                              // for which the interval exists 
   }
-// <---------- not MF safe
 
-
-
-  auto death_key_row = transverse_idx_[death_key]; // Find the beginning of the row.
+  auto death_key_row = transverse_idx_.find(death_key); // Find the beginning of the row.
   std::pair< typename Cam::iterator, bool > result_insert_cam;
 
-  auto row_cell_it = death_key_row->begin();
-  while( row_cell_it != death_key_row->end() ) // Traverse all cells in the row at index death_key.
-    {
-      Arith_element w = ar_pivot_.times_minus( inv_x , row_cell_it->coefficient_ );
+  auto row_cell_it = death_key_row->second.row_->begin();
+  
+  while( row_cell_it != death_key_row->second.row_->end() ) // Traverse all cells in the row at index death_key.
+  {
+    Arith_element w = ar_pivot_.times_minus( inv_x , row_cell_it->coefficient_ );
 
-      if( w != ar_pivot_.additive_identity() ) 
+    if( w != ar_pivot_.additive_identity() ) 
+    { 
+      Column * curr_col = row_cell_it->self_col_;         ++row_cell_it;
+      // Disconnect the column from the rows in the CAM.
+      for( auto col_cell_it = curr_col->col_.begin();
+          col_cell_it != curr_col->col_.end(); ++col_cell_it ) 
+        { col_cell_it->base_hook_cam_h::unlink(); }
+
+      // Remove the column from the CAM before modifying its value
+      cam_.erase( cam_.iterator_to(*curr_col) ); 
+      // Proceed to the reduction of the column
+      plus_equal_column(*curr_col, a_ds, w);
+
+      if( curr_col->col_.empty() ) // If the column is null
       { 
-        Column * curr_col = row_cell_it->self_col_;         ++row_cell_it;
-        // Disconnect the column from the rows in the CAM.
-        for( auto col_cell_it = curr_col->col_.begin();
-            col_cell_it != curr_col->col_.end(); ++col_cell_it ) 
-          { col_cell_it->base_hook_cam_h::unlink(); }
-        
-        // Remove the column from the CAM before modifying its value
-        cam_.erase( cam_.iterator_to(*curr_col) ); 
-        // Proceed to the reduction of the column
-        plus_equal_column(*curr_col, a_ds, w);
-
-        if( curr_col->col_.empty() ) // If the column is null
-        { 
-          ds_repr_[ curr_col->class_key_ ] = NULL;  
-          column_pool_->free(curr_col); //delete curr_col; 
+        ds_repr_[ curr_col->class_key_ ] = NULL;  
+        column_pool_->free(curr_col); //delete curr_col; 
+      }
+      else 
+      { 
+        // Find whether the column obtained is already in the CAM
+        result_insert_cam = cam_.insert( *curr_col );
+        if ( result_insert_cam.second ) // If it was not in the CAM before: insertion has succeeded
+        {
+          for ( auto col_cell_it = curr_col->col_.begin();
+                col_cell_it != curr_col->col_.end(); ++col_cell_it ) //re-establish the row links
+          { transverse_idx_[ col_cell_it->key_ ].row_->push_front(*col_cell_it); }
         }
-        else 
-        { 
-          // Find whether the column obtained is already in the CAM
-          result_insert_cam = cam_.insert( *curr_col );
-          if ( result_insert_cam.second ) // If it was not in the CAM before: insertion has succeeded
-          {
-            for ( auto col_cell_it = curr_col->col_.begin();
-                  col_cell_it != curr_col->col_.end(); ++col_cell_it ) //re-establish the row links
-            { transverse_idx_[ col_cell_it->key_ ]->push_back(*col_cell_it); }
-          }
-          else // There is already an identical column in the CAM: 
-          {    // merge two disjoint sets.
-            dsets_.link ( curr_col->class_key_ , 
-                          result_insert_cam.first->class_key_ );
+        else // There is already an identical column in the CAM: 
+        {    // merge two disjoint sets.
+          dsets_.link ( curr_col->class_key_ , 
+                        result_insert_cam.first->class_key_ );
 
-            Simplex_key key_tmp = dsets_.find_set( curr_col->class_key_ );
-            ds_repr_[ key_tmp ] = &(*(result_insert_cam.first));
-            result_insert_cam.first->class_key_ = key_tmp;
-            column_pool_->free(curr_col); //delete curr_col;
-          }
+          Simplex_key key_tmp = dsets_.find_set( curr_col->class_key_ );
+          ds_repr_[ key_tmp ] = &(*(result_insert_cam.first));
+          result_insert_cam.first->class_key_ = key_tmp;
+          column_pool_->free(curr_col); //delete curr_col;
         }
       }
+    }
     else { ++row_cell_it; } // If w == 0, pass.
   }
+
   // Because it is a killer simplex, set the data of sigma to null_key().
   cpx_->assign_key( sigma, cpx_->null_key() ); 
-  transverse_idx_.erase(death_key);
+  if(death_key_row->second.characteristics_ == charac) 
+  { 
+    delete death_key_row->second.row_;
+    transverse_idx_.erase(death_key_row); 
+  }
+  else { death_key_row->second.characteristics_ /= charac; }
 }
 
 /** \brief Assigns target <- target + w * other.*/
@@ -554,12 +545,11 @@ void output_diagram(std::ostream& ostream = std::cout)
 //   persistent_pairs_.sort( cmp );
   for(auto pair : persistent_pairs_)
   {
-    if(cpx_->filtration(get<0>(pair)) < cpx_->filtration(get<1>(pair))) {
-      ostream << cpx_->dimension(get<0>(pair))  << " "
-              << cpx_->filtration(get<0>(pair)) << " " 
-              << cpx_->filtration(get<1>(pair)) << " " 
-              << std::endl;
-    }
+    ostream << get<2>(pair)                   << "   "
+            << cpx_->dimension(get<0>(pair))  << " "
+            << cpx_->filtration(get<0>(pair)) << " " 
+            << cpx_->filtration(get<1>(pair)) << " " 
+            << std::endl;
   }
 }
 
@@ -577,6 +567,18 @@ void display_cam()
   std::cout << std::endl;
 }
 
+
+struct cocycle {
+  cocycle() {}
+  cocycle( Arith_element characteristics
+         , Hcell       * row )
+  : row_(row), characteristics_(characteristics) {}
+
+ // ~cocycle() { delete row_; }
+
+  Hcell * row_;
+  Arith_element characteristics_;
+};
 
 
   Complex_ds *         cpx_;
@@ -599,11 +601,10 @@ void display_cam()
   std::map<Simplex_key,Simplex_key>             zero_cocycles_;
 /** Key -> row. */ 
 //  std::vector< Hcell * >                        transverse_idx_;
-  std::map< Simplex_key , Hcell * >             transverse_idx_; // PropertyMap Simplex_key -> Hcell *
+  std::map< Simplex_key , cocycle >             transverse_idx_; // PropertyMap Simplex_key -> Hcell *
 /** Persistent intervals. */
   std::list< Persistent_interval >              persistent_pairs_; 
   length_interval                               interval_length_policy;
-
 
   boost::object_pool< Column > *                column_pool_;
   boost::object_pool< Cell >   *                cell_pool_;

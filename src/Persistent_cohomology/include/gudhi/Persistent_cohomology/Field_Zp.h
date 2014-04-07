@@ -7,6 +7,9 @@
  *
  */
 
+#ifndef GUDHI_FIELD_ZP_H
+#define GUDHI_FIELD_ZP_H
+
 /** \brief */
 template < int Prime = 11 >
 class Field_Zp {
@@ -45,13 +48,10 @@ Element additive_identity () { return 0; }
 /** \brief Returns the multiplicative identity \f$1_{\F}\f$ of the field.*/
 Element multiplicative_identity ( Element P = Prime ) { return 1; }
 /** Returns the inverse in the field. Modifies P.*/
-Element inverse ( Element x
-                , Element & P ) 
-{ P = 1; return inverse_[ x ]; 
+std::pair<Element,Element> inverse ( Element x
+                                   , Element P ) 
+{ return std::pair<Element,Element>(inverse_[x],P); 
 }  // <------ return the product of field characteristic for which x is invertible
-
-
-
 
 /** Returns -x * y.*/
 Element times_minus ( Element x, Element y ) 
@@ -72,5 +72,6 @@ Element characteristic() { return Prime; }
 private:
 /** Property map Element -> Element, which associate to an element its inverse in the field.*/
 std::vector< Element > inverse_;
-//boost::object_pool< Column_cell > * cell_pool_;
 };
+
+#endif // GUDHI_FIELD_ZP_H

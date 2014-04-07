@@ -21,11 +21,9 @@ include_directories(. utils combinatorics geometry topology
 #add_executable ( TestContraction            test/TestContraction.cxx )
 #add_executable ( TestSimplexTree            test/TestSimplexTree.cpp )
 
-add_executable ( TestPersistentCohomology   Persistent_cohomology/test/TestPersistentCohomology.cpp )
+add_executable ( TestPersistentCohomology   
+                 Persistent_cohomology/test/TestPersistentCohomology.cpp )
 target_link_libraries( TestPersistentCohomology gmpxx )
 
-add_executable( TestSimplexTree Simplex_tree/test/TestSimplexTree.cpp )
-add_executable( TestIo utilities/test/TestIo.cpp )
-
-
-#g++-4.9 -std=c++0x -g -Wpedantic -Wall ../main.cpp;
+#add_executable( TestSimplexTree Simplex_tree/test/TestSimplexTree.cpp )
+#add_executable( TestIo utilities/test/TestIo.cpp )
