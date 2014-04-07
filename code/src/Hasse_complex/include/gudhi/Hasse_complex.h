@@ -12,6 +12,33 @@
 
 #include "boost/iterator/counting_iterator.hpp"
 
+template < class HasseCpx >
+struct Hasse_simplex {
+//Complex_ds must verify that cpx->key(sh) is the order of sh in the filtration
+  template< class Complex_ds >
+  Hasse_simplex ( Complex_ds *                        cpx
+                , typename Complex_ds::Simplex_handle sh )
+  : key_(cpx->key(sh))
+  , filtration_(cpx->filtration(sh))
+  , boundary_()
+  {
+    boundary_.reserve(cpx->dimension(sh)+1);
+    for( auto b_sh : cpx->boundary_simplex_range(sh) )
+    { boundary_.push_back( cpx->key(b_sh) ); }
+  }
+
+  Hasse_simplex ( typename HasseCpx::Simplex_key key
+                , typename HasseCpx::Filtration_value fil
+                , std::vector<typename HasseCpx::Simplex_handle> boundary)
+  : key_(key)
+  , filtration_(fil)
+  , boundary_(boundary) {}
+
+  typename HasseCpx::Simplex_key                 key_;
+  typename HasseCpx::Filtration_value            filtration_;
+  std::vector<typename HasseCpx::Simplex_handle> boundary_;
+};
+
 
 template < typename FiltrationValueType = double
          , typename SimplexKeyType      = int    //must be a signed integer type
@@ -20,26 +47,6 @@ template < typename FiltrationValueType = double
 class Hasse_complex 
 {
 public:
-
-template < class HasseCpx >
-struct Hasse_simplex {
-  //Complex_ds must verify that cpx->key(sh) is the order of sh in the filtration
-    template< class Complex_ds >
-    Hasse_simplex ( Complex_ds *                        cpx
-                  , typename Complex_ds::Simplex_handle sh )
-    : key_(cpx->key(sh))
-    , filtration_(cpx->filtration(sh))
-    , boundary_()
-    {
-      boundary_.reserve(cpx->dimension(sh)+1);
-      for( auto b_sh : cpx->boundary_simplex_range(sh) )
-      { boundary_.push_back( cpx->key(b_sh) ); }
-    }
-
-    typename HasseCpx::Simplex_key                 key_;
-    typename HasseCpx::Filtration_value            filtration_;
-    std::vector<typename HasseCpx::Simplex_handle> boundary_;
-  };
 
   typedef Hasse_simplex<Hasse_complex>         Hasse_simp;
   typedef FiltrationValueType                  Filtration_value;
@@ -79,6 +86,14 @@ struct Hasse_simplex {
       ++idx; 
     }
   }
+
+  Hasse_complex()
+  : complex_()
+  , vertices_()
+  , threshold_(0)
+  , num_vertices_(0)
+  , dim_max_(-1) {}
+
 
   size_t num_simplices() { return complex_.size(); }
 
@@ -125,6 +140,40 @@ struct Hasse_simplex {
   size_t                      num_vertices_;
   int                         dim_max_;
 };
+
+template< typename T1, typename T2, typename T3 >
+std::istream& operator>> ( std::istream                & is 
+                         , Hasse_complex< T1, T2, T3 > & hcpx )
+{
+  assert(hcpx.num_simplices() == 0);
+
+  size_t num_simplices;
+  is >> num_simplices;
+  hcpx.complex_.reserve(num_simplices); 
+
+  std::vector< typename Hasse_complex<T1,T2,T3>::Simplex_key >  boundary;
+  typename Hasse_complex<T1,T2,T3>::Filtration_value            fil;
+  typename Hasse_complex<T1,T2,T3>::Filtration_value            max_fil = 0;
+  int                                                           max_dim = -1;
+  int                                                           key = 0;
+  while(read_hasse_simplex( is, boundary, fil )) //read all simplices in the file as a list of vertices
+  {
+    if(max_dim < boundary.size()-1) { max_dim = boundary.size()-1; }
+    if(max_fil < fil)               { max_fil = fil; }
+    
+    hcpx.complex_.push_back( Hasse_simplex< Hasse_complex<T1,T2,T3> >(key,fil,boundary));//insert every simplex in the simplex tree
+    ++key;
+    boundary.clear();
+  }
+  // st.set_num_simplices(num_simplices);
+  // st.set_dimension(max_dim);
+  // st.set_filtration(max_fil);
+
+  hcpx.dim_max_ = max_dim;
+  hcpx.threshold_ = max_fil;
+
+  return is;
+}
 
 #endif // GUDHI_HASSE_DIAGRAM_H
 

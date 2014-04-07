@@ -9,7 +9,7 @@
 
 #include <iostream>
 #include <ctime>
-#include "utils/iofile.h"
+#include "io.h"
 #include "Nearest_neighbors.h"
 #include "Simplex_tree.h"
 
@@ -110,45 +110,6 @@ bool test_simplex_tree_iterators ( std::string filegraph
   return true;
 }
 
-bool test_simplex_tree_to_file( std::string filegraph
-                              , double threshold
-                              , int max_dim
-                              , std::string filecomplex)
-{
-  auto g = read_graph(filegraph); 
-  Simplex_tree<> st;
-  st.insert_graph (g); //insert the graph in the simplex tree as 1-skeleton
-  st.expansion ( max_dim ); //expand the 1-skeleton until dimension max_dim
-  
-  std::ofstream out_ (filecomplex.c_str(), std::ios::trunc);
-  for(auto sh : st.complex_simplex_range())
-  {
-    out_ << st.dimension(sh) << " ";
-    for(auto v : st.simplex_vertex_range(sh))
-      { out_ << v << " ";}
-    out_ << st.filtration(sh) << " \n";
-  }
-  return true;
-}
-
-bool test_file_to_simplex_tree(std::string filecomplex)
-{
-  std::ifstream in_ (filecomplex.c_str(),std::ios::in);
-  if(!in_.is_open()) { std::cerr << "Unable to open file " << filecomplex << std::endl; }
-
-  std::vector<Vertex_handle> simplex;
-  Filtration_value           fil;
-  Simplex_tree<>             st;
-
-  while(read_simplex(in_,simplex,fil)) //read all simplices in the file as a list of vertices
-  {
-    st.insert(simplex,fil); //insert every simplex in the simplex tree
-    simplex.clear();
-  }
-  in_.close();  
-  return true;
-}
-
 int main (int argc, char * const argv[]) 
 {
   if (argc != 6) {
@@ -163,14 +124,8 @@ int main (int argc, char * const argv[])
   int dim_expansion       = atoi(argv[5]);
 
   compute_rips_graph(filepoints,filegraph,threshold);
-
   test_flag_complex_construction(filegraph,threshold,dim_expansion);
-
   test_simplex_tree_iterators(filegraph,threshold,dim_expansion);
-
-  test_simplex_tree_to_file(filegraph,threshold,dim_expansion,filecomplex);
-
-  test_file_to_simplex_tree(filecomplex);
 
   return 0;
 }

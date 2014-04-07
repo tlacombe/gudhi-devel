@@ -1,3 +1,16 @@
+/*
+ *  io.h
+ *  Gudhi
+ *
+ *  Created by Clément Maria on 1/7/14.
+ *  Copyright 2014 INRIA. All rights reserved.
+ *
+ */
+
+#ifndef GUDHI_IO_H
+#define GUDHI_IO_H
+
+
 #include <iostream>
 #include <fstream>
 #include <boost/graph/adjacency_list.hpp>
@@ -88,6 +101,7 @@ read_graph ( std::string file_name )
     }
   }
   in_.close();
+
   if(max_h+1 != vertices.size()) 
     { std::cerr << "Error: vertices must be labeled from 0 to n-1 \n"; }
 
@@ -121,12 +135,40 @@ bool read_simplex ( std::istream                 & in_
                   , Filtration_value             & fil )
 {
   int dim;
-  in_ >> dim;
+  if(!(in_ >> dim)) return false;
   Vertex_handle v;
   for(int i=0; i<dim+1; ++i) 
-  {
-    if(!(in_ >> v)) { return false; } 
-    simplex.push_back(v); 
-  }
+  { in_ >> v; simplex.push_back(v); }
+  in_ >> fil;
   return true;
 }
+
+/**
+ * \brief Read a hasse simplex from a file.
+ *
+ * File format: 1 simplex per line
+ * Dim1 k11 k12 ... k1Dim1 Fil1 
+ * Dim2 k21 k22 ... k2Dim2 Fil2
+ * etc
+ *
+ * The key of a simplex is its position in the filtration order
+ * and also the number of its row in the file.
+ * Dimi ki1 ki2 ... kiDimi Fili means that the ith simplex in the 
+ * filtration has dimension Dimi, filtration value fil1 and simplices with 
+ * key ki1 ... kiDimi in its boundary.*/
+template< typename Simplex_key
+        , typename Filtration_value >
+bool read_hasse_simplex ( std::istream           & in_  
+                  , std::vector< Simplex_key >   & boundary
+                  , Filtration_value             & fil )
+{
+  int dim;
+  if(!(in_ >> dim)) return false;
+  Simplex_key key;
+  for(int i=0; i<dim+1; ++i) 
+  { in_ >> key; boundary.push_back(key); }
+  in_ >> fil;
+  return true;
+}
+
+#endif // GUDHI_IO_H
