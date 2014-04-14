@@ -22,7 +22,7 @@ class Skeleton_blocker_geometric_complex : public Skeleton_blocker_simplifiable_
 {
 public:
 
-	typedef typename SkeletonBlockerGeometricDS::GeometryTrait GeometryTrait;
+	typedef typename SkeletonBlockerGeometricDS::GT GT;
 
 	typedef Skeleton_blocker_simplifiable_complex<SkeletonBlockerGeometricDS> SimplifiableSkeletonblocker;
 

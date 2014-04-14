@@ -74,11 +74,12 @@ struct Skeleton_blocker_simple_traits{
 	};
 
 
-	class Simple_vertex {
+
+	class Graph_vertex {
 		bool is_active_;
 		Root_vertex_handle id_;
 	public:
-		virtual ~Simple_vertex(){}
+		virtual ~Graph_vertex(){}
 
 		void activate(){is_active_=true;}
 		void deactivate(){is_active_=false;}
@@ -92,20 +93,19 @@ struct Skeleton_blocker_simple_traits{
 			return res.str();
 		}
 
-		friend std::ostream& operator << (std::ostream& o, const Simple_vertex & v){
+		friend std::ostream& operator << (std::ostream& o, const Graph_vertex & v){
 			o << v.to_string();
 			return o;
 		}
 	};
-	typedef Simple_vertex Graph_vertex;
 
-	class Simple_edge {
+	class Graph_edge {
 		Root_vertex_handle a_;
 		Root_vertex_handle b_;
 		int index_;
 	public:
 
-		Simple_edge():a_(-1),b_(-1),index_(-1){}
+		Graph_edge():a_(-1),b_(-1),index_(-1){}
 
 		int& index(){return index_;}
 		int index() const {return index_;}
@@ -123,16 +123,12 @@ struct Skeleton_blocker_simple_traits{
 			return b_;
 		}
 
-		friend std::ostream& operator << (std::ostream& o, const Simple_edge & v){
+		friend std::ostream& operator << (std::ostream& o, const Graph_edge & v){
 			o << "("<<v.a_<<","<<v.b_<<" - id = "<<v.index();
 			return o;
 		}
 	};
 
-	typedef Simple_edge Graph_edge;
-
-	typedef Skeleton_blocker_simplex<Vertex_handle> Simplex_handle;
-	typedef Skeleton_blocker_simplex<Root_vertex_handle> Root_simplex_handle;
 };
 
 

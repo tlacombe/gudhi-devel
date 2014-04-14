@@ -61,12 +61,16 @@ public:
 	typedef typename SkeletonBlockerDS::Root_vertex_handle Root_vertex_handle;
 	typedef typename SkeletonBlockerDS::Vertex_handle Vertex_handle;
 	typedef typename Root_vertex_handle::boost_vertex_handle boost_vertex_handle;
-	typedef typename SkeletonBlockerDS::Simplex_handle Simplex_handle;
+
+
+	typedef Skeleton_blocker_simplex<Vertex_handle> Simplex_handle;
+	typedef Skeleton_blocker_simplex<Root_vertex_handle> Root_simplex_handle;
+
+
 	typedef Simplex_handle* Blocker_handle;
 
 
 
-	typedef typename SkeletonBlockerDS::Root_simplex_handle Root_simplex_handle;
 	typedef typename Root_simplex_handle::Simplex_vertex_const_iterator Root_simplex_iterator;
 	typedef typename Simplex_handle::Simplex_vertex_const_iterator Simplex_handle_iterator;
 
@@ -120,7 +124,7 @@ protected:
 
 
 	/** Each vertex can access to the blockers passing through it. */
-	BlockerMap blocker_map;
+	BlockerMap blocker_map_;
 
 
 
@@ -145,15 +149,8 @@ public:
 		degree_ = copy.degree_;
 		skeleton = Graph(copy.skeleton);
 		// we copy the blockers
-		if (!copy.blocker_map.empty()){
-			/*
-			 * TODO faire un itérateur sur tous les blockeurs du complexes
-			 */
-			for (BlockerMapConstIterator dp=copy.blocker_map.begin(); dp!=copy.blocker_map.end(); ++dp){
-				if ( (*dp).first == ( (*dp).second )->first_vertex() ){
-					add_blocker(*(*dp).second);
-				}
-			}
+		for (auto blocker : copy.const_blocker_range()){
+			add_blocker(*blocker);
 		}
 	}
 
@@ -164,13 +161,8 @@ public:
 		degree_ = copy.degree_;
 		skeleton = Graph(copy.skeleton);
 		// we copy the blockers
-		if (!copy.blocker_map.empty()){
-			for (BlockerMapConstIterator dp=copy.blocker_map.begin(); dp!=copy.blocker_map.end(); ++dp){
-				if ( (*dp).first == ( (*dp).second )->first_vertex() ){
-					Blocker_handle sigma = new Simplex_handle(*((*dp).second));
-					add_blocker(sigma);
-				}
-			}
+		for (auto blocker : copy.const_blocker_range()){
+			add_blocker(*blocker);
 		}
 		return *this;
 	}
@@ -197,12 +189,12 @@ public:
 		num_vertices_ =0;
 
 		// Desallocate the blockers
-		while (!blocker_map.empty()){
-			delete_blocker(blocker_map.begin()->second);
+		while (!blocker_map_.empty()){
+			delete_blocker(blocker_map_.begin()->second);
 		}
 		num_blockers_ = 0;
 
-		blocker_map.clear();
+		blocker_map_.clear();
 		skeleton.clear();
 	}
 
@@ -481,7 +473,7 @@ public:
 			auto vertex = blocker_pt->begin();
 			while(vertex != blocker_pt->end())
 			{
-				blocker_map.insert(BlockerPair(*vertex,blocker_pt));
+				blocker_map_.insert(BlockerPair(*vertex,blocker_pt));
 				++vertex;
 			}
 			return blocker_pt;
@@ -504,7 +496,7 @@ protected:
 			auto vertex = blocker->begin();
 			while(vertex != blocker->end())
 			{
-				blocker_map.insert(BlockerPair(*vertex,blocker));
+				blocker_map_.insert(BlockerPair(*vertex,blocker));
 				++vertex;
 			}
 		}
@@ -528,14 +520,14 @@ protected:
 			assert(false);
 		}
 		else{
-			blocker_map.erase(blocker.current_position);
+			blocker_map_.erase(blocker.current_position);
 		}
 	}
 
 public:
 	/**
-	 * Removes the simplex s from the set of blockers.
-	 * s has to belongs to the set of blockers
+	 * Removes the simplex sigma from the set of blockers.
+	 * sigma has to belongs to the set of blockers
 	 */
 	void remove_blocker(const Blocker_handle sigma){
 		for (auto vertex : *sigma){
@@ -544,6 +536,19 @@ public:
 		num_blockers_--;
 	}
 
+
+	/**
+	 * Removes the simplex sigma from the set of blockers.
+	 * sigma has to belongs to the set of blockers
+	 */
+	void remove_blocker(const Simplex_handle& sigma){
+		assert(contains_blocker(sigma));
+		for (auto vertex : sigma)
+			remove_blocker(sigma,vertex);
+		num_blockers_--;
+	}
+
+protected:
 	/**
 	 * Removes the simplex s from the set of blockers
 	 * and desallocate s.
@@ -554,6 +559,7 @@ public:
 		delete sigma;
 	}
 
+public:
 	/**
 	 * @return true iff s is a blocker of the simplicial complex
 	 */
@@ -784,30 +790,24 @@ public:
 
 	/**
 	 * @brief %Test if the complex is a cone.
-	 * @details Runs in O(n) if n is the number of vertices.
+	 * @details Runs in O(n) where n is the number of vertices.
 	 */
 	bool is_cone() const{
 		if (num_vertices()==0) return false;
 		if (num_vertices()==1) return true;
-		std::pair<boost_vertex_iterator, boost_vertex_iterator> vp;
-		for (vp = vertices(skeleton); vp.first != vp.second; ++vp.first)
-			if ((skeleton[*vp.first]).is_active()){
-				Vertex_handle v(*vp.first);
-				// we check if the current vertex belongs to a blocker
-				if (blocker_map.find(v)==blocker_map.end()){
-					//				if (out_degree(v, skeleton) == num_vertices() -1)
-					if (degree_[v.vertex] == num_vertices() -1)
-
-						// we check if the current vertex is linked to all others vertices of the complex
-						return true;
-				}
+		for(auto vi :  vertex_range()){
+			//xxx todo faire une methode bool is_in_blocker(Vertex_handle)
+			if (blocker_map_.find(vi)==blocker_map_.end()){
+				// no blocker passes through the vertex, we just need to
+				// check if the current vertex is linked to all others vertices of the complex
+				if (degree_[vi.vertex] == num_vertices()-1)
+					return true;
 			}
+		}
 		return false;
 	}
 
 	//@}
-
-
 
 
 	/////////////////////////////////////////////////////////////////////////////
@@ -966,10 +966,10 @@ public:
 		Complex_blocker_around_vertex_range(Skeleton_blocker_complex&  complex,Vertex_handle v):v_(v),complex_(complex){}
 
 		Complex_blocker_around_vertex_iterator begin() {
-			return Complex_blocker_around_vertex_iterator(complex_.blocker_map.lower_bound(v_));
+			return Complex_blocker_around_vertex_iterator(complex_.blocker_map_.lower_bound(v_));
 		}
 		Complex_blocker_around_vertex_iterator end() {
-			return Complex_blocker_around_vertex_iterator(complex_.blocker_map.upper_bound(v_));
+			return Complex_blocker_around_vertex_iterator(complex_.blocker_map_.upper_bound(v_));
 		}
 	};
 
@@ -985,10 +985,10 @@ public:
 		Const_complex_blocker_around_vertex_range(const Skeleton_blocker_complex&  complex,Vertex_handle v):v_(v),complex_(complex){}
 
 		Const_complex_blocker_around_vertex_iterator begin() const{
-			return Const_complex_blocker_around_vertex_iterator(complex_.blocker_map.lower_bound(v_));
+			return Const_complex_blocker_around_vertex_iterator(complex_.blocker_map_.lower_bound(v_));
 		}
 		Const_complex_blocker_around_vertex_iterator end() const{
-			return Const_complex_blocker_around_vertex_iterator(complex_.blocker_map.upper_bound(v_));
+			return Const_complex_blocker_around_vertex_iterator(complex_.blocker_map_.upper_bound(v_));
 		}
 	};
 
@@ -1039,10 +1039,10 @@ public:
 		Complex_blocker_range(Skeleton_blocker_complex&  complex):complex_(complex){}
 
 		Complex_blocker_iterator begin() {
-			return Complex_blocker_iterator(complex_.blocker_map.begin() , complex_.blocker_map.end());
+			return Complex_blocker_iterator(complex_.blocker_map_.begin() , complex_.blocker_map_.end());
 		}
 		Complex_blocker_iterator end() {
-			return Complex_blocker_iterator(complex_.blocker_map.end() , complex_.blocker_map.end());
+			return Complex_blocker_iterator(complex_.blocker_map_.end() , complex_.blocker_map_.end());
 		}
 	};
 
@@ -1057,10 +1057,10 @@ public:
 		Const_complex_blocker_range(const Skeleton_blocker_complex&  complex):complex_(complex){}
 
 		Const_complex_blocker_iterator begin() const{
-			return Const_complex_blocker_iterator(complex_.blocker_map.begin() , complex_.blocker_map.end() );
+			return Const_complex_blocker_iterator(complex_.blocker_map_.begin() , complex_.blocker_map_.end() );
 		}
 		Const_complex_blocker_iterator end() const{
-			return Const_complex_blocker_iterator(complex_.blocker_map.end() , complex_.blocker_map.end() );
+			return Const_complex_blocker_iterator(complex_.blocker_map_.end() , complex_.blocker_map_.end() );
 		}
 	};
 
@@ -1115,7 +1115,7 @@ public:
 
 	std::string blockers_to_string() const{
 		std::ostringstream stream;
-		for (auto bl:blocker_map){
+		for (auto bl:blocker_map_){
 			stream << bl.first << " => " << bl.second << ":"<<*bl.second <<"\n";
 		}
 		return stream.str();

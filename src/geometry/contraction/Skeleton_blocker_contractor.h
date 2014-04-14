@@ -213,12 +213,12 @@ private:
 	}
 
 	boost::optional<edge_descriptor> pop_from_PQ()	{
-		boost::optional<edge_descriptor> rEdge = heap_PQ_->extract_top();
-		if ( rEdge )
+		boost::optional<edge_descriptor> edge = heap_PQ_->extract_top();
+		if ( edge )
 		{
-			get_data(*rEdge).reset_PQ_handle();
+			get_data(*edge).reset_PQ_handle();
 		}
-		return rEdge ;
+		return edge ;
 	}
 
 
@@ -238,13 +238,13 @@ private:
 		//
 		// Loop over all the edges in the complex in the heap
 		//
-		size_type lSize = complex_.num_edges();
+		size_type size = complex_.num_edges();
 		std::cerr  << "Collecting edges ..."<<std::endl;
-		std::cerr  << lSize<<" edges "<<std::endl;
+		std::cerr  << size<<" edges "<<std::endl;
 
-		edge_data_array_.reset( new Edge_data[lSize] ) ;
+		edge_data_array_.reset( new Edge_data[size] ) ;
 
-		heap_PQ_.reset( new PQ (lSize, Compare_cost(this), Undirected_edge_id(this) ) ) ;
+		heap_PQ_.reset( new PQ (size, Compare_cost(this), Undirected_edge_id(this) ) ) ;
 
 
 		std::size_t id = 0 ;
@@ -256,12 +256,12 @@ private:
 		){
 			edge_descriptor edge = *edge_it;
 			complex_[edge].index() = id++;
-			Profile const& lProfile = create_profile(edge);
+			Profile const& profile = create_profile(edge);
 			Edge_data& data = get_data(edge);
-			data.cost() = get_cost(lProfile) ;
+			data.cost() = get_cost(profile) ;
 			++initial_num_edges_heap_;
 			insert_in_PQ(edge,data);
-			contraction_visitor_->on_collected(lProfile,data.cost());
+			contraction_visitor_->on_collected(profile,data.cost());
 
 		}
 	}
@@ -290,8 +290,7 @@ public:
 	 */
 	void contract_edges(int num_max_contractions=-1){
 
-		DBG("Contract edges");
-		DBGVALUE(complex_.num_vertices());
+		DBG("\n\nContract edges");
 		int num_contraction = 0 ;
 
 		bool unspecified_num_contractions = (num_max_contractions == -1);
@@ -302,14 +301,13 @@ public:
 		while ( (edge = pop_from_PQ())&& ((num_contraction<num_max_contractions)||(unspecified_num_contractions)))
 		{
 			Profile const& profile = create_profile(*edge);
-			Cost_type cost = get_data(*edge).cost();
+			Cost_type cost(get_data(*edge).cost());
 			contraction_visitor_->on_selected(profile,cost,0,0);
 
 			DBGMSG("\n\n---- Pop edge - num vertices :",complex_.num_vertices());
 
-			if (cost)
-			{
-				DBGMSG("lCost",*cost);
+			if (cost){
+				DBGMSG("sqrt(cost):",std::sqrt(*cost));
 				if (should_stop(*cost,profile) )
 				{
 					contraction_visitor_->on_stop_condition_reached(profile);
@@ -320,10 +318,6 @@ public:
 				if ( is_contraction_valid(profile,placement) && placement )
 				{
 					DBG("contraction_valid");
-					// The external function Get_new_vertex_point() is allowed to return
-					// an absent point if there is no way to place the vertex
-					// satisfying its constrians.
-					// In that case the remaining vertex is simply left unmoved.
 					contract_edge(profile,placement);
 					++ num_contraction;
 				}
@@ -407,6 +401,8 @@ public:
 private:
 	void contract_edge(const Profile& profile, Placement_type placement ) {
 		contraction_visitor_->on_contracting(profile,placement);
+
+		assert(placement);
 
 		profile.complex().point(profile.v0_handle()) = *placement;
 		profile.complex().point(profile.v1_handle()) = *placement; // remark optional since v1 would deactivated

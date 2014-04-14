@@ -20,7 +20,7 @@
  * - void add_face(int dimension ,int[dimension] vertices)
  * Source from : http://www.holmes3d.net/graphics/offfiles/OFFLoading.txt
  *
- * @todo todo adapt for points of arbitrary dimensions
+ * @todo todo ignore comments in the file -> # comment
  */
 template<typename Complex> inline
 bool general_read_off_file(const std::string & file_name, Complex& complex){
@@ -99,16 +99,13 @@ bool general_read_off_file(const std::string & file_name, Complex& complex){
     // the case is difference because then we dont know the dimension by advance
     // we discover the point dimension by reading the first line
     std::string lineFirstPoint;
-    std::getline(ifs, lineFirstPoint);
-    assert(lineFirstPoint.empty());
-//    xxx do sthing else, incompatible with clang compil
-//    goodLoad =
-    std::getline(ifs, lineFirstPoint);
-//    if(!goodLoad)
-//      std::cerr<<"Cant read the first point\n";
-    std::istringstream lineFirstPointStream(lineFirstPoint);
+	std::getline(ifs, lineFirstPoint);
+    while(lineFirstPoint.size()<3){
+    	std::getline(ifs, lineFirstPoint);
+    }
 
     // we store the first point in a temporary list
+    std::istringstream lineFirstPointStream(lineFirstPoint);
     std::list<double> firstTempPoint;
     double coord;
     while(lineFirstPointStream>>coord){
