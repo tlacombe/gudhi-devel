@@ -24,40 +24,36 @@ typedef typename Complex::Root_vertex_handle Root_vertex_handle;
 typedef typename Complex::Simplex_handle Simplex_handle;
 typedef typename Complex::Root_simplex_handle Root_simplex_handle;
 typedef Simplex_handle::Simplex_vertex_const_iterator Simplex_vertex_const_iterator;
-typedef Complex::Const_complex_blocker_around_vertex_iterator ConstBlockerIterator;
-typedef Complex::Complex_vertex_range VertexRange;
-typedef Complex::Complex_vertex_iterator VertexIterator;
-typedef Complex::Complex_edge_range EdgeRange;
-typedef Complex::Complex_edge_iterator EdgeIterator;
+typedef Complex::Const_complex_blocker_around_vertex_iterator Const_blocker_iterator;
 typedef Complex::Edge_handle Edge_handle;
 
-// true iff v \in K
-bool assert_vertex(Complex &K,Vertex_handle v){
-	//assert(K.contains(v));
-	return K.contains(v);
+// true iff v \in complex
+bool assert_vertex(Complex &complex,Vertex_handle v){
+	//assert(complex.contains(v));
+	return complex.contains(v);
 }
 
-bool assert_simplex(Complex &K,Root_vertex_handle a,Root_vertex_handle b,Root_vertex_handle c){
+bool assert_simplex(Complex &complex,Root_vertex_handle a,Root_vertex_handle b,Root_vertex_handle c){
 	return true;
 //	AddressSimplex simplex((a),(b),(c));
-//	return K.contains(&simplex);
+//	return complex.contains(&simplex);
 }
 
-// true iff the blocker (a,b,c) is in K
-bool assert_blocker(Complex &K,Root_vertex_handle a,Root_vertex_handle b,Root_vertex_handle c){
+// true iff the blocker (a,b,c) is in complex
+bool assert_blocker(Complex &complex,Root_vertex_handle a,Root_vertex_handle b,Root_vertex_handle c){
 	return true;
-	//return K.contains_blocker((a),(b),(c));
+	//return complex.contains_blocker((a),(b),(c));
 }
 
-// true iff the blocker (a,b,c,d) is in K
-bool assert_blocker(Complex &K,Root_vertex_handle a,Root_vertex_handle b,Root_vertex_handle c,Root_vertex_handle d){
+// true iff the blocker (a,b,c,d) is in complex
+bool assert_blocker(Complex &complex,Root_vertex_handle a,Root_vertex_handle b,Root_vertex_handle c,Root_vertex_handle d){
 	return true;
 	//Simplex blocker (a,b,c,d);
-	//return K.contains_blocker(&blocker);
+	//return complex.contains_blocker(&blocker);
 }
 
 
-void buildComplete(int n,Complex& complex){
+void build_complete(int n,Complex& complex){
 	complex.clear();
 	for(int i=0;i<n;i++)
 		complex.add_vertex();
@@ -97,7 +93,6 @@ bool test_iterator_vertices(){
 
 
 bool test_iterator_edge(){
-	EdgeIterator edge_it;
 	const int n = 10;
 	Complex complex(n);
 	for(int i=0;i<n;i++)
@@ -107,14 +102,9 @@ bool test_iterator_edge(){
 	complex.remove_edge(Vertex_handle(3),Vertex_handle(5));
 	cerr << "complex.num_edges():"<<complex.num_edges()<<endl;
 	int num_edges_seen = 0;
-	for(
-			edge_it = complex.edge_range().begin();
-			edge_it != complex.edge_range().end();
-			++edge_it,++num_edges_seen
-	){
-		Edge_handle edge = *edge_it;
-		int id = complex[edge].index();
-		cerr << "edge_it :"<<complex[edge]<<" -- id="<<id<<endl;
+	for(auto edge : complex.edge_range()){
+		cerr << "edge :"<<complex[edge]<<endl;
+		++num_edges_seen;
 	}
 
 	return num_edges_seen == n*(n-1)/2-2;
@@ -166,8 +156,6 @@ bool test_iterator_triangles(){
 		++num_triangles_seen;
 	}
 	test = test&&(num_triangles_seen==0);
-
-	assert(test);
 
 	// we now add another triangle
 	complex.add_vertex();
@@ -234,10 +222,10 @@ bool test_iterator_blockers(){
 bool test_link0(){
 
 	enum { a, b, c, d, n };
-	Complex K(n);
-	K.add_edge(Vertex_handle(b),Vertex_handle(c));K.add_edge(Vertex_handle(c),Vertex_handle(d));
+	Complex complex(n);
+	complex.add_edge(Vertex_handle(b),Vertex_handle(c));complex.add_edge(Vertex_handle(c),Vertex_handle(d));
 	Simplex_handle alpha = Simplex_handle(Vertex_handle(c));
-	Skeleton_blocker_link_complex<Complex> L(K,alpha);
+	Skeleton_blocker_link_complex<Complex> L(complex,alpha);
 	PRINT(L.num_vertices());
 	PRINT(L.to_string());
 
@@ -250,19 +238,19 @@ bool test_link0(){
 }
 
 bool test_link1(){
-	Complex K;
+	Complex complex;
 
 
 	// Build the complexes
 	for (int i=0;i<20;i++){
-		K.add_vertex();
+		complex.add_vertex();
 	}
 	for (int i=10;i<15;i++){
 		for (int j=i+1;j<15;j++)
-			K.add_edge(Vertex_handle(i),Vertex_handle(j));
+			complex.add_edge(Vertex_handle(i),Vertex_handle(j));
 	}
 	Simplex_handle alpha(Vertex_handle(12),Vertex_handle(14));
-	Skeleton_blocker_link_complex<Complex> L(K,alpha);
+	Skeleton_blocker_link_complex<Complex> L(complex,alpha);
 	// Complexes built
 
 	// verification
@@ -277,34 +265,34 @@ bool test_link1(){
 	simplex.add_vertex(Root_vertex_handle(13));
 	bool test6 = L.get_simplex_address(simplex);
 	bool test7 = L.contains(*(L.get_simplex_address(simplex)));
-	cerr <<"----> OK \n";
+	cerr <<"----> Ocomplex \n";
 	return test1&&test2&&test3&&test4&&test5&&test6&&test7 ;
 
 }
 
 
 bool test_link2(){
-	Complex K;
+	Complex complex;
 
 	Simplex_handle alpha;
 	Simplex_handle vertex_set_expected;
 	// Build the complexes
 	for (int i=0;i<20;i++){
-		K.add_vertex();
+		complex.add_vertex();
 	}
 	for (int i=10;i<15;i++){
 		for (int j=i+1;j<15;j++)
-			K.add_edge(Vertex_handle(i),Vertex_handle(j));
+			complex.add_edge(Vertex_handle(i),Vertex_handle(j));
 	}
-	K.add_blocker(Vertex_handle(10),Vertex_handle(11),Vertex_handle(13));
+	complex.add_blocker(Vertex_handle(10),Vertex_handle(11),Vertex_handle(13));
 	alpha = Simplex_handle(Vertex_handle(12),Vertex_handle(14));
-	Skeleton_blocker_link_complex<Complex> L(K,alpha);
+	Skeleton_blocker_link_complex<Complex> L(complex,alpha);
 	// Complexes built
 
 	// Print result
-	cerr << "complex K"<< K.to_string();
+	cerr << "complex complex"<< complex.to_string();
 	cerr <<endl<<endl;
-	cerr << "L= Link_K("<<alpha<<") : \n"<<L.to_string();
+	cerr << "L= Link_complex("<<alpha<<") : \n"<<L.to_string();
 
 	// verification
 	bool test1 = L.contains_vertex(*L.get_address(Root_vertex_handle(10)));
@@ -317,32 +305,32 @@ bool test_link2(){
 	simplex.add_vertex(Root_vertex_handle(11));
 	simplex.add_vertex(Root_vertex_handle(13));
 	bool test6 = L.contains_blocker(*(L.get_simplex_address(simplex)));
-	cerr <<"----> OK \n";
+	cerr <<"----> Ocomplex \n";
 	return test1&&test2&&test3&&test4&&test5&&test6 ;
 }
 
 bool test_link3(){
-	Complex K;
+	Complex complex;
 
 	Simplex_handle alpha;
 	Simplex_handle vertex_set_expected;
 	// Build the complexes
 	for (int i=0;i<20;i++){
-		K.add_vertex();
+		complex.add_vertex();
 	}
 	for (int i=10;i<15;i++){
 		for (int j=i+1;j<15;j++)
-			K.add_edge(Vertex_handle(i),Vertex_handle(j));
+			complex.add_edge(Vertex_handle(i),Vertex_handle(j));
 	}
-	K.add_blocker(Vertex_handle(10),Vertex_handle(11),Vertex_handle(12));
+	complex.add_blocker(Vertex_handle(10),Vertex_handle(11),Vertex_handle(12));
 	alpha = Simplex_handle(Vertex_handle(12),Vertex_handle(14));
-	Skeleton_blocker_link_complex<Complex> L(K,alpha);
+	Skeleton_blocker_link_complex<Complex> L(complex,alpha);
 	// Complexes built
 
 	// Print result
-	cerr << "complex K"<< K.to_string();
+	cerr << "complex complex"<< complex.to_string();
 	cerr <<endl<<endl;
-	cerr << "L= Link_K("<<alpha<<") : \n"<<L.to_string();
+	cerr << "L= Link_complex("<<alpha<<") : \n"<<L.to_string();
 
 	// verification
 	bool test = assert_vertex(L,*L.get_address(Root_vertex_handle(10)));
@@ -356,20 +344,19 @@ bool test_link3(){
 }
 
 bool test_link4(){
-	Complex K;
-
+	Complex complex;
 
 	// Build the complexes
 	for (int i=0;i<20;i++){
-		K.add_vertex();
+		complex.add_vertex();
 	}
 	for (int i=10;i<15;i++){
 		for (int j=i+1;j<15;j++)
-			K.add_edge(Vertex_handle(i),Vertex_handle(j));
+			complex.add_edge(Vertex_handle(i),Vertex_handle(j));
 	}
-	K.add_blocker(Vertex_handle(10),Vertex_handle(11),Vertex_handle(12),Vertex_handle(13));
+	complex.add_blocker(Vertex_handle(10),Vertex_handle(11),Vertex_handle(12),Vertex_handle(13));
 	Simplex_handle alpha(Vertex_handle(12),Vertex_handle(14));
-	Skeleton_blocker_link_complex<Complex> L(K,alpha);
+	Skeleton_blocker_link_complex<Complex> L(complex,alpha);
 	// Complexes built
 
 	// verification
@@ -383,24 +370,24 @@ bool test_link4(){
 	simplex.add_vertex(Root_vertex_handle(11));
 	simplex.add_vertex(Root_vertex_handle(13));
 	bool test6 = L.contains_blocker(*(L.get_simplex_address(simplex)));
-	cerr <<"----> OK \n";
+	cerr <<"----> Ocomplex \n";
 	return test1&&test2&&test3&&test4&&test5&&test6 ;
 
 }
 
 bool test_link5(){
-	Complex K(0,new Print_complex_visitor<Vertex_handle>());
+	Complex complex(0,new Print_complex_visitor<Vertex_handle>());
 	// Build the complexes
-	buildComplete(4,K);
-	K.add_blocker(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2),Vertex_handle(3));
+	build_complete(4,complex);
+	complex.add_blocker(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2),Vertex_handle(3));
 
 	Simplex_handle alpha(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2));
 
 
-	Skeleton_blocker_link_complex<Complex> L(K,alpha);	// Complexes built
+	Skeleton_blocker_link_complex<Complex> L(complex,alpha);	// Complexes built
 
 	// Print result
-	PRINT(K.to_string());
+	PRINT(complex.to_string());
 	cerr <<endl<<endl;
 	PRINT(L.to_string());
 
@@ -427,8 +414,9 @@ int main (int argc, char *argv[])
 	tests_complex.add("test iterator blockers",test_iterator_blockers);
 	tests_complex.add("test_iterator_triangles",test_iterator_triangles);
 
-	tests_complex.run();
-
-	return 0;
+	if(tests_complex.run())
+		return EXIT_SUCCESS;
+	else
+		return EXIT_FAILURE;
 }
 

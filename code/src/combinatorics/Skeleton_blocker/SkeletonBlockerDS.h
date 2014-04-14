@@ -91,14 +91,6 @@ struct SkeletonBlockerDS
 	 */
 	struct Graph_edge{
 		/**
-		 * @brief Allows to modify the index of the edge.
-		 * The indices of the edge are used to store heap information
-		 * in the edge contraction algorithm.
-		 */
-		int& index();
-		int index() const;
-
-		/**
 		 * @brief Allows to modify vertices of the edge.
 		 */
 		void setId(Root_vertex_handle a,Root_vertex_handle b);
@@ -116,16 +108,6 @@ struct SkeletonBlockerDS
 		friend ostream& operator << (ostream& o, const Simple_edge & v);
 	};
 
-
-	/**
-	 * @brief A set of vertices that represents a simplex in the current complex.
-	 */
-	typedef unspecified Simplex_handle;
-
-	/**
-	 * @brief A set of vertices that represents a simplex in the parent complex.
-	 */
-	typedef unspecified Root_simplex_handle;
 
 };
 

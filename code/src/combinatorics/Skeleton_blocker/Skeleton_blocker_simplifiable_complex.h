@@ -183,13 +183,13 @@ public:
 	}
 
 
-
-
 	/**
 	 * Remove the star of the edge 'e'.
-	 * @return true if the set of blockers has changed during contraction.
+	 * @returns the number of blocker that have been removed
 	 */
-	bool remove_star(Edge_handle & e);
+	int remove_star(Edge_handle & e){
+		return remove_star(this->first_vertex(e),this->second_vertex(e));
+	}
 
 	/**
 	 * Remove the star of the simplex 'sigma' which needs to belong to the complex
@@ -207,7 +207,7 @@ public:
 		}
 	}
 
-	enum contractible_status{ NOT_CONTRACTIBLE,MAYBE_CONTRACTIBLE,CONTRACTIBLE, };
+	enum contractible_status{ NOT_CONTRACTIBLE,MAYBE_CONTRACTIBLE,CONTRACTIBLE};
 	/**
 	 * @brief %Test if the complex is reducible using a strategy defined in the class
 	 * (by default it tests if the complex is a cone)
@@ -319,13 +319,24 @@ private:
 	}
 
 public:
+
+	/**
+	 * Contracts the edge.
+	 * @remark If the link condition Link(ab) = Link(a) inter Link(b) is not satisfied,
+	 * it removes first all blockers passing through 'ab'
+	 */
+	void contract_edge(Edge_handle edge){
+		contract_edge(this->first_vertex(edge),this->second_vertex(edge));
+	}
+
+
 	/**
 	 * Contracts the edge connecting vertices a and b.
-	 * @return true if the set of blockers has changed during contraction.
 	 * @remark If the link condition Link(ab) = Link(a) inter Link(b) is not satisfied,
 	 * it removes first all blockers passing through 'ab'
 	 */
 	void contract_edge(Vertex_handle a, Vertex_handle b){
+		assert(this->contains_edge(a,b));
 		if (a.vertex>b.vertex) std::swap(a,b);
 
 		// if some blockers passes through 'ab', we remove them.

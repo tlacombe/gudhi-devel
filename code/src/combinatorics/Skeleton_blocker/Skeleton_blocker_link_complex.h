@@ -65,6 +65,13 @@ public:
 		build_link(parent_complex,alpha_simplex);
 	}
 
+
+	Skeleton_blocker_link_complex(const ComplexType & parent_complex, Edge_handle edge, bool only_superior_vertices = false)
+	:only_superior_vertices_(only_superior_vertices){
+		Simplex_handle alpha_simplex(parent_complex.first_vertex(edge),parent_complex.second_vertex(edge));
+		build_link(parent_complex,alpha_simplex);
+	}
+
 	~Skeleton_blocker_link_complex(){
 	}
 

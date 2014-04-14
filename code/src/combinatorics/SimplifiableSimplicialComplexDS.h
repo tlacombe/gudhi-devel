@@ -25,11 +25,19 @@ struct SimplifiableSimplicialComplexDS
 	/*************************************************/		
 	/// \name Objects
 	/// @{
+
+
 	/**
-	 * Edge type.
+	 * Vertex handle that allows access to a vertex of the complex.
 	 *
 	 */
-	typedef unspecified Edge;
+	typedef unspecified Vertex_handle;
+
+	/**
+	 * Edge handle that allows access to an edge of the complex.
+	 *
+	 */
+	typedef unspecified Edge_handle;
 
 	/*************************************************/	
 	/// \name Simplicial Complex Iterator
@@ -61,7 +69,7 @@ struct SimplifiableSimplicialComplexDS
 	Complex_simplex_iterator simplex_end();
 
 
-		/// @}
+	/// @}
 	/*************************************************/	
 
 	/*************************************************/		
@@ -99,40 +107,82 @@ struct SimplifiableSimplicialComplexDS
 	/// \name Simplification
 	/// @{
 	/**
+	 * Remove a vertex and all its cofaces
+	 */
+	int remove_star(Vertex_handle v);
+	/**
+	 * Remove an edge and all its cofaces
+	 */
+	int remove_star(Edge_handle e);
+	/**
 	 * Remove a Simplex and all its cofaces
 	 */
-	int remove(Simplex s);
+	int remove_star(Simplex s);
+
+
+	/**
+	 * returned by is_contractible.
+	 */
+	enum contractible_status{ NOT_CONTRACTIBLE,MAYBE_CONTRACTIBLE,CONTRACTIBLE };
+
+	/**
+	 * Check if the simplicial complex is contractible.
+	 * The answer is a contractible_status.
+	 * The underlying problem is undecidable thus an heuristic is used which
+	 * explains why  MAYBE_CONTRACTIBLE could be returned.
+	 *
+	 */
+	contractible_status is_contractible();
+
 
 	/**
 	 * Check if removing s would modify the homotopy
-	 * type of the simplicial complex
+	 * type of the simplicial complex (and thus
+	 * if it is an extended collapse).
 	 *
 	 * The answer may be yes, no, maybe are other 
 	 * (preserve homoemorphism, ...)
 	 */
-	enum does_removal_preserve_homotopy(Simplex s);
+	enum is_collapse(Simplex s);
 
 
 	/**
 	 * Proceed to an edge contraction
 	 */
-	int contract_edge(Edge e);
+	void contract_edge(Vertex_handle a,Vertex_handle b);
 
 	/**
-	 * Check if contracting e would modify the homotopy
-	 * type of the simplicial complex
-	 *
-	 * The answer may be yes, no, maybe are other 
-	 * (preserve homoemorphism, ...)
-	 *
-	 * @remark We do not talk about the link condition. It's up to
-	 * the developper to choose which kind of topological test he wants
-	 * to implement, depending on the precision of the test and its
-	 * computational cost.
+	 * Proceed to an edge contraction
 	 */
-	enum does_contraction_preserve_homotopy(Edge e);
-	/// @}
-	/*************************************************/	
+	void contract_edge(Edge_handle e);
+
+
+	/**
+	 * Test if the link condition is verified for a given edge.
+	 */
+	bool link_condition(Edge_handle e);
+
+//	/**
+//	 * returned by contraction_preserve_homotopy.
+//	 */
+//	enum edge_contraction_status{ NOT_HTPY_PRESERVING,MAYBE_HTPY_PRESERVING,HTPY_PRESERVING};
+//
+//
+//	/**
+//	 * Check if contracting e would modify the homotopy
+//	 * type of the simplicial complex
+//	 *
+//	 * The answer may be yes, no, maybe are other
+//	 * (preserve homoemorphism, ...)
+//	 *
+//	 * @remark We do not talk about the link condition. It's up to
+//	 * the developper to choose which kind of topological test he wants
+//	 * to implement, depending on the precision of the test and its
+//	 * computational cost.
+//	 */
+//	edge_contraction_status contraction_preserve_homotopy(Edge_handle e);
+//	/// @}
+//	/*************************************************/
 
 
 

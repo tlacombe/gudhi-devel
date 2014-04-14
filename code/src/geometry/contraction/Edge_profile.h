@@ -16,7 +16,7 @@ template<typename GeometricSimplifiableComplex> class Edge_profile{
 
 public:
 	typedef GeometricSimplifiableComplex Complex;
-	typedef typename Complex::GeometryTrait GeometryTrait;
+	typedef typename Complex::GT GT;
 
 	typedef typename GeometricSimplifiableComplex::Vertex_handle Vertex_handle;
 	typedef typename GeometricSimplifiableComplex::Root_vertex_handle Root_vertex_handle;
@@ -24,33 +24,39 @@ public:
 
 	typedef typename GeometricSimplifiableComplex::Edge_handle edge_descriptor;
 	typedef typename GeometricSimplifiableComplex::Graph_vertex Graph_vertex;
+	typedef typename GeometricSimplifiableComplex::Graph_edge Graph_edge;
 	typedef typename GeometricSimplifiableComplex::Point Point;
 
 
 
 
-	Edge_profile( GeometricSimplifiableComplex& complex,edge_descriptor edge):complex_(complex),edge_(edge)
+	Edge_profile( GeometricSimplifiableComplex& complex,edge_descriptor edge):complex_(complex),edge_handle_(edge)
 {}
 
 	GeometricSimplifiableComplex& complex() const {
 		return complex_;
 	}
 
-	edge_descriptor edge() const{
-		return edge_;
+	edge_descriptor edge_handle() const{
+		return edge_handle_;
 	}
+
+	Graph_edge& edge() const{
+		return complex_[edge_handle_];
+	}
+
 
 	Graph_vertex& v0() const{return complex_[v0_handle()];}
 	Graph_vertex& v1() const{return complex_[v1_handle()];}
 
 
 	Vertex_handle v0_handle() const{
-		Root_vertex_handle root = complex_[edge_].first();
+		Root_vertex_handle root = complex_[edge_handle_].first();
 		return *complex_.get_address(root);
 	}
 
 	Vertex_handle v1_handle() const{
-		Root_vertex_handle root = complex_[edge_].second();
+		Root_vertex_handle root = complex_[edge_handle_].second();
 		return *complex_.get_address(root);
 	}
 
@@ -66,7 +72,7 @@ private:
 
 	GeometricSimplifiableComplex& complex_;
 
-	edge_descriptor edge_;
+	edge_descriptor edge_handle_;
 
 };
 

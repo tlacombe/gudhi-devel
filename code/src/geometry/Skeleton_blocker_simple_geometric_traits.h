@@ -15,12 +15,12 @@
 /**
  * @extends SkeletonBlockerGeometricDS
  */
-template<typename GT>
+template<typename GeometryTrait>
 struct Skeleton_blocker_simple_geometric_traits : public Skeleton_blocker_simple_traits {
 public:
 
-	typedef GT GeometryTrait;
-	typedef typename GeometryTrait::Point Point;
+	typedef GeometryTrait GT;
+	typedef typename GT::Point Point;
 	typedef typename Skeleton_blocker_simple_traits::Root_vertex_handle Root_vertex_handle;
 	typedef typename Skeleton_blocker_simple_traits::Graph_vertex Simple_vertex;
 
@@ -34,6 +34,21 @@ public:
 		Point& point(){	return point_; }
 		const Point& point() const {	return point_; }
 	};
+
+
+	class Simple_geometric_edge : public Skeleton_blocker_simple_traits::Graph_edge{
+		int index_;
+	public:
+		Simple_geometric_edge():Skeleton_blocker_simple_traits::Graph_edge(),index_(-1){}
+		/**
+		 * @brief Allows to modify the index of the edge.
+		 * The indices of the edge are used to store heap information
+		 * in the edge contraction algorithm.
+		 */
+		int& index(){return index_;}
+		int index() const {return index_;}
+	};
+
 
 	typedef Simple_geometric_vertex Graph_vertex;
 	typedef Skeleton_blocker_simple_traits::Graph_edge Graph_edge;
