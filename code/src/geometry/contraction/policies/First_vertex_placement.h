@@ -9,6 +9,7 @@
 #ifndef GUDHI_FIRST_VERTEX_PLACEMENT_H_
 #define GUDHI_FIRST_VERTEX_PLACEMENT_H_
 
+#include "Placement_policy.h"
 
 namespace contraction {
 
@@ -20,7 +21,7 @@ template< typename EdgeProfile> class First_vertex_placement : public Placement_
 
 public:
 	typedef typename EdgeProfile::Point Point;
-	typedef typename EdgeProfile::edge_descriptor edge_descriptor;
+	typedef typename EdgeProfile::Edge_handle Edge_handle;
 
 	typedef typename Placement_policy<EdgeProfile>::Placement_type Placement_type;
 

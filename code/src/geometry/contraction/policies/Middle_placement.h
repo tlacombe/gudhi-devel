@@ -8,6 +8,7 @@
 #ifndef GUDHI_MIDDLE_PLACEMENT_H_
 #define GUDHI_MIDDLE_PLACEMENT_H_
 
+#include "Placement_policy.h"
 
 namespace contraction {
 
@@ -15,7 +16,7 @@ template< typename EdgeProfile> class Middle_placement : public Placement_policy
 
 public:
 	typedef typename EdgeProfile::Point Point;
-	typedef typename EdgeProfile::edge_descriptor edge_descriptor;
+	typedef typename EdgeProfile::Edge_handle Edge_handle;
 	typedef typename EdgeProfile::Graph_vertex Graph_vertex;
 
 	typedef typename Placement_policy<EdgeProfile>::Placement_type Placement_type;

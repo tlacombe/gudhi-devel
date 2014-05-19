@@ -9,7 +9,7 @@
 #define GUDHI_LINK_CONDITION_VALID_CONTRACTION_H_
 
 #include "utils/Utils.h"
-
+#include "Valid_contraction_policy.h"
 
 namespace contraction {
 
@@ -17,11 +17,11 @@ namespace contraction {
 
 template< typename EdgeProfile> class Link_condition_valid_contraction : public Valid_contraction_policy<EdgeProfile>{
 public:
-	typedef typename EdgeProfile::edge_descriptor edge_descriptor;
+	typedef typename EdgeProfile::Edge_handle Edge_handle;
 	typedef typename EdgeProfile::Point Point;
-	//typedef typename EdgeProfile::edge_descriptor edge_descriptor;
+	//typedef typename EdgeProfile::Edge_handle Edge_handle;
 	bool operator()(const EdgeProfile& profile,const boost::optional<Point>& placement){
-		edge_descriptor edge(profile.edge_handle());
+		Edge_handle edge(profile.edge_handle());
 		DBGMSG("Link_condition_valid_contraction:",profile.complex().link_condition(edge));
 		return profile.complex().link_condition(edge);
 	}

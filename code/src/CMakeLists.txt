@@ -19,6 +19,7 @@ include_directories(. utils combinatorics geometry topology
 add_executable ( TestSkeletonBlockerComplex test/TestSkeletonBlockerComplex.cxx )
 add_executable ( TestSimplifiable           test/TestSimplifiable.cxx )
 add_executable ( TestContraction            test/TestContraction.cxx )
+add_executable ( TestLoad            test/TestLoad.cxx )
 #add_executable ( TestSimplexTree            test/TestSimplexTree.cpp )
 
 add_executable ( TestPersistentCohomology   

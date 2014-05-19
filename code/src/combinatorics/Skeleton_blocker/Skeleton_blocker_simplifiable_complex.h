@@ -337,7 +337,8 @@ public:
 	 */
 	void contract_edge(Vertex_handle a, Vertex_handle b){
 		assert(this->contains_edge(a,b));
-		if (a.vertex>b.vertex) std::swap(a,b);
+
+		//		if (a.vertex>b.vertex) std::swap(a,b);
 
 		// if some blockers passes through 'ab', we remove them.
 		if (!link_condition(a,b)){

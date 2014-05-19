@@ -78,7 +78,7 @@ public:
 protected:
 
 	typedef typename boost::adjacency_list
-			< boost::listS,
+			< boost::vecS,
 			boost::vecS,
 			boost::undirectedS,
 			Graph_vertex,
@@ -142,6 +142,127 @@ public:
 		}
 	}
 
+
+
+private:
+	// this nested class is used for the next constructor that takes as an input a list of simplices
+	class Simplices_sets_from_list{
+	private:
+		typedef  std::set< Simplex_handle> Container_simplices;
+		typedef typename Container_simplices::iterator Simplices_iterator;
+		int dimension_;
+		std::vector<Container_simplices > simplices_;
+
+	public:
+		Simplices_sets_from_list(std::list<Simplex_handle>& simplices){
+			assert(!simplices.empty());
+			dimension_ = simplices.back().dimension();
+
+			simplices_.reserve(dimension_+1);
+			for(auto k = 0; k<=dimension_ ;++k){
+				simplices_.push_back(Container_simplices());
+			}
+
+			// compute k-simplices
+			int current_dimension = 0;
+
+			for(auto simplex = simplices.begin() ; simplex != simplices.end(); ++simplex ){
+				assert(simplex->dimension()>= current_dimension);
+				if(simplex->dimension() > current_dimension)
+					++current_dimension;
+				simplices_[current_dimension].insert(*simplex);
+			}
+		}
+
+		Simplices_iterator begin(int k){
+			assert(0<= k && k<= dimension_);
+			return simplices_[k].begin();
+		}
+
+		Simplices_iterator end(int k){
+			assert(0<= k && k<= dimension_);
+			return simplices_[k].end();
+		}
+
+
+		Container_simplices& simplices(int k){
+			return simplices_[k];
+		}
+
+		int dimension(){
+			return dimension_;
+		}
+
+		bool contains(const Simplex_handle& simplex) const{
+			if(simplex.dimension()>dimension_)
+				return false;
+			else
+				return simplices_[simplex.dimension()].find(simplex)!= simplices_[simplex.dimension()].end();
+		}
+	};
+
+	void compute_next_expand(
+			Simplices_sets_from_list& simplices,
+			int dim,
+			std::list<Simplex_handle>& next_expand)
+	{
+		next_expand.clear();
+
+		for(auto sigma = simplices.begin(dim); sigma != simplices.end(dim); ++sigma){
+			Simplex_handle t(*sigma);
+			Skeleton_blocker_link_superior<Skeleton_blocker_complex> link(*this,t);
+
+			for(auto v : link.vertex_range()){
+				Vertex_handle v_in_complex(*this->get_address(  link.get_id(v)) );
+				t.add_vertex(v_in_complex);
+				next_expand.push_back(t);
+				t.remove_vertex(v_in_complex);
+			}
+		}
+	}
+
+
+
+public:
+	/**
+	 * @brief Constructor with a list of simplices
+	 * @details The list of simplices must be the list
+	 * of simplices of a simplicial complex, sorted with increasing dimension.
+	 */
+	Skeleton_blocker_complex(std::list<Simplex_handle>& simplices,Visitor* visitor_=NULL):
+		num_vertices_(0),num_blockers_(0),
+		visitor(visitor_){
+		Simplices_sets_from_list set_simplices(simplices);
+
+		int dim = set_simplices.dimension();
+
+
+		// add 1-skeleton to the complex
+		for(auto& simplex : simplices){
+			if(simplex.dimension()==0)
+				add_vertex();
+			if(simplex.dimension()==1){
+				assert(contains_vertex(simplex.first_vertex()) && contains_vertex(simplex.last_vertex()));
+				add_edge(simplex.first_vertex(),simplex.last_vertex());
+			}
+		}
+
+		// then add blockers
+		for(int current_dim = 1 ; current_dim <=dim ; ++current_dim){
+			std::list<Simplex_handle> expansion_simplices;
+			compute_next_expand(set_simplices,current_dim,expansion_simplices);
+			for(auto &simplex : expansion_simplices) {
+				if(!set_simplices.contains(simplex)){
+					add_blocker(simplex);
+				}
+			}
+		}
+	}
+
+
+
+	// We cannot use the default copy constructor since we need
+	// to make a copy of each of the blockers
 	Skeleton_blocker_complex(const Skeleton_blocker_complex& copy){
 		clear();
 		// xxx need an abstract factory or something to copy the visitor
@@ -324,10 +445,8 @@ public:
 public:
 
 	/**
-	 * @brief returns a pair that consists in :
-	 * - an edge handle that is valid and describes ab iff the edge is present.
-	 * - a boolean which is true is the edge was founded.
-	 * todo renvoyer un optional pour etre consistant avec les autres methodes
+	 * @brief return an edge handle if the two vertices forms
+	 * an edge in the complex
 	 */
 	boost::optional<Edge_handle> operator[](const std::pair<Vertex_handle,Vertex_handle>& ab) const{
 		boost::optional<Edge_handle> res;
@@ -368,9 +487,9 @@ public:
 		assert(contains_vertex(a) && contains_vertex(b));
 
 		auto edge_handle((*this)[std::make_pair(a,b)]);
-//		std::pair<Edge_handle,bool> pair_descr_bool = (*this)[std::make_pair(a,b)];
-//		Edge_handle edge_descr;
-//		bool edge_present = pair_descr_bool.second;
+		//		std::pair<Edge_handle,bool> pair_descr_bool = (*this)[std::make_pair(a,b)];
+		//		Edge_handle edge_descr;
+		//		bool edge_present = pair_descr_bool.second;
 		if (!edge_handle)
 		{
 			edge_handle = boost::add_edge(a.vertex,b.vertex,skeleton).first;
@@ -834,6 +953,27 @@ public:
 	Complex_vertex_range vertex_range() const
 	{return Complex_vertex_range(this);}
 
+
+
+
+	/**
+	 * @brief Range over the edges of the simplicial complex.
+	 * Methods .begin() and .end() return a Complex_edge_iterator.
+	 */
+	class Complex_neighbors_vertices_range;
+	/**
+	 * @brief Iterator over the edges of the
+	 * simplicial complex.
+	 *
+	 */
+	class Complex_neighbors_vertices_iterator;
+
+	/**
+	 * @brief Returns a Complex_edge_range over all edges of the simplicial complex
+	 */
+	Complex_neighbors_vertices_range vertex_range(Vertex_handle v) const
+	{return Complex_neighbors_vertices_range(this,v);}
+
 	//@}
 
 
@@ -859,6 +999,29 @@ public:
 	 */
 	Complex_edge_range edge_range() const
 	{return Complex_edge_range(this);}
+
+
+
+	/**
+	 * @brief Range over the edges passing through a vertex of the simplicial complex.
+	 * Methods .begin() and .end() return a Complex_edge_around_vertex_iterator.
+	 */
+	class Complex_edge_around_vertex_range;
+
+	/**
+	 * @brief Iterator over the edges passing through a vertex of the
+	 * simplicial complex.
+	 *
+	 */
+	class Complex_edge_around_vertex_iterator;
+
+	/**
+	 * @brief Returns a Complex_edge_range over all edges of the simplicial complex
+	 */
+	Complex_edge_around_vertex_range edge_range(Vertex_handle v) const
+	{return Complex_edge_around_vertex_range(this,v);}
+
+
 
 	//@}
 
@@ -895,14 +1058,14 @@ public:
 	 * a vertex of the simplicial complex.
 	 */
 	Triangle_around_vertex_range<Link> triangle_range(Vertex_handle v) const
-													{return Triangle_around_vertex_range<Link>(this,v);}
+																	{return Triangle_around_vertex_range<Link>(this,v);}
 
 
 	/**@brief Returns a Triangle_around_vertex_range over superior triangles
 	 * around a vertex of the simplicial complex.
 	 */
 	Triangle_around_vertex_range<Superior_link> superior_triangle_range(Vertex_handle v) const
-													{return Triangle_around_vertex_range<Superior_link>(this,v);}
+																	{return Triangle_around_vertex_range<Superior_link>(this,v);}
 
 
 
@@ -923,7 +1086,7 @@ public:
 	/**
 	 * @brief Returns a Triangle_range over all triangles of the simplicial complex.
 	 */
-	Triangle_range triangle_range()
+	Triangle_range triangle_range() const
 	{return Triangle_range(this);}
 
 	//@}

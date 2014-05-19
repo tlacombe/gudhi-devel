@@ -22,7 +22,7 @@ public:
 	typedef typename GeometricSimplifiableComplex::Root_vertex_handle Root_vertex_handle;
 
 
-	typedef typename GeometricSimplifiableComplex::Edge_handle edge_descriptor;
+	typedef typename GeometricSimplifiableComplex::Edge_handle Edge_handle;
 	typedef typename GeometricSimplifiableComplex::Graph_vertex Graph_vertex;
 	typedef typename GeometricSimplifiableComplex::Graph_edge Graph_edge;
 	typedef typename GeometricSimplifiableComplex::Point Point;
@@ -30,14 +30,17 @@ public:
 
 
 
-	Edge_profile( GeometricSimplifiableComplex& complex,edge_descriptor edge):complex_(complex),edge_handle_(edge)
+	Edge_profile( GeometricSimplifiableComplex& complex,Edge_handle edge):complex_(complex),edge_handle_(edge)
 {}
+
+	virtual ~Edge_profile(){	}
+
 
 	GeometricSimplifiableComplex& complex() const {
 		return complex_;
 	}
 
-	edge_descriptor edge_handle() const{
+	Edge_handle edge_handle() const{
 		return edge_handle_;
 	}
 
@@ -72,7 +75,7 @@ private:
 
 	GeometricSimplifiableComplex& complex_;
 
-	edge_descriptor edge_handle_;
+	Edge_handle edge_handle_;
 
 };
 

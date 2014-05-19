@@ -17,12 +17,14 @@ namespace contraction {
  *@class Contraction_visitor
  *@brief Interface for a visitor of the edge contraction process.
  */
-template <typename ComplexType>
+template <typename EdgeProfile>
 class Contraction_visitor {
 public:
 	//typedef typename ComplexType::GeometryTrait GT;
-	typedef Edge_profile<ComplexType> Profile;
+	typedef EdgeProfile Profile;
 	typedef double FT;
+	typedef typename Profile::Complex Complex;
+	typedef Complex ComplexType;
 	typedef typename ComplexType::Point Point;
 
 

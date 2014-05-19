@@ -74,7 +74,7 @@ void build_rips(ComplexType& complex, double offset){
 }
 
 // visitor that remove popable blockers after an edge contraction
-class Contraction_visitor_remove_popable : public Contraction_visitor<Complex>{
+class Contraction_visitor_remove_popable : public Contraction_visitor<Profile>{
 public:
 	void on_contracted(const Profile  &profile, boost::optional< Point > placement) override{
 		profile.complex().remove_popable_blockers();
