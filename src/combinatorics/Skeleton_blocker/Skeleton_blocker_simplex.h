@@ -27,6 +27,8 @@ private :
 public:
 	typedef typename T::boost_vertex_handle boost_vertex_handle;
 
+	typedef T Vertex_handle;
+
 
 	typedef typename std::set<T>::const_iterator Simplex_vertex_const_iterator;
 	typedef typename std::set<T>::iterator Simplex_vertex_iterator;
@@ -215,17 +217,17 @@ public:
 		return *(begin());
 	}
 
-	/**
-	 * Returns the second vertex of the (oriented) simplex.
-	 *
-	 * Be careful : assumes the simplex has at least two vertices.
-	 */
-	int inline second_vertex() const
-	{
-		assert(simplex_set.size()>=2);
-		auto it=++(begin());
-		return *it;
-	}
+//	/**
+//	 * Returns the second vertex of the (oriented) simplex.
+//	 *
+//	 * Be careful : assumes the simplex has at least two vertices.
+//	 */
+//	int inline second_vertex() const
+//	{
+//		assert(simplex_set.size()>=2);
+//		auto it=++(begin());
+//		return *it;
+//	}
 
 	/**
 	 * Returns the last vertex of the (oriented) simplex.
@@ -275,7 +277,14 @@ public:
 		return (this->simplex_set != other.simplex_set);
 	}
 
+	bool operator<(const Skeleton_blocker_simplex& other) const{
+		return (std::lexicographical_compare(this->simplex_set.begin(),this->simplex_set.end(),
+				other.begin(),other.end()));
+	}
+
 	//@}
+
+
 
 
 

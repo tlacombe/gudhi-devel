@@ -136,6 +136,7 @@ public:
 		result.clear();
 		// add vertices to the sub complex
 		for (auto x : simplex){
+			assert(parent_complex.contains_vertex(x));
 			auto x_local = result.add_vertex(parent_complex[x].get_id());
 			result[x_local] = parent_complex[x];
 		}

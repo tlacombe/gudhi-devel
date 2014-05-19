@@ -76,10 +76,141 @@ public:
 		return vertexIterator.first == vertexIterator.second;
 	}
 };
+
+
+template<typename SkeletonBlockerDS>
+class Skeleton_blocker_complex<SkeletonBlockerDS>::Complex_neighbors_vertices_iterator
+{
+	friend class Skeleton_blocker_complex<SkeletonBlockerDS> ;
+
+	typedef Skeleton_blocker_complex<SkeletonBlockerDS> Complex;
+	typedef typename Complex::boost_adjacency_iterator boost_adjacency_iterator;
+	typedef typename Complex::Vertex_handle Vertex_handle;
+	typedef typename Complex::Edge_handle Edge_handle;
+
+private:
+
+	const Complex* complex;
+	Vertex_handle v;
+
+	boost_adjacency_iterator current_;
+	boost_adjacency_iterator end_;
+
+public:
+	//	boost_adjacency_iterator ai, ai_end;
+	//	for (tie(ai, ai_end) = adjacent_vertices(v.vertex, skeleton); ai != ai_end; ++ai){
+
+	Complex_neighbors_vertices_iterator():complex(NULL){
+	}
+
+	Complex_neighbors_vertices_iterator(const Skeleton_blocker_complex<SkeletonBlockerDS>* complex_,Vertex_handle v_):
+		complex(complex_),
+		v(v_)
+	{
+		tie(current_,end_) = adjacent_vertices(v.vertex, complex->skeleton);
+	}
+
+	bool operator==(const Complex_neighbors_vertices_iterator& other) const{
+		return (complex== other.complex) && (v == other.v) && (current_ == other.current_) && (end_ == other.end_);
+	}
+
+	bool operator!=(const Complex_neighbors_vertices_iterator& other)const{
+		return(! (*this == other));
+	}
+
+	Complex_neighbors_vertices_iterator& operator++(){
+		if(current_ != end_)
+			++current_;
+		return(*this);
+	}
+
+	Complex_neighbors_vertices_iterator operator++(int){
+		Complex_neighbors_vertices_iterator tmp(*this);
+		if(current_ != end_)
+			++current_;
+		return(tmp);
+	}
+
+	Vertex_handle operator*()	{
+		return(Vertex_handle(*current_));
+	}
+
+private:
+	void set_end(){
+		current_ = end_;
+	}
+};
+
+
+
+template<typename SkeletonBlockerDS>
+class Skeleton_blocker_complex<SkeletonBlockerDS>::Complex_edge_around_vertex_iterator
+{
+	friend class Skeleton_blocker_complex<SkeletonBlockerDS> ;
+
+	typedef Skeleton_blocker_complex<SkeletonBlockerDS> Complex;
+	typedef typename Complex::boost_adjacency_iterator boost_adjacency_iterator;
+	typedef typename Complex::Vertex_handle Vertex_handle;
+	typedef typename Complex::Edge_handle Edge_handle;
+
+private:
+
+	const Complex* complex;
+	Vertex_handle v;
+
+	boost_adjacency_iterator current_;
+	boost_adjacency_iterator end_;
+
+public:
+	//	boost_adjacency_iterator ai, ai_end;
+	//	for (tie(ai, ai_end) = adjacent_vertices(v.vertex, skeleton); ai != ai_end; ++ai){
+
+	Complex_edge_around_vertex_iterator():complex(NULL){
+	}
+
+	Complex_edge_around_vertex_iterator(const Skeleton_blocker_complex<SkeletonBlockerDS>* complex_,Vertex_handle v_):
+		complex(complex_),
+		v(v_)
+	{
+		tie(current_,end_) = adjacent_vertices(v.vertex, complex->skeleton);
+	}
+
+	bool operator==(const Complex_edge_around_vertex_iterator& other) const{
+		return (complex== other.complex) && (v == other.v) && (current_ == other.current_) && (end_ == other.end_);
+	}
+
+	bool operator!=(const Complex_edge_around_vertex_iterator& other)const{
+		return(! (*this == other));
+	}
+
+	Complex_edge_around_vertex_iterator& operator++(){
+		if(current_ != end_)
+			++current_;
+		return(*this);
+	}
+
+	Complex_edge_around_vertex_iterator operator++(int){
+		Complex_neighbors_vertices_iterator tmp(*this);
+		if(current_ != end_)
+			++current_;
+		return(tmp);
+	}
+
+	Edge_handle operator*()	{
+		return *(*complex)[std::make_pair(v,*current_)];
+	}
+
+private:
+	void set_end(){
+		current_ = end_;
+	}
+};
+
+
 //////////////////////////////////////////////////////////////////////
 
 
-
+//////////////////////////////////////////////////////////////////////
 /**
  *@brief Iterator on the edges of a simplicial complex.
  *
@@ -149,6 +280,11 @@ public:
 
 
 
+//////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////////////////////////////////////////////////
 /**
  * \brief Iterator over the triangles that are
  * adjacent to a vertex of the simplicial complex.
@@ -524,6 +660,54 @@ public:
 	}
 };
 
+template<typename SkeletonBlockerDS>
+class Skeleton_blocker_complex<SkeletonBlockerDS>::Complex_neighbors_vertices_range {
+private:
+	typedef typename SkeletonBlockerDS::Vertex_handle Vertex_handle;
+	const Skeleton_blocker_complex* complex_;
+	Vertex_handle v_;
+public:
+	Complex_neighbors_vertices_range(const Skeleton_blocker_complex* complex,Vertex_handle v):complex_(complex),v_(v){
+	}
+
+	Complex_neighbors_vertices_iterator begin(){
+		return (Complex_neighbors_vertices_iterator(complex_,v_));
+	}
+
+	Complex_neighbors_vertices_iterator end()
+	{
+		Complex_neighbors_vertices_iterator it(complex_,v_);
+		it.set_end();
+		return it;
+	}
+};
+
+
+template<typename SkeletonBlockerDS>
+class Skeleton_blocker_complex<SkeletonBlockerDS>::Complex_edge_around_vertex_range {
+private:
+	typedef typename SkeletonBlockerDS::Vertex_handle Vertex_handle;
+	const Skeleton_blocker_complex* complex_;
+	Vertex_handle v_;
+public:
+	Complex_edge_around_vertex_range(const Skeleton_blocker_complex* complex,Vertex_handle v):complex_(complex),v_(v){
+	}
+
+	Complex_edge_around_vertex_iterator begin(){
+		return (Complex_edge_around_vertex_iterator(complex_,v_));
+	}
+
+	Complex_edge_around_vertex_iterator end()
+	{
+		Complex_edge_around_vertex_iterator it(complex_,v_);
+		it.set_end();
+		return it;
+	}
+};
+
+
+
+
 
 template<typename SkeletonBlockerDS>
 template<typename LinkType>
@@ -559,7 +743,7 @@ private:
 	typedef typename Skeleton_blocker_complex<SkeletonBlockerDS>::Vertex_handle Vertex_handle;
 	const Complex* complex_;
 public:
-	Triangle_range(Skeleton_blocker_complex<SkeletonBlockerDS>* complex):
+	Triangle_range(const Skeleton_blocker_complex<SkeletonBlockerDS>* complex):
 		complex_(complex){
 	}
 

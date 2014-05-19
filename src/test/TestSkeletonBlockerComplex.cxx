@@ -110,6 +110,43 @@ bool test_iterator_edge(){
 	return num_edges_seen == n*(n-1)/2-2;
 }
 
+bool test_iterator_edge2(){
+	const int n = 10;
+	Complex complex(n);
+	for(int i=0;i<n;i++)
+		for(int j=0;j<i;j++)
+			complex.add_edge(Vertex_handle(i),Vertex_handle(j));
+	complex.remove_edge(Vertex_handle(2),Vertex_handle(3));
+	complex.remove_edge(Vertex_handle(3),Vertex_handle(5));
+	cerr << "complex.num_edges():"<<complex.num_edges()<<endl;
+	int num_neigbors_seen = 0;
+	for(auto neighbor : complex.vertex_range(Vertex_handle(2))){
+		cerr << "neighbor"<<neighbor<<endl;
+		++num_neigbors_seen;
+	}
+	return num_neigbors_seen==8;
+}
+
+
+
+bool test_iterator_edge3(){
+	const int n = 10;
+	Complex complex(n);
+	for(int i=0;i<n;i++)
+		for(int j=0;j<i;j++)
+			complex.add_edge(Vertex_handle(i),Vertex_handle(j));
+	complex.remove_edge(Vertex_handle(2),Vertex_handle(3));
+	complex.remove_edge(Vertex_handle(3),Vertex_handle(5));
+	cerr << "complex.num_edges():"<<complex.num_edges()<<endl;
+	int num_neigbors_seen = 0;
+	for(auto edge : complex.edge_range(Vertex_handle(2))){
+		std::cerr << edge<< std::endl;
+		++num_neigbors_seen;
+	}
+	return num_neigbors_seen==8;
+}
+
+
 
 bool test_iterator_triangles(){
 	const int n = 7;
@@ -396,9 +433,62 @@ bool test_link5(){
 }
 
 
+
+
+template<typename SimplexHandle>
+void add_triangle_edges(int a,int b,int c,list<SimplexHandle>& simplices){
+	typedef SimplexHandle Simplex_handle;
+	typedef typename SimplexHandle::Vertex_handle Vertex_handle;
+
+	simplices.push_back(Simplex_handle(Vertex_handle(a),Vertex_handle(b) ));
+	simplices.push_back(Simplex_handle(Vertex_handle(b),Vertex_handle(c) ));
+	simplices.push_back(Simplex_handle(Vertex_handle(c),Vertex_handle(a) ));
+}
+
+template<typename SimplexHandle>
+void add_triangle(int a,int b,int c,list<SimplexHandle>& simplices){
+	typedef SimplexHandle Simplex_handle;
+	typedef typename SimplexHandle::Vertex_handle Vertex_handle;
+	simplices.push_back(Simplex_handle(Vertex_handle(a),Vertex_handle(b),Vertex_handle(c)));
+}
+
+bool test_constructor(){
+	list <Simplex_handle> simplices;
+
+	simplices.push_back(Simplex_handle(Vertex_handle(0)));
+	simplices.push_back(Simplex_handle(Vertex_handle(1)));
+	simplices.push_back(Simplex_handle(Vertex_handle(2)));
+	simplices.push_back(Simplex_handle(Vertex_handle(3)));
+	simplices.push_back(Simplex_handle(Vertex_handle(4)));
+	simplices.push_back(Simplex_handle(Vertex_handle(5)));
+
+	simplices.push_back(Simplex_handle(Vertex_handle(3),Vertex_handle(5) ));
+
+	add_triangle_edges(0,1,5,simplices);
+	add_triangle_edges(1,2,3,simplices);
+	add_triangle_edges(2,3,4,simplices);
+	add_triangle_edges(1,3,4,simplices);
+	add_triangle_edges(1,2,4,simplices);
+
+
+	add_triangle(0,1,5,simplices);
+	add_triangle(1,2,3,simplices);
+	add_triangle(2,3,4,simplices);
+	add_triangle(1,3,4,simplices);
+	add_triangle(1,2,4,simplices);
+
+
+	Complex complex(simplices);
+
+	PRINT(complex.to_string());
+
+	return ( complex.num_vertices()==6&&complex.num_edges()==10&&  complex.num_blockers()==2);
+}
+
+
+
 int main (int argc, char *argv[])
 {
-
 	Tests tests_complex;
 	tests_complex.add("test simplex",test_simplex);
 
@@ -411,8 +501,13 @@ int main (int argc, char *argv[])
 
 	tests_complex.add("test iterator vertices",test_iterator_vertices);
 	tests_complex.add("test iterator edges",test_iterator_edge);
+	tests_complex.add("test iterator edges2",test_iterator_edge2);
+	tests_complex.add("test iterator edges3",test_iterator_edge3);
+
 	tests_complex.add("test iterator blockers",test_iterator_blockers);
 	tests_complex.add("test_iterator_triangles",test_iterator_triangles);
+
+	tests_complex.add("test_constructor_list_simplices",test_constructor);
 
 	if(tests_complex.run())
 		return EXIT_SUCCESS;

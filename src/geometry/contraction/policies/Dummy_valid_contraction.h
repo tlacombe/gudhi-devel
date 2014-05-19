@@ -8,6 +8,8 @@
 #ifndef GUDHI_DUMMY_VALID_CONTRACTION_H_
 #define GUDHI_DUMMY_VALID_CONTRACTION_H_
 
+#include "Valid_contraction_policy.h"
+
 
 namespace contraction {
 
