@@ -11,7 +11,7 @@
 
 #define PRINT(a) std::cerr << #a << ": " << (a) << " (DISP)"<<std::endl
 
-#define DBG_VERBOSE
+//#define DBG_VERBOSE
 
 
 #ifdef DBG_VERBOSE

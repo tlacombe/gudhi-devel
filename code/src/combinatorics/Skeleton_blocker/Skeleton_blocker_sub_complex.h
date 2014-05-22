@@ -86,10 +86,10 @@ public:
 	Vertex_handle add_vertex(Root_vertex_handle global){
 		assert(!this->contains_vertex(global));
 		Vertex_handle address(boost::add_vertex(this->skeleton));
+		this->num_vertices_++;
 		(*this)[address].activate();
 		(*this)[address].set_id(global);
 		adresses.insert(AddressPair(global,address));
-		this->num_vertices_++;
 		this->degree_.push_back(0);
 		return address;
 	}
