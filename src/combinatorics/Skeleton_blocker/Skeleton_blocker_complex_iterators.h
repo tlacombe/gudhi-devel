@@ -46,11 +46,18 @@ public:
 	}
 private:
 	void goto_next_vertex(){
-		if(!finished()){
+//		if(!finished()){
 			++vertexIterator.first;
-			bool is_active = (complex->skeleton[*vertexIterator.first]).is_active();
-			if(!is_active) goto_next_vertex();
-		}
+
+			//						bool is_active = (complex->skeleton[*vertexIterator.first]).is_active();
+			//			DBG(complex);
+			//			DBG(complex->num_vertices());
+			//			DBG(*vertexIterator.first);
+			if(!finished()){
+				bool is_active = ((*complex)[Vertex_handle(*vertexIterator.first)]).is_active();
+				if(!is_active) goto_next_vertex();
+			}
+//		}
 	}
 
 public:
@@ -242,12 +249,12 @@ public:
 	{
 	}
 
-//	Complex_edge_iterator& operator=(const Complex_edge_iterator& other)
-//	{
-//		complex = other.complex;
-//		edge_iterator = other.edge_iterator;
-//		return(*this);
-//	}
+	//	Complex_edge_iterator& operator=(const Complex_edge_iterator& other)
+	//	{
+	//		complex = other.complex;
+	//		edge_iterator = other.edge_iterator;
+	//		return(*this);
+	//	}
 
 	bool operator==(const Complex_edge_iterator& other) const{
 		return (complex== other.complex) &&(edge_iterator == other.edge_iterator);
@@ -309,7 +316,7 @@ private:
 public:
 	Triangle_around_vertex_iterator(const Skeleton_blocker_complex<SkeletonBlockerDS>* complex,Vertex_handle v):
 		complex_(complex),v_(v),link_(*complex,v_),current_edge_(link_.edge_range().begin()),is_end_(current_edge_ == link_.edge_range().end()){
-}
+	}
 	/**
 	 * @brief ugly hack to get an iterator to the end
 	 */
@@ -321,12 +328,15 @@ public:
 	Triangle_around_vertex_iterator& operator=(const Triangle_around_vertex_iterator& other){
 		v_ = other.v_;
 		complex_ = other.complex_;
-		link_ = other.link_;
 
-		current_edge_= link_.edge_range().begin();
-		//while (*current_edge_ != *(other.current_edge_))
-			//++current_edge_;
 		is_end_ = other.is_end_;
+
+		if(!is_end_){
+			link_ = other.link_;
+			current_edge_= link_.edge_range().begin();
+		}
+		//while (*current_edge_ != *(other.current_edge_))
+		//++current_edge_;
 		return *this;
 	}
 
@@ -335,7 +345,6 @@ public:
 	}
 
 	bool operator !=(const Triangle_around_vertex_iterator& other) const{
-
 		return !(*this == other);
 	}
 

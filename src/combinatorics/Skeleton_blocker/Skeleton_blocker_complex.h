@@ -78,7 +78,7 @@ public:
 protected:
 
 	typedef typename boost::adjacency_list
-			< boost::vecS,
+			< boost::listS,
 			boost::vecS,
 			boost::undirectedS,
 			Graph_vertex,
@@ -154,14 +154,11 @@ private:
 		std::vector<Container_simplices > simplices_;
 
 	public:
-		Simplices_sets_from_list(std::list<Simplex_handle>& simplices){
+		Simplices_sets_from_list(std::list<Simplex_handle>& simplices):
+			dimension_(simplices.back().dimension()),
+			simplices_(dimension_+1)
+	{
 			assert(!simplices.empty());
-			dimension_ = simplices.back().dimension();
-
-			simplices_.reserve(dimension_+1);
-			for(auto k = 0; k<=dimension_ ;++k){
-				simplices_.push_back(Container_simplices());
-			}
 
 			// compute k-simplices
 			int current_dimension = 0;
@@ -172,7 +169,7 @@ private:
 					++current_dimension;
 				simplices_[current_dimension].insert(*simplex);
 			}
-		}
+	}
 
 		Simplices_iterator begin(int k){
 			assert(0<= k && k<= dimension_);
@@ -210,8 +207,8 @@ private:
 
 		for(auto sigma = simplices.begin(dim); sigma != simplices.end(dim); ++sigma){
 			Simplex_handle t(*sigma);
-			Skeleton_blocker_link_superior<Skeleton_blocker_complex> link(*this,t);
 
+			Skeleton_blocker_link_superior<Skeleton_blocker_complex> link(*this,t);
 			for(auto v : link.vertex_range()){
 				Vertex_handle v_in_complex(*this->get_address(  link.get_id(v)) );
 				t.add_vertex(v_in_complex);
@@ -251,6 +248,7 @@ public:
 		for(int current_dim = 1 ; current_dim <=dim ; ++current_dim){
 			std::list<Simplex_handle> expansion_simplices;
 			compute_next_expand(set_simplices,current_dim,expansion_simplices);
+
 			for(auto &simplex : expansion_simplices) {
 				if(!set_simplices.contains(simplex)){
 					add_blocker(simplex);
@@ -346,10 +344,12 @@ public:
 	}
 
 	Graph_vertex& operator[](Vertex_handle address){
+		assert(0<=address.vertex && address.vertex< boost::num_vertices(skeleton));
 		return skeleton[address.vertex];
 	}
 
 	const Graph_vertex& operator[](Vertex_handle address) const{
+		assert(0<=address.vertex && address.vertex< boost::num_vertices(skeleton));
 		return skeleton[address.vertex];
 	}
 
@@ -358,11 +358,11 @@ public:
 	 */
 	Vertex_handle add_vertex(){
 		Vertex_handle address(boost::add_vertex(skeleton));
+		num_vertices_++;
 		(*this)[address].activate();
 		// safe since we now that we are in the root complex and the field 'address' and 'id'
 		// are identical for every vertices
 		(*this)[address].set_id(Root_vertex_handle(address.vertex));
-		num_vertices_++;
 		degree_.push_back(0);
 		if (visitor) visitor->on_add_vertex(address);
 		return address;
@@ -427,11 +427,13 @@ public:
 	 * return the id of a vertex of adress local present in the graph
 	 */
 	Root_vertex_handle get_id(Vertex_handle local) const{
+		assert(0<=local.vertex && local.vertex< boost::num_vertices(skeleton));
 		return (*this)[local].get_id();
 	}
 
 
 	int degree(Vertex_handle local) const{
+		assert(0<=local.vertex && local.vertex< boost::num_vertices(skeleton));
 		return degree_[local.vertex];
 	}
 
@@ -756,10 +758,12 @@ public:
 	}
 
 	/**
-	 * @brief Add to simplex n all vertices which are
+	 * @brief Add to simplex res all vertices which are
 	 * neighbours of alpha: ie \f$ res \leftarrow res \cup N(alpha) \f$.
 	 *
 	 * If 'keep_only_superior' is true then only vertices that are greater than alpha are added.
+	 *
+	 * todo revoir
 	 *
 	 */
 	virtual void add_neighbours(const Simplex_handle &alpha, Simplex_handle & res,bool keep_only_superior=false) const{
@@ -1058,14 +1062,14 @@ public:
 	 * a vertex of the simplicial complex.
 	 */
 	Triangle_around_vertex_range<Link> triangle_range(Vertex_handle v) const
-																	{return Triangle_around_vertex_range<Link>(this,v);}
+																			{return Triangle_around_vertex_range<Link>(this,v);}
 
 
 	/**@brief Returns a Triangle_around_vertex_range over superior triangles
 	 * around a vertex of the simplicial complex.
 	 */
 	Triangle_around_vertex_range<Superior_link> superior_triangle_range(Vertex_handle v) const
-																	{return Triangle_around_vertex_range<Superior_link>(this,v);}
+																			{return Triangle_around_vertex_range<Superior_link>(this,v);}
 
 
 

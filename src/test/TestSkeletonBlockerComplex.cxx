@@ -509,9 +509,12 @@ int main (int argc, char *argv[])
 
 	tests_complex.add("test_constructor_list_simplices",test_constructor);
 
-	if(tests_complex.run())
+	if(tests_complex.run()){
 		return EXIT_SUCCESS;
-	else
+	}
+	else{
+		test_iterator_triangles();
 		return EXIT_FAILURE;
+	}
 }
 

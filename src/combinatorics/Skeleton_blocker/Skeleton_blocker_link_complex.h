@@ -84,39 +84,56 @@ protected:
 	 * are greater than  vertices of alpha_parent_adress are added.
 	 */
 	void compute_link_vertices(const ComplexType & parent_complex, Simplex_handle& alpha_parent_adress,bool only_superior_vertices ){
-		// we compute the intersection of neighbors of alpha and store it in link_vertices
-		Simplex_handle link_vertices_parent;
-		parent_complex.add_neighbours(alpha_parent_adress,link_vertices_parent,only_superior_vertices);
+		// for a vertex we know exactly the number of vertices of the link (and the size of the corresponding vector
+		if(alpha_parent_adress.dimension()==0)
+			this->compute_link_vertices(parent_complex,alpha_parent_adress.first_vertex(),only_superior_vertices_);
+		else{
+			// we compute the intersection of neighbors of alpha and store it in link_vertices
+			Simplex_handle link_vertices_parent;
+			parent_complex.add_neighbours(alpha_parent_adress,link_vertices_parent,only_superior_vertices);
+			// For all vertex 'v' in this intersection, we go through all its adjacent blockers.
+			// If one blocker minus 'v' is included in alpha then the vertex is not in the link complex.
+			for (auto v_parent : link_vertices_parent){
+				bool new_vertex = true;
+				for (auto beta : parent_complex.const_blocker_range(v_parent))
+				{
+					new_vertex = !(alpha_parent_adress.contains_difference(*beta,v_parent));
+					if(!new_vertex) break;
+				}
+				if (new_vertex)
+					this->add_vertex(parent_complex.get_id(v_parent));
+			}
+		}
+	}
+
+
+	/**
+	 * @brief compute vertices of the link.
+	 * If the boolean only_superior_vertices is true, then only the vertices
+	 * are greater than  vertices of alpha_parent_adress are added.
+	 */
+	void compute_link_vertices(const ComplexType & parent_complex, Vertex_handle alpha_parent_adress,bool only_superior_vertices ){
+		// for a vertex we know exactly the number of vertices of the link (and the size of the corresponding vector
+		this->skeleton.m_vertices.reserve(parent_complex.degree(alpha_parent_adress));
+
 		// For all vertex 'v' in this intersection, we go through all its adjacent blockers.
 		// If one blocker minus 'v' is included in alpha then the vertex is not in the link complex.
-		for (auto v_parent : link_vertices_parent){
-			bool new_vertex = true;
-			for (auto beta : parent_complex.const_blocker_range(v_parent))
-			{
-				// the const cast allows to be more efficient
-				// and the sigma_parent is not truly modified since the removed vertex
-				// is readded just after performing a test
-//				Simplex_handle &sigma_parent = *(const_cast<Simplex_handle*>(beta));
-				Simplex_handle sigma_parent = *((beta));
-
-				sigma_parent.remove_vertex(v_parent);
-				if 	(alpha_parent_adress.contains(sigma_parent)){
-					new_vertex = false;
-				}
-				sigma_parent.add_vertex(v_parent);
-				if(!new_vertex) break;
-			}
-			if (new_vertex)
-				this->add_vertex(parent_complex.get_id(v_parent));
+		for (auto v_parent : parent_complex.vertex_range(alpha_parent_adress)){
+			if(!only_superior_vertices || v_parent.vertex> alpha_parent_adress.vertex)
+			this->add_vertex(parent_complex.get_id(v_parent));
 		}
 
 	}
+
 
 	void compute_link_edges(const ComplexType & parent_complex, Simplex_handle& alpha_parent_adress){
 		Simplex_handle_iterator y_link, x_parent , y_parent;
 		// ----------------------------
 		// Compute edges in the link
 		// -------------------------
+
+		if(this->num_vertices()<=1) return;
+
 		for (auto x_link = this->vertex_range().begin() ;
 				x_link!= this->vertex_range().end();
 				++x_link
@@ -130,18 +147,9 @@ protected:
 					bool new_edge=true;
 					for (auto blocker_parent : parent_complex.const_blocker_range(x_parent))
 					{
-//						Simplex_handle sigma_parent& = *blocker_parent;
-						// --> more efficient but may invalidate iterators and is not const
-						Simplex_handle sigma_parent(*blocker_parent);
-						if 	(sigma_parent.contains(y_parent))
+						if 	(blocker_parent->contains(y_parent))
 						{
-							sigma_parent.remove_vertex(x_parent);
-							sigma_parent.remove_vertex(y_parent);
-							if(alpha_parent_adress.contains(sigma_parent )){
-								new_edge = false;
-							}
-							sigma_parent.add_vertex(x_parent);
-							sigma_parent.add_vertex(y_parent);
+							new_edge = !(alpha_parent_adress.contains_difference(*blocker_parent,x_parent,y_parent));
 							if (!new_edge) break;
 						}
 					}
@@ -165,14 +173,13 @@ protected:
 	}
 
 	void compute_link_blockers(const ComplexType & parent_complex,const Simplex_handle& alpha_parent){
+
 		for (auto x_link : this->vertex_range()){
 
 			Vertex_handle x_parent = * this->give_equivalent_vertex(parent_complex,x_link);
 
-//			for (auto blocker_parent = parent_complex.blocker_map.lower_bound(x_parent); blocker_parent != parent_complex.blocker_map.upper_bound(x_parent); ++blocker_parent){
-//				Simplex_handle sigma_parent(*(*blocker_parent).second);
-
 			for (auto blocker_parent : parent_complex.const_blocker_range(x_parent)){
+				// todo faire tout sans copie
 				Simplex_handle sigma_parent(*blocker_parent);
 
 				sigma_parent.difference(alpha_parent);
@@ -187,7 +194,8 @@ protected:
 							for(auto eta_parent : parent_complex.const_blocker_range(a)){
 								Simplex_handle eta_minus_alpha(*eta_parent);
 								eta_minus_alpha.difference(alpha_parent);
-								if(eta_minus_alpha != sigma_parent && sigma_parent.contains(eta_minus_alpha)){
+								if(eta_minus_alpha != sigma_parent &&
+										sigma_parent.contains_difference(*eta_parent,alpha_parent)){
 									is_new_blocker = false;
 									break;
 								}
