@@ -31,7 +31,12 @@ public:
 
 
 	Edge_profile( GeometricSimplifiableComplex& complex,Edge_handle edge):complex_(complex),edge_handle_(edge)
-{}
+{
+		assert(complex_.get_address(complex_[edge_handle_].first()));
+		assert(complex_.get_address(complex_[edge_handle_].second()));
+		assert(complex_.contains_edge(v0_handle(),v1_handle()));
+		assert(v0_handle() != v1_handle());
+}
 
 	virtual ~Edge_profile(){	}
 
@@ -78,6 +83,21 @@ private:
 	Edge_handle edge_handle_;
 
 };
+
+template<typename EdgeProfile> class Edge_profile_factory{
+public:
+	typedef typename EdgeProfile::Edge_handle Edge_handle_;
+	typedef typename EdgeProfile::Complex Complex_;
+	virtual EdgeProfile make_profile(
+			Complex_& complex,
+			Edge_handle_ edge){
+		return EdgeProfile(complex,edge);
+	}
+
+	virtual ~Edge_profile_factory(){};
+};
+
+
 
 
 }  // namespace contraction

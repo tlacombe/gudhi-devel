@@ -9,8 +9,7 @@
 #define GUDHI_COMPLEXVISITOR_H_
 
 
-#include <map>
-//#include "Simplex.h"
+// todo rajouter les const
 
 /**
  *@class Skeleton_blocker_complex_visitor
