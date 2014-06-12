@@ -336,9 +336,9 @@ public:
 	 * it removes first all blockers passing through 'ab'
 	 */
 	void contract_edge(Vertex_handle a, Vertex_handle b){
+		assert(this->contains_vertex(a));
+		assert(this->contains_vertex(b));
 		assert(this->contains_edge(a,b));
-
-		//		if (a.vertex>b.vertex) std::swap(a,b);
 
 		// if some blockers passes through 'ab', we remove them.
 		if (!link_condition(a,b)){
@@ -434,6 +434,9 @@ public:
 		// We add the new blockers through c
 		for(auto block : blocker_to_add)
 			this->add_blocker(block);
+
+		assert(this->contains_vertex(a));
+		assert(!this->contains_vertex(b));
 	}
 
 	//@}

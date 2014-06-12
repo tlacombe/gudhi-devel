@@ -12,8 +12,12 @@
 
 // todo remove the queue to be independent from cgal
 #include <CGAL/Modifiable_priority_queue.h>
+
+
+#include <list>
 #include <boost/scoped_array.hpp>
 #include <boost/scoped_ptr.hpp>
+
 
 #include "Edge_profile.h"
 #include "policies/Cost_policy.h"
@@ -51,7 +55,10 @@ namespace contraction {
  * TODO expliquer la pile
  */
 //@TODO constants iterator
-template<class GeometricSimplifiableComplex, class EdgeProfile = Edge_profile<GeometricSimplifiableComplex> >
+template<
+class GeometricSimplifiableComplex,
+class EdgeProfile = Edge_profile<GeometricSimplifiableComplex>
+>
 class Skeleton_blocker_contractor : private Dummy_complex_visitor<typename GeometricSimplifiableComplex::Vertex_handle>{
 
 	GeometricSimplifiableComplex& complex_;
@@ -77,11 +84,10 @@ public:
 	typedef Cost_policy<Profile> Cost_policy_;
 	typedef Placement_policy<Profile> Placement_policy_;
 	typedef Valid_contraction_policy<Profile> Valid_contraction_policy_;
-
-
-
-
 	typedef Contraction_visitor<EdgeProfile> Contraction_visitor_;
+	typedef Edge_profile_factory<EdgeProfile> Edge_profile_factory_;
+
+
 
 	typedef boost::optional<double> Cost_type;
 	typedef boost::optional<Point> Placement_type ;
@@ -148,7 +154,7 @@ private:
 	typedef typename PQ::handle pq_handle ;
 
 
-	// An Edge_data is associated with EVERY edge in the complex (collapsable or not).
+	// An Edge_data is associated with EVERY edge in the complex (collapsible or not).
 	// It relates the edge with the PQ-handle needed to update the priority queue
 	// It also relates the edge with a policy-based cache
 	class Edge_data
@@ -191,7 +197,10 @@ private:
 	}
 
 	Profile create_profile(Edge_handle edge){
-		return Profile(complex_,edge);
+		if(edge_profile_factory_)
+			return edge_profile_factory_->make_profile(complex_,edge);
+		else
+			return Profile(complex_,edge);
 	}
 
 
@@ -249,12 +258,9 @@ private:
 
 		std::size_t id = 0 ;
 
-		EdgeIterator edge_it;
-		for(edge_it = complex_.edge_range().begin();
-				edge_it != complex_.edge_range().end();
-				++edge_it
-		){
-			Edge_handle edge = *edge_it;
+		//		EdgeIterator edge_it;
+		for(auto edge : complex_.edge_range()){
+			//			Edge_handle edge = *edge_it;
 			complex_[edge].index() = id++;
 			Profile const& profile = create_profile(edge);
 			Edge_data& data = get_data(edge);
@@ -336,6 +342,19 @@ public:
 		}
 	}
 
+
+	bool is_in_heap(Edge_handle edge) const{
+		if(heap_PQ_->empty()) return false;
+		else{
+			return edge_data_array_[get_undirected_edge_id(edge)].is_in_PQ();
+		}
+	}
+
+	bool is_heap_empty() const{
+		return heap_PQ_->empty();
+	}
+
+
 	/**
 	 * @brief Returns an Edge_handle and a Placement_type. This pair consists in
 	 * the edge with the lowest cost in the heap together with its placement.
@@ -367,6 +386,7 @@ public:
 	 placement_policy_(new First_vertex_placement<Profile>),
 	 valid_contraction_policy_(new Link_condition_valid_contraction<Profile>),
 	 contraction_visitor_(new Contraction_visitor_()),
+	 edge_profile_factory_(0),
 	 initial_num_edges_heap_(0),
 	 current_num_edges_heap_(0)
 	{
@@ -379,21 +399,23 @@ public:
 	 * @brief Constructor with customed policies.
 	 */
 	Skeleton_blocker_contractor(GeometricSimplifiableComplex& complex,
-			Cost_policy_ *cost_policy_,
-			Placement_policy_ * placement_policy_,
-			Valid_contraction_policy_ * valid_contraction_policy_,
-			Contraction_visitor_* contraction_visitor_ = new Contraction_visitor_()
+			Cost_policy_ *cost_policy,
+			Placement_policy_ * placement_policy,
+			Valid_contraction_policy_ * valid_contraction_policy,
+			Contraction_visitor_* contraction_visitor = new Contraction_visitor_(),
+			Edge_profile_factory_* edge_profile_factory = NULL
 	):
 		complex_(complex),
-		cost_policy_(cost_policy_),
-		placement_policy_(placement_policy_),
-		valid_contraction_policy_(valid_contraction_policy_),
-		contraction_visitor_(contraction_visitor_),
+		cost_policy_(cost_policy),
+		placement_policy_(placement_policy),
+		valid_contraction_policy_(valid_contraction_policy),
+		contraction_visitor_(contraction_visitor),
+		edge_profile_factory_(edge_profile_factory),
 		initial_num_edges_heap_(0),
 		current_num_edges_heap_(0)
 	{
 		complex_.set_visitor(this);
-		if(contraction_visitor_) contraction_visitor_->on_started(complex);
+		if(contraction_visitor) contraction_visitor->on_started(complex);
 		collect_edges();
 	}
 
@@ -402,41 +424,60 @@ public:
 
 
 private:
+
+
 	void contract_edge(const Profile& profile, Placement_type placement ) {
 		if(contraction_visitor_) contraction_visitor_->on_contracting(profile,placement);
 
 		assert(placement);
 
 		profile.complex().point(profile.v0_handle()) = *placement;
-		profile.complex().point(profile.v1_handle()) = *placement; // remark optional since v1 would deactivated
 
+		// remark : this is not necessary since v1 will be deactivated
+		//	profile.complex().point(profile.v1_handle()) = *placement;
 		complex_.contract_edge(profile.v0_handle(),profile.v1_handle());
+
+		update_changed_edges();
 
 		// the visitor could do something as complex_.remove_popable_blockers();
 		if(contraction_visitor_) contraction_visitor_->on_contracted(profile,placement);
 	}
 
 private:
+
+	// every time the visitor's method on_changed_edge is called, it adds an
+	// edge to changed_edges_
+	std::vector< Edge_handle > changed_edges_;
+
 	/**
 	 * @brief we update the cost and the position in the heap of an edge that has
 	 * been changed
 	 */
-	void on_changed_edge(Vertex_handle a,Vertex_handle b) override{
-		//1-get the Edge_handle corresponding to ab
-		//2-change the data in mEdgeArray[ab.id()]
-		//3-update the heap
+	inline void on_changed_edge(Vertex_handle a,Vertex_handle b) override{
 		boost::optional<Edge_handle> ab(complex_[std::make_pair(a,b)]);
 		assert(ab);
-		Edge_data& data = get_data(*ab);
-		Profile const& profile = create_profile(*ab);
-		data.cost() = get_cost(profile) ;
-		if ( data.is_in_PQ()){
-			update_in_PQ(*ab,data);
-		}
-		else{
-			insert_in_PQ(*ab,data);
-		}
+		changed_edges_.push_back(*ab);
 	}
+
+	void update_changed_edges(){
+		//xxx do a parralel for
+		for(auto ab : changed_edges_){
+			//1-get the Edge_handle corresponding to ab
+			//2-change the data in mEdgeArray[ab.id()]
+			//3-update the heap
+			Edge_data& data = get_data(ab);
+			Profile const& profile = create_profile(ab);
+			data.cost() = get_cost(profile) ;
+			if ( data.is_in_PQ()){
+				update_in_PQ(ab,data);
+			}
+			else{
+				insert_in_PQ(ab,data);
+			}
+		}
+		changed_edges_.clear();
+	}
+
 
 private:
 	void on_remove_edge(Vertex_handle a,Vertex_handle b) override{
@@ -527,9 +568,11 @@ private:
 	Cost_policy_ * cost_policy_;
 	Placement_policy_ * placement_policy_;
 	Valid_contraction_policy_* valid_contraction_policy_;
-
 	Contraction_visitor_* contraction_visitor_;
 
+	//in case the user wants to do something special when the edge profile
+	//are created (for instance add some info)
+	Edge_profile_factory_* edge_profile_factory_;
 	Edge_data_array edge_data_array_ ;
 
 	boost::scoped_ptr<PQ> heap_PQ_ ;

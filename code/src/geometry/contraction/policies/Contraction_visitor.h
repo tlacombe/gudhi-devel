@@ -18,7 +18,7 @@ namespace contraction {
  *@brief Interface for a visitor of the edge contraction process.
  */
 template <typename EdgeProfile>
-class Contraction_visitor {
+class Contraction_visitor {//: public Dummy_complex_visitor<typename EdgeProfile::Vertex_handle>  {
 public:
 	//typedef typename ComplexType::GeometryTrait GT;
 	typedef EdgeProfile Profile;
@@ -55,13 +55,16 @@ public:
 	/**
 	 * @brief Called when an edge is about to be contracted and replaced by a vertex whose position is *placement.
 	 */
-	virtual void on_contracting(const Profile &profile, boost::optional< Point > placement){}
+	virtual void on_contracting(const Profile &profile, boost::optional< Point > placement){
+	}
 
 	/**
 	 * @brief Called when after an edge has been contracted onto a new point placement.
 	 * A possibility would to remove popable blockers at this point for instance.
 	 */
-	virtual void on_contracted(const Profile  &profile, boost::optional< Point > placement){}
+	virtual void on_contracted(const Profile  &profile, boost::optional< Point > placement){
+
+	}
 
 
 	/**

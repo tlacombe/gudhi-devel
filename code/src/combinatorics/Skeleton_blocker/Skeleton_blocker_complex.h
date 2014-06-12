@@ -488,6 +488,8 @@ public:
 	Edge_handle add_edge(Vertex_handle a, Vertex_handle b){
 		assert(contains_vertex(a) && contains_vertex(b));
 
+		assert(a!=b);
+
 		auto edge_handle((*this)[std::make_pair(a,b)]);
 		//		std::pair<Edge_handle,bool> pair_descr_bool = (*this)[std::make_pair(a,b)];
 		//		Edge_handle edge_descr;
