@@ -20,7 +20,7 @@ public:
 	typedef typename EdgeProfile::Edge_handle Edge_handle;
 	typedef typename EdgeProfile::Point Point;
 	//typedef typename EdgeProfile::Edge_handle Edge_handle;
-	bool operator()(const EdgeProfile& profile,const boost::optional<Point>& placement){
+	bool operator()(const EdgeProfile& profile,const boost::optional<Point>& placement) const override{
 		Edge_handle edge(profile.edge_handle());
 		DBGMSG("Link_condition_valid_contraction:",profile.complex().link_condition(edge));
 		return profile.complex().link_condition(edge);

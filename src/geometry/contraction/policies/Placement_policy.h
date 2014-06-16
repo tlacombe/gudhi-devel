@@ -17,7 +17,7 @@ public:
 	typedef typename EdgeProfile::Point Point;
 	typedef boost::optional<Point> Placement_type;
 
-	virtual Placement_type operator()(const EdgeProfile& profile)=0;
+	virtual Placement_type operator()(const EdgeProfile& profile) const=0;
 	virtual ~Placement_policy(){};
 };
 

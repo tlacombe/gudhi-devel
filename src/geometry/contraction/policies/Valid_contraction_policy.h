@@ -15,7 +15,7 @@ public:
 	typedef typename EdgeProfile::Edge_handle Edge_handle;
 	typedef typename EdgeProfile::Graph_vertex Graph_vertex;
 
-	virtual bool operator()(const EdgeProfile& profile,const boost::optional<Point>& placement)=0;
+	virtual bool operator()(const EdgeProfile& profile,const boost::optional<Point>& placement) const =0;
 	virtual ~Valid_contraction_policy(){};
 };
 
