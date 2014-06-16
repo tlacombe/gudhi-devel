@@ -30,7 +30,8 @@ public:
 
 
 
-	Edge_profile( GeometricSimplifiableComplex& complex,Edge_handle edge):complex_(complex),edge_handle_(edge)
+	Edge_profile( GeometricSimplifiableComplex& complex,Edge_handle edge):complex_(complex),edge_handle_(edge),
+			v0_(complex_.first_vertex(edge_handle_)),v1_(complex_.second_vertex(edge_handle_))
 {
 		assert(complex_.get_address(complex_[edge_handle_].first()));
 		assert(complex_.get_address(complex_[edge_handle_].second()));
@@ -59,13 +60,17 @@ public:
 
 
 	Vertex_handle v0_handle() const{
-		Root_vertex_handle root = complex_[edge_handle_].first();
-		return *complex_.get_address(root);
+		return v0_;
+//		Root_vertex_handle root = complex_[edge_handle_].first();
+//		assert(complex_.get_address(root));
+//		return *complex_.get_address(root);
 	}
 
 	Vertex_handle v1_handle() const{
-		Root_vertex_handle root = complex_[edge_handle_].second();
-		return *complex_.get_address(root);
+		return v1_;
+//		Root_vertex_handle root = complex_[edge_handle_].second();
+//		assert(complex_.get_address(root));
+//		return *complex_.get_address(root);
 	}
 
 	const Point& p0() const {return complex_.point(v0_handle());}
@@ -81,6 +86,10 @@ private:
 	GeometricSimplifiableComplex& complex_;
 
 	Edge_handle edge_handle_;
+
+	Vertex_handle v0_;
+
+	Vertex_handle v1_;
 
 };
 

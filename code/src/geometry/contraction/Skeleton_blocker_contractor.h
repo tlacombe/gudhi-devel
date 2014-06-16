@@ -8,6 +8,8 @@
 #ifndef GUDHI_SKELETON_BLOCKER_CONTRACTOR_H_
 #define GUDHI_SKELETON_BLOCKER_CONTRACTOR_H_
 
+#include <omp.h>
+
 #include <cassert>
 
 // todo remove the queue to be independent from cgal
@@ -187,16 +189,23 @@ private:
 		return complex_[edge].index() ;
 	}
 
-	Edge_data& get_data ( Edge_handle edge ) const
+
+	const Edge_data& get_data ( Edge_handle edge ) const
 	{
 		return edge_data_array_[get_undirected_edge_id(edge)];
 	}
 
-	Cost_type get_cost(const Profile & profile){
+
+	Edge_data& get_data ( Edge_handle edge )
+	{
+		return edge_data_array_[get_undirected_edge_id(edge)];
+	}
+
+	Cost_type get_cost(const Profile & profile) const{
 		return (*cost_policy_)(profile,get_placement(profile));
 	}
 
-	Profile create_profile(Edge_handle edge){
+	Profile create_profile(Edge_handle edge) const{
 		if(edge_profile_factory_)
 			return edge_profile_factory_->make_profile(complex_,edge);
 		else
@@ -255,10 +264,9 @@ private:
 
 		heap_PQ_.reset( new PQ (size, Compare_cost(this), Undirected_edge_id(this) ) ) ;
 
-
 		std::size_t id = 0 ;
 
-		//		EdgeIterator edge_it;
+
 		for(auto edge : complex_.edge_range()){
 			//			Edge_handle edge = *edge_it;
 			complex_[edge].index() = id++;
@@ -274,15 +282,15 @@ private:
 
 	}
 
-	bool should_stop(double lCost,const Profile &profile){
+	bool should_stop(double lCost,const Profile &profile) const{
 		return false;
 	}
 
-	boost::optional<Point> get_placement(const Profile& profile){
+	boost::optional<Point> get_placement(const Profile& profile) const{
 		return (*placement_policy_)(profile);
 	}
 
-	bool is_contraction_valid( Profile const& profile, Placement_type placement ){
+	bool is_contraction_valid( Profile const& profile, Placement_type placement ) const{
 		return (*valid_contraction_policy_)(profile,placement);
 	}
 
@@ -429,13 +437,21 @@ private:
 	void contract_edge(const Profile& profile, Placement_type placement ) {
 		if(contraction_visitor_) contraction_visitor_->on_contracting(profile,placement);
 
+		assert(complex_.contains_vertex(profile.v0_handle()));
+		assert(complex_.contains_vertex(profile.v1_handle()));
 		assert(placement);
 
 		profile.complex().point(profile.v0_handle()) = *placement;
 
+		auto v1_handle = profile.v1_handle();
+
 		// remark : this is not necessary since v1 will be deactivated
 		//	profile.complex().point(profile.v1_handle()) = *placement;
+
 		complex_.contract_edge(profile.v0_handle(),profile.v1_handle());
+
+		assert(complex_.contains_vertex(profile.v0_handle()));
+		assert(!complex_.contains_vertex(v1_handle));
 
 		update_changed_edges();
 
@@ -461,20 +477,61 @@ private:
 
 	void update_changed_edges(){
 		//xxx do a parralel for
-		for(auto ab : changed_edges_){
+		std::vector<Cost_type> changed_edges_costs(changed_edges_.size(),Cost_type());
+
+//		#pragma omp parallel for
+		for(unsigned i = 0 ; i< changed_edges_.size(); ++i){
 			//1-get the Edge_handle corresponding to ab
 			//2-change the data in mEdgeArray[ab.id()]
 			//3-update the heap
-			Edge_data& data = get_data(ab);
-			Profile const& profile = create_profile(ab);
+			Edge_data& data = get_data(changed_edges_[i]);
+			Profile const& profile = create_profile(changed_edges_[i]);
 			data.cost() = get_cost(profile) ;
-			if ( data.is_in_PQ()){
-				update_in_PQ(ab,data);
-			}
-			else{
-				insert_in_PQ(ab,data);
+
+//#pragma omp critical
+//			{
+//				if ( data.is_in_PQ()){
+//					update_in_PQ(changed_edges_[i],data);
+//				}
+//				else{
+//					insert_in_PQ(changed_edges_[i],data);
+//				}
+//			}
+		}
+
+		for(unsigned i = 0 ; i< changed_edges_.size(); ++i){
+			//1-get the Edge_handle corresponding to ab
+			//2-change the data in mEdgeArray[ab.id()]
+			//3-update the heap
+			Edge_data& data = get_data(changed_edges_[i]);
+			{
+				if ( data.is_in_PQ()){
+					update_in_PQ(changed_edges_[i],data);
+				}
+				else{
+					insert_in_PQ(changed_edges_[i],data);
+				}
 			}
 		}
+
+
+
+
+		//
+		//		for(auto ab : changed_edges_){
+		//			//1-get the Edge_handle corresponding to ab
+		//			//2-change the data in mEdgeArray[ab.id()]
+		//			//3-update the heap
+		//			Edge_data& data = get_data(ab);
+		//			Profile const& profile = create_profile(ab);
+		//			data.cost() = get_cost(profile) ;
+		//			if ( data.is_in_PQ()){
+		//				update_in_PQ(ab,data);
+		//			}
+		//			else{
+		//				insert_in_PQ(ab,data);
+		//			}
+		//		}
 		changed_edges_.clear();
 	}
 

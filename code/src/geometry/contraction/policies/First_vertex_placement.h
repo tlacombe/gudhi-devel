@@ -25,7 +25,7 @@ public:
 
 	typedef typename Placement_policy<EdgeProfile>::Placement_type Placement_type;
 
-	Placement_type operator()(const EdgeProfile& profile){
+	Placement_type operator()(const EdgeProfile& profile) const override{
 		return Placement_type(profile.p0());
 	}
 };

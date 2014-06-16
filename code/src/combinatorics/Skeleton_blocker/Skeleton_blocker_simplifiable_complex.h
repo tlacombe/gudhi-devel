@@ -250,6 +250,8 @@ public:
 	 */
 	bool link_condition(Edge_handle & e) const{
 		const Graph_edge& edge = (*this)[e];
+		assert(this->get_address(edge.first()));
+		assert(this->get_address(edge.second()));
 		Vertex_handle a(*this->get_address(edge.first()));
 		Vertex_handle b(*this->get_address(edge.second()));
 		return link_condition(a,b);
