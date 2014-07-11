@@ -1,3 +1,0 @@
-/Users/cmaria/Desktop/BackupMe/Gudhi_library_1.0.1/build/CMakeFiles/performance_rips_persistence.dir
-/Users/cmaria/Desktop/BackupMe/Gudhi_library_1.0.1/build/CMakeFiles/rips_multifield_persistence.dir
-/Users/cmaria/Desktop/BackupMe/Gudhi_library_1.0.1/build/CMakeFiles/rips_persistence.dir

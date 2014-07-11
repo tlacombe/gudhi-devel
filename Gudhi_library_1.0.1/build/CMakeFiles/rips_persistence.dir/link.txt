@@ -1,1 +1,0 @@
-/usr/bin/c++   -std=c++0x -O3 -DNDEBUG -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/rips_persistence.dir/examples/rips_persistence.cpp.o  -o rips_persistence  /usr/local/lib/libboost_program_options-mt.dylib /usr/local/lib/libboost_system-mt.dylib 
