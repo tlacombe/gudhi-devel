@@ -1,0 +1,364 @@
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% List of Notations, PhD thesis
+%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+\def\restriction#1#2{\mathchoice
+              {\setbox1\hbox{${\displaystyle #1}_{\scriptstyle #2}$}
+              \restrictionaux{#1}{#2}}
+              {\setbox1\hbox{${\textstyle #1}_{\scriptstyle #2}$}
+              \restrictionaux{#1}{#2}}
+              {\setbox1\hbox{${\scriptstyle #1}_{\scriptscriptstyle #2}$}
+              \restrictionaux{#1}{#2}}
+              {\setbox1\hbox{${\scriptscriptstyle #1}_{\scriptscriptstyle #2}$}
+              \restrictionaux{#1}{#2}}}
+\def\restrictionaux#1#2{{#1\,\smash{\vrule height .8\ht1 depth .85\dp1}}_{\,#2}} 
+
+
+
+
+%\theoremstyle{plain}
+\newtheorem{thm}{Theorem}
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{prop}[thm]{Proposition}
+\newtheorem{cor}[thm]{Corollary}
+%\theoremstyle{definition}
+\newtheorem{defn}[thm]{Definition}
+\newtheorem{conj}[thm]{Conjecture}
+\newtheorem{exmp}[thm]{Example}
+%\theoremstyle{remark}
+\newtheorem{rem}{Remark}
+%\newtheorem*{note}{Note}
+%\newtheorem{case}{Case}
+
+
+
+\newcommand{\Xtop}{\mathbb{X}}%top space
+\newcommand{\Ytop}{\mathbb{Y}}%other top space
+%--------------------------------------------------------------
+% General Algebra
+\newcommand{\Ring}{\mathcal{R}}
+\newcommand{\Field}{\Bbbk}
+\newcommand{\Module}{\mathcal{M}}
+
+\newcommand{\Group}{\text{G}}     % a group
+\newcommand{\Hgroup}{\text{H}}    % another group, or subgroup
+\newcommand{\Tgroup}{\text{T}}    % torsion subgroup
+
+
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\N}{\mathbb{N}}
+ 
+
+\newcommand{\Kcat}{\mathbf{Cpx}}
+\newcommand{\Homfunc}{\text{Hom}} %homology functor
+
+\newcommand{\Pos}{P}              %poset
+\newcommand{\Poscat}{\mathbf{\Pos}}  %category induced by a poset
+
+\newcommand{\idcat}{\mathds{1}}
+\newcommand{\Vectcat}{\Field\mathbf{Vect}}
+
+\newcommand{\quiv}{\mathcal{Q}}
+
+
+%------------------------------------------------------------------
+%\def\tail{last}
+%\newcommand{\D}{\mathcal{D}}
+%\newcommand{\Dann}{\mathcal{D}_{\text{ann}}}
+%newcommand{\Hrow}{\mathcal{H}_{\text{row}}}
+
+% %newcommand{\rank}{\mbox{rank%\newcommand{\ann}{\mathsf{a}}
+% %\newcommand{\wb}{w_{\text{b}}}
+% %\newcommand{\UF}{\Uvs\hspace{-1pt}\mathcal{F}}
+% %\newcommand{\ST}{\mathcal{S}\hspace{-1pt}\mathcal{T}}
+% %\newcommand{\CC}{\mathcal{C}\hspace{-1pt}\mathcal{C}}
+% %\newcommand{\SC}{\mathcal{S}\hspace{-1pt}\mathcal{C}}
+% %\newcommand{\C}{\mathcal{C}}
+% %\newcommand{\comp}{\mathcal{C}}
+% %\newcommand{\Tapp}{\mathcal{T}_{\text{app}}}
+% %\newcommand{\Dm}{D_{\text{m}}}
+% %\newcommand{\Sann}{\mathcal{S}_{\text{ann}}}
+% %\newcommand{\AV}{{\mathcal{AV}}}
+
+% %Quiver representations
+\newcommand{\Xmod}{\mathbb{X}}
+\newcommand{\Ymod}{\mathbb{Y}}
+
+\newcommand{\Xmat}{\text{{\bf X}}}
+\newcommand{\Ymat}{\text{{\bf Y}}}
+
+% \newcommand{\low}{\text{low}}
+
+\newcommand{\Umod}{\mathbb{U}}
+\newcommand{\Wmod}{\mathbb{W}}
+
+\newcommand{\Umodbar}{\overline{\Umod}}
+\newcommand{\Vmodbar}{\overline{\Vmod}}
+
+\newcommand{\Vmod}{\mathbb{V}}
+\newcommand{\Smod}{\mathbb{S}}
+\newcommand{\Imod}{\mathbb{I}}
+% % Right/Left filtrations
+% \newcommand{\Rfil}{\mathcal{R}}
+% \newcommand{\Lfil}{\mathcal{L}}
+
+% \newcommand{\Rfam}{\mathcal{R}}
+% \newcommand{\Lfam}{\mathcal{L}}
+
+\newcommand{\x}{{\bf x}}
+\newcommand{\y}{{\bf y}}
+\newcommand{\xbar}{\overline{\x}}
+\newcommand{\ybar}{\overline{\y}}
+\newcommand{\bbar}{\overline{b}}
+\newcommand{\dbar}{\overline{d}}
+
+\newcommand{\uv}{u}
+\newcommand{\vu}{v}
+\newcommand{\uvbar}{\overline{\uv}}
+\newcommand{\vubar}{\overline{\vu}}
+
+
+
+% \newcommand{\im}{\text{im}}
+ \newcommand{\coker}{\text{cok}}
+% %\ker already defined
+\newcommand{\U}{U}
+%\newcommand{\V}{V} % vector space
+\newcommand{\W}{W} % other vector space
+
+\newcommand{\Uvs}{\mathcal{U}} %vs of right-uplets
+\newcommand{\Vvs}{\mathcal{V}} %vs of left-uplets
+
+% \newcommand{\id}{\text{id}}
+
+ \newcommand{\bidx}{\text{{\bf b}}}
+ \newcommand{\didx}{\text{{\bf d}}}
+ \newcommand{\leqb}{\leq_{\bidx}}
+ \newcommand{\leqd}{\leq_{\didx}}
+
+% \newcommand{\quotient}[2]{{\raisebox{.2em}{$#1$}\left/\raisebox{-.2em}{$#2$}\right.}}
+
+
+\DeclareMathOperator*{\maxb}{max_{\leqb}}
+\DeclareMathOperator*{\maxd}{max_{\leqd}}
+
+
+
+%--------------------------------------------------------------
+% Geometry/General Topology
+\newcommand{\X}{\mathbb{X}}
+\newcommand{\dist}{\mathsf{d}}
+
+% Arithmetic
+\newcommand{\modulo}{ \ \text{mod}\ }
+% \newcommand{\gcd}{\mathrm{gcd}}
+
+%--------------------------------------------------------------
+% Linear Algebra
+\newcommand{\low}{\text{low}}
+
+% \newcommand{\Rmat}{\text{{\bf R}}}
+% \newcommand{\Matrix}{\text{{\bf M}}}
+\newcommand{\Rmat}{\mathbf{R}}
+\newcommand{\Matrix}{\mathbf{M}}
+
+
+\newcommand{\id}{\mathrm{id}}
+% \newcommand{\ker}{\mathrm{ker}}
+\newcommand{\im}{\mathrm{im} \ }
+\newcommand{\cok}{\mathrm{cok}\ }
+\newcommand{\rank}{\mbox{rank}}
+
+%--------------------------------------------------------------
+% Simplicial complex
+\newcommand{\V}{V}                        %vertices and vector space...
+\newcommand{\K}{\mathbf{K}}               %simplicial complex
+
+\newcommand{\Link}{{\rm Lk}}              % Link
+\newcommand{\Star}{{\rm St}}              % Star
+
+\newcommand{\Ktilde}{\widetilde{\K}}
+\newcommand{\Khat}{\widehat{\K}}
+\newcommand{\Kbar}{\overline{\K}}               %simplicial complex
+
+
+ \newcommand{\tail}{last}
+
+\newcommand{\wit}{{\rm Wit}}
+\newcommand{\rwit}{$\mbox{{\rm Wit}}^{\rho}$}
+
+\newcommand{\Dim}[1]{\text{dim}(#1)}
+
+%--------------------------------------------------------------
+% Algebraic Topology
+\newcommand{\Chain}{\mathbf{C}}
+\newcommand{\Chaincpx}{\mathcal{\Chain}}
+
+\newcommand{\Cat}{\mathfrak{C}}
+
+\newcommand{\Chaincat}{\mathbf{Chain}} %categroy of chain complexes with chain maps
+
+\newcommand{\Hom}{\mathbf{H}}
+\newcommand{\Cycles}{\mathbf{Z}}
+\newcommand{\Boundaries}{\mathbf{B}}
+\newcommand{\Betti}{\beta}
+% \newcommand{\Chaintilde}{\widetilde{\Chain}}
+% \newcommand{\partialtilde}{\widetilde{\partial}}
+% \newcommand{\Hmat}{\mathrm{H}}
+
+% \newcommand{\Tarea}{\mathcal{T}}
+% \newcommand{\Areas}{\mathcal{A}}
+
+%--------------------------------------------------------------
+% Data Structures
+\newcommand{\ann}{\mathsf{a}}
+\newcommand{\wb}{w_{\text{b}}}
+\newcommand{\UF}{\mathcal{U}\hspace{-1pt}\mathcal{F}} %union-find ds
+\newcommand{\ST}{\mathcal{S}\hspace{-1pt}\mathcal{T}} %simplex tree ds
+\newcommand{\CC}{\mathcal{C}\hspace{-1pt}\mathcal{C}}
+\newcommand{\SC}{\mathcal{S}\hspace{-1pt}\mathcal{C}}
+\newcommand{\C}{\mathcal{C}}
+\newcommand{\comp}{\mathcal{C}}
+\newcommand{\Tapp}{\mathcal{T}_{\text{app}}}
+\newcommand{\Dm}{D_{\text{m}}}
+\newcommand{\Sann}{\mathcal{S}_{\text{ann}}}
+\newcommand{\AV}{{\mathcal{AV}}}
+
+\newcommand{\Graph}{\mathcal{G}}
+\newcommand{\Graphtilde}{\widetilde{\Graph}}
+
+\newcommand{\length}{\ell}
+
+% Complexity
+\newcommand{\wordlength}{\mathsf{w}} %a mem word has w bits
+%\newcommand{\Diag}{\mathsf{D}}       %cpx analysis, nb points in pers.diag
+\newcommand{\Acpx}{\mathsf{A}}       %cpx of arithmetic operation
+\newcommand{\torsion}{\mathsf{t}}
+\newcommand{\Dgm}{\text{Dgm}}
+\newcommand{\bits}{\mathsf{B}}
+
+\newcommand{\cmax}{\mathsf{c}_{\max}}
+\newcommand{\rmax}{\mathsf{r}_{\max}}
+
+\newcommand{\Cpx}{\mathcal{C}}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+% MACROS
+% ------------------------------------------------------------------
+% ------------------------------------------------------------------
+% MACROS
+% ------------------------------------------------------------------
+% \def\tail{last}
+
+% % amsthm
+% \newtheorem{thm}{Theorem}
+% \newtheorem{lem}[thm]{Lemma}
+% \newtheorem{prop}[thm]{Proposition}
+% \newtheorem{cor}[thm]{Corollary}
+% \newtheorem{defi}[thm]{Definition}
+% %%% 
+% \newcommand{\Ddiag}{\mathcal{D}_{\neq}}
+% \newcommand{\D}{\mathcal{D}}
+% \newcommand{\Dann}{\mathcal{D}_{\text{ann}}}
+% \newcommand{\Hrow}{\mathcal{H}_{\text{row}}}
+
+% \newcommand{\itilde}{\widetilde{i}}
+% \newcommand{\jtilde}{\widetilde{j}}
+% \newcommand{\ftilde}{\widetilde{f}}
+% \newcommand{\gtilde}{\widetilde{g}}
+% % Geometry/General Topology
+% \newcommand{\X}{\mathbb{X}}
+% \newcommand{\dist}{\mathsf{d}}
+
+
+
+% % Linear Algebra
+% \newcommand{\Matrix}{\mathrm{M}}
+% \newcommand{\id}{\mathrm{id}}
+% % \newcommand{\ker}{\mathrm{ker}}
+% \newcommand{\im}{\mathrm{im} \ }
+% \newcommand{\cok}{\mathrm{cok}\ }
+% \newcommand{\rank}{\mbox{rank}}
+
+% % Simplicial complex
+% \newcommand{\Ktilde}{\widetilde{\K}}  %another simplicial complex
+% \newcommand{\Khat}{\widehat{\K}}      %another simplicial complex
+
+
+% % Algebraic Topology
+% \newcommand{\Chain}{\mathbf{C}}
+% \newcommand{\Hom}{\mathbf{H}}
+% \newcommand{\Cycles}{\mathbf{Z}}
+% \newcommand{\Boundaries}{\mathbf{B}}
+
+% \newcommand{\Chaintilde}{\widetilde{\Chain}}
+% \newcommand{\partialtilde}{\widetilde{\partial}}
+% \newcommand{\Hmat}{\mathrm{H}}
+
+% \newcommand{\Tarea}{\mathcal{T}}
+% \newcommand{\Areas}{\mathcal{A}}
+
+
+% % Data Structures
+% \newcommand{\ann}{\mathsf{a}}
+% \newcommand{\wb}{w_{\text{b}}}
+% \newcommand{\UF}{\mathcal{U}\hspace{-1pt}\mathcal{F}}
+% \newcommand{\ST}{\mathcal{S}\hspace{-1pt}\mathcal{T}}
+% \newcommand{\CC}{\mathcal{C}\hspace{-1pt}\mathcal{C}}
+% \newcommand{\SC}{\mathcal{S}\hspace{-1pt}\mathcal{C}}
+% \newcommand{\C}{\mathcal{C}}
+% \newcommand{\comp}{\mathcal{C}}
+% \newcommand{\Tapp}{\mathcal{T}_{\text{app}}}
+% \newcommand{\Dm}{D_{\text{m}}}
+% \newcommand{\Sann}{\mathcal{S}_{\text{ann}}}
+% \newcommand{\AV}{{\mathcal{AV}}}
+
+% \newcommand{\Graph}{\mathcal{G}}
+% \newcommand{\Graphtilde}{\widetilde{\Graph}}
+
+% \newcommand{\length}{\ell}
+
+% % Complexity
+% \newcommand{\wordlength}{\mathsf{w}}%a mem word has w bits
+% \newcommand{\Diag}{\mathsf{D}} %cpx analysis, nb points in pers.diag
+% \newcommand{\Acpx}{\mathsf{A}}%cpx of arithmetic operation
+% \newcommand{\torsion}{\mathsf{t}}
+% \newcommand{\Dgm}{\text{Dgm}}
+% \newcommand{\bits}{\mathsf{B}}
+
+% \newcommand{\cmax}{\mathsf{c}_{\max}}
+% \newcommand{\rmax}{\mathsf{r}_{\max}}
+
+% \newcommand{\Cpx}{\mathcal{C}}
+
+% % Writing Styles
+% \newcommand{\Note}[1]{\vspace{0.3cm}  \small{ \underline{Note}: #1}\vspace{0.3cm}}
+% \newcommand{\Comment}[1]{\small{\bf [ #1 ]}}
+% % \usepackage[overload]{textcase}
+% \newcommand{\answer}[1]{\textcolor{red}{\textsf{Answer: #1}}}
+% \newcommand{\parag}[1]{\vspace{0.1cm}\noindent\underline{{\bf #1}}{\bf :}}
+% \newcommand{\subparag}[1]{\noindent\underline{{\it #1}}{\it :}}
+% \newcommand{\algocom}[1]{\small{\bf #1}}
+% \newcommand{\disjcup}{\mathbin{\dot{\cup}}}
+
+
+
