@@ -99,7 +99,7 @@ public:
 	typedef typename EdgeProfile::Complex Complex_;
 	virtual EdgeProfile make_profile(
 			Complex_& complex,
-			Edge_handle_ edge){
+			Edge_handle_ edge) const{
 		return EdgeProfile(complex,edge);
 	}
 

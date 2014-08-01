@@ -8,14 +8,24 @@
 #ifndef GUDHI_SKELETON_BLOCKER_COMPLEX_ITERATORS_H_
 #define GUDHI_SKELETON_BLOCKER_COMPLEX_ITERATORS_H_
 
+
+#include "boost/iterator/iterator_facade.hpp"
+
 /**
  *@brief Iterator on the vertices of a simplicial complex
  *@remark The increment ++ operators go to the next active vertex.
  */
 template<typename SkeletonBlockerDS>
 class Skeleton_blocker_complex<SkeletonBlockerDS>::Complex_vertex_iterator
+: public boost::iterator_facade < Complex_vertex_iterator
+                                , typename SkeletonBlockerDS::Vertex_handle const
+                                , boost::forward_traversal_tag
+                                , typename SkeletonBlockerDS::Vertex_handle const
+                                >
 {
 	friend class Skeleton_blocker_complex<SkeletonBlockerDS> ;
+	friend class boost::iterator_core_access;
+
 private:
 	const Skeleton_blocker_complex<SkeletonBlockerDS>* complex;
 	std::pair<boost_vertex_iterator, boost_vertex_iterator> vertexIterator;
@@ -30,59 +40,42 @@ private:
 		complex(complex_),
 		vertexIterator(vertices(complex_->skeleton))
 {
+		if(!finished() && !is_active()) {
+			goto_next_valid();
+		}
 }
-
 public:
 	Complex_vertex_iterator(std::pair<boost_vertex_iterator, boost_vertex_iterator>& pair):
 		vertexIterator(pair),complex(NULL){
+		if(!finished() && !is_active()) {
+			goto_next_valid();
+		}
 	}
-
-	bool operator==(const Complex_vertex_iterator& other){
-		return (vertexIterator == other.vertexIterator &&  complex == other.complex);
-	}
-
-	bool operator!=(const Complex_vertex_iterator& other){
-		return(!(*this == other));
+	bool equal(const Complex_vertex_iterator& other) const{
+		return vertexIterator == other.vertexIterator &&  complex == other.complex;
 	}
 private:
-	void goto_next_vertex(){
-//		if(!finished()){
+	void goto_next_valid(){
 			++vertexIterator.first;
-
-			//						bool is_active = (complex->skeleton[*vertexIterator.first]).is_active();
-			//			DBG(complex);
-			//			DBG(complex->num_vertices());
-			//			DBG(*vertexIterator.first);
-			if(!finished()){
-				bool is_active = ((*complex)[Vertex_handle(*vertexIterator.first)]).is_active();
-				if(!is_active) goto_next_vertex();
+			if(!finished() && !is_active()){
+				goto_next_valid();
 			}
-//		}
+	}
+
+	bool is_active() const{
+		return ((*complex)[Vertex_handle(*vertexIterator.first)]).is_active();
 	}
 
 public:
-	Complex_vertex_iterator& operator++(){
-		goto_next_vertex();
-		return(*this);
+	void increment () {goto_next_valid();}
+	Vertex_handle  dereference() const	{
+			return(Vertex_handle(*(vertexIterator.first)));
 	}
-
-	Complex_vertex_iterator operator++(int){
-		Complex_vertex_iterator tmp(*this);
-		goto_next_vertex();
-		return(tmp);
-	}
-
-	Vertex_handle  operator*()	{
-		// these two lines are just in case the first vertex isnt active
-		bool is_active = (complex->skeleton[*vertexIterator.first]).is_active();
-		if(!is_active) goto_next_vertex();
-		return(Vertex_handle(*(vertexIterator.first)));
-	}
-
 	bool finished() const{
 		return vertexIterator.first == vertexIterator.second;
 	}
 };
+
 
 
 template<typename SkeletonBlockerDS>

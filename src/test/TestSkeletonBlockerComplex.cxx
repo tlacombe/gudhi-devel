@@ -4,7 +4,6 @@
 #include <fstream>
 #include <sstream>
 #include "Utils.h"
-
 #include "Test.h"
 //#include "Skeleton_blocker/Simplex.h"
 #include "Skeleton_blocker/Skeleton_blocker_complex.h"
@@ -16,6 +15,12 @@
 //#include "Simple_edge.h"
 
 using namespace std;
+
+
+// xxx do smart pointer for each visitor
+//Complex complex(0,new Print_complex_visitor<Vertex_handle>());
+
+
 
 template<typename ComplexType> class Skeleton_blocker_link_complex;
 typedef Skeleton_blocker_complex<Skeleton_blocker_simple_traits> Complex;
@@ -432,6 +437,62 @@ bool test_link5(){
 	return L.num_vertices()==0;
 }
 
+bool test_link6(){
+	Complex complex(0,new Print_complex_visitor<Vertex_handle>());
+	// Build the complexes
+	build_complete(4,complex);
+	complex.add_blocker(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2));
+
+	Simplex_handle alpha(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2));
+
+	Skeleton_blocker_link_complex<Complex> link_blocker_alpha;
+
+	build_link_of_blocker(complex,alpha,link_blocker_alpha);
+
+	// Print result
+	PRINT(complex.to_string());
+	cerr <<endl<<endl;
+	PRINT(link_blocker_alpha.to_string());
+
+	// verification
+	return link_blocker_alpha.num_vertices()==1;
+}
+
+
+bool test_link7(){
+	Complex complex(0,new Print_complex_visitor<Vertex_handle>());
+	// Build the complexes
+	build_complete(6,complex);
+	complex.add_vertex();
+	complex.add_vertex();
+	for(int i = 3; i<6; ++i){
+		complex.add_edge(Vertex_handle(i),Vertex_handle(6));
+		complex.add_edge(Vertex_handle(i),Vertex_handle(7));
+	}
+	complex.add_edge(Vertex_handle(6),Vertex_handle(7));
+	complex.add_blocker(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2));
+	complex.add_blocker(Vertex_handle(3),Vertex_handle(4),Vertex_handle(5));
+
+	Simplex_handle alpha(Vertex_handle(3),Vertex_handle(4),Vertex_handle(5));
+
+	Skeleton_blocker_link_complex<Complex> link_blocker_alpha;
+
+	build_link_of_blocker(complex,alpha,link_blocker_alpha);
+
+	//the result should be the edge {6,7} plus the blocker {0,1,2}
+
+	// Print result
+	PRINT(complex.to_string());
+	cerr <<endl<<endl;
+	PRINT(link_blocker_alpha.to_string());
+
+	// verification
+	return link_blocker_alpha.num_vertices()==5 && link_blocker_alpha.num_edges()==4 && link_blocker_alpha.num_blockers()==1;
+}
+
+
+
+
 
 
 
@@ -498,6 +559,8 @@ int main (int argc, char *argv[])
 	tests_complex.add("test_link3",test_link3);
 	tests_complex.add("test_link4",test_link4);
 	tests_complex.add("test_link5",test_link5);
+	tests_complex.add("test_link6",test_link6);
+	tests_complex.add("test_link7",test_link7);
 
 	tests_complex.add("test iterator vertices",test_iterator_vertices);
 	tests_complex.add("test iterator edges",test_iterator_edge);

@@ -37,6 +37,8 @@
 
 #include "utils/Utils.h"
 
+//#define GUDHI_PARALLEL
+
 
 namespace contraction {
 
@@ -241,8 +243,6 @@ private:
 
 
 
-
-
 private:
 
 	/**
@@ -266,7 +266,7 @@ private:
 
 		std::size_t id = 0 ;
 
-
+		//xxx do a parralel for
 		for(auto edge : complex_.edge_range()){
 			//			Edge_handle edge = *edge_it;
 			complex_[edge].index() = id++;
@@ -429,8 +429,6 @@ public:
 
 
 
-
-
 private:
 
 
@@ -443,15 +441,13 @@ private:
 
 		profile.complex().point(profile.v0_handle()) = *placement;
 
-		auto v1_handle = profile.v1_handle();
-
 		// remark : this is not necessary since v1 will be deactivated
 		//	profile.complex().point(profile.v1_handle()) = *placement;
 
 		complex_.contract_edge(profile.v0_handle(),profile.v1_handle());
 
 		assert(complex_.contains_vertex(profile.v0_handle()));
-		assert(!complex_.contains_vertex(v1_handle));
+		assert(!complex_.contains_vertex(profile.v1_handle()));
 
 		update_changed_edges();
 
@@ -477,26 +473,28 @@ private:
 
 	void update_changed_edges(){
 		//xxx do a parralel for
-		std::vector<Cost_type> changed_edges_costs(changed_edges_.size(),Cost_type());
 
-//		#pragma omp parallel for
+		DBG("update edges");
+
+#ifdef GUDHI_PARALLEL
+		std::vector<Profile> profiles;
+		profiles.reserve(changed_edges_.size());
+
+//		for(unsigned i = 0 ; i< changed_edges_.size(); ++i){
+//			profiles.push_back(create_profile(changed_edges_[i]));
+//		}
+
+		#pragma omp parallel for
 		for(unsigned i = 0 ; i< changed_edges_.size(); ++i){
 			//1-get the Edge_handle corresponding to ab
 			//2-change the data in mEdgeArray[ab.id()]
 			//3-update the heap
-			Edge_data& data = get_data(changed_edges_[i]);
-			Profile const& profile = create_profile(changed_edges_[i]);
-			data.cost() = get_cost(profile) ;
+			Edge_data* data;
 
-//#pragma omp critical
-//			{
-//				if ( data.is_in_PQ()){
-//					update_in_PQ(changed_edges_[i],data);
-//				}
-//				else{
-//					insert_in_PQ(changed_edges_[i],data);
-//				}
-//			}
+			DBGVALUE(changed_edges_[i]);
+
+			data = &edge_data_array_[get_undirected_edge_id(changed_edges_[i])];
+			data->cost() = get_cost(create_profile(changed_edges_[i])) ;
 		}
 
 		for(unsigned i = 0 ; i< changed_edges_.size(); ++i){
@@ -514,24 +512,23 @@ private:
 			}
 		}
 
-
-
-
-		//
-		//		for(auto ab : changed_edges_){
-		//			//1-get the Edge_handle corresponding to ab
-		//			//2-change the data in mEdgeArray[ab.id()]
-		//			//3-update the heap
-		//			Edge_data& data = get_data(ab);
-		//			Profile const& profile = create_profile(ab);
-		//			data.cost() = get_cost(profile) ;
-		//			if ( data.is_in_PQ()){
-		//				update_in_PQ(ab,data);
-		//			}
-		//			else{
-		//				insert_in_PQ(ab,data);
-		//			}
-		//		}
+#else
+		//		sequential loop
+		for(auto ab : changed_edges_){
+			//1-get the Edge_handle corresponding to ab
+			//2-change the data in mEdgeArray[ab.id()]
+			//3-update the heap
+			Edge_data& data = get_data(ab);
+			Profile const& profile = create_profile(ab);
+			data.cost() = get_cost(profile) ;
+			if ( data.is_in_PQ()){
+				update_in_PQ(ab,data);
+			}
+			else{
+				insert_in_PQ(ab,data);
+			}
+		}
+#endif
 		changed_edges_.clear();
 	}
 
@@ -569,35 +566,9 @@ private:
 		// we go for all pairs xy that belongs to the blocker
 		// note that such pairs xy are necessarily edges of the complex
 		// by definition of a blocker
-		//		DBGVALUE(*blocker);
 
-		//		// boucle 2
-		//		//      gros bug -> pourquoi ce code loop???
-		//		// blocker est constant et ne devrais pas etre modifié pourtant
-		//		for ( Simplex_handle_iterator x = blocker->begin(); x!= blocker->end(); ++x){
-		//			DBGMSG("\n\nloopx, bl:",*blocker);
-		//			DBGMSG("loopx, x:",*x);
-		//
-		//			for(Simplex_handle_iterator y = x ; ++y != blocker->end(); ){
-		//				auto edge_descr = complex_[std::make_pair(*x,*y)].first;
-		//				Edge_data& data = get_data(edge_descr);
-		//				Profile const& profile = create_profile(edge_descr);
-		//
-		//				// cette ligne fait looper
-		//				data.cost() = get_cost(profile) ;
-		//				if ( !data.is_in_PQ() ){
-		//					insert_in_PQ(edge_descr,data);
-		//				}
-		//
-		//				DBGMSG("  loopy, x:",*x);
-		//				DBGMSG("  loopy, y:",*y);
-		//			}
-		//
-		//			DBGMSG("loopx end, x:",*x);
-		//		}
-
-		////		//boucle 3
-		////		// todo bug ce code ne loop pas mais moins efficace
+		// todo uniqument utile pour la link condition
+		// laisser à l'utilisateur? booleen update_heap_on_removed_blocker?
 		Simplex_handle blocker_copy(*blocker);
 		for (auto x = blocker_copy.begin(); x!= blocker_copy.end(); ++x){
 			for(auto y=x ; ++y != blocker_copy.end(); ){
