@@ -467,11 +467,11 @@ public:
 	}
 
 	Vertex_handle first_vertex(Edge_handle edge_handle) const{
-		return (*this)[(*this)[edge_handle].first()];
+		return source(edge_handle,skeleton);
 	}
 
 	Vertex_handle second_vertex(Edge_handle edge_handle) const{
-		return (*this)[(*this)[edge_handle].second()];
+		return target(edge_handle,skeleton);
 	}
 
 	/**
@@ -686,7 +686,7 @@ public:
 	/**
 	 * @return true iff s is a blocker of the simplicial complex
 	 */
-	bool contains_blocker(Blocker_handle s) const{
+	bool contains_blocker(const Blocker_handle s) const{
 		if (s->dimension()<2)
 			return false;
 
@@ -912,6 +912,22 @@ public:
 		std::vector<int> component(skeleton.vertex_set().size());
 		return boost::connected_components(this->skeleton,&component[0]) - num_vert_collapsed;
 	}
+
+
+	//todo remove
+	// do
+	void keep_only_largest_cc(){
+		std::vector<unsigned> component(skeleton.vertex_set().size());
+		boost::connected_components(this->skeleton,&component[0]);
+		auto maxCC = min_element(component.begin(),component.end());
+	    for (unsigned i = 0; i != component.size(); ++i){
+	    	if(component[i]!=*maxCC){
+	    		if(this->contains_vertex(Vertex_handle(i)))
+	    		this->remove_vertex(Vertex_handle(i));
+	    	}
+	    }
+	}
+
 
 	/**
 	 * @brief %Test if the complex is a cone.

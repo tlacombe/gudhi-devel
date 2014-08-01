@@ -116,6 +116,25 @@ bool test_contraction2(){
 	return test;
 }
 
+bool test_link_condition1(){
+
+	Complex complex(0);
+	// Build the complexes
+	build_complete(4,complex);
+	complex.add_blocker(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2));
+
+
+	// Print result
+	cerr << "complex complex"<< complex.to_string();
+	cerr <<endl<<endl;
+
+	bool weak_link_condition = complex.link_condition(Vertex_handle(1),Vertex_handle(2),true);
+
+	bool strong_link_condition = complex.link_condition(Vertex_handle(1),Vertex_handle(2),false);
+
+	return weak_link_condition && !strong_link_condition;
+}
+
 
 
 
@@ -269,6 +288,9 @@ int main (int argc, char *argv[])
 	Tests tests_simplifiable_complex;
 	tests_simplifiable_complex.add("Test contraction 1",test_contraction1);
 	tests_simplifiable_complex.add("Test contraction 2",test_contraction2);
+
+	tests_simplifiable_complex.add("Test Link condition 1",test_link_condition1);
+
 	tests_simplifiable_complex.add("Test remove popable blockers",test_remove_popable_blockers);
 
 

@@ -51,12 +51,23 @@ public:
 	//@{
 	Skeleton_blocker_simplifiable_complex(int num_vertices_ = 0,Visitor* visitor_=NULL):
 		Skeleton_blocker_complex<SkeletonBlockerDS>(num_vertices_,visitor_){	}
-	//@}
+
+
+	/**
+	 * @brief Constructor with a list of simplices
+	 * @details The list of simplices must be the list
+	 * of simplices of a simplicial complex, sorted with increasing dimension.
+	 */
+	Skeleton_blocker_simplifiable_complex(std::list<Simplex_handle>& simplices,Visitor* visitor_=NULL):
+		Skeleton_blocker_complex<SkeletonBlockerDS>(simplices,visitor_)
+		{}
 
 
 
 	virtual ~Skeleton_blocker_simplifiable_complex(){
 	}
+
+	//@}
 
 	/**
 	 * Returns true iff the blocker 'sigma' is popable.
@@ -64,12 +75,15 @@ public:
 	 * consists in the current complex without the blocker 'sigma'.
 	 * A blocker 'sigma' is then "popable" if the link of 'sigma'
 	 * in L is reducible.
+	 *
 	 */
-	virtual bool is_popable_blocker(Blocker_handle sigma){
-		this->remove_blocker(sigma);
-		Skeleton_blocker_link_complex<Skeleton_blocker_simplifiable_complex<SkeletonBlockerDS> > link_blocker(*this,*sigma);
-		this->add_blocker(sigma);
-		return link_blocker.is_contractible()==CONTRACTIBLE;
+	virtual bool is_popable_blocker(Blocker_handle sigma) const{
+		assert(this->contains_blocker(*sigma));
+		Skeleton_blocker_link_complex<Skeleton_blocker_simplifiable_complex> link_blocker_sigma;
+		build_link_of_blocker(*this,*sigma,link_blocker_sigma);
+
+		bool res = link_blocker_sigma.is_contractible()==CONTRACTIBLE;
+		return res;
 	}
 
 
@@ -119,23 +133,37 @@ public:
 	int remove_popable_blockers(){
 		int nb_blockers_deleted=0;
 		bool blocker_popable_found=true;
+
+
 		while (blocker_popable_found){
-			blocker_popable_found=false;
+			blocker_popable_found = false;
 			auto blockers = this->get_blockers();
-			for (auto block : blockers)
-			{
+			for(auto block : blockers){
 				if (is_popable_blocker(block)) {
-					++nb_blockers_deleted;
 					this->delete_blocker(block);
 					blocker_popable_found = true;
-					// some blockers may have become popable
-					// xxx do something more efficient with a queue
-					// that receives the neigborhood of an edge and
-					// then the neigborhood of blockers that are poped.
-					break;
 				}
 			}
 		}
+
+//		while (blocker_popable_found){
+//			blocker_popable_found=false;
+//			auto blockers = this->get_blockers();
+//			for (auto block : blockers)
+//			{
+//				if (is_popable_blocker(block)) {
+//					DBG("find popable blocker");
+//					++nb_blockers_deleted;
+//					this->delete_blocker(block);
+//					blocker_popable_found = true;
+//					// some blockers may have become popable
+//					// xxx do something more efficient with a queue
+//					// that receives the neigborhood of an edge and
+//					// then the neigborhood of blockers that are poped.
+//					break;
+//				}
+//			}
+//		}
 		return nb_blockers_deleted;
 	}
 
@@ -230,32 +258,58 @@ public:
 
 
 
-private:
 	/**
-	 * @return true iff the link condition at edge ab is satisfied
+	 * @return If ignore_popable_blockers is true
+	 * then the result is true iff the link condition at edge ab is satisfied
 	 * or equivalently iff no blocker contains ab.
+	 * If ignore_popable_blockers is false then the
+	 * result is true iff all blocker containing ab are popable.
 	 */
-	bool link_condition(Vertex_handle a, Vertex_handle b) const{
+	bool link_condition(Vertex_handle a, Vertex_handle b,bool ignore_popable_blockers = false) const{
 		for (auto blocker : this->const_blocker_range(a))
 			if ( blocker->contains(b) ){
-				return false;
+				// false if ignore_popable_blockers is false
+				// otherwise the blocker has to be popable
+				return ignore_popable_blockers && is_popable_blocker(blocker);
 			}
 		return true;
 	}
 
-public:
 	/**
-	 * @return true iff the link condition at edge e is satisfied
-	 * or equivalently iff no blocker contains e.
+	 * @return If ignore_popable_blockers is true
+	 * then the result is true iff the link condition at edge ab is satisfied
+	 * or equivalently iff no blocker contains ab.
+	 * If ignore_popable_blockers is false then the
+	 * result is true iff all blocker containing ab are popable.
 	 */
-	bool link_condition(Edge_handle & e) const{
+	bool link_condition(Edge_handle & e,bool ignore_popable_blockers = false) const{
 		const Graph_edge& edge = (*this)[e];
 		assert(this->get_address(edge.first()));
 		assert(this->get_address(edge.second()));
 		Vertex_handle a(*this->get_address(edge.first()));
 		Vertex_handle b(*this->get_address(edge.second()));
-		return link_condition(a,b);
+		return link_condition(a,b,ignore_popable_blockers);
 	}
+
+
+
+	//	/**
+	//	 * @return true iff all blockers passing through edge e are popable.
+	//	 */
+	//	bool has_non_popable_blockers(Edge_handle & e){
+	//		const Graph_edge& edge = (*this)[e];
+	//		assert(this->get_address(edge.first()));
+	//		assert(this->get_address(edge.second()));
+	//		Vertex_handle a(*this->get_address(edge.first()));
+	//		Vertex_handle b(*this->get_address(edge.second()));
+	//
+	//		for(auto bl : this->blocker_range(a)){
+	//			if(bl->contains(b) && !this->is_popable_blocker(bl)){
+	//				return false;
+	//			}
+	//		}
+	//		return true;
+	//	}
 
 protected:
 	/**
