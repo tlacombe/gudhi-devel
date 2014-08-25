@@ -47,9 +47,6 @@ public:
 	typedef typename ComplexType::Simplex_handle::Simplex_vertex_const_iterator Simplex_handle_iterator;
 	typedef typename ComplexType::Root_simplex_handle::Simplex_vertex_const_iterator Root_simplex_handle_iterator;
 
-	typedef typename ComplexType::Complex_vertex_iterator Complex_vertex_iterator;
-
-
 
 	Skeleton_blocker_link_complex(bool only_superior_vertices=false):only_superior_vertices_(only_superior_vertices){
 	}

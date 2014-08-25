@@ -17,7 +17,10 @@
 #include <memory>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/connected_components.hpp>
+#include <boost/iterator/transform_iterator.hpp>
+#include <boost/range/adaptor/map.hpp>
 
+#include "iterators/Skeleton_blockers_iterators.h"
 #include "Skeleton_blocker_link_complex.h"
 #include "Skeleton_blocker_link_superior.h"
 #include "Skeleton_blocker_sub_complex.h"
@@ -25,6 +28,8 @@
 
 #include "Skeleton_blocker_complex_visitor.h"
 #include "utils/Utils.h"
+
+
 
 /**
  *@class Skeleton_blocker_complex
@@ -48,6 +53,12 @@
 template<class SkeletonBlockerDS>
 class Skeleton_blocker_complex
 {
+	template<class ComplexType> friend class Complex_vertex_iterator;
+	template<class ComplexType> friend class Complex_neighbors_vertices_iterator;
+	template<class ComplexType> friend class Complex_edge_iterator;
+	template<class ComplexType> friend class Complex_edge_around_vertex_iterator;
+
+
 	template<class ComplexType> friend class Skeleton_blocker_link_complex;
 	template<class ComplexType> friend class Skeleton_blocker_link_superior;
 	template<class ComplexType> friend class Skeleton_blocker_sub_complex;
@@ -123,6 +134,9 @@ protected:
 	Graph skeleton; /** 1-skeleton of the simplicial complex. */
 
 
+	//todo remove!!!
+public:
+
 	/** Each vertex can access to the blockers passing through it. */
 	BlockerMap blocker_map_;
 
@@ -130,6 +144,9 @@ protected:
 
 
 public:
+
+
+
 
 	/////////////////////////////////////////////////////////////////////////////
 	/** @name Constructors / Destructors / Initialization
@@ -142,9 +159,8 @@ public:
 		}
 	}
 
-
-
 private:
+
 	// this nested class is used for the next constructor that takes as an input a list of simplices
 	class Simplices_sets_from_list{
 	private:
@@ -643,7 +659,7 @@ protected:
 			assert(false);
 		}
 		else{
-			blocker_map_.erase(blocker.current_position);
+			blocker_map_.erase(blocker.current_position());
 		}
 	}
 
@@ -920,12 +936,12 @@ public:
 		std::vector<unsigned> component(skeleton.vertex_set().size());
 		boost::connected_components(this->skeleton,&component[0]);
 		auto maxCC = min_element(component.begin(),component.end());
-	    for (unsigned i = 0; i != component.size(); ++i){
-	    	if(component[i]!=*maxCC){
-	    		if(this->contains_vertex(Vertex_handle(i)))
-	    		this->remove_vertex(Vertex_handle(i));
-	    	}
-	    }
+		for (unsigned i = 0; i != component.size(); ++i){
+			if(component[i]!=*maxCC){
+				if(this->contains_vertex(Vertex_handle(i)))
+					this->remove_vertex(Vertex_handle(i));
+			}
+		}
 	}
 
 
@@ -956,45 +972,36 @@ public:
 	 */
 	//@{
 
-	/**
-	 * @brief Range over the vertices of the simplicial complex.
-	 * Methods .begin() and .end() return a Complex_vertex_iterator.
-	 */
-	class Complex_vertex_range;
 
-	/**
-	 * @brief Iterator over the simplices of a
-	 * simplicial complex.
-	 *
-	 * 'value_type' must be Simplex_handle.
-	 */
-	class Complex_vertex_iterator;
+	//	typedef typename Complex_vertex_iterator<Skeleton_blocker_complex> Complex_vertex_iterator;
+
+	//	/**
+	//	 * @brief Range over the vertices of the simplicial complex.
+	//	 * Methods .begin() and .end() return a Complex_vertex_iterator.
+	//	 */
+	typedef boost::iterator_range     < Complex_vertex_iterator<Skeleton_blocker_complex> > Complex_vertex_range;
+
 	/**
 	 * @brief Returns a Complex_vertex_range over all vertices of the complex
 	 */
 	Complex_vertex_range vertex_range() const
-	{return Complex_vertex_range(this);}
+	{
+		auto begin = Complex_vertex_iterator<Skeleton_blocker_complex>(this);
+		auto end = Complex_vertex_iterator<Skeleton_blocker_complex>(this,0);
+		return Complex_vertex_range(begin,end);
+	}
 
-
-
-
-	/**
-	 * @brief Range over the edges of the simplicial complex.
-	 * Methods .begin() and .end() return a Complex_edge_iterator.
-	 */
-	class Complex_neighbors_vertices_range;
-	/**
-	 * @brief Iterator over the edges of the
-	 * simplicial complex.
-	 *
-	 */
-	class Complex_neighbors_vertices_iterator;
+	typedef boost::iterator_range     < Complex_neighbors_vertices_iterator<Skeleton_blocker_complex> > Complex_neighbors_vertices_range;
 
 	/**
-	 * @brief Returns a Complex_edge_range over all edges of the simplicial complex
+	 * @brief Returns a Complex_edge_range over all edges of the simplicial complex that passes trough v
 	 */
 	Complex_neighbors_vertices_range vertex_range(Vertex_handle v) const
-	{return Complex_neighbors_vertices_range(this,v);}
+	{
+		auto begin = Complex_neighbors_vertices_iterator<Skeleton_blocker_complex>(this,v);
+		auto end = Complex_neighbors_vertices_iterator<Skeleton_blocker_complex>(this,v,0);
+		return Complex_neighbors_vertices_range(begin,end);
+	}
 
 	//@}
 
@@ -1004,44 +1011,33 @@ public:
 	//@{
 
 
-	/**
-	 * @brief Range over the edges of the simplicial complex.
-	 * Methods .begin() and .end() return a Complex_edge_iterator.
-	 */
-	class Complex_edge_range;
-	/**
-	 * @brief Iterator over the edges of the
-	 * simplicial complex.
-	 *
-	 */
-	class Complex_edge_iterator;
+	typedef boost::iterator_range  <Complex_edge_iterator<Skeleton_blocker_complex<SkeletonBlockerDS>>>
+			Complex_edge_range;
 
 	/**
 	 * @brief Returns a Complex_edge_range over all edges of the simplicial complex
 	 */
 	Complex_edge_range edge_range() const
-	{return Complex_edge_range(this);}
+	{
+		auto begin = Complex_edge_iterator<Skeleton_blocker_complex<SkeletonBlockerDS>>(this);
+		auto end = Complex_edge_iterator<Skeleton_blocker_complex<SkeletonBlockerDS>>(this,0);
+		return Complex_edge_range(begin,end);
+	}
 
 
 
+	typedef boost::iterator_range  <Complex_edge_around_vertex_iterator<Skeleton_blocker_complex<SkeletonBlockerDS>>>
+			Complex_edge_around_vertex_range;
 	/**
-	 * @brief Range over the edges passing through a vertex of the simplicial complex.
-	 * Methods .begin() and .end() return a Complex_edge_around_vertex_iterator.
-	 */
-	class Complex_edge_around_vertex_range;
-
-	/**
-	 * @brief Iterator over the edges passing through a vertex of the
-	 * simplicial complex.
-	 *
-	 */
-	class Complex_edge_around_vertex_iterator;
-
-	/**
-	 * @brief Returns a Complex_edge_range over all edges of the simplicial complex
+	 * @brief Returns a Complex_edge_range over all edges of the simplicial complex that passes
+	 * through 'v'
 	 */
 	Complex_edge_around_vertex_range edge_range(Vertex_handle v) const
-	{return Complex_edge_around_vertex_range(this,v);}
+	{
+		auto begin = Complex_edge_around_vertex_iterator<Skeleton_blocker_complex<SkeletonBlockerDS>>(this,v);
+		auto end = Complex_edge_around_vertex_iterator<Skeleton_blocker_complex<SkeletonBlockerDS>>(this,v,0);
+		return Complex_edge_around_vertex_range(begin,end);
+	}
 
 
 
@@ -1079,15 +1075,17 @@ public:
 	/**@brief Returns a Triangle_around_vertex_range over all triangles around
 	 * a vertex of the simplicial complex.
 	 */
-	Triangle_around_vertex_range<Link> triangle_range(Vertex_handle v) const
-																			{return Triangle_around_vertex_range<Link>(this,v);}
+	Triangle_around_vertex_range<Link> triangle_range(Vertex_handle v) const{
+		return Triangle_around_vertex_range<Link>(this,v);
+	}
 
 
 	/**@brief Returns a Triangle_around_vertex_range over superior triangles
 	 * around a vertex of the simplicial complex.
 	 */
-	Triangle_around_vertex_range<Superior_link> superior_triangle_range(Vertex_handle v) const
-																			{return Triangle_around_vertex_range<Superior_link>(this,v);}
+	Triangle_around_vertex_range<Superior_link> superior_triangle_range(Vertex_handle v) const{
+		return Triangle_around_vertex_range<Superior_link>(this,v);
+	}
 
 
 
@@ -1108,8 +1106,9 @@ public:
 	/**
 	 * @brief Returns a Triangle_range over all triangles of the simplicial complex.
 	 */
-	Triangle_range triangle_range() const
-	{return Triangle_range(this);}
+	Triangle_range triangle_range() const{
+		return Triangle_range(this);
+	}
 
 	//@}
 
@@ -1118,10 +1117,6 @@ public:
 	 */
 	//@{
 private:
-	template<typename MapType, typename ReturnType>
-	class Blocker_iterator_around_vertex_internal;
-
-public:
 	/**
 	 * @brief Iterator over the blockers adjacent to a vertex
 	 */
@@ -1138,64 +1133,35 @@ public:
 			const Blocker_handle>
 	Const_complex_blocker_around_vertex_iterator;
 
+	typedef boost::iterator_range  <Complex_blocker_around_vertex_iterator>	Complex_blocker_around_vertex_range;
+	typedef boost::iterator_range  <Const_complex_blocker_around_vertex_iterator>	Const_complex_blocker_around_vertex_range;
+
 public:
-	/**
-	 * @brief Range over the blockers of the simplicial complex adjacent to a vertex.
-	 * Methods .begin() and .end() return a Complex_blocker_iterator.
-	 */
-	class Complex_blocker_around_vertex_range{
-	private:
-		Vertex_handle v_;
-		Skeleton_blocker_complex& complex_;
-	public:
-		Complex_blocker_around_vertex_range(Skeleton_blocker_complex&  complex,Vertex_handle v):v_(v),complex_(complex){}
 
-		Complex_blocker_around_vertex_iterator begin() {
-			return Complex_blocker_around_vertex_iterator(complex_.blocker_map_.lower_bound(v_));
-		}
-		Complex_blocker_around_vertex_iterator end() {
-			return Complex_blocker_around_vertex_iterator(complex_.blocker_map_.upper_bound(v_));
-		}
-	};
 
-	/**
-	 * @brief Range over the blockers of the simplicial complex adjacent to a vertex.
-	 * Methods .begin() and .end() return a Complex_blocker_iterator.
-	 */
-	class Const_complex_blocker_around_vertex_range{
-	private:
-		Vertex_handle v_;
-		const Skeleton_blocker_complex& complex_;
-	public:
-		Const_complex_blocker_around_vertex_range(const Skeleton_blocker_complex&  complex,Vertex_handle v):v_(v),complex_(complex){}
 
-		Const_complex_blocker_around_vertex_iterator begin() const{
-			return Const_complex_blocker_around_vertex_iterator(complex_.blocker_map_.lower_bound(v_));
-		}
-		Const_complex_blocker_around_vertex_iterator end() const{
-			return Const_complex_blocker_around_vertex_iterator(complex_.blocker_map_.upper_bound(v_));
-		}
-	};
-
-	/**
-	 * @brief Returns a Const_complex_blocker_around_vertex_range over all blockers of the complex adjacent to the vertex v.
-	 */
-	Const_complex_blocker_around_vertex_range const_blocker_range(Vertex_handle v) const
-	{return Const_complex_blocker_around_vertex_range(*this,v);}
+	Complex_blocker_around_vertex_range blocker_range(Vertex_handle v)
+	{
+		auto begin = Complex_blocker_around_vertex_iterator(blocker_map_.lower_bound(v));
+		auto end = Complex_blocker_around_vertex_iterator(blocker_map_.upper_bound(v));
+		return Complex_blocker_around_vertex_range(begin,end);
+	}
 
 	/**
 	 * @brief Returns a Complex_blocker_around_vertex_range over all blockers of the complex adjacent to the vertex v.
 	 */
-	Complex_blocker_around_vertex_range blocker_range(Vertex_handle v)
-	{return Complex_blocker_around_vertex_range(*this,v);}
+	Const_complex_blocker_around_vertex_range const_blocker_range(Vertex_handle v) const
+	{
+		auto begin = Const_complex_blocker_around_vertex_iterator(blocker_map_.lower_bound(v));
+		auto end = Const_complex_blocker_around_vertex_iterator(blocker_map_.upper_bound(v));
+		return Const_complex_blocker_around_vertex_range(begin,end);
+	}
+
 
 
 
 private:
-	template<typename MapType, typename ReturnType>
-	class Blocker_iterator_internal;
 
-public:
 	/**
 	 * @brief Iterator over the blockers.
 	 */
@@ -1212,55 +1178,30 @@ public:
 			const Blocker_handle>
 	Const_complex_blocker_iterator;
 
+	typedef boost::iterator_range  <Complex_blocker_iterator>	Complex_blocker_range;
+	typedef boost::iterator_range  <Const_complex_blocker_iterator>	Const_complex_blocker_range;
+
+
 public:
-	/**
-	 * @brief Range over the blockers of the simplicial complex.
-	 * Methods .begin() and .end() return a Complex_blocker_iterator.
-	 */
-	class Complex_blocker_range{
-	private:
-		Skeleton_blocker_complex& complex_;
-	public:
-		Complex_blocker_range(Skeleton_blocker_complex&  complex):complex_(complex){}
-
-		Complex_blocker_iterator begin() {
-			return Complex_blocker_iterator(complex_.blocker_map_.begin() , complex_.blocker_map_.end());
-		}
-		Complex_blocker_iterator end() {
-			return Complex_blocker_iterator(complex_.blocker_map_.end() , complex_.blocker_map_.end());
-		}
-	};
-
-	/**
-	 * @brief Range over the blockers of the simplicial complex.
-	 * Methods .begin() and .end() return a Complex_blocker_iterator.
-	 */
-	class Const_complex_blocker_range{
-	private:
-		const Skeleton_blocker_complex& complex_;
-	public:
-		Const_complex_blocker_range(const Skeleton_blocker_complex&  complex):complex_(complex){}
-
-		Const_complex_blocker_iterator begin() const{
-			return Const_complex_blocker_iterator(complex_.blocker_map_.begin() , complex_.blocker_map_.end() );
-		}
-		Const_complex_blocker_iterator end() const{
-			return Const_complex_blocker_iterator(complex_.blocker_map_.end() , complex_.blocker_map_.end() );
-		}
-	};
-
-	/**
-	 * @brief Returns a Const_complex_blocker_range over all blockers of the complex.
-	 */
-	Const_complex_blocker_range const_blocker_range() const
-	{return Const_complex_blocker_range(*this);}
 
 
-	/**
-	 * @brief Returns a Complex_blocker_range over all blockers of the complex.
-	 */
 	Complex_blocker_range blocker_range()
-	{return Complex_blocker_range(*this);}
+	{
+		auto begin = Complex_blocker_iterator(blocker_map_.begin(), blocker_map_.end() );
+		auto end = Complex_blocker_iterator(blocker_map_.end() , blocker_map_.end() );
+		return Complex_blocker_range(begin,end);
+	}
+
+
+	Const_complex_blocker_range const_blocker_range() const
+	{
+		auto begin = Const_complex_blocker_iterator(blocker_map_.begin(), blocker_map_.end() );
+		auto end = Const_complex_blocker_iterator(blocker_map_.end() , blocker_map_.end() );
+		return Const_complex_blocker_range(begin,end);
+	}
+
+
+
 
 	//@}
 
@@ -1310,7 +1251,6 @@ public:
 
 };
 
-//#include "src/AbstractComplex/SimplicialComplex.cxx"
 
 #include "Skeleton_blocker_complex_iterators.h"
 
