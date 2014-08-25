@@ -97,7 +97,6 @@ private:
 	typedef typename SkeletonBlockerComplex::Vertex_handle Vertex_handle;
 	typedef typename SkeletonBlockerComplex::Root_vertex_handle Root_vertex_handle;
 	typedef typename SkeletonBlockerComplex::Simplex_handle Simplex_handle;
-	typedef SkeletonBlockerComplex Complex;
 	typedef typename SkeletonBlockerComplex::Superior_triangle_around_vertex_iterator STAVI;
 
 	const SkeletonBlockerComplex* complex_;
