@@ -161,7 +161,11 @@ public:
 
 private:
 
-	// this nested class is used for the next constructor that takes as an input a list of simplices
+	/**
+	 * 	this nested class is used for the next constructor that takes as an input a list of simplices.
+	 * 	It stores a vector where the ith cell contains a set of i-simplices
+	 *
+	 */
 	class Simplices_sets_from_list{
 	private:
 		typedef  std::set< Simplex_handle> Container_simplices;
@@ -172,8 +176,7 @@ private:
 	public:
 		Simplices_sets_from_list(std::list<Simplex_handle>& simplices):
 			dimension_(simplices.back().dimension()),
-			simplices_(dimension_+1)
-	{
+			simplices_(dimension_+1){
 			assert(!simplices.empty());
 
 			// compute k-simplices
@@ -185,7 +188,7 @@ private:
 					++current_dimension;
 				simplices_[current_dimension].insert(*simplex);
 			}
-	}
+		}
 
 		Simplices_iterator begin(int k){
 			assert(0<= k && k<= dimension_);

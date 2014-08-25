@@ -92,7 +92,6 @@ protected:
 	 * If the boolean only_superior_vertices is true, then only the vertices
 	 * are greater than  vertices of alpha_parent_adress are added.
 	 */
-	//todo const alpha_parent_address
 	void compute_link_vertices(const ComplexType & parent_complex,const Simplex_handle& alpha_parent_adress,bool only_superior_vertices,bool is_alpha_blocker = false){
 		if(alpha_parent_adress.dimension()==0)
 			// for a vertex we know exactly the number of vertices of the link (and the size of the corresponding vector)
@@ -187,6 +186,11 @@ protected:
 		return other_complex.get_address(id);
 	}
 
+	/*
+	 * compute the blockers of the link if is_alpha_blocker is false.
+	 * Otherwise, alpha is a blocker, and the link is computed in the complex where
+	 * the blocker is anticollapsed.
+	 */
 	void compute_link_blockers(const ComplexType & parent_complex,const Simplex_handle& alpha_parent,bool is_alpha_blocker = false){
 
 		for (auto x_link : this->vertex_range()){
@@ -195,7 +199,6 @@ protected:
 
 			for (auto blocker_parent : parent_complex.const_blocker_range(x_parent)){
 				if(!is_alpha_blocker || *blocker_parent!=alpha_parent){
-					// todo faire tout sans copie
 					Simplex_handle sigma_parent(*blocker_parent);
 
 					sigma_parent.difference(alpha_parent);

@@ -8,6 +8,7 @@
 #ifndef GUDHI_SKELETON_BLOCKER_COMPLEX_ITERATORS_H_
 #define GUDHI_SKELETON_BLOCKER_COMPLEX_ITERATORS_H_
 
+//todo remove content and replace in "iterators/skbl_triangle_iterators.h"
 
 #include "boost/iterator/iterator_facade.hpp"
 #include "iterators/Skeleton_blockers_iterators.h"

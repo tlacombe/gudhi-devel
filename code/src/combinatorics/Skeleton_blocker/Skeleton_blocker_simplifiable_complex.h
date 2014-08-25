@@ -104,22 +104,6 @@ private:
 	}
 
 
-	/**
-	 * @returns the list of blockers of the simplex
-	 *
-	 * @todo a enlever et faire un iterateur sur tous les blockers a la place
-	 */
-	std::list<const Blocker_handle> get_blockers() const{
-		std::list<const Blocker_handle> res;
-		for (auto blocker : this->blocker_range()){
-			res.push_back(blocker);
-		}
-		return res;
-	}
-
-
-
-
 
 public:
 
@@ -145,25 +129,6 @@ public:
 				}
 			}
 		}
-
-//		while (blocker_popable_found){
-//			blocker_popable_found=false;
-//			auto blockers = this->get_blockers();
-//			for (auto block : blockers)
-//			{
-//				if (is_popable_blocker(block)) {
-//					DBG("find popable blocker");
-//					++nb_blockers_deleted;
-//					this->delete_blocker(block);
-//					blocker_popable_found = true;
-//					// some blockers may have become popable
-//					// xxx do something more efficient with a queue
-//					// that receives the neigborhood of an edge and
-//					// then the neigborhood of blockers that are poped.
-//					break;
-//				}
-//			}
-//		}
 		return nb_blockers_deleted;
 	}
 
@@ -292,25 +257,6 @@ public:
 	}
 
 
-
-	//	/**
-	//	 * @return true iff all blockers passing through edge e are popable.
-	//	 */
-	//	bool has_non_popable_blockers(Edge_handle & e){
-	//		const Graph_edge& edge = (*this)[e];
-	//		assert(this->get_address(edge.first()));
-	//		assert(this->get_address(edge.second()));
-	//		Vertex_handle a(*this->get_address(edge.first()));
-	//		Vertex_handle b(*this->get_address(edge.second()));
-	//
-	//		for(auto bl : this->blocker_range(a)){
-	//			if(bl->contains(b) && !this->is_popable_blocker(bl)){
-	//				return false;
-	//			}
-	//		}
-	//		return true;
-	//	}
-
 protected:
 	/**
 	 * Compute simplices beta such that a.beta is an order 0 blocker
@@ -363,7 +309,7 @@ private:
 	/**
 	 * @brief removes all blockers passing through the edge 'ab'
 	 */
-	void remove_blockers(Vertex_handle a, Vertex_handle b){
+	void delete_blockers_around_edge(Vertex_handle a, Vertex_handle b){
 		std::vector<Blocker_handle> blocker_to_delete;
 		for (auto blocker : this->blocker_range(a))
 			if (blocker->contains(b)) blocker_to_delete.push_back(blocker);
@@ -397,16 +343,33 @@ public:
 		assert(this->contains_edge(a,b));
 
 		// if some blockers passes through 'ab', we remove them.
-		if (!link_condition(a,b)){
-			remove_blockers(a,b);
-		}
+		if (!link_condition(a,b))
+			delete_blockers_around_edge(a,b);
 
-		// Suppose ab is contracted to c
-		// we first compute blockers of c of the type c.alpha.beta with:
-		// 1) a.beta an order 0 blocker
-		// 2) b.alpha an order 0 blocker
-		// 3) every proper face of alpha.beta in Link(a) \cup Link(b)
-		// 4) alpha.beta in K
+		std::set<Simplex_handle> blockers_to_add;
+
+		get_blockers_to_be_added_after_contraction(a,b,blockers_to_add);
+
+		delete_blockers_around_vertices(a,b);
+
+		update_edges_after_contraction(a,b);
+
+		this->remove_vertex(b);
+
+		notify_changed_edges(a);
+
+		for(auto block : blockers_to_add)
+			this->add_blocker(block);
+
+		assert(this->contains_vertex(a));
+		assert(!this->contains_vertex(b));
+	}
+
+
+private:
+
+	void get_blockers_to_be_added_after_contraction(Vertex_handle a,Vertex_handle b,std::set<Simplex_handle>& blockers_to_add){
+		blockers_to_add.clear();
 
 		typedef Skeleton_blocker_link_complex<Skeleton_blocker_complex<SkeletonBlockerDS> > LinkComplexType;
 
@@ -418,7 +381,6 @@ public:
 		tip_blockers(a,b,vector_alpha);
 		tip_blockers(b,a,vector_beta);
 
-		std::vector<Simplex_handle> blocker_to_add;
 		for (auto alpha = vector_alpha.begin(); alpha != vector_alpha.end(); ++alpha){
 			for (auto beta = vector_beta.begin(); beta != vector_beta.end(); ++beta)
 			{
@@ -429,26 +391,17 @@ public:
 				{
 					//					Blocker_handle blocker = new Simplex_handle(sigma);
 					sigma.add_vertex(a);
-					bool found=false;
-					// we check that the blocker is not already there
-					/**
-					 * @todo TODO faire un set avec une relation de comparaison less(simplex* s1,simplex *s2) = *s1<*s2
-					 */
-					for(auto block : blocker_to_add)
-					{
-						if(block==sigma){
-							found = true;
-							break;
-						}
-					}
-					if (!found)
-						blocker_to_add.push_back(sigma);
+					blockers_to_add.insert(sigma);
 				}
 			}
 		}
+	}
 
-		// We delete all blockers a.tau and b.tau of K
-		// after the edge contraction ab ----> a
+
+	/**
+	 * delete all blockers that passes through a or b
+	 */
+	void delete_blockers_around_vertices(Vertex_handle a,Vertex_handle b){
 		std::vector<Blocker_handle> blocker_to_delete;
 		for(auto bl : this->blocker_range(a))
 			blocker_to_delete.push_back(bl);
@@ -459,13 +412,12 @@ public:
 			this->delete_blocker(blocker_to_delete.back());
 			blocker_to_delete.pop_back();
 		}
+	}
 
-		// We now proceed to the edge contraction ab ----> a,
-		// modifying the simplicial complex
 
+	void update_edges_after_contraction(Vertex_handle a,Vertex_handle b){
 		// We update the set of edges
 		this->remove_edge(a,b);
-
 
 		// For all edges {b,x} incident to b,
 		// we remove {b,x} and add {a,x} if not already there.
@@ -478,21 +430,14 @@ public:
 			else
 				this->remove_edge(b,x);
 		}
+	}
 
-		// We remove b
-		this->remove_vertex(b);
+	void notify_changed_edges(Vertex_handle a){
 		// We notify the visitor that all edges incident to 'a' had changed
 		boost_adjacency_iterator v, v_end;
 
 		for (tie(v, v_end) = adjacent_vertices(a.vertex, this->skeleton); v != v_end; ++v)
 			if (this->visitor) this->visitor->on_changed_edge(a,Vertex_handle(*v));
-
-		// We add the new blockers through c
-		for(auto block : blocker_to_add)
-			this->add_blocker(block);
-
-		assert(this->contains_vertex(a));
-		assert(!this->contains_vertex(b));
 	}
 
 	//@}

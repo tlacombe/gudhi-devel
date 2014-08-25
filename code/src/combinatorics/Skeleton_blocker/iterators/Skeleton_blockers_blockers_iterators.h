@@ -10,13 +10,6 @@
 
 #include "boost/iterator/iterator_facade.hpp"
 
-// public boost::iterator_facade < Complex_edge_around_vertex_iterator<SkeletonBlockerComplex>
-//		, typename SkeletonBlockerComplex::Edge_handle const
-//		, boost::forward_traversal_tag
-//		, typename SkeletonBlockerComplex::Edge_handle const
-//		>
-
-
 /**
  * @brief Iterator through the blockers of a vertex.
   */
@@ -51,32 +44,6 @@ public:
 	ReturnType dereference() const	{
 		return(current_position->second);
 	}
-
-
-//	Blocker_iterator_internal& operator=(Blocker_iterator_internal other){
-//		this->current_position = other.current_position;
-//		this->end_of_map = other.end_of_map;
-//		return *this;
-//	}
-//
-//	bool operator==(const Blocker_iterator_internal& other) const{
-//		return current_position == other.current_position;
-//	}
-//
-//	bool operator!=(const Blocker_iterator_internal& other){
-//		return(! (*this == other));
-//	}
-//
-//	Blocker_iterator_internal& operator++(){
-//		goto_next_blocker();
-//		return(*this);
-//	}
-//
-//	ReturnType operator*()	{
-//		// If the current vertex is not the first vertex of the current blocker then we already have
-//		// seen sigma this blocker and we look for the next one.
-//		return(current_position->second);
-//	}
 
 private:
 	/**

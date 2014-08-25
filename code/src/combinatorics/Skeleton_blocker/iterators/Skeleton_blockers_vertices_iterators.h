@@ -131,7 +131,6 @@ public:
 
 
 	void increment () {
-		//goto_next_valid();
 		if(current_ != end_)
 			++current_;
 	}

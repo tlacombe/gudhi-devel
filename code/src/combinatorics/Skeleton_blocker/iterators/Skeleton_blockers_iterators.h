@@ -16,6 +16,4 @@
 
 
 
-
-
 #endif /* GUDHI_SKELETON_BLOCKERS_ITERATORS_H_ */

@@ -5,7 +5,7 @@
 #include<iostream>
 #include<set>
 #include<vector>
-
+#include <initializer_list>
 
 /**
  *@brief Abstract simplex used in skeleton blockers data-structure.
@@ -49,36 +49,26 @@ public:
 		simplex_set.clear();
 	}
 
-	/**
-	 * Constructs the singleton {a}
-	 */
-	Skeleton_blocker_simplex(T a)
-	{
-		add_vertex(a);
+
+	Skeleton_blocker_simplex(std::initializer_list<T>& list) {
+		for_each(list.begin(),list.end(),add_vertex);
 	}
 
-	/**
-	 * Constructs the edge {a,b}
-	 */
-	Skeleton_blocker_simplex(T a, T b)
-	{
-		add_vertex(a); add_vertex(b);
+
+	template<typename... Args>
+	Skeleton_blocker_simplex(Args... args){
+		add_vertices(args...);
 	}
 
-	/**
-	 * Constructs the triangle {a,b,c}
-	 */
-	Skeleton_blocker_simplex(T a, T b, T c)
-	{
-		add_vertex(a); add_vertex(b); add_vertex(c);
+
+	template<typename... Args>
+	void add_vertices(T v,Args... args){
+		add_vertex(v);
+		add_vertices(args...);
 	}
 
-	/**
-	 * Constructs the tetrahedron {a,b,c,d}
-	 */
-	Skeleton_blocker_simplex(T a, T b, T c, T d)
-	{
-		add_vertex(a); add_vertex(b); add_vertex(c); add_vertex(d);
+	void add_vertices(T v){
+		add_vertex(v);
 	}
 
 	/**
@@ -295,91 +285,90 @@ public:
 	}
 
 	/**
-		 * @return true iff the simplex contains the difference \f$ a \setminus \{ x \} \f$.
-		 */
-		bool contains_difference(const Skeleton_blocker_simplex& a, T x, T y) const{
-			auto first1 = begin();
-			auto last1 = end();
+	 * @return true iff the simplex contains the difference \f$ a \setminus \{ x \} \f$.
+	 */
+	bool contains_difference(const Skeleton_blocker_simplex& a, T x, T y) const{
+		auto first1 = begin();
+		auto last1 = end();
 
-			auto first2 = a.begin();
-			auto last2 = a.end();
+		auto first2 = a.begin();
+		auto last2 = a.end();
 
-			while (first2!=last2) {
-				// we ignore vertices of b
-				if(x == *first2 || y == *first2){
-					++first2;
-				}
-				else{
-					if ( (first1==last1) || (*first2<*first1) ) return false;
-					if (!(*first1<*first2)) ++first2;
-					++first1;
-				}
+		while (first2!=last2) {
+			// we ignore vertices of b
+			if(x == *first2 || y == *first2){
+				++first2;
 			}
-			return true;
+			else{
+				if ( (first1==last1) || (*first2<*first1) ) return false;
+				if (!(*first1<*first2)) ++first2;
+				++first1;
+			}
 		}
-
-
-/**
- * @return true iff the simplex contains the vertex v, i.e. iff \f$ v \in (*this) \f$.
- */
-bool contains(T v) const{
-	return (simplex_set.find(v) != simplex_set.end());
-}
-
-/**
- * @return \f$ (*this) \cap a = \emptyset \f$.
- */
-bool disjoint(const Skeleton_blocker_simplex& a) const{
-	std::vector<T> v;
-	v.reserve(std::min(simplex_set.size(), a.simplex_set.size()));
-
-	set_intersection(simplex_set.cbegin(),simplex_set.cend(),
-			a.simplex_set.cbegin(),a.simplex_set.cend(),
-			std::back_inserter(v));
-
-	return (v.size()==0);
-}
-
-
-bool operator==(const Skeleton_blocker_simplex& other) const{
-	return (this->simplex_set == other.simplex_set);
-}
-
-bool operator!=(const Skeleton_blocker_simplex& other) const{
-	return (this->simplex_set != other.simplex_set);
-}
-
-bool operator<(const Skeleton_blocker_simplex& other) const{
-	return (std::lexicographical_compare(this->simplex_set.begin(),this->simplex_set.end(),
-			other.begin(),other.end()));
-}
-
-//@}
-
-
-
-
-
-/**
- * Display a simplex
- */
-friend std::ostream& operator << (std::ostream& o, const Skeleton_blocker_simplex & sigma)
-{
-	bool first = true;
-	o << "{";
-	for(auto i : sigma)
-	{
-		if(first) first = false ;
-		else o << ",";
-		o << i;
+		return true;
 	}
-	o << "}";
-	return o;
-}
+
+
+	/**
+	 * @return true iff the simplex contains the vertex v, i.e. iff \f$ v \in (*this) \f$.
+	 */
+	bool contains(T v) const{
+		return (simplex_set.find(v) != simplex_set.end());
+	}
+
+	/**
+	 * @return \f$ (*this) \cap a = \emptyset \f$.
+	 */
+	bool disjoint(const Skeleton_blocker_simplex& a) const{
+		std::vector<T> v;
+		v.reserve(std::min(simplex_set.size(), a.simplex_set.size()));
+
+		set_intersection(simplex_set.cbegin(),simplex_set.cend(),
+				a.simplex_set.cbegin(),a.simplex_set.cend(),
+				std::back_inserter(v));
+
+		return (v.size()==0);
+	}
+
+
+	bool operator==(const Skeleton_blocker_simplex& other) const{
+		return (this->simplex_set == other.simplex_set);
+	}
+
+	bool operator!=(const Skeleton_blocker_simplex& other) const{
+		return (this->simplex_set != other.simplex_set);
+	}
+
+	bool operator<(const Skeleton_blocker_simplex& other) const{
+		return (std::lexicographical_compare(this->simplex_set.begin(),this->simplex_set.end(),
+				other.begin(),other.end()));
+	}
+
+	//@}
+
+
+
+
+
+	/**
+	 * Display a simplex
+	 */
+	friend std::ostream& operator << (std::ostream& o, const Skeleton_blocker_simplex & sigma)
+	{
+		bool first = true;
+		o << "{";
+		for(auto i : sigma)
+		{
+			if(first) first = false ;
+			else o << ",";
+			o << i;
+		}
+		o << "}";
+		return o;
+	}
 
 
 };
-
 
 
 
