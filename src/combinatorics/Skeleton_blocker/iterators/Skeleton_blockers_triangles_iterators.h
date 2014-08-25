@@ -1,18 +1,14 @@
 /*
- * Skeleton_blocker_complex_iterators.h
+ * Skeleton_blockers_triangles_iterators.h
  *
- *  Created on: Feb 4, 2014
+ *  Created on: Aug 25, 2014
  *      Author: dsalinas
  */
 
-#ifndef GUDHI_SKELETON_BLOCKER_COMPLEX_ITERATORS_H_
-#define GUDHI_SKELETON_BLOCKER_COMPLEX_ITERATORS_H_
-
+#ifndef GUDHI_SKELETON_BLOCKERS_TRIANGLES_ITERATORS_H_
+#define GUDHI_SKELETON_BLOCKERS_TRIANGLES_ITERATORS_H_
 
 #include "boost/iterator/iterator_facade.hpp"
-#include "iterators/Skeleton_blockers_iterators.h"
-
-
 
 //////////////////////////////////////////////////////////////////////
 /**
@@ -20,17 +16,15 @@
  * adjacent to a vertex of the simplicial complex.
  * \remark Will be removed soon -> dont look
  */
-template<typename SkeletonBlockerDS>
-template<typename LinkType>
-class Skeleton_blocker_complex<SkeletonBlockerDS>::Triangle_around_vertex_iterator{
+template<typename Complex,typename LinkType>
+class Triangle_around_vertex_iterator{
 
 private:
 	typedef typename LinkType::Vertex_handle Vertex_handle;
 	typedef typename LinkType::Root_vertex_handle Root_vertex_handle;
 	typedef typename LinkType::Simplex_handle Simplex_handle;
-	typedef Skeleton_blocker_complex Complex;
 
-	typedef Complex_edge_iterator<Skeleton_blocker_complex<SkeletonBlockerDS>> Complex_edge_iterator_;
+	typedef Complex_edge_iterator<Complex> Complex_edge_iterator_;
 
 	const Complex* complex_;
 	Vertex_handle v_;
@@ -38,13 +32,13 @@ private:
 	Complex_edge_iterator_ current_edge_;
 	bool is_end_;
 public:
-	Triangle_around_vertex_iterator(const Skeleton_blocker_complex<SkeletonBlockerDS>* complex,Vertex_handle v):
+	Triangle_around_vertex_iterator(const Complex* complex,Vertex_handle v):
 		complex_(complex),v_(v),link_(*complex,v_),current_edge_(link_.edge_range().begin()),is_end_(current_edge_ == link_.edge_range().end()){
 	}
 	/**
 	 * @brief ugly hack to get an iterator to the end
 	 */
-	Triangle_around_vertex_iterator(const Skeleton_blocker_complex<SkeletonBlockerDS>* complex,Vertex_handle v,bool is_end):
+	Triangle_around_vertex_iterator(const Complex* complex,Vertex_handle v,bool is_end):
 		complex_(complex),v_(v),link_(),is_end_(true){
 	}
 
@@ -97,18 +91,17 @@ public:
  * \remark Will be removed soon -> dont look
  *
  */
-template<typename SkeletonBlockerDS>
-class Skeleton_blocker_complex<SkeletonBlockerDS>::Triangle_iterator{
-
+template<typename SkeletonBlockerComplex>
+class Triangle_iterator{
 private:
-	typedef typename Skeleton_blocker_complex<SkeletonBlockerDS>::Vertex_handle Vertex_handle;
-	typedef typename Skeleton_blocker_complex<SkeletonBlockerDS>::Root_vertex_handle Root_vertex_handle;
-	typedef typename Skeleton_blocker_complex<SkeletonBlockerDS>::Simplex_handle Simplex_handle;
-	typedef Skeleton_blocker_complex<SkeletonBlockerDS> Complex;
-	typedef Complex::Superior_triangle_around_vertex_iterator STAVI;
+	typedef typename SkeletonBlockerComplex::Vertex_handle Vertex_handle;
+	typedef typename SkeletonBlockerComplex::Root_vertex_handle Root_vertex_handle;
+	typedef typename SkeletonBlockerComplex::Simplex_handle Simplex_handle;
+	typedef SkeletonBlockerComplex Complex;
+	typedef typename SkeletonBlockerComplex::Superior_triangle_around_vertex_iterator STAVI;
 
-	const Complex* complex_;
-	Complex_vertex_iterator<Skeleton_blocker_complex<SkeletonBlockerDS>> current_vertex_;
+	const SkeletonBlockerComplex* complex_;
+	Complex_vertex_iterator<SkeletonBlockerComplex> current_vertex_;
 	STAVI current_triangle_;
 	bool is_end_;
 public:
@@ -116,7 +109,7 @@ public:
 	/*
 	 * @remark  assume that the complex is non-empty
 	 */
-	Triangle_iterator(const Skeleton_blocker_complex<SkeletonBlockerDS>* complex):
+	Triangle_iterator(const SkeletonBlockerComplex* complex):
 		complex_(complex),
 		current_vertex_(complex->vertex_range().begin()),
 		current_triangle_(complex,*current_vertex_), // xxx this line is problematic is the complex is empty
@@ -130,7 +123,7 @@ public:
 	 * @brief ugly hack to get an iterator to the end
 	 * @remark  assume that the complex is non-empty
 	 */
-	Triangle_iterator(const Skeleton_blocker_complex<SkeletonBlockerDS>* complex,bool is_end):
+	Triangle_iterator(const SkeletonBlockerComplex* complex,bool is_end):
 		complex_(complex),
 		current_vertex_(complex->vertex_range().begin()),
 		current_triangle_(complex->superior_triangle_range(*current_vertex_).end()), // xxx this line is problematic is the complex is empty
@@ -141,7 +134,7 @@ public:
 
 	Triangle_iterator& operator=(const Triangle_iterator & other){
 		complex_ = other.complex_;
-		Complex_vertex_iterator<Skeleton_blocker_complex<SkeletonBlockerDS>> current_vertex_;
+		Complex_vertex_iterator<SkeletonBlockerComplex> current_vertex_;
 		STAVI current_triangle_;
 		return *this;
 	}
@@ -193,62 +186,4 @@ public:
 };
 
 
-
-
-
-
-
-
-
-
-template<typename SkeletonBlockerDS>
-template<typename LinkType>
-class Skeleton_blocker_complex<SkeletonBlockerDS>::Triangle_around_vertex_range {
-private:
-	typedef Skeleton_blocker_complex<SkeletonBlockerDS> Complex;
-	typedef Complex::Triangle_around_vertex_iterator<LinkType> Tavi;
-	typedef typename Skeleton_blocker_complex<SkeletonBlockerDS>::Vertex_handle Vertex_handle;
-	const Complex* complex_;
-	Vertex_handle v_;
-public:
-	Triangle_around_vertex_range(const Skeleton_blocker_complex<SkeletonBlockerDS>* complex,Vertex_handle v):
-		complex_(complex),v_(v){
-	}
-
-	Tavi begin(){
-		return Tavi(complex_,v_);
-	}
-
-	Tavi end()
-	{
-		return Tavi(complex_,v_,true);
-
-	}
-};
-
-
-template<typename SkeletonBlockerDS>
-class Skeleton_blocker_complex<SkeletonBlockerDS>::Triangle_range {
-private:
-	typedef Skeleton_blocker_complex<SkeletonBlockerDS> Complex;
-	typedef Complex::Triangle_iterator Triangle_iterator;
-	typedef typename Skeleton_blocker_complex<SkeletonBlockerDS>::Vertex_handle Vertex_handle;
-	const Complex* complex_;
-public:
-	Triangle_range(const Skeleton_blocker_complex<SkeletonBlockerDS>* complex):
-		complex_(complex){
-	}
-
-	Triangle_iterator begin(){
-		return Triangle_iterator(complex_);
-	}
-
-	Triangle_iterator end()
-	{
-		return Triangle_iterator(complex_,true);
-	}
-};
-
-
-
-#endif /* GUDHI_SKELETON_BLOCKER_COMPLEX_ITERATORS_H_ */
+#endif /* GUDHI_SKELETON_BLOCKERS_TRIANGLES_ITERATORS_H_ */

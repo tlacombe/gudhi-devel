@@ -79,7 +79,6 @@ public:
 
 	typedef typename GeometricSimplifiableComplex::Graph_edge Graph_edge;
 	typedef typename GeometricSimplifiableComplex::Edge_handle Edge_handle;
-	typedef typename GeometricSimplifiableComplex::Complex_edge_iterator EdgeIterator;
 	typedef typename GeometricSimplifiableComplex::Point Point;
 
 	typedef EdgeProfile  Profile;

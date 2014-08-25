@@ -29,7 +29,6 @@ typedef typename Complex::Root_vertex_handle Root_vertex_handle;
 typedef typename Complex::Simplex_handle Simplex_handle;
 typedef typename Complex::Root_simplex_handle Root_simplex_handle;
 typedef Simplex_handle::Simplex_vertex_const_iterator Simplex_vertex_const_iterator;
-typedef Complex::Const_complex_blocker_around_vertex_iterator Const_blocker_iterator;
 typedef Complex::Edge_handle Edge_handle;
 
 // true iff v \in complex
@@ -84,7 +83,7 @@ bool test_simplex(){
 }
 
 
-bool test_iterator_vertices(){
+bool test_iterator_vertices1(){
 	int n = 10;
 	Complex complex(10);
 	cerr << "complex.num_vertices():"<<complex.num_vertices()<<endl;
@@ -95,6 +94,22 @@ bool test_iterator_vertices(){
 	}
 	return num_vertex_seen == n;
 }
+
+bool test_iterator_vertices2(){
+	int n = 10;
+	Complex complex(10);
+	build_complete(10,complex);
+	cerr << "complex.num_vertices():"<<complex.num_vertices()<<endl;
+	cerr << "complex.num_edges():"<<complex.num_edges()<<endl;
+	int num_vertex_seen = 0;
+	for(auto vi :complex.vertex_range(Vertex_handle(2))){
+		cerr << "vertex:"<<vi<<endl;
+		++num_vertex_seen;
+	}
+	std::cerr<<"num_vertex_seen:"<<num_vertex_seen<<std::endl;
+	return num_vertex_seen == (n-1);
+}
+
 
 
 bool test_iterator_edge(){
@@ -225,6 +240,12 @@ bool test_iterator_triangles(){
 
 }
 
+template<typename Map>
+auto blocker_range(Map map) -> decltype( map | boost::adaptors::map_values){
+	return map| boost::adaptors::map_values ;
+}
+
+
 bool test_iterator_blockers(){
 	Complex complex;
 	Simplex_handle alpha;
@@ -257,6 +278,7 @@ bool test_iterator_blockers(){
 		num_blockers++;
 	}
 	test = test && (num_blockers==4) ;
+
 	return test;
 }
 
@@ -562,10 +584,11 @@ int main (int argc, char *argv[])
 	tests_complex.add("test_link6",test_link6);
 	tests_complex.add("test_link7",test_link7);
 
-	tests_complex.add("test iterator vertices",test_iterator_vertices);
+	tests_complex.add("test iterator vertices 1",test_iterator_vertices1);
+	tests_complex.add("test iterator vertices 2",test_iterator_vertices2);
 	tests_complex.add("test iterator edges",test_iterator_edge);
-	tests_complex.add("test iterator edges2",test_iterator_edge2);
-	tests_complex.add("test iterator edges3",test_iterator_edge3);
+	tests_complex.add("test iterator edges 2",test_iterator_edge2);
+	tests_complex.add("test iterator edges 3",test_iterator_edge3);
 
 	tests_complex.add("test iterator blockers",test_iterator_blockers);
 	tests_complex.add("test_iterator_triangles",test_iterator_triangles);

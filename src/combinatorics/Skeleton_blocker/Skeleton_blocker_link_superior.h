@@ -39,7 +39,6 @@ public:
 	typedef typename ComplexType::BlockerMapConstIterator BlockerMapConstIterator;
 	typedef typename ComplexType::Simplex_handle::Simplex_vertex_const_iterator AddressSimplexConstIterator;
 	typedef typename ComplexType::Root_simplex_handle::Simplex_vertex_const_iterator IdSimplexConstIterator;
-	typedef typename ComplexType::Complex_vertex_iterator Complex_vertex_iterator;
 
 
 	Skeleton_blocker_link_superior()
