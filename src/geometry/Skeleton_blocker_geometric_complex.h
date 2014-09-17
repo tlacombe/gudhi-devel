@@ -21,7 +21,6 @@ template<typename SkeletonBlockerGeometricDS>
 class Skeleton_blocker_geometric_complex : public Skeleton_blocker_simplifiable_complex<SkeletonBlockerGeometricDS>
 {
 public:
-
 	typedef typename SkeletonBlockerGeometricDS::GT GT;
 
 	typedef Skeleton_blocker_simplifiable_complex<SkeletonBlockerGeometricDS> SimplifiableSkeletonblocker;
@@ -47,6 +46,7 @@ public:
 	 * @brief Returns the Point associated to the vertex v.
 	 */
 	const Point& point(Vertex_handle v) const{
+		assert(this->contains_vertex(v));
 		return (*this)[v].point();
 	}
 
@@ -54,16 +54,19 @@ public:
 	 * @brief Returns the Point associated to the vertex v.
 	 */
 	Point& point(Vertex_handle v) {
+		assert(this->contains_vertex(v));
 		return (*this)[v].point();
 	}
 
 	const Point& point(Root_vertex_handle global_v) const{
 		Vertex_handle local_v ( (*this)[global_v]) ;
+		assert(this->contains_vertex(local_v));
 		return (*this)[local_v].point();
 	}
 
 	Point& point(Root_vertex_handle global_v) {
 		Vertex_handle local_v ( (*this)[global_v]) ;
+		assert(this->contains_vertex(local_v));
 		return (*this)[local_v].point();
 	}
 

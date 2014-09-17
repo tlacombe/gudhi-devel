@@ -23,6 +23,7 @@ public:
 	typedef typename Cost_policy<EdgeProfile>::Cost_type Cost_type;
 	typedef typename EdgeProfile::Point Point;
 	Cost_type operator()(const EdgeProfile& profile, const boost::optional<Point>& placement) const override{
+		if(placement);
 		double res = 0;
 		auto p0_coord = profile.p0().begin();
 		auto p1_coord = profile.p1().begin();

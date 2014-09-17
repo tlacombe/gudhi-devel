@@ -4,7 +4,8 @@ project(GUDHI)
 find_package(Boost		REQUIRED COMPONENTS)
 
 #set(CMAKE_CXX_FLAGS "-std=c++11 -O3 -lboost_system -lgmpxx -lgmp")
-set(CMAKE_CXX_FLAGS "-std=c++11 -g -Wpedantic -Wall -lboost_system -lgmpxx -lgmp")
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wpedantic -Wall -lboost_system -lgmpxx -lgmp")
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g -ggdb")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
