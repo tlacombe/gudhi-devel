@@ -45,7 +45,7 @@ public:
 	/**
 	 * Clear the simplex
 	 */
-	inline void clear() {
+	void clear() {
 		simplex_set.clear();
 	}
 
@@ -103,7 +103,7 @@ public:
 	 * the same that adding it once.
 	 * \f$ (*this) \leftarrow (*this) \cup \{ v \} \f$
 	 */
-	void inline add_vertex(T v)
+	void add_vertex(T v)
 	{
 		simplex_set.insert(v);
 	}
@@ -112,7 +112,7 @@ public:
 	 * Remove the vertex v from the simplex:
 	 * \f$ (*this) \leftarrow (*this) \setminus \{ v \} \f$
 	 */
-	void inline remove_vertex(T v)
+	void remove_vertex(T v)
 	{
 		simplex_set.erase(v);
 	}
@@ -192,9 +192,12 @@ public:
 	/**
 	 * Returns the dimension of the simplex.
 	 */
-	int inline dimension() const
-	{
+	int dimension() const{
 		return (simplex_set.size() - 1);
+	}
+
+	bool empty() const{
+		return simplex_set.empty();
 	}
 
 	/**
@@ -202,29 +205,16 @@ public:
 	 *
 	 * Be careful : assumes the simplex is non-empty.
 	 */
-	T inline first_vertex() const
-	{
+	T first_vertex() const{
 		return *(begin());
 	}
-
-	//	/**
-	//	 * Returns the second vertex of the (oriented) simplex.
-	//	 *
-	//	 * Be careful : assumes the simplex has at least two vertices.
-	//	 */
-	//	int inline second_vertex() const
-	//	{
-	//		assert(simplex_set.size()>=2);
-	//		auto it=++(begin());
-	//		return *it;
-	//	}
 
 	/**
 	 * Returns the last vertex of the (oriented) simplex.
 	 *
 	 * Be careful : assumes the simplex is non-empty.
 	 */
-	T inline last_vertex() const
+	T last_vertex() const
 	{
 		assert(!simplex_set.empty());
 		return *(simplex_set.rbegin());

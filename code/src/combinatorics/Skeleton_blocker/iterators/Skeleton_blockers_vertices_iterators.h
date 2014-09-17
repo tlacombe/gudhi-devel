@@ -13,7 +13,8 @@
 
 /**
  *@brief Iterator on the vertices of a simplicial complex
- *@remark The increment ++ operators go to the next active vertex.
+ *@remark The increment operator go to the next active vertex.
+ *@remark Incrementation increases Vertex_handle.
  */
 template<typename SkeletonBlockerComplex>
 class Complex_vertex_iterator : public boost::iterator_facade
@@ -60,6 +61,10 @@ public:
 
 	bool equal(const Complex_vertex_iterator& other) const{
 		return vertexIterator == other.vertexIterator &&  complex == other.complex;
+	}
+
+	bool operator<(const Complex_vertex_iterator& other) const{
+		return dereference()<other.dereference();
 	}
 
 private:

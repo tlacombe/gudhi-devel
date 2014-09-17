@@ -58,7 +58,6 @@ namespace contraction {
  *
  * TODO expliquer la pile
  */
-//@TODO constants iterator
 template<
 class GeometricSimplifiableComplex,
 class EdgeProfile = Edge_profile<GeometricSimplifiableComplex>

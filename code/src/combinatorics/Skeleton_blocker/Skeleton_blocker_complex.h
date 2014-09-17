@@ -326,13 +326,8 @@ public:
 		degree_.clear();
 		num_vertices_ =0;
 
-		// Desallocate the blockers
-		while (!blocker_map_.empty()){
-			delete_blocker(blocker_map_.begin()->second);
-		}
-		num_blockers_ = 0;
+		remove_blockers();
 
-		blocker_map_.clear();
 		skeleton.clear();
 	}
 
@@ -506,7 +501,6 @@ public:
 	 */
 	Edge_handle add_edge(Vertex_handle a, Vertex_handle b){
 		assert(contains_vertex(a) && contains_vertex(b));
-
 		assert(a!=b);
 
 		auto edge_handle((*this)[std::make_pair(a,b)]);
@@ -551,6 +545,24 @@ public:
 		}
 		return edge;
 	}
+
+
+	/**
+	 * @brief The complex is reduced to its set of vertices.
+	 * All the edges and blockers are removed.
+	 */
+	void keep_only_vertices(){
+		remove_blockers();
+
+		for(auto u : vertex_range()){
+			while (this->degree(u)> 0)
+			{
+				Vertex_handle v(*(adjacent_vertices(u.vertex, this->skeleton).first));
+				this->remove_edge(u,v);
+			}
+		}
+	}
+
 
 	/**
 	 * @return true iff the simplicial complex contains an edge between
@@ -688,6 +700,20 @@ public:
 		for (auto vertex : sigma)
 			remove_blocker(sigma,vertex);
 		num_blockers_--;
+	}
+
+
+	/**
+	 * Remove all blockers, in other words, it expand the simplicial
+	 * complex to the smallest flag complex that contains it.
+	 */
+	void remove_blockers(){
+		// Desallocate the blockers
+		while (!blocker_map_.empty()){
+			delete_blocker(blocker_map_.begin()->second);
+		}
+		num_blockers_ = 0;
+		blocker_map_.clear();
 	}
 
 protected:
@@ -976,7 +1002,7 @@ public:
 	//@{
 
 
-	//	typedef typename Complex_vertex_iterator<Skeleton_blocker_complex> Complex_vertex_iterator;
+	typedef Complex_vertex_iterator<Skeleton_blocker_complex> CVI; //todo rename
 
 	//	/**
 	//	 * @brief Range over the vertices of the simplicial complex.

@@ -57,7 +57,9 @@ public:
 	 */
 	Skeleton_blocker_link_complex(const ComplexType & parent_complex, Simplex_handle& alpha_parent_adress,bool only_superior_vertices = false)
 	:only_superior_vertices_(only_superior_vertices) {
-		build_link(parent_complex,alpha_parent_adress);
+		if(!alpha_parent_adress.empty())
+			build_link(parent_complex,alpha_parent_adress);
+
 	}
 
 	/**
@@ -96,7 +98,7 @@ protected:
 		if(alpha_parent_adress.dimension()==0)
 			// for a vertex we know exactly the number of vertices of the link (and the size of the corresponding vector)
 			// thus we call a specific function that will reserve a vector with appropriate size
-			this->compute_link_vertices(parent_complex,alpha_parent_adress.first_vertex(),only_superior_vertices_,is_alpha_blocker);
+			this->compute_link_vertices(parent_complex,alpha_parent_adress.first_vertex(),only_superior_vertices_);
 		else{
 			// we compute the intersection of neighbors of alpha and store it in link_vertices
 			Simplex_handle link_vertices_parent;
@@ -124,7 +126,7 @@ protected:
 	 * If the boolean only_superior_vertices is true, then only the vertices
 	 * are greater than  vertices of alpha_parent_adress are added.
 	 */
-	void compute_link_vertices(const ComplexType & parent_complex, Vertex_handle alpha_parent_adress,bool only_superior_vertices,bool is_alpha_blocker = false ){
+	void compute_link_vertices(const ComplexType & parent_complex, Vertex_handle alpha_parent_adress,bool only_superior_vertices){
 		// for a vertex we know exactly the number of vertices of the link (and the size of the corresponding vector
 		this->skeleton.m_vertices.reserve(parent_complex.degree(alpha_parent_adress));
 
@@ -242,7 +244,7 @@ public:
 	 */
 	void build_link(const ComplexType & parent_complex,const Simplex_handle& alpha_parent_adress,bool is_alpha_blocker = false)
 	{
-		compute_link_vertices(parent_complex,alpha_parent_adress,only_superior_vertices_,is_alpha_blocker);
+		compute_link_vertices(parent_complex,alpha_parent_adress,only_superior_vertices_);
 		compute_link_edges(parent_complex,alpha_parent_adress,is_alpha_blocker);
 		compute_link_blockers(parent_complex,alpha_parent_adress,is_alpha_blocker);
 	}
