@@ -88,7 +88,6 @@ bool test_contraction1(){
 
 
 bool test_contraction2(){
-	// Make convenient labels for the vertices
 	enum { a, b, x, y, z, n };
 	Complex complex(n);
 	build_complete(n,complex);
@@ -140,31 +139,28 @@ bool test_link_condition1(){
 
 bool test_collapse1(){
 	// xxx implement remove_star(simplex) before
-	/*
+
 	Complex complex(5);
-	buildComplete(4,complex);
+	build_complete(4,complex);
 	complex.add_vertex();
 	complex.add_edge(2,4);
 	complex.add_edge(3,4);
 	// Print result
-	cerr << "complex complex"<< complex.to_string();
+	cerr << "initial complex :\n"<< complex.to_string();
 	cerr <<endl<<endl;
 
-	Simplex *sigma= new Simplex(1,2,3);
-	complex.remove_star(*sigma);
-	cerr << "complex.remove_star(1,2,3)"<< complex.to_string();
+	Simplex_handle simplex_123(Vertex_handle(1),Vertex_handle(2),Vertex_handle(3));
+	complex.remove_star(simplex_123);
+	cerr << "complex.remove_star(1,2,3):\n"<< complex.to_string();
 	cerr <<endl<<endl;
 
 	// verification
-	assert_blocker(complex,1,2,3);
+	bool blocker123_here = complex.contains_blocker(simplex_123);
 	cerr <<"----> Ocomplex \n";
-	*/
-	return true;
-
+	return blocker123_here;
 }
 
 bool test_collapse2(){
-	// Make convenient labels for the vertices
 	Complex complex(5);
 	build_complete(4,complex);
 	complex.add_vertex();
@@ -173,23 +169,21 @@ bool test_collapse2(){
 	complex.add_edge(Vertex_handle(3),Vertex_handle(4));
 	complex.add_blocker(Vertex_handle(1),Vertex_handle(2),Vertex_handle(3),Vertex_handle(4));
 	// Print result
-	cerr << "complex complex"<< complex.to_string();
+	cerr << "initial complex :\n"<< complex.to_string();
 	cerr <<endl<<endl;
 
-	Simplex_handle *sigma= new Simplex_handle(Vertex_handle(1),Vertex_handle(2),Vertex_handle(3));
-	complex.remove_star(*sigma);
-	cerr << "complex.remove_star(1,2,3)"<< complex.to_string();
+	Simplex_handle sigma(Vertex_handle(1),Vertex_handle(2),Vertex_handle(3));
+	complex.remove_star(sigma);
+	cerr << "complex.remove_star(1,2,3):\n"<< complex.to_string();
 	cerr <<endl<<endl;
 
 	// verification
-	assert_blocker(complex,Root_vertex_handle(1),Root_vertex_handle(2),Root_vertex_handle(3));
-	assert(!complex.contains_blocker(Simplex_handle(Vertex_handle(1),Vertex_handle(2),Vertex_handle(3),Vertex_handle(4))));
-	cerr <<"----> Ocomplex \n";
-	return true;
+	bool blocker_removed = !complex.contains_blocker(Simplex_handle(Vertex_handle(1),Vertex_handle(2),Vertex_handle(3),Vertex_handle(4)));
+	bool blocker123_here = complex.contains_blocker(sigma);
+	return blocker_removed && blocker123_here;
 }
 
 bool test_collapse3(){
-	// Make convenient labels for the vertices
 	Complex complex(5);
 	build_complete(4,complex);
 	complex.add_vertex();
@@ -198,41 +192,21 @@ bool test_collapse3(){
 	complex.add_edge(Vertex_handle(3),Vertex_handle(4));
 	complex.add_blocker(Vertex_handle(1),Vertex_handle(2),Vertex_handle(3),Vertex_handle(4));
 	// Print result
-	cerr << "complex complex"<< complex.to_string();
+	cerr << "initial complex:\n"<< complex.to_string();
 	cerr <<endl<<endl;
 
 	complex.remove_star(Vertex_handle(2));
-	cerr << "complex complex"<< complex.to_string();
+	cerr << "complex after remove star of 2:\n"<< complex.to_string();
+
+	bool blocker134_here = complex.contains_blocker(Simplex_handle(Vertex_handle(1),Vertex_handle(3),Vertex_handle(4)));
+	bool blocker1234_here = complex.contains_blocker(Simplex_handle(Vertex_handle(1),Vertex_handle(2),Vertex_handle(3),Vertex_handle(4)));
 	// verification
 	//	assert_blocker(complex,1,2,3);
 	//	assert(!complex.ContainsBlocker(new AddressSimplex(1,2,3,4)));
 	cerr <<"----> Ocomplex \n";
-	return true;
+	return blocker134_here && !blocker1234_here;
 }
 
-void test_collapse4(){
-	// Make convenient labels for the vertices
-	Complex complex(6);
-	build_complete(4,complex);
-	complex.add_vertex();
-	complex.add_vertex();
-	complex.add_edge(Vertex_handle(1),Vertex_handle(4));
-	complex.add_edge(Vertex_handle(2),Vertex_handle(4));
-	complex.add_edge(Vertex_handle(3),Vertex_handle(4));
-	complex.add_edge(Vertex_handle(3),Vertex_handle(4));
-	complex.add_edge(Vertex_handle(2),Vertex_handle(5));
-	complex.add_edge(Vertex_handle(3),Vertex_handle(5));
-	complex.add_edge(Vertex_handle(4),Vertex_handle(5));
-	// Print result
-	cerr << "complex complex"<< complex.to_string();
-	cerr <<endl<<endl;
-	complex.remove_star(Vertex_handle(1));
-	cerr << "complex complex"<< complex.to_string();
-	// verification
-	//	assert_blocker(complex,1,2,3);
-	//	assert(!complex.ContainsBlocker(new AddressSimplex(1,2,3,4)));
-	cerr <<"----> Ocomplex \n";
-}
 
 
 bool test_remove_popable_blockers(){
@@ -288,10 +262,13 @@ int main (int argc, char *argv[])
 	Tests tests_simplifiable_complex;
 	tests_simplifiable_complex.add("Test contraction 1",test_contraction1);
 	tests_simplifiable_complex.add("Test contraction 2",test_contraction2);
-
 	tests_simplifiable_complex.add("Test Link condition 1",test_link_condition1);
-
 	tests_simplifiable_complex.add("Test remove popable blockers",test_remove_popable_blockers);
+
+
+	tests_simplifiable_complex.add("Test collapse 1",test_collapse1);
+	tests_simplifiable_complex.add("Test collapse 2",test_collapse2);
+	tests_simplifiable_complex.add("Test collapse 3",test_collapse3);
 
 
 	tests_simplifiable_complex.run();

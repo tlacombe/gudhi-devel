@@ -137,7 +137,10 @@ public:
 	 * Remove the star of the vertex 'v'
 	 */
 	void remove_star(Vertex_handle v){
-		// xxx enlever les blockers
+		// we remove the blockers that are not consistent anymore
+
+		update_blockers_after_remove_star_of_vertex_or_edge(v);
+
 		while (this->degree(v) > 0)
 		{
 			Vertex_handle w( * (adjacent_vertices(v.vertex, this->skeleton).first));
@@ -146,59 +149,91 @@ public:
 		this->remove_vertex(v);
 	}
 
+private:
+	/**
+	 * after removing the star of a simplex, blockers sigma that contains this simplex must be removed.
+	 * Furthermore, all simplices tau of the form sigma \setminus simplex_to_be_removed must be added
+	 * whenever the dimension of tau is at least 2.
+	 */
+	void update_blockers_after_remove_star_of_vertex_or_edge(const Simplex_handle& simplex_to_be_removed){
+		std::list <Blocker_handle> blockers_to_update;
+		if(simplex_to_be_removed.empty()) return;
+
+		auto v0 = simplex_to_be_removed.first_vertex();
+		for (auto blocker : this->blocker_range(v0)){
+			if(blocker->contains(simplex_to_be_removed))
+				blockers_to_update.push_back(blocker);
+		}
+
+		for(auto blocker_to_update : blockers_to_update){
+			Simplex_handle sub_blocker_to_be_added;
+			bool sub_blocker_need_to_be_added =
+					(blocker_to_update->dimension()-simplex_to_be_removed.dimension()) >= 2;
+			if(sub_blocker_need_to_be_added){
+				sub_blocker_to_be_added = *blocker_to_update;
+				sub_blocker_to_be_added.difference(simplex_to_be_removed);
+			}
+			this->delete_blocker(blocker_to_update);
+			if(sub_blocker_need_to_be_added)
+				this->add_blocker(sub_blocker_to_be_added);
+		}
+	}
+
+
+
+public:
 	/**
 	 * Remove the star of the edge connecting vertices a and b.
 	 * @returns the number of blocker that have been removed
 	 */
-	int remove_star(Vertex_handle a, Vertex_handle b){
-		//	cout << "CollapseEdge("<<a<<","<<b<<")\n";
-		std::list <Blocker_handle> blockers_to_delete;
-		Edge_handle edge_descriptor;
-		Simplex_handle edge(a,b);
-
-		// we remove the blockers that are not consistent anymore
-		for (auto blocker : this->blocker_range(a))
-		{
-			if (blocker->contains(b)){
-				blockers_to_delete.push_back(blocker);
-			}
-		}
-		int nb_blockers_removed = blockers_to_delete.size();
-		while (!blockers_to_delete.empty())
-		{
-			this->delete_blocker(blockers_to_delete.back());
-			blockers_to_delete.pop_back();
-		}
+	void remove_star(Vertex_handle a, Vertex_handle b){
+		update_blockers_after_remove_star_of_vertex_or_edge(Simplex_handle(a,b));
 		// we remove the edge
 		this->remove_edge(a,b);
-
-		return nb_blockers_removed;
 	}
 
 
 	/**
 	 * Remove the star of the edge 'e'.
-	 * @returns the number of blocker that have been removed
 	 */
-	int remove_star(Edge_handle & e){
+	void remove_star(Edge_handle e){
 		return remove_star(this->first_vertex(e),this->second_vertex(e));
 	}
 
 	/**
 	 * Remove the star of the simplex 'sigma' which needs to belong to the complex
 	 */
-	void remove_star(Simplex_handle& sigma){
-		if (sigma.dimension()==0){
+	void remove_star(const Simplex_handle& sigma){
+		assert(this->contains(sigma));
+		if (sigma.dimension()==0)
 			remove_star(sigma.first_vertex());
-		}
-		else if (sigma.dimension()==1){
-			remove_star(sigma.first_vertex(),sigma.last_vertex());
-		}
-		else {
-			std::cerr << "not implemented yet"<<std::endl;
-			assert(false);
-		}
+		else
+			if (sigma.dimension()==1)
+				remove_star(sigma.first_vertex(),sigma.last_vertex());
+			else
+				update_blockers_after_remove_star_of_simplex(sigma);
 	}
+
+private:
+	void update_blockers_after_remove_star_of_simplex(const Simplex_handle& sigma){
+		std::list <Blocker_handle> blockers_to_remove;
+		for (auto blocker : this->blocker_range(sigma.first_vertex())){
+			if(blocker->contains(sigma))
+				blockers_to_remove.push_back(blocker);
+		}
+		for(auto blocker_to_update : blockers_to_remove)
+			this->delete_blocker(blocker_to_update);
+		this->add_blocker(sigma);
+	}
+
+public:
+
+	enum simplifiable_status{ NOT_HOMOTOPY_EQ,MAYBE_HOMOTOPY_EQ,HOMOTOPY_EQ};
+	simplifiable_status is_remove_star_homotopy_preserving(const Simplex_handle& simplex){
+		return MAYBE_HOMOTOPY_EQ;
+	}
+
+
 
 	enum contractible_status{ NOT_CONTRACTIBLE,MAYBE_CONTRACTIBLE,CONTRACTIBLE};
 	/**
@@ -305,12 +340,25 @@ private:
 
 
 private:
+	/**
+	 * @brief removes all blockers passing through the edge 'ab'
+	 */
+	void delete_blockers_around_vertex(Vertex_handle v){
+		std::list <Blocker_handle> blockers_to_delete;
+		for (auto blocker : this->blocker_range(v)){
+			blockers_to_delete.push_back(blocker);
+		}
+		while (!blockers_to_delete.empty()){
+			this->remove_blocker(blockers_to_delete.back());
+			blockers_to_delete.pop_back();
+		}
 
+	}
 	/**
 	 * @brief removes all blockers passing through the edge 'ab'
 	 */
 	void delete_blockers_around_edge(Vertex_handle a, Vertex_handle b){
-		std::vector<Blocker_handle> blocker_to_delete;
+		std::list<Blocker_handle> blocker_to_delete;
 		for (auto blocker : this->blocker_range(a))
 			if (blocker->contains(b)) blocker_to_delete.push_back(blocker);
 		while (!blocker_to_delete.empty())

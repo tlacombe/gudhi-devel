@@ -206,6 +206,7 @@ public:
 	 * Be careful : assumes the simplex is non-empty.
 	 */
 	T first_vertex() const{
+		assert(!empty());
 		return *(begin());
 	}
 
@@ -216,7 +217,7 @@ public:
 	 */
 	T last_vertex() const
 	{
-		assert(!simplex_set.empty());
+		assert(!empty());
 		return *(simplex_set.rbegin());
 	}
 	/**

@@ -8,8 +8,7 @@
 #ifndef GUDHI_SKELETON_BLOCKER_CONTRACTOR_H_
 #define GUDHI_SKELETON_BLOCKER_CONTRACTOR_H_
 
-#include <omp.h>
-
+#include <memory>
 #include <cassert>
 
 // todo remove the queue to be independent from cgal
@@ -37,7 +36,6 @@
 
 #include "utils/Utils.h"
 
-//#define GUDHI_PARALLEL
 
 
 namespace contraction {
@@ -403,11 +401,12 @@ public:
 
 	/**
 	 * @brief Constructor with customed policies.
+	 * @remark Policies destruction is handle by the class with smart pointers.
 	 */
 	Skeleton_blocker_contractor(GeometricSimplifiableComplex& complex,
 			Cost_policy_ *cost_policy,
-			Placement_policy_ * placement_policy,
-			Valid_contraction_policy_ * valid_contraction_policy,
+			Placement_policy_ * placement_policy = new First_vertex_placement<Profile>,
+			Valid_contraction_policy_ * valid_contraction_policy = new Link_condition_valid_contraction<Profile>,
 			Contraction_visitor_* contraction_visitor = new Contraction_visitor_(),
 			Edge_profile_factory_* edge_profile_factory = NULL
 	):
@@ -474,43 +473,6 @@ private:
 
 		DBG("update edges");
 
-#ifdef GUDHI_PARALLEL
-		std::vector<Profile> profiles;
-		profiles.reserve(changed_edges_.size());
-
-//		for(unsigned i = 0 ; i< changed_edges_.size(); ++i){
-//			profiles.push_back(create_profile(changed_edges_[i]));
-//		}
-
-		#pragma omp parallel for
-		for(unsigned i = 0 ; i< changed_edges_.size(); ++i){
-			//1-get the Edge_handle corresponding to ab
-			//2-change the data in mEdgeArray[ab.id()]
-			//3-update the heap
-			Edge_data* data;
-
-			DBGVALUE(changed_edges_[i]);
-
-			data = &edge_data_array_[get_undirected_edge_id(changed_edges_[i])];
-			data->cost() = get_cost(create_profile(changed_edges_[i])) ;
-		}
-
-		for(unsigned i = 0 ; i< changed_edges_.size(); ++i){
-			//1-get the Edge_handle corresponding to ab
-			//2-change the data in mEdgeArray[ab.id()]
-			//3-update the heap
-			Edge_data& data = get_data(changed_edges_[i]);
-			{
-				if ( data.is_in_PQ()){
-					update_in_PQ(changed_edges_[i],data);
-				}
-				else{
-					insert_in_PQ(changed_edges_[i],data);
-				}
-			}
-		}
-
-#else
 		//		sequential loop
 		for(auto ab : changed_edges_){
 			//1-get the Edge_handle corresponding to ab
@@ -526,7 +488,6 @@ private:
 				insert_in_PQ(ab,data);
 			}
 		}
-#endif
 		changed_edges_.clear();
 	}
 
@@ -590,15 +551,14 @@ private:
 
 
 private:
-
-	Cost_policy_ * cost_policy_;
-	Placement_policy_ * placement_policy_;
-	Valid_contraction_policy_* valid_contraction_policy_;
-	Contraction_visitor_* contraction_visitor_;
+	std::shared_ptr<Cost_policy_> cost_policy_;
+	std::shared_ptr<Placement_policy_> placement_policy_;
+	std::shared_ptr<Valid_contraction_policy_> valid_contraction_policy_;
+	std::shared_ptr<Contraction_visitor_> contraction_visitor_;
 
 	//in case the user wants to do something special when the edge profile
 	//are created (for instance add some info)
-	Edge_profile_factory_* edge_profile_factory_;
+	std::shared_ptr<Edge_profile_factory_> edge_profile_factory_;
 	Edge_data_array edge_data_array_ ;
 
 	boost::scoped_ptr<PQ> heap_PQ_ ;

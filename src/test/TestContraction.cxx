@@ -124,8 +124,55 @@ void test_contraction_rips(string name_file, double offset){
 }
 
 
+void test_geometric_link(){
+
+	Complex complex;
+	std::vector<double> p0(2,0);
+	std::vector<double> p1(2,0); p1[0] = 1.;
+	std::vector<double> p2(2,1);
+	complex.add_vertex(p0);
+	complex.add_vertex(p1);
+	complex.add_vertex(p2);
+
+	complex.add_edge(Vertex_handle(0),Vertex_handle(1));
+	complex.add_edge(Vertex_handle(1),Vertex_handle(2));
+	complex.add_edge(Vertex_handle(2),Vertex_handle(0));
+
+
+
+	cerr << "complex points:" <<endl;
+	for(auto v : complex.vertex_range()){
+		cerr <<v <<" -> ";
+		DBGCONT(complex.point(v));
+	}
+
+	cerr << "complex : "<<complex.to_string()<<endl;
+
+
+
+
+	auto link = complex.geometric_link(Vertex_handle(0));
+
+
+	cerr << "link of 0 points:" <<endl;
+	for(auto v : link.vertex_range()){
+		cerr <<v <<" -> ";
+		DBGCONT(link.point(v));
+	}
+
+	cerr << "link : "<<link.to_string()<<endl;
+
+
+
+}
+
+
 int main (int argc, char *argv[])
 {
+
+	test_geometric_link();
+	return 1;
+
 	if (argc!=3){
 		std::cerr << "Usage "<<argv[0]<<" GUDHIPATH/src/data/sphere3D.off 0.1 to load the file GUDHIPATH/src/data/sphere3D.off and contract the Rips complex built with paremeter 0.2.\n";
 		return -1;

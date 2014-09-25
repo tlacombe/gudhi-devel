@@ -11,7 +11,7 @@
 
 #include "utils/Utils.h"
 #include "combinatorics/Skeleton_blocker/Skeleton_blocker_simplifiable_complex.h"
-
+#include "combinatorics/Skeleton_blocker/Skeleton_blocker_sub_complex.h"
 /**
  * @brief Class that represents a geometric complex that can be simplified.
  * The class allows access to points of vertices.
@@ -27,6 +27,8 @@ public:
 
 	typedef typename SimplifiableSkeletonblocker::Vertex_handle Vertex_handle;
 	typedef typename SimplifiableSkeletonblocker::Root_vertex_handle Root_vertex_handle;
+	typedef typename SimplifiableSkeletonblocker::Simplex_handle Simplex_handle;
+
 
 	typedef typename SimplifiableSkeletonblocker::Graph_vertex Graph_vertex;
 
@@ -71,22 +73,20 @@ public:
 	}
 
 
-	//	std::string vertices_to_string() {
-	//		std::ostringstream stream;
-	//		for(auto vertex : this->vertex_range()){
-	//			stream << (*this)[vertex].get_id().vertex<<" -- ";
-	//
-	////			stream<<"(";
-	////			for (auto x : (*this)[vertex].point()){
-	////				stream<<x<<",";
-	////			}
-	////			stream<<")"<<std::endl;
-	//
-	//			//<<(*this)[vertex].point()<<")\n";
-	//		}
-	//		stream<< std::endl;
-	//		return stream.str();
-	//	}
+	typedef Skeleton_blocker_link_complex<Skeleton_blocker_geometric_complex> Geometric_link;
+
+	/**
+	 * Constructs the link of 'simplex' with points coordinates.
+	 */
+	Geometric_link geometric_link(const Simplex_handle& simplex) const{
+		Geometric_link link(*this,simplex);
+		//we now add the point info
+		for(Vertex_handle v : link.vertex_range()){
+			Root_vertex_handle v_root(link.get_id(v));
+			link.point(v) = (*this).point(v_root);
+		}
+		return link;
+	}
 
 };
 

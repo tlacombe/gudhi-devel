@@ -21,7 +21,8 @@ public:
 	typedef boost::optional<double> Cost_type;
 
 	virtual Cost_type operator()(const EdgeProfile& profile, const boost::optional<Point>& placement) const =0;
-	virtual ~Cost_policy(){};
+	virtual ~Cost_policy(){
+	};
 };
 
 }  // namespace contraction
