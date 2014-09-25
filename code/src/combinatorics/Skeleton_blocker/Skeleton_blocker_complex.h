@@ -282,7 +282,6 @@ public:
 	// to make a copy of each of the blockers
 	Skeleton_blocker_complex(const Skeleton_blocker_complex& copy){
 		clear();
-		// xxx need an abstract factory or something to copy the visitor
 		visitor = NULL;
 		degree_ = copy.degree_;
 		skeleton = Graph(copy.skeleton);
@@ -294,7 +293,6 @@ public:
 
 	Skeleton_blocker_complex& operator=(const Skeleton_blocker_complex& copy){
 		clear();
-		// xxx need an abstract factory or something to copy the visitor
 		visitor = NULL;
 		degree_ = copy.degree_;
 		skeleton = Graph(copy.skeleton);
@@ -691,16 +689,6 @@ public:
 	}
 
 
-	/**
-	 * Removes the simplex sigma from the set of blockers.
-	 * sigma has to belongs to the set of blockers
-	 */
-	void remove_blocker(const Simplex_handle& sigma){
-		assert(contains_blocker(sigma));
-		for (auto vertex : sigma)
-			remove_blocker(sigma,vertex);
-		num_blockers_--;
-	}
 
 
 	/**
@@ -717,6 +705,21 @@ public:
 	}
 
 protected:
+	/**
+	 * Removes the simplex sigma from the set of blockers.
+	 * sigma has to belongs to the set of blockers
+	 *
+	 * @remark contrarily to delete_blockers does not call the destructor
+	 */
+	void remove_blocker(const Simplex_handle& sigma){
+		assert(contains_blocker(sigma));
+		for (auto vertex : sigma)
+			remove_blocker(sigma,vertex);
+		num_blockers_--;
+	}
+
+
+
 	/**
 	 * Removes the simplex s from the set of blockers
 	 * and desallocate s.
@@ -1251,7 +1254,7 @@ public:
 		return stream.str();
 	}
 
-	virtual std::string vertices_to_string() const{
+	std::string vertices_to_string() const{
 		std::ostringstream stream;
 		for(auto vertex : vertex_range())
 			stream << "("<<(*this)[vertex].get_id()<<"),";
