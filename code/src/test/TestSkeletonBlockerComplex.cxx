@@ -39,8 +39,8 @@ bool assert_vertex(Complex &complex,Vertex_handle v){
 
 bool assert_simplex(Complex &complex,Root_vertex_handle a,Root_vertex_handle b,Root_vertex_handle c){
 	return true;
-//	AddressSimplex simplex((a),(b),(c));
-//	return complex.contains(&simplex);
+	//	AddressSimplex simplex((a),(b),(c));
+	//	return complex.contains(&simplex);
 }
 
 // true iff the blocker (a,b,c) is in complex
@@ -237,8 +237,116 @@ bool test_iterator_triangles(){
 	PRINT(num_triangles_seen);
 
 	return test;
-
 }
+
+
+//#include "combinatorics/Skeleton_blocker/iterators/Skeleton_blockers_simplices_iterators.h"
+
+bool test_iterator_simplices(){
+	Complex complex(6);
+	complex.add_edge(Vertex_handle(0),Vertex_handle(1));
+	complex.add_edge(Vertex_handle(1),Vertex_handle(2));
+	complex.add_edge(Vertex_handle(2),Vertex_handle(0));
+	complex.add_edge(Vertex_handle(1),Vertex_handle(3));
+	complex.add_edge(Vertex_handle(2),Vertex_handle(3));
+	complex.add_edge(Vertex_handle(2),Vertex_handle(5));
+	complex.add_edge(Vertex_handle(3),Vertex_handle(5));
+	complex.add_edge(Vertex_handle(2),Vertex_handle(4));
+	complex.add_edge(Vertex_handle(4),Vertex_handle(5));
+	complex.add_edge(Vertex_handle(3),Vertex_handle(4));
+
+	complex.add_blocker(Vertex_handle(2),Vertex_handle(3),Vertex_handle(4),Vertex_handle(5));
+
+	bool correct_number_simplices = true;
+
+	std::map<Vertex_handle,unsigned> expected_num_simplices;
+
+	expected_num_simplices[Vertex_handle(0)] = 4;
+	expected_num_simplices[Vertex_handle(1)] = 6;
+	expected_num_simplices[Vertex_handle(2)] = 11;
+	expected_num_simplices[Vertex_handle(3)] = 9;
+	expected_num_simplices[Vertex_handle(4)] = 7;
+	expected_num_simplices[Vertex_handle(5)] = 7;
+
+	for(auto pair : expected_num_simplices){
+		unsigned num_simplices_around = 0;
+		for(const auto& simplex : complex.simplex_range(pair.first)){
+			DBGVALUE(simplex);
+			++num_simplices_around;
+		}
+
+		correct_number_simplices = correct_number_simplices && (num_simplices_around == pair.second);
+
+		DBGMSG("current vertex:",pair.first);
+		DBGMSG("expected_num_simplices:",pair.second);
+		DBGMSG("found:",num_simplices_around);
+	}
+	return correct_number_simplices;
+}
+
+
+
+bool test_iterator_simplices2(){
+	Complex complex(2);
+	complex.add_edge(Vertex_handle(0),Vertex_handle(1));
+
+	unsigned num_simplices = 0 ;
+
+
+	DBGVALUE(complex.to_string());
+
+	DBG("working it");
+	for(const auto& simplex : complex.simplex_range(Vertex_handle(0))){
+		DBGVALUE(simplex);
+	}
+
+	DBG("end working it");
+	DBG("");
+
+
+	for(const auto& simplex : complex.simplex_range()){
+		DBGVALUE(simplex);
+		++num_simplices;
+	}
+	bool correct_number_simplices = (num_simplices == 3);
+	return correct_number_simplices;
+}
+
+
+bool test_iterator_simplices3(){
+	Complex complex(3);
+	complex.add_edge(Vertex_handle(0),Vertex_handle(1));
+	complex.add_edge(Vertex_handle(1),Vertex_handle(2));
+	complex.add_edge(Vertex_handle(2),Vertex_handle(0));
+	complex.add_blocker(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2));
+
+	unsigned num_simplices = 0 ;
+
+
+	DBG("working it");
+	for(const auto& simplex : complex.simplex_range(Vertex_handle(0))){
+		DBGVALUE(simplex);
+	}
+
+	DBG("end working it");
+	DBG("");
+
+
+	for(const auto& simplex : complex.simplex_range()){
+		DBGVALUE(simplex);
+		++num_simplices;
+	}
+	bool correct_number_simplices = (num_simplices == 6);
+	return correct_number_simplices;
+}
+
+
+
+
+
+
+
+
 
 template<typename Map>
 auto blocker_range(Map map) -> decltype( map | boost::adaptors::map_values){
@@ -506,11 +614,27 @@ bool test_link7(){
 	// Print result
 	PRINT(complex.to_string());
 	cerr <<endl<<endl;
-	PRINT(link_blocker_alpha.to_string());
+	DBGVALUE(link_blocker_alpha.to_string());
+
+	Skeleton_blocker_link_complex<Complex> link_blocker_alpha_cpy = link_blocker_alpha;
+
+	DBGVALUE(link_blocker_alpha_cpy.to_string());
+
+	bool equal_complexes =
+			(link_blocker_alpha.num_vertices() == link_blocker_alpha_cpy.num_vertices())
+			&&(link_blocker_alpha.num_blockers() == link_blocker_alpha_cpy.num_blockers())
+			&&(link_blocker_alpha.num_edges() == link_blocker_alpha_cpy.num_edges())
+			;
+	DBGVALUE((link_blocker_alpha.num_blockers() == link_blocker_alpha_cpy.num_blockers()));
+	DBGVALUE((link_blocker_alpha.num_blockers() ));
+	DBGVALUE(( link_blocker_alpha_cpy.num_blockers()));
+
+	DBGVALUE(equal_complexes);
 
 	// verification
-	return link_blocker_alpha.num_vertices()==5 && link_blocker_alpha.num_edges()==4 && link_blocker_alpha.num_blockers()==1;
+	return link_blocker_alpha.num_vertices()==5 && link_blocker_alpha.num_edges()==4 && link_blocker_alpha.num_blockers()==1 && equal_complexes;
 }
+
 
 
 
@@ -573,6 +697,7 @@ bool test_constructor(){
 int main (int argc, char *argv[])
 {
 	Tests tests_complex;
+
 	tests_complex.add("test simplex",test_simplex);
 
 	tests_complex.add("test_link0",test_link0);
@@ -590,6 +715,10 @@ int main (int argc, char *argv[])
 	tests_complex.add("test iterator edges 2",test_iterator_edge2);
 	tests_complex.add("test iterator edges 3",test_iterator_edge3);
 
+	tests_complex.add("test iterator simplices",test_iterator_simplices);
+	tests_complex.add("test iterator simplices2",test_iterator_simplices2);
+	tests_complex.add("test iterator simplices3",test_iterator_simplices3);
+
 	tests_complex.add("test iterator blockers",test_iterator_blockers);
 	tests_complex.add("test_iterator_triangles",test_iterator_triangles);
 
@@ -599,8 +728,9 @@ int main (int argc, char *argv[])
 		return EXIT_SUCCESS;
 	}
 	else{
-		test_iterator_triangles();
 		return EXIT_FAILURE;
 	}
+
+	//	test_iterator_simplices();
 }
 

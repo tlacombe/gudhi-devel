@@ -425,6 +425,9 @@ public:
 	}
 
 
+	~Skeleton_blocker_contractor(){
+		complex_.set_visitor(0);
+	}
 
 private:
 
