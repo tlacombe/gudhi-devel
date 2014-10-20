@@ -151,7 +151,7 @@ void test_geometric_link(){
 
 
 
-	auto link = complex.geometric_link(Vertex_handle(0));
+	auto link = complex.link(Vertex_handle(0));
 
 
 	cerr << "link of 0 points:" <<endl;
@@ -169,10 +169,6 @@ void test_geometric_link(){
 
 int main (int argc, char *argv[])
 {
-
-	test_geometric_link();
-	return 1;
-
 	if (argc!=3){
 		std::cerr << "Usage "<<argv[0]<<" GUDHIPATH/src/data/sphere3D.off 0.1 to load the file GUDHIPATH/src/data/sphere3D.off and contract the Rips complex built with paremeter 0.2.\n";
 		return -1;

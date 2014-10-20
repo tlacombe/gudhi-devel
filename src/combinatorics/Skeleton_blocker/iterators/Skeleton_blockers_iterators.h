@@ -13,6 +13,8 @@
 #include "Skeleton_blockers_edges_iterators.h"
 #include "Skeleton_blockers_blockers_iterators.h"
 #include "Skeleton_blockers_triangles_iterators.h"
+#include "Skeleton_blockers_simplices_iterators.h"
+
 
 
 

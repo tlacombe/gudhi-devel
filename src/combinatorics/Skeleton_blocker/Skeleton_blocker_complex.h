@@ -281,10 +281,12 @@ public:
 	// We cannot use the default copy constructor since we need
 	// to make a copy of each of the blockers
 	Skeleton_blocker_complex(const Skeleton_blocker_complex& copy){
-		clear();
 		visitor = NULL;
 		degree_ = copy.degree_;
 		skeleton = Graph(copy.skeleton);
+		num_vertices_ = copy.num_vertices_;
+
+		num_blockers_ = 0;
 		// we copy the blockers
 		for (auto blocker : copy.const_blocker_range()){
 			add_blocker(*blocker);
@@ -296,10 +298,12 @@ public:
 		visitor = NULL;
 		degree_ = copy.degree_;
 		skeleton = Graph(copy.skeleton);
+		num_vertices_ = copy.num_vertices_;
+
+		num_blockers_ = 0;
 		// we copy the blockers
-		for (auto blocker : copy.const_blocker_range()){
+		for (auto blocker : copy.const_blocker_range())
 			add_blocker(*blocker);
-		}
 		return *this;
 	}
 
@@ -318,7 +322,7 @@ public:
 	 */
 	virtual void clear(){
 		// xxx for now the responsabilty of freeing the visitor is for
-		// the user... not great do a shared_ptr instead
+		// the user
 		visitor = NULL;
 
 		degree_.clear();
@@ -429,7 +433,7 @@ public:
 	 */
 	virtual boost::optional<Vertex_handle> get_address(Root_vertex_handle id) const{
 		boost::optional<Vertex_handle> res;
-		if ( id.vertex<= boost::num_vertices(skeleton) ) res = Vertex_handle(id.vertex);
+		if ( id.vertex< boost::num_vertices(skeleton) ) res = Vertex_handle(id.vertex);//xxx
 		return res;
 	}
 
@@ -441,6 +445,20 @@ public:
 	Root_vertex_handle get_id(Vertex_handle local) const{
 		assert(0<=local.vertex && local.vertex< boost::num_vertices(skeleton));
 		return (*this)[local].get_id();
+	}
+
+
+	/**
+	 * If the current complex is a sub (or sup) complex of 'other', it converts
+	 * the address of a vertex v expressed in 'other' to the address of the vertex
+	 * v in the current one.
+	 * @remark this methods uses Root_vertex_handle to identify the vertex
+	 */
+	Vertex_handle convert_handle_from_another_complex(
+			const Skeleton_blocker_complex& other,Vertex_handle vh_in_other) const{
+		auto vh_in_current_complex = get_address(other.get_id(vh_in_other));
+		assert(vh_in_current_complex);
+		return *vh_in_current_complex;
 	}
 
 
@@ -542,6 +560,16 @@ public:
 			degree_[b.vertex]--;
 		}
 		return edge;
+	}
+
+
+	/**
+	 * @brief Removes edge from the simplicial complex.
+	 */
+	void remove_edge(Edge_handle edge){
+		assert(contains_vertex(first_vertex(edge)));
+		assert(contains_vertex(second_vertex(edge)));
+		remove_edge(first_vertex(edge),second_vertex(edge));
 	}
 
 
@@ -928,6 +956,7 @@ public:
 	 * @brief returns the number of vertices in the complex.
 	 */
 	int num_vertices() const{
+		//remark boost::num_vertices(skeleton) counts deactivated vertices
 		return num_vertices_;
 	}
 
@@ -1004,7 +1033,6 @@ public:
 	 */
 	//@{
 
-
 	typedef Complex_vertex_iterator<Skeleton_blocker_complex> CVI; //todo rename
 
 	//	/**
@@ -1080,7 +1108,6 @@ public:
 	 */
 	//@{
 
-
 	/**
 	 * @brief Range over triangle around a vertex of the simplicial complex
 	 * Methods .begin() and .end() return a Triangle_around_vertex_iterator.
@@ -1119,9 +1146,6 @@ public:
 		return Triangle_around_vertex_range<Superior_link>(this,v);
 	}
 
-
-
-
 	//////////////
 	/**
 	 * @brief Range over triangles of the simplicial complex
@@ -1141,6 +1165,45 @@ public:
 	Triangle_range triangle_range() const{
 		return Triangle_range(this);
 	}
+	//@}
+
+
+
+	/** @name Simplices iterators
+	 */
+	//@{
+	typedef Simplex_around_vertex_iterator<Skeleton_blocker_complex,Link> Complex_simplex_around_vertex_iterator;
+
+	/**
+	 * @brief Range over the simplices of the simplicial complex around a vertex.
+	 * Methods .begin() and .end() return a Complex_simplex_around_vertex_iterator.
+	 */
+	typedef boost::iterator_range     < Complex_simplex_around_vertex_iterator > Complex_simplex_around_vertex_range;
+
+	/**
+	 * @brief Returns a Complex_simplex_around_vertex_range over all the simplices around a vertex of the complex
+	 */
+	Complex_simplex_around_vertex_range simplex_range(Vertex_handle v) const
+	{
+		assert(contains_vertex(v));
+		return Complex_simplex_around_vertex_range(
+				Complex_simplex_around_vertex_iterator(this,v),
+				Complex_simplex_around_vertex_iterator(this,v,true)
+		);
+	}
+
+//	typedef Simplex_iterator<Skeleton_blocker_complex,Superior_link> Complex_simplex_iterator;
+	typedef Simplex_iterator<Skeleton_blocker_complex> Complex_simplex_iterator;
+
+	typedef boost::iterator_range     < Complex_simplex_iterator > Complex_simplex_range;
+
+	Complex_simplex_range simplex_range() const
+	{
+		Complex_simplex_iterator begin(this);
+		Complex_simplex_iterator end(this,true);
+		return Complex_simplex_range(begin,end);
+	}
+
 
 	//@}
 

@@ -27,6 +27,7 @@ public:
 
 	typedef typename SimplifiableSkeletonblocker::Vertex_handle Vertex_handle;
 	typedef typename SimplifiableSkeletonblocker::Root_vertex_handle Root_vertex_handle;
+	typedef typename SimplifiableSkeletonblocker::Edge_handle Edge_handle;
 	typedef typename SimplifiableSkeletonblocker::Simplex_handle Simplex_handle;
 
 
@@ -78,16 +79,29 @@ public:
 	/**
 	 * Constructs the link of 'simplex' with points coordinates.
 	 */
-	Geometric_link geometric_link(const Simplex_handle& simplex) const{
+	Geometric_link link(const Simplex_handle& simplex) const{
 		Geometric_link link(*this,simplex);
 		//we now add the point info
+		add_points_to_link(link);
+		return link;
+	}
+
+	/**
+	 * Constructs the link of 'simplex' with points coordinates.
+	 */
+	Geometric_link link(Edge_handle edge) const{
+		Geometric_link link(*this,edge);
+		//we now add the point info
+		add_points_to_link(link);
+		return link;
+	}
+private:
+	void add_points_to_link(Geometric_link& link) const{
 		for(Vertex_handle v : link.vertex_range()){
 			Root_vertex_handle v_root(link.get_id(v));
 			link.point(v) = (*this).point(v_root);
 		}
-		return link;
 	}
-
 };
 
 

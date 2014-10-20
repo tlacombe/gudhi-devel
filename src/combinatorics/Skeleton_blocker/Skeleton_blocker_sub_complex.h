@@ -121,12 +121,6 @@ public:
 
 
 public:
-	/**
-	 * Constructs a subcomplex which is empty
-	 */
-	Skeleton_blocker_sub_complex(){}
-
-
 
 	/**
 	 * Constructs the restricted complex of 'parent_complex' to
@@ -180,7 +174,6 @@ public:
 		if (it == adresses.end()) res.reset();
 		else  res=(*it).second;
 		return res;
-
 	}
 
 	//	/**

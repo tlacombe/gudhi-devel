@@ -83,9 +83,6 @@ public:
 		build_link(parent_complex,alpha_simplex);
 	}
 
-	~Skeleton_blocker_link_complex(){
-	}
-
 protected:
 
 
@@ -244,6 +241,7 @@ public:
 	 */
 	void build_link(const ComplexType & parent_complex,const Simplex_handle& alpha_parent_adress,bool is_alpha_blocker = false)
 	{
+		assert(is_alpha_blocker || parent_complex.contains(alpha_parent_adress));
 		compute_link_vertices(parent_complex,alpha_parent_adress,only_superior_vertices_);
 		compute_link_edges(parent_complex,alpha_parent_adress,is_alpha_blocker);
 		compute_link_blockers(parent_complex,alpha_parent_adress,is_alpha_blocker);
