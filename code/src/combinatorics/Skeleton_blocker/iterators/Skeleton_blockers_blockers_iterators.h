@@ -10,6 +10,9 @@
 
 #include "boost/iterator/iterator_facade.hpp"
 
+namespace GUDHI{
+
+
 /**
  * @brief Iterator through the blockers of a vertex.
   */
@@ -110,6 +113,6 @@ public:
 };
 
 
-
+} // namespace GUDHI
 
 #endif /* GUDHI_SKELETON_BLOCKERS_BLOCKERS_ITERATORS_H_ */

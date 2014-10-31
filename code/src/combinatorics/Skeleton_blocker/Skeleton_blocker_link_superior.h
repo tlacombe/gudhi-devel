@@ -11,7 +11,7 @@
 
 #include "Skeleton_blocker_link_complex.h"
 
-
+namespace GUDHI{
 
 template<class ComplexType> class Skeleton_blocker_sub_complex;
 
@@ -59,7 +59,7 @@ public:
 };
 
 
-
+}  // namespace GUDHI
 
 
 #endif /* SKELETON_BLOCKER_LINK_SUPERIOR_H_ */

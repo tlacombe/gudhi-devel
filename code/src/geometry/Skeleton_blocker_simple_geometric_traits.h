@@ -12,6 +12,8 @@
 #include <sstream>
 #include "combinatorics/Skeleton_blocker/Skeleton_blocker_simple_traits.h"
 
+namespace GUDHI{
+
 /**
  * @extends SkeletonBlockerGeometricDS
  */
@@ -54,5 +56,7 @@ public:
 	typedef Skeleton_blocker_simple_traits::Graph_edge Graph_edge;
 };
 
+
+}  // namespace GUDHI
 
 #endif /* GUDHI_SKELETON_BLOCKERS_SIMPLE_GEOMETRIC_TRAITS_H_ */

@@ -10,6 +10,7 @@
 
 #include <boost/optional.hpp>
 
+namespace GUDHI{
 
 namespace contraction {
 
@@ -26,4 +27,6 @@ public:
 };
 
 }  // namespace contraction
+
+}  // namespace GUDHI
 #endif /* GUDHI_COST_POLICY_H_ */

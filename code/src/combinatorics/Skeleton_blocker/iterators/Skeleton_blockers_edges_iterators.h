@@ -11,6 +11,8 @@
 #include "boost/iterator/iterator_facade.hpp"
 
 
+namespace GUDHI{
+
 template<typename SkeletonBlockerComplex>
 class Complex_edge_around_vertex_iterator :
  public boost::iterator_facade < Complex_edge_around_vertex_iterator<SkeletonBlockerComplex>
@@ -141,7 +143,7 @@ public:
 
 
 
-
+} // namespace GUDHI
 
 
 #endif /* GUDHI_SKELETON_BLOCKERS_ITERATORS_EDGES_H_ */

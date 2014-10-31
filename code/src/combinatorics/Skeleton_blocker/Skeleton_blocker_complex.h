@@ -40,6 +40,8 @@ using namespace std::chrono;
 #include "utils/Clock.h"
 
 
+namespace GUDHI {
+
 /**
  *@class Skeleton_blocker_complex
  *@brief Abstract Simplicial Complex represented with a skeleton/blockers pair.
@@ -1427,6 +1429,8 @@ unsigned make_complex_from_top_faces(Complex& complex,SimplexHandleIterator begi
 
 #include "Skeleton_blocker_complex_iterators.h"
 
+
+}  // namespace GUDHI
 
 
 #endif

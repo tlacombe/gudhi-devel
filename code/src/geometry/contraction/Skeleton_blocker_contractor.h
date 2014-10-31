@@ -36,7 +36,7 @@
 
 #include "utils/Utils.h"
 
-
+namespace GUDHI{
 
 namespace contraction {
 
@@ -628,6 +628,6 @@ private:
 };
 
 }  // namespace contraction
-
+} // namespace GUDHI
 
 #endif /* GUDHI_SKELETON_BLOCKER_CONTRACTOR_H_ */

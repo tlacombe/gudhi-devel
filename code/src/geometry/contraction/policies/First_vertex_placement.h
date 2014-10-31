@@ -11,6 +11,8 @@
 
 #include "Placement_policy.h"
 
+namespace GUDHI{
+
 namespace contraction {
 
 
@@ -31,7 +33,7 @@ public:
 };
 }  // namespace contraction
 
-
+}  // namespace GUDHI
 
 
 #endif /* GUDHI_FIRST_VERTEX_PLACEMENT_H_ */

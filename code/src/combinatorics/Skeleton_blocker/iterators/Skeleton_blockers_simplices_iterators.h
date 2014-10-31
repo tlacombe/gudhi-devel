@@ -19,6 +19,11 @@
 #include "combinatorics/Skeleton_blocker/Skeleton_blocker_link_superior.h"
 
 
+
+
+namespace GUDHI {
+
+
 /**
  * Link may be Skeleton_blocker_link_complex<SkeletonBlockerComplex> to iterate over all
  * simplices around a vertex OR
@@ -389,7 +394,7 @@ private:
 
 
 
-
+} // namespace GUDHI
 
 
 

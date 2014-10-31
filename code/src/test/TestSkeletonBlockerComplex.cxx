@@ -16,11 +16,10 @@
 
 using namespace std;
 
+using namespace GUDHI;
 
 
 
-
-template<typename ComplexType> class Skeleton_blocker_link_complex;
 typedef Skeleton_blocker_complex<Skeleton_blocker_simple_traits> Complex;
 typedef typename Complex::Vertex_handle Vertex_handle;
 typedef typename Complex::Root_vertex_handle Root_vertex_handle;

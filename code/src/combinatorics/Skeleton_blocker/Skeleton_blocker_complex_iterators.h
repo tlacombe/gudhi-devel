@@ -14,7 +14,6 @@
 #include "iterators/Skeleton_blockers_iterators.h"
 
 
-
 //////////////////////////////////////////////////////////////////////
 /**
  * \brief Iterator over the triangles that are
@@ -249,7 +248,6 @@ public:
 		return Triangle_iterator(complex_,true);
 	}
 };
-
 
 
 #endif /* GUDHI_SKELETON_BLOCKER_COMPLEX_ITERATORS_H_ */
