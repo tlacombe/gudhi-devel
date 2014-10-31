@@ -10,6 +10,8 @@
 
 
 namespace GUDHI{
+
+namespace skbl {
 // todo rajouter les const
 
 /**
@@ -102,6 +104,7 @@ public:
 	}
 };
 
+}
 
 }  // namespace GUDHI
 

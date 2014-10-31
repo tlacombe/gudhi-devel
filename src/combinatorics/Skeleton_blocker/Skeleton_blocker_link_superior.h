@@ -13,6 +13,8 @@
 
 namespace GUDHI{
 
+namespace skbl {
+
 template<class ComplexType> class Skeleton_blocker_sub_complex;
 
 
@@ -58,6 +60,7 @@ public:
 
 };
 
+}
 
 }  // namespace GUDHI
 

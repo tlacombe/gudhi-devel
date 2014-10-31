@@ -25,6 +25,8 @@ using namespace std;
 
 using namespace GUDHI;
 
+using namespace skbl;
+
 template<typename ComplexType> class Skeleton_blocker_sub_complex;
 typedef Skeleton_blocker_simplifiable_complex<Skeleton_blocker_simple_traits> Complex;
 typedef typename Complex::Vertex_handle Vertex_handle;

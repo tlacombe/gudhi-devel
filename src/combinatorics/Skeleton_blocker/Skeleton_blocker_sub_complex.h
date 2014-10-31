@@ -7,6 +7,8 @@
 
 namespace GUDHI{
 
+namespace skbl {
+
 /**
  * @brief Simplicial subcomplex of a complex represented by a skeleton/blockers pair.
  *
@@ -252,6 +254,7 @@ proper_faces_in_union(Skeleton_blocker_simplex<typename ComplexType::Root_vertex
 	return true;
 }
 
+}
 
 }  // namespace GUDHI
 

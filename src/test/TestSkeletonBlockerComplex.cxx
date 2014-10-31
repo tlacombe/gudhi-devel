@@ -18,6 +18,7 @@ using namespace std;
 
 using namespace GUDHI;
 
+using namespace skbl;
 
 
 typedef Skeleton_blocker_complex<Skeleton_blocker_simple_traits> Complex;

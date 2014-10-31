@@ -11,8 +11,9 @@
 #include "boost/iterator/iterator_facade.hpp"
 
 
-
 namespace GUDHI{
+
+namespace skbl {
 
 //////////////////////////////////////////////////////////////////////
 /**
@@ -187,6 +188,8 @@ public:
 		return is_end_;
 	}
 };
+
+}
 
 } // namespace GUDHI
 

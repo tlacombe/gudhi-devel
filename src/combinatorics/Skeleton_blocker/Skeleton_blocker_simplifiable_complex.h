@@ -12,6 +12,8 @@
 
 namespace GUDHI{
 
+namespace skbl {
+
 /**
  *  \brief Class that allows simplification operation on a simplicial complex represented
  *  by a skeleton/blockers pair.
@@ -514,6 +516,8 @@ private:
 
 
 };
+
+}
 
 }  // namespace GUDHI
 

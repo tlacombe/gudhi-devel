@@ -18,7 +18,7 @@ namespace GUDHI{
  * @extends SkeletonBlockerGeometricDS
  */
 template<typename GeometryTrait>
-struct Skeleton_blocker_simple_geometric_traits : public Skeleton_blocker_simple_traits {
+struct Skeleton_blocker_simple_geometric_traits : public skbl::Skeleton_blocker_simple_traits {
 public:
 
 	typedef GeometryTrait GT;

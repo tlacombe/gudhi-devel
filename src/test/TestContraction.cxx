@@ -34,6 +34,8 @@ using namespace std;
 
 using namespace GUDHI;
 
+using namespace skbl;
+
 struct Geometry_trait{
 	typedef std::vector<double> Point;
 };

@@ -17,6 +17,8 @@
 
 namespace GUDHI{
 
+namespace skbl {
+
 /**
  * @brief Class that represents a geometric complex that can be simplified.
  * The class allows access to points of vertices.
@@ -108,6 +110,8 @@ private:
 		}
 	}
 };
+
+}
 
 }  // namespace GUDHI
 

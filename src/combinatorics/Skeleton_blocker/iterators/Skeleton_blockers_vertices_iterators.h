@@ -13,6 +13,8 @@
 
 namespace GUDHI{
 
+namespace skbl {
+
 /**
  *@brief Iterator on the vertices of a simplicial complex
  *@remark The increment operator go to the next active vertex.
@@ -157,6 +159,7 @@ private:
 	}
 };
 
+}
 
 } // namespace GUDHI
 

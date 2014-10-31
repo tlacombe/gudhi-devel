@@ -14,6 +14,8 @@
 
 namespace GUDHI{
 
+namespace skbl {
+
 /**
  * @extends SkeletonBlockerDS
  */
@@ -133,6 +135,7 @@ struct Skeleton_blocker_simple_traits{
 
 };
 
+}
 
 }  // namespace GUDHI
 
