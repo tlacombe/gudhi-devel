@@ -40,6 +40,62 @@
 
 namespace contraction {
 
+
+template <class Profile>
+Placement_policy<Profile>* make_first_vertex_placement(){
+	return new First_vertex_placement<Profile>();
+}
+
+template <class Profile>
+Valid_contraction_policy<Profile>* make_link_valid_contraction(){
+	return new Link_condition_valid_contraction<Profile>();
+}
+
+
+// visitor that remove popable blockers after an edge contraction
+template <class Profile>
+class Contraction_visitor_remove_popable : public Contraction_visitor<Profile>{
+public:
+	typedef typename Profile::Point Point;
+	typedef typename Profile::Complex Complex;
+	typedef typename Complex::Vertex_handle Vertex_handle;
+
+	//todo explore only neighborhood with stack
+	void on_contracted(const Profile  &profile, boost::optional< Point > placement) override{
+		std::list<Vertex_handle> vertex_to_check;
+		vertex_to_check.push_front(profile.v0_handle());
+
+		while(!vertex_to_check.empty()){
+			Vertex_handle v = vertex_to_check.front();
+			vertex_to_check.pop_front();
+
+			bool blocker_popable_found=true;
+			while (blocker_popable_found){
+				blocker_popable_found = false;
+				for(auto block : profile.complex().blocker_range(v)){
+					if (profile.complex().is_popable_blocker(block)) {
+						for(Vertex_handle nv : *block)
+							if(nv!=v) vertex_to_check.push_back(nv);
+						profile.complex().delete_blocker(block);
+						blocker_popable_found = true;
+						break;
+					}
+				}
+			}
+		}
+	}
+};
+
+template <class Profile>
+Contraction_visitor<Profile>* make_remove_popable_blockers_visitor(){
+	return new Contraction_visitor_remove_popable<Profile>();
+}
+
+
+
+
+
+
 /**
  *@class Skeleton_blocker_contractor
  *@brief Class that allows to contract iteratively edges of a simplicial complex.
@@ -377,6 +433,7 @@ public:
 		}
 		return res;
 	}
+
 
 	/**
 	 * @brief Constructor with default policies.

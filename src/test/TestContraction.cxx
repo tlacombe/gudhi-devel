@@ -5,7 +5,9 @@
  *      Author: dsalinas
  */
 #include <ctime>
+#include <list>
 
+#include "combinatorics/Skeleton_blocker/Skeleton_blocker_simple_traits.h"
 #include "geometry/Skeleton_blocker_simple_geometric_traits.h"
 //#include "Skeleton_blocker/Simplex.h"
 #include "contraction/Skeleton_blocker_contractor.h"
@@ -36,11 +38,16 @@ struct Geometry_trait{
 
 typedef Geometry_trait::Point Point;
 
+
+typedef Skeleton_blocker_complex<Skeleton_blocker_simple_traits> AbstractComplex;
 typedef Skeleton_blocker_simple_geometric_traits<Geometry_trait> Complex_geometric_traits;
+
 
 typedef Skeleton_blocker_geometric_complex< Complex_geometric_traits > Complex;
 
 typedef typename Complex::Vertex_handle Vertex_handle;
+typedef typename Complex::Simplex_handle Simplex_handle;
+
 typedef typename Complex::Root_vertex_handle Root_vertex_handle;
 
 using namespace contraction;
@@ -73,14 +80,8 @@ void build_rips(ComplexType& complex, double offset){
 			}
 }
 
-// visitor that remove popable blockers after an edge contraction
-class Contraction_visitor_remove_popable : public Contraction_visitor<Profile>{
-public:
-	void on_contracted(const Profile  &profile, boost::optional< Point > placement) override{
-		profile.complex().remove_popable_blockers();
-	}
 
-};
+
 
 void test_contraction_rips(string name_file, double offset){
 	Complex complex;
@@ -96,6 +97,7 @@ void test_contraction_rips(string name_file, double offset){
 	clock_t time = clock();
 
 	TEST("build the Rips complex");
+
 	build_rips(complex,offset);
 
 	std::cerr << "Rips contruction took "<< ( (float)(clock()-time))/CLOCKS_PER_SEC << " seconds\n";
@@ -106,11 +108,11 @@ void test_contraction_rips(string name_file, double offset){
 
 	time = clock();
 
-	auto cost_policy = new Edge_length_cost<Profile>;
-	auto placement_policy = new First_vertex_placement<Profile>;
-	auto valid_contraction_policy= new Link_condition_valid_contraction<Profile>;
-	auto contraction_visitor = new Contraction_visitor_remove_popable();
-	Complex_contractor contractor(complex,cost_policy,placement_policy,valid_contraction_policy,contraction_visitor);
+	Complex_contractor contractor(complex,
+			new Edge_length_cost<Profile>,
+			contraction::make_first_vertex_placement<Profile>(),
+			contraction::make_link_valid_contraction<Profile>(),
+			contraction::make_remove_popable_blockers_visitor<Profile>());
 	contractor.contract_edges();
 
 	TESTVALUE(complex.to_string());
@@ -161,10 +163,9 @@ void test_geometric_link(){
 	}
 
 	cerr << "link : "<<link.to_string()<<endl;
-
-
-
 }
+
+
 
 
 int main (int argc, char *argv[])

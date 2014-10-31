@@ -8,7 +8,15 @@
 #ifndef GUDHI_SKELETON_BLOCKER_COMPLEX_H
 #define GUDHI_SKELETON_BLOCKER_COMPLEX_H
 
+///todo remove
+#include <chrono>
+using namespace std;
+using namespace std::chrono;
+
+
 #include <map>
+#include <list>
+#include <set>
 #include <vector>
 #include <iostream>
 #include <string>
@@ -27,8 +35,9 @@
 #include "Skeleton_blocker_simplex.h"
 
 #include "Skeleton_blocker_complex_visitor.h"
+#include "internal/Top_faces.h"
 #include "utils/Utils.h"
-
+#include "utils/Clock.h"
 
 
 /**
@@ -42,7 +51,7 @@
  * The graph is a boost graph templated with SkeletonBlockerDS::Graph_vertex and SkeletonBlockerDS::Graph_edge.
  *
  * One can accesses to vertices via SkeletonBlockerDS::Vertex_handle, to edges via Skeleton_blocker_complex::Edge_handle and
- * simplices via SkeletonBlockerDS::Simplex_handle.
+ * simplices via Skeleton_blocker_simplex<Vertex_handle>.
  *
  * The SkeletonBlockerDS::Root_vertex_handle serves in the case of a subcomplex (see class Skeleton_blocker_sub_complex)
  * to access to the address of one vertex in the parent complex.
@@ -89,12 +98,18 @@ public:
 protected:
 
 	typedef typename boost::adjacency_list
-			< boost::listS,
-			boost::vecS,
+			< boost::setS, //edges
+			boost::vecS, // vertices
 			boost::undirectedS,
 			Graph_vertex,
 			Graph_edge
 			> Graph;
+	//todo/remark : edges are not sorted, it heavily penalizes computation for SuperiorLink
+	// (eg Link with greater vertices)
+	// that burdens simplex iteration / complex initialization via list of simplices.
+	// to avoid that, one should modify the graph by storing two lists of adjacency for every
+	// vertex, the one with superior and the one with lower vertices, that way there is
+	// no more extra cost for computation of SuperiorLink
 	typedef typename boost::graph_traits<Graph>::vertex_iterator boost_vertex_iterator;
 	typedef typename boost::graph_traits<Graph>::edge_iterator boost_edge_iterator;
 
@@ -175,18 +190,17 @@ private:
 
 	public:
 		Simplices_sets_from_list(std::list<Simplex_handle>& simplices):
-			dimension_(simplices.back().dimension()),
-			simplices_(dimension_+1){
+			dimension_(-1){
 			assert(!simplices.empty());
 
-			// compute k-simplices
-			int current_dimension = 0;
-
 			for(auto simplex = simplices.begin() ; simplex != simplices.end(); ++simplex ){
-				assert(simplex->dimension()>= current_dimension);
-				if(simplex->dimension() > current_dimension)
-					++current_dimension;
-				simplices_[current_dimension].insert(*simplex);
+				dimension_ = std::max(dimension_,(int)simplex->dimension());
+			}
+			simplices_ = std::vector<Container_simplices >(dimension_+1);
+
+			// compute k-simplices
+			for(auto simplex = simplices.begin() ; simplex != simplices.end(); ++simplex ){
+				simplices_[simplex->dimension()].insert(*simplex);
 			}
 		}
 
@@ -215,7 +229,18 @@ private:
 			else
 				return simplices_[simplex.dimension()].find(simplex)!= simplices_[simplex.dimension()].end();
 		}
+
+		void print(){
+			for(int i = 0; i < dimension_; ++i){
+				std::cout << i<<"-simplices"<<std::endl;
+				auto l = simplices_[i];
+				for(auto s : l){
+					std::cout << s<<std::endl;
+				}
+			}
+		}
 	};
+
 
 	void compute_next_expand(
 			Simplices_sets_from_list& simplices,
@@ -224,10 +249,18 @@ private:
 	{
 		next_expand.clear();
 
-		for(auto sigma = simplices.begin(dim); sigma != simplices.end(dim); ++sigma){
-			Simplex_handle t(*sigma);
+//	    high_resolution_clock::time_point tbeginfor = high_resolution_clock::now();
+//	    auto durationlooplink = std::chrono::duration_cast<std::chrono::microseconds>( tbeginfor - tbeginfor ).count();
 
+		for(auto sigma = simplices.begin(dim); sigma != simplices.end(dim); ++sigma){
+//		    high_resolution_clock::time_point tbeg = high_resolution_clock::now();
+			Simplex_handle t(*sigma);
 			Skeleton_blocker_link_superior<Skeleton_blocker_complex> link(*this,t);
+			// xxx all time here, most likely because accessing superior edges needs passing through lower one
+			// currently
+
+//			durationlooplink += std::chrono::duration_cast<std::chrono::microseconds>( high_resolution_clock::now() - tbeg ).count();
+
 			for(auto v : link.vertex_range()){
 				Vertex_handle v_in_complex(*this->get_address(  link.get_id(v)) );
 				t.add_vertex(v_in_complex);
@@ -235,6 +268,10 @@ private:
 				t.remove_vertex(v_in_complex);
 			}
 		}
+//	    high_resolution_clock::time_point t2 = high_resolution_clock::now();
+//	    auto durationlooptotal = std::chrono::duration_cast<std::chrono::microseconds>( t2 - tbeginfor ).count();
+//	    DBGVALUE(durationlooptotal);
+//	    DBGVALUE(durationlooplink);
 	}
 
 
@@ -243,7 +280,7 @@ public:
 	/**
 	 * @brief Constructor with a list of simplices
 	 * @details The list of simplices must be the list
-	 * of simplices of a simplicial complex, sorted with increasing dimension.
+	 * of simplices of a simplicial complex.
 	 */
 	Skeleton_blocker_complex(std::list<Simplex_handle>& simplices,Visitor* visitor_=NULL):
 		num_vertices_(0),num_blockers_(0),
@@ -254,26 +291,29 @@ public:
 
 
 		// add 1-skeleton to the complex
-		for(auto& simplex : simplices){
-			if(simplex.dimension()==0)
-				add_vertex();
-			if(simplex.dimension()==1){
-				assert(contains_vertex(simplex.first_vertex()) && contains_vertex(simplex.last_vertex()));
-				add_edge(simplex.first_vertex(),simplex.last_vertex());
-			}
+		for(auto v_it = set_simplices.begin(0); v_it != set_simplices.end(0); ++v_it)
+			add_vertex();
+
+		for(auto e_it = set_simplices.begin(1); e_it != set_simplices.end(1); ++e_it){
+			Vertex_handle a = e_it->first_vertex();
+			Vertex_handle b = e_it->last_vertex();
+			assert(contains_vertex(a) && contains_vertex(b));
+			add_edge(a,b);
 		}
 
 		// then add blockers
+		Clock cb("blockers");
 		for(int current_dim = 1 ; current_dim <=dim ; ++current_dim){
 			std::list<Simplex_handle> expansion_simplices;
 			compute_next_expand(set_simplices,current_dim,expansion_simplices);
 
-			for(auto &simplex : expansion_simplices) {
+			for(const auto &simplex : expansion_simplices) {
 				if(!set_simplices.contains(simplex)){
 					add_blocker(simplex);
 				}
 			}
 		}
+		std::cout << cb<< std::endl;
 	}
 
 
@@ -748,6 +788,8 @@ protected:
 
 
 
+
+public:
 	/**
 	 * Removes the simplex s from the set of blockers
 	 * and desallocate s.
@@ -758,7 +800,7 @@ protected:
 		delete sigma;
 	}
 
-public:
+
 	/**
 	 * @return true iff s is a blocker of the simplicial complex
 	 */
@@ -962,6 +1004,7 @@ public:
 
 	/*
 	 * @brief returns the number of edges in the complex.
+	 * todo in O(n), cache the value
 	 */
 	int num_edges() const{
 		return boost::num_edges(skeleton);
@@ -1345,6 +1388,41 @@ public:
 	//@}
 
 };
+
+
+
+/**
+ * build a simplicial complex from a collection
+ * of top faces.
+ */
+template<typename Complex,typename SimplexHandleIterator>
+unsigned make_complex_from_top_faces(Complex& complex,SimplexHandleIterator begin,SimplexHandleIterator end){
+	typedef typename Complex::Simplex_handle Simplex_handle;
+
+	int dimension = 0;
+	for(auto top_face = begin; top_face != end; ++top_face)
+		dimension = std::max(dimension,top_face->dimension());
+
+	std::vector< std::set<Simplex_handle> > simplices_per_dimension(dimension+1);
+
+
+	for(auto top_face = begin; top_face != end; ++top_face){
+		register_faces(simplices_per_dimension,*top_face);
+	}
+
+	// compute list of simplices
+	std::list<Simplex_handle> simplices;
+	for(int dim = 0 ; dim <= dimension ; ++dim){
+		std::copy(
+				simplices_per_dimension[dim].begin(),
+				simplices_per_dimension[dim].end(),
+				std::back_inserter(simplices)
+		);
+	}
+	complex = Complex(simplices);
+	return simplices.size();
+}
+
 
 
 #include "Skeleton_blocker_complex_iterators.h"

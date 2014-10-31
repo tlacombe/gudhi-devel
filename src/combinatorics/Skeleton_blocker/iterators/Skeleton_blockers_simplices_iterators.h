@@ -137,7 +137,8 @@ private:
 	Vertex_handle v;
 	std::shared_ptr<Link> link_v;
 	std::shared_ptr<Trie> trie;
-	std::list<Trie*> nodes_to_be_seen;
+	std::list<Trie*> nodes_to_be_seen; // regrouper
+	// marc vector PARTOUT
 
 public:
 	Simplex_around_vertex_iterator():complex(0){

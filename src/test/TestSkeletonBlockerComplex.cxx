@@ -17,8 +17,6 @@
 using namespace std;
 
 
-// xxx do smart pointer for each visitor
-//Complex complex(0,new Print_complex_visitor<Vertex_handle>());
 
 
 
@@ -61,6 +59,11 @@ void build_complete(int n,Complex& complex){
 	complex.clear();
 	for(int i=0;i<n;i++)
 		complex.add_vertex();
+
+//	for(int i=n-1;i>=0;i--)
+//		for(int j=i-1;j>=0;j--)
+//			complex.add_edge(Vertex_handle(i),Vertex_handle(j));
+
 	for(int i=0;i<n;i++)
 		for(int j=0;j<i;j++)
 			complex.add_edge(Vertex_handle(i),Vertex_handle(j));
@@ -68,7 +71,7 @@ void build_complete(int n,Complex& complex){
 
 
 bool test_simplex(){
-	PRINT("test simplex");
+//	PRINT("test simplex");
 	Simplex_handle simplex(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2),Vertex_handle(3));
 	for (auto i = simplex.begin() ; i != simplex.end() ; ++i){
 		PRINT(*i);
@@ -271,6 +274,7 @@ bool test_iterator_simplices(){
 	for(auto pair : expected_num_simplices){
 		unsigned num_simplices_around = 0;
 		for(const auto& simplex : complex.simplex_range(pair.first)){
+			simplex.dimension();
 			DBGVALUE(simplex);
 			++num_simplices_around;
 		}
@@ -295,17 +299,15 @@ bool test_iterator_simplices2(){
 
 	DBGVALUE(complex.to_string());
 
-	DBG("working it");
 	for(const auto& simplex : complex.simplex_range(Vertex_handle(0))){
+		simplex.dimension();
 		DBGVALUE(simplex);
 	}
-
-	DBG("end working it");
-	DBG("");
 
 
 	for(const auto& simplex : complex.simplex_range()){
 		DBGVALUE(simplex);
+		simplex.dimension();
 		++num_simplices;
 	}
 	bool correct_number_simplices = (num_simplices == 3);
@@ -322,28 +324,20 @@ bool test_iterator_simplices3(){
 
 	unsigned num_simplices = 0 ;
 
-
-	DBG("working it");
 	for(const auto& simplex : complex.simplex_range(Vertex_handle(0))){
+		simplex.dimension();
 		DBGVALUE(simplex);
 	}
-
-	DBG("end working it");
-	DBG("");
 
 
 	for(const auto& simplex : complex.simplex_range()){
 		DBGVALUE(simplex);
+		simplex.dimension();
 		++num_simplices;
 	}
 	bool correct_number_simplices = (num_simplices == 6);
 	return correct_number_simplices;
 }
-
-
-
-
-
 
 
 
@@ -693,6 +687,49 @@ bool test_constructor(){
 }
 
 
+list<Simplex_handle> subfaces(Simplex_handle top_face){
+	list<Simplex_handle> res;
+	if(top_face.dimension()==-1) return res;
+	if(top_face.dimension()==0) {
+		res.push_back(top_face);
+		return res;
+	}
+	else{
+		Vertex_handle first_vertex = top_face.first_vertex();
+		top_face.remove_vertex(first_vertex);
+		res = subfaces(top_face);
+		list<Simplex_handle> copy = res;
+		for(auto& simplex : copy){
+			simplex.add_vertex(first_vertex);
+		}
+		res.push_back(Simplex_handle(first_vertex));
+		res.splice(res.end(),copy);
+		return res;
+	}
+}
+
+
+bool test_constructor2(){
+	Simplex_handle simplex;
+	for(int i =0 ; i < 5;++i)
+		simplex.add_vertex(i);
+
+	list <Simplex_handle> simplices(subfaces(simplex));
+	simplices.remove(simplex);
+
+	Complex complex(simplices);
+
+	PRINT(complex.to_string());
+
+	for(auto b : complex.const_blocker_range()){
+		cout << "b:"<<b<<endl;
+	}
+
+	return ( complex.num_vertices()==5&&complex.num_edges()==10&&  complex.num_blockers()==1);
+}
+
+
+
 
 int main (int argc, char *argv[])
 {
@@ -723,6 +760,7 @@ int main (int argc, char *argv[])
 	tests_complex.add("test_iterator_triangles",test_iterator_triangles);
 
 	tests_complex.add("test_constructor_list_simplices",test_constructor);
+	tests_complex.add("test_constructor_list_simplices2",test_constructor2);
 
 	if(tests_complex.run()){
 		return EXIT_SUCCESS;
