@@ -11,7 +11,7 @@
 #include "utils/Utils.h"
 #include "combinatorics/Skeleton_blocker/Skeleton_blocker_complex.h"
 
-
+namespace GUDHI{
 
 template<class ComplexType> class Skeleton_blocker_sub_complex;
 
@@ -265,5 +265,7 @@ public:
 
 
 };
+
+}  // namespace GUDHI
 
 #endif /* SKELETON_BLOCKERS_LINK_COMPLEX_H_ */

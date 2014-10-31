@@ -11,6 +11,8 @@
 #include "boost/iterator/iterator_facade.hpp"
 
 
+namespace GUDHI{
+
 /**
  *@brief Iterator on the vertices of a simplicial complex
  *@remark The increment operator go to the next active vertex.
@@ -156,7 +158,7 @@ private:
 };
 
 
-
+} // namespace GUDHI
 
 #endif /* GUDHI_SKELETON_BLOCKERS_VERTICES_ITERATORS_H_ */
 

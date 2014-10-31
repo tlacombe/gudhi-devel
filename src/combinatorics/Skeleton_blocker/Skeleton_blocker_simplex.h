@@ -7,8 +7,7 @@
 #include<vector>
 #include <initializer_list>
 
-
-
+namespace GUDHI{
 
 /**
  *@brief Abstract simplex used in Skeleton blockers data-structure.
@@ -364,7 +363,7 @@ public:
 
 };
 
-
+}  // namespace GUDHI
 
 #endif
 

@@ -10,6 +10,10 @@
 
 #include "boost/iterator/iterator_facade.hpp"
 
+
+
+namespace GUDHI{
+
 //////////////////////////////////////////////////////////////////////
 /**
  * \brief Iterator over the triangles that are
@@ -184,5 +188,6 @@ public:
 	}
 };
 
+} // namespace GUDHI
 
 #endif /* GUDHI_SKELETON_BLOCKERS_TRIANGLES_ITERATORS_H_ */

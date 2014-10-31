@@ -23,6 +23,7 @@
 
 using namespace std;
 
+using namespace GUDHI;
 
 template<typename ComplexType> class Skeleton_blocker_sub_complex;
 typedef Skeleton_blocker_simplifiable_complex<Skeleton_blocker_simple_traits> Complex;

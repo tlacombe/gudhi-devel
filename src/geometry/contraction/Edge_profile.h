@@ -10,6 +10,7 @@
 //#include "combinatorics/Skeleton_blocker/Simplex.h"
 
 
+namespace GUDHI{
 
 namespace contraction {
 template<typename GeometricSimplifiableComplex> class Edge_profile{
@@ -107,8 +108,8 @@ public:
 };
 
 
-
-
 }  // namespace contraction
+
+}  // namespace GUDHI
 
 #endif /* GUDHI_EDGE_PROFILE_H_ */

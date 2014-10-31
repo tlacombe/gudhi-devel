@@ -10,7 +10,7 @@
 
 #include "Cost_policy.h"
 
-
+namespace GUDHI{
 
 namespace contraction {
 
@@ -36,5 +36,7 @@ public:
 };
 
 }  // namespace contraction
+
+}  // namespace GUDHI
 
 #endif /* GUDHI_EDGE_LENGTH_COST_H_ */

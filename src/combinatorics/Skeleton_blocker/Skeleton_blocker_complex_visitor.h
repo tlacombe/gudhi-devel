@@ -9,6 +9,7 @@
 #define GUDHI_COMPLEXVISITOR_H_
 
 
+namespace GUDHI{
 // todo rajouter les const
 
 /**
@@ -101,5 +102,7 @@ public:
 	}
 };
 
+
+}  // namespace GUDHI
 
 #endif /* GUDHI_COMPLEXVISITOR_H_ */

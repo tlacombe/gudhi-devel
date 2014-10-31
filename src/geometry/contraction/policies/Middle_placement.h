@@ -10,6 +10,9 @@
 
 #include "Placement_policy.h"
 
+
+namespace GUDHI{
+
 namespace contraction {
 
 template< typename EdgeProfile> class Middle_placement : public Placement_policy<EdgeProfile>{
@@ -27,6 +30,6 @@ public:
 	}
 };
 }  // namespace contraction
-
+}  // namespace GUDHI
 
 #endif /* GUDHI_MIDDLE_PLACEMENT_H_ */

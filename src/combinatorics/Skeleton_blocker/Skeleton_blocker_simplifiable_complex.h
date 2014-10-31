@@ -10,6 +10,7 @@
 
 #include "Skeleton_blocker_sub_complex.h"
 
+namespace GUDHI{
 
 /**
  *  \brief Class that allows simplification operation on a simplicial complex represented
@@ -514,6 +515,6 @@ private:
 
 };
 
-
+}  // namespace GUDHI
 
 #endif /* GUDHI_SKELETON_BLOCKERS_SIMPLIFIABLE_COMPLEX_H_ */

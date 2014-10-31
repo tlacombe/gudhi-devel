@@ -12,6 +12,8 @@
 #include <sstream>
 #include "Skeleton_blocker_simplex.h"
 
+namespace GUDHI{
+
 /**
  * @extends SkeletonBlockerDS
  */
@@ -131,5 +133,7 @@ struct Skeleton_blocker_simple_traits{
 
 };
 
+
+}  // namespace GUDHI
 
 #endif /* GUDHI_SKELETON_BLOCKERS_SIMPLE_TRAITS_H_ */

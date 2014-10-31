@@ -11,6 +11,9 @@
 #include "utils/Utils.h"
 #include "Valid_contraction_policy.h"
 
+
+namespace GUDHI{
+
 namespace contraction {
 
 
@@ -27,5 +30,7 @@ public:
 	}
 };
 }  // namespace contraction
+
+}  // namespace GUDHI
 
 #endif /* GUDHI_LINK_CONDITION_VALID_CONTRACTION_H_ */
