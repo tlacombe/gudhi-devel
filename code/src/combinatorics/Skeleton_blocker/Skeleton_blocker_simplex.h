@@ -7,8 +7,11 @@
 #include<vector>
 #include <initializer_list>
 
+
+
+
 /**
- *@brief Abstract simplex used in skeleton blockers data-structure.
+ *@brief Abstract simplex used in Skeleton blockers data-structure.
  *
  * An abstract simplex is represented as an ordered set of T elements,
  * each element representing a vertex.

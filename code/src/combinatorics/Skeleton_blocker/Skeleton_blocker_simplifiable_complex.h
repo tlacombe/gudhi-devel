@@ -109,27 +109,48 @@ public:
 
 	/**
 	 * Removes all the popable blockers of the complex and delete them.
-	 * Doing so, it push edge that may have become contractible because of the suppression
-	 * of some blockers.
-	 * It also update the maximum dimension of blockers since it passes through every blockers
 	 * @returns the number of popable blockers deleted
 	 */
-	int remove_popable_blockers(){
-		int nb_blockers_deleted=0;
+	void remove_popable_blockers(){
+		std::list<Vertex_handle> vertex_to_check;
+		for(auto v : this->vertex_range())
+			vertex_to_check.push_front(v);
+
+		while(!vertex_to_check.empty()){
+			Vertex_handle v = vertex_to_check.front();
+			vertex_to_check.pop_front();
+
+			bool blocker_popable_found=true;
+			while (blocker_popable_found){
+				blocker_popable_found = false;
+				for(auto block : this->blocker_range(v)){
+					if (this->is_popable_blocker(block)) {
+						for(Vertex_handle nv : *block)
+							if(nv!=v) vertex_to_check.push_back(nv);
+						this->delete_blocker(block);
+						blocker_popable_found = true;
+						break;
+					}
+				}
+			}
+		}
+	}
+
+
+	/**
+	 * Removes all the popable blockers of the complex passing through v and delete them.
+	 */
+	void remove_popable_blockers(Vertex_handle v){
 		bool blocker_popable_found=true;
-
-
 		while (blocker_popable_found){
 			blocker_popable_found = false;
-			auto blockers = this->get_blockers();
-			for(auto block : blockers){
+			for(auto block : this->blocker_range(v)){
 				if (is_popable_blocker(block)) {
 					this->delete_blocker(block);
 					blocker_popable_found = true;
 				}
 			}
 		}
-		return nb_blockers_deleted;
 	}
 
 
