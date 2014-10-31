@@ -116,7 +116,7 @@ template<
 class GeometricSimplifiableComplex,
 class EdgeProfile = Edge_profile<GeometricSimplifiableComplex>
 >
-class Skeleton_blocker_contractor : private Dummy_complex_visitor<typename GeometricSimplifiableComplex::Vertex_handle>{
+class Skeleton_blocker_contractor : private skbl::Dummy_complex_visitor<typename GeometricSimplifiableComplex::Vertex_handle>{
 
 	GeometricSimplifiableComplex& complex_;
 

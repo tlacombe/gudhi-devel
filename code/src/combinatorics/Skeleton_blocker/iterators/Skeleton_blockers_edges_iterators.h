@@ -13,6 +13,8 @@
 
 namespace GUDHI{
 
+namespace skbl {
+
 template<typename SkeletonBlockerComplex>
 class Complex_edge_around_vertex_iterator :
  public boost::iterator_facade < Complex_edge_around_vertex_iterator<SkeletonBlockerComplex>
@@ -141,7 +143,7 @@ public:
 
 
 
-
+}
 
 } // namespace GUDHI
 

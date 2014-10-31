@@ -12,6 +12,7 @@
 
 namespace GUDHI{
 
+namespace skbl {
 
 /**
  * @brief Iterator through the blockers of a vertex.
@@ -112,6 +113,7 @@ public:
 	}
 };
 
+}
 
 } // namespace GUDHI
 

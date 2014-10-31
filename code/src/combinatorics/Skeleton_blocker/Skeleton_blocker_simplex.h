@@ -9,6 +9,8 @@
 
 namespace GUDHI{
 
+namespace skbl {
+
 /**
  *@brief Abstract simplex used in Skeleton blockers data-structure.
  *
@@ -362,6 +364,8 @@ public:
 
 
 };
+
+}
 
 }  // namespace GUDHI
 
