@@ -29,8 +29,8 @@ using namespace skbl;
 
 template<typename ComplexType> class Skeleton_blocker_sub_complex;
 typedef Skeleton_blocker_simplifiable_complex<Skeleton_blocker_simple_traits> Complex;
-typedef typename Complex::Vertex_handle Vertex_handle;
-typedef typename Complex::Root_vertex_handle Root_vertex_handle;
+typedef Complex::Vertex_handle Vertex_handle;
+typedef Complex::Root_vertex_handle Root_vertex_handle;
 typedef Skeleton_blocker_simplex<Vertex_handle> Simplex_handle;
 // true iff v \in complex
 bool assert_vertex(Complex &complex,Vertex_handle v){

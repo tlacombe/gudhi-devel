@@ -22,10 +22,10 @@ using namespace skbl;
 
 
 typedef Skeleton_blocker_complex<Skeleton_blocker_simple_traits> Complex;
-typedef typename Complex::Vertex_handle Vertex_handle;
-typedef typename Complex::Root_vertex_handle Root_vertex_handle;
-typedef typename Complex::Simplex_handle Simplex_handle;
-typedef typename Complex::Root_simplex_handle Root_simplex_handle;
+typedef Complex::Vertex_handle Vertex_handle;
+typedef Complex::Root_vertex_handle Root_vertex_handle;
+typedef Complex::Simplex_handle Simplex_handle;
+typedef Complex::Root_simplex_handle Root_simplex_handle;
 typedef Simplex_handle::Simplex_vertex_const_iterator Simplex_vertex_const_iterator;
 typedef Complex::Edge_handle Edge_handle;
 
@@ -429,7 +429,7 @@ bool test_link1(){
 	simplex.add_vertex(Root_vertex_handle(10));
 	simplex.add_vertex(Root_vertex_handle(11));
 	simplex.add_vertex(Root_vertex_handle(13));
-	bool test6 = L.get_simplex_address(simplex);
+	bool test6(L.get_simplex_address(simplex));
 	bool test7 = L.contains(*(L.get_simplex_address(simplex)));
 	cerr <<"----> Ocomplex \n";
 	return test1&&test2&&test3&&test4&&test5&&test6&&test7 ;

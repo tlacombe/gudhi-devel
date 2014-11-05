@@ -14,6 +14,8 @@
 
 namespace GUDHI{
 
+namespace skbl{
+
 /**
  * @extends SkeletonBlockerGeometricDS
  */
@@ -56,6 +58,8 @@ public:
 	typedef Skeleton_blocker_simple_traits::Graph_edge Graph_edge;
 };
 
+
+}
 
 }  // namespace GUDHI
 

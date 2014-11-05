@@ -58,7 +58,7 @@ private:
 
 	struct Trie{
 		Vertex_handle v;
-		std::list<std::shared_ptr<Trie> > childs;
+		std::vector<std::shared_ptr<Trie> > childs;
 	private:
 		const Trie* parent_;
 	public:
@@ -145,8 +145,7 @@ private:
 	Vertex_handle v;
 	std::shared_ptr<Link> link_v;
 	std::shared_ptr<Trie> trie;
-	std::list<Trie*> nodes_to_be_seen; // regrouper
-	// marc vector PARTOUT
+	std::list<Trie*> nodes_to_be_seen; // todo regrouper
 
 public:
 	Simplex_around_vertex_iterator():complex(0){
@@ -292,6 +291,10 @@ class Simplex_iterator :
 	typedef Skeleton_blocker_link_superior<SkeletonBlockerComplex> Link;
 
 	friend class boost::iterator_core_access;
+
+	template<class SkBlDS> friend class Skeleton_blocker_complex;
+
+
 	typedef SkeletonBlockerComplex Complex;
 	typedef typename Complex::Vertex_handle Vertex_handle;
 	typedef typename Complex::Edge_handle Edge_handle;
@@ -325,12 +328,15 @@ public:
 		assert(!complex->empty());
 	}
 
+private:
 	// todo return to private
 	Simplex_iterator(const Complex* complex,bool end):
 		complex_(complex)
 	{
 		set_end();
 	}
+
+public:
 
 	Simplex_iterator(const Simplex_iterator& other)
 	:
