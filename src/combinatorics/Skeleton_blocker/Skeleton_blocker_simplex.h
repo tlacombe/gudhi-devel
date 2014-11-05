@@ -41,10 +41,8 @@ public:
 	 */
 	//@{
 
-	/**
-	 * Constructs the empty simplex {}
-	 */
-	Skeleton_blocker_simplex():simplex_set() {}
+	
+//	Skeleton_blocker_simplex():simplex_set() {}
 
 	/**
 	 * Clear the simplex
@@ -73,6 +71,9 @@ public:
 
 	void add_vertices(T v){
 		add_vertex(v);
+	}
+
+	void add_vertices(){	
 	}
 
 	/**

@@ -12,7 +12,8 @@
 #include <cassert>
 
 // todo remove the queue to be independent from cgal
-#include <CGAL/Modifiable_priority_queue.h>
+#include "CGAL_queue/Modifiable_priority_queue.h"
+//#include <CGAL/Modifiable_priority_queue.h>
 
 
 #include <list>

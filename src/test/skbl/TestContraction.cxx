@@ -49,10 +49,10 @@ typedef Skeleton_blocker_simple_geometric_traits<Geometry_trait> Complex_geometr
 
 typedef Skeleton_blocker_geometric_complex< Complex_geometric_traits > Complex;
 
-typedef typename Complex::Vertex_handle Vertex_handle;
-typedef typename Complex::Simplex_handle Simplex_handle;
+typedef Complex::Vertex_handle Vertex_handle;
+typedef Complex::Simplex_handle Simplex_handle;
 
-typedef typename Complex::Root_vertex_handle Root_vertex_handle;
+typedef Complex::Root_vertex_handle Root_vertex_handle;
 
 using namespace contraction;
 
@@ -62,7 +62,7 @@ typedef Edge_profile<Complex> Profile;
 
 // compute the distance todo utiliser Euclidean_geometry a la place
 template<typename Point>
-double distance(const Point& a,const Point& b){
+double eucl_distance(const Point& a,const Point& b){
 	double res = 0;
 	auto a_coord = a.begin();
 	auto b_coord = b.begin();
@@ -79,7 +79,7 @@ void build_rips(ComplexType& complex, double offset){
 	auto vertices = complex.vertex_range();
 	for (auto p = vertices.begin(); p != vertices.end(); ++p)
 		for (auto q = p; ++q != vertices.end(); /**/)
-			if (distance(complex.point(*p),complex.point(*q)) < 2*offset){
+		if (eucl_distance(complex.point(*p), complex.point(*q)) < 2 * offset){
 				complex.add_edge(*p,*q);
 			}
 }

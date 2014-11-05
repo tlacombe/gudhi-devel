@@ -9,6 +9,13 @@
 #ifndef GUDHI_SKELETONBLOCKERDS_H_
 #define GUDHI_SKELETONBLOCKERDS_H_
 
+
+namespace GUDHI {
+
+namespace skbl {
+
+
+
 /** \brief Concept that must be passed to
  * the template class Skeleton_blockers_complex
  *
@@ -37,10 +44,10 @@ struct SkeletonBlockerDS
 	 * are the same.
 	 *
 	 *
-	 * For a subcomplex $L$ of a simplicial complex $K$, the local descriptor, ie the Vertex_handle, of a
-	 * vertex $v$ (that belongs to $L$)  is its position in the vector of vertices
-	 * of the subcomplex $L$ whereas its Root_vertex_handle (global descriptor) is the position of $v$ in the vector of the
-	 * vertices of the root simplicial complex $K$.
+	 * For a subcomplex L of a simplicial complex K, the local descriptor, ie the Vertex_handle, of a
+	 * vertex v (that belongs to L)  is its position in the vector of vertices
+	 * of the subcomplex L whereas its Root_vertex_handle (global descriptor) is the position of v in the vector of the
+	 * vertices of the root simplicial complex K.
 	 */
 	struct Root_vertex_handle{
 
@@ -112,6 +119,9 @@ struct SkeletonBlockerDS
 };
 
 
+
+}  // namespace skbl
+}  // namespace GUDHI
 
 
 #endif /* GUDHI_SKELETONBLOCKERDS_H_ */

@@ -14,6 +14,11 @@
 #include "iterators/Skeleton_blockers_iterators.h"
 
 
+
+namespace GUDHI {
+
+namespace skbl {
+
 //////////////////////////////////////////////////////////////////////
 /**
  * \brief Iterator over the triangles that are
@@ -105,7 +110,7 @@ private:
 	typedef typename Skeleton_blocker_complex<SkeletonBlockerDS>::Root_vertex_handle Root_vertex_handle;
 	typedef typename Skeleton_blocker_complex<SkeletonBlockerDS>::Simplex_handle Simplex_handle;
 	typedef Skeleton_blocker_complex<SkeletonBlockerDS> Complex;
-	typedef Complex::Superior_triangle_around_vertex_iterator STAVI;
+	typedef typename Complex::Superior_triangle_around_vertex_iterator STAVI;
 
 	const Complex* complex_;
 	Complex_vertex_iterator<Skeleton_blocker_complex<SkeletonBlockerDS>> current_vertex_;
@@ -206,7 +211,7 @@ template<typename LinkType>
 class Skeleton_blocker_complex<SkeletonBlockerDS>::Triangle_around_vertex_range {
 private:
 	typedef Skeleton_blocker_complex<SkeletonBlockerDS> Complex;
-	typedef Complex::Triangle_around_vertex_iterator<LinkType> Tavi;
+	typedef typename Complex::Triangle_around_vertex_iterator<LinkType> Tavi;
 	typedef typename Skeleton_blocker_complex<SkeletonBlockerDS>::Vertex_handle Vertex_handle;
 	const Complex* complex_;
 	Vertex_handle v_;
@@ -230,8 +235,8 @@ public:
 template<typename SkeletonBlockerDS>
 class Skeleton_blocker_complex<SkeletonBlockerDS>::Triangle_range {
 private:
-	typedef Skeleton_blocker_complex<SkeletonBlockerDS> Complex;
-	typedef Complex::Triangle_iterator Triangle_iterator;
+	typedef typename Skeleton_blocker_complex<SkeletonBlockerDS> Complex;
+	typedef typename Complex::Triangle_iterator Triangle_iterator;
 	typedef typename Skeleton_blocker_complex<SkeletonBlockerDS>::Vertex_handle Vertex_handle;
 	const Complex* complex_;
 public:
@@ -249,5 +254,8 @@ public:
 	}
 };
 
+}  // namespace skbl
+
+}  // namespace GUDHI
 
 #endif /* GUDHI_SKELETON_BLOCKER_COMPLEX_ITERATORS_H_ */

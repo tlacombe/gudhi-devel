@@ -286,6 +286,7 @@ public:
 	 * @brief Constructor with a list of simplices
 	 * @details The list of simplices must be the list
 	 * of simplices of a simplicial complex.
+	 *todo rewrite as iterators
 	 */
 	Skeleton_blocker_complex(std::list<Simplex_handle>& simplices,Visitor* visitor_=NULL):
 		num_vertices_(0),num_blockers_(0),
@@ -1430,11 +1431,11 @@ unsigned make_complex_from_top_faces(Complex& complex,SimplexHandleIterator begi
 
 
 
-#include "Skeleton_blocker_complex_iterators.h"
-
 }
 
 }  // namespace GUDHI
+
+#include "Skeleton_blocker_complex_iterators.h"
 
 
 #endif

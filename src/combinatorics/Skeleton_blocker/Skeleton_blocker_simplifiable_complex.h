@@ -60,6 +60,7 @@ public:
 	 * @brief Constructor with a list of simplices
 	 * @details The list of simplices must be the list
 	 * of simplices of a simplicial complex, sorted with increasing dimension.
+	 * todo take iterator instead
 	 */
 	Skeleton_blocker_simplifiable_complex(std::list<Simplex_handle>& simplices,Visitor* visitor_=NULL):
 		Skeleton_blocker_complex<SkeletonBlockerDS>(simplices,visitor_)
