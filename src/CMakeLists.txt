@@ -14,10 +14,7 @@ include_directories(. utils combinatorics geometry topology
                       Persistent_cohomology/include/gudhi 
                       Hasse_complex/include/gudhi 
                       utilities/include/gudhi )
+                      
+add_subdirectory(test/skbl/)                   
 
-add_executable ( TestSimplexTree            test/TestSimplexTree.cpp )
-
-add_executable ( TestPersistentCohomology   
-                 Persistent_cohomology/test/TestPersistentCohomology.cpp )
-target_link_libraries( TestPersistentCohomology gmpxx )
 

@@ -9,7 +9,7 @@
 #define GUDHI_SKELETON_BLOCKERS_TRIANGLES_ITERATORS_H_
 
 #include "boost/iterator/iterator_facade.hpp"
-
+#include <memory>
 
 namespace GUDHI{
 
@@ -22,70 +22,78 @@ namespace skbl {
  * \remark Will be removed soon -> dont look
  */
 template<typename Complex,typename LinkType>
-class Triangle_around_vertex_iterator{
-
+class Triangle_around_vertex_iterator : public boost::iterator_facade
+< Triangle_around_vertex_iterator <Complex,LinkType>
+, typename Complex::Simplex_handle const
+, boost::forward_traversal_tag
+, typename Complex::Simplex_handle const
+>
+{
+	friend class boost::iterator_core_access;
+	template<typename T> friend class Triangle_iterator;
 private:
 	typedef typename LinkType::Vertex_handle Vertex_handle;
 	typedef typename LinkType::Root_vertex_handle Root_vertex_handle;
 	typedef typename LinkType::Simplex_handle Simplex_handle;
-
 	typedef Complex_edge_iterator<Complex> Complex_edge_iterator_;
 
 	const Complex* complex_;
 	Vertex_handle v_;
-	LinkType link_;
+	std::shared_ptr<LinkType> link_;
 	Complex_edge_iterator_ current_edge_;
 	bool is_end_;
 public:
 	Triangle_around_vertex_iterator(const Complex* complex,Vertex_handle v):
-		complex_(complex),v_(v),link_(*complex,v_),current_edge_(link_.edge_range().begin()),is_end_(current_edge_ == link_.edge_range().end()){
+		complex_(complex),v_(v),link_(new LinkType(*complex,v_)),
+		current_edge_(link_->edge_range().begin()),
+		is_end_(current_edge_ == link_->edge_range().end()){
 	}
+
 	/**
 	 * @brief ugly hack to get an iterator to the end
 	 */
 	Triangle_around_vertex_iterator(const Complex* complex,Vertex_handle v,bool is_end):
-		complex_(complex),v_(v),link_(),is_end_(true){
+		complex_(complex),v_(v),link_(0),is_end_(true){
 	}
 
-	// For now, the operator points to the begin of triangles
-	Triangle_around_vertex_iterator& operator=(const Triangle_around_vertex_iterator& other){
+	/**
+	 * @brief ugly hack to get an iterator to the end
+	 */
+	Triangle_around_vertex_iterator():
+		complex_(0),v_(-1),link_(0),is_end_(true){
+	}
+
+
+	Triangle_around_vertex_iterator(const Triangle_around_vertex_iterator& other){
 		v_ = other.v_;
 		complex_ = other.complex_;
-
 		is_end_ = other.is_end_;
 
 		if(!is_end_){
 			link_ = other.link_;
-			current_edge_= link_.edge_range().begin();
+			current_edge_= other.current_edge_;
 		}
-		//while (*current_edge_ != *(other.current_edge_))
-		//++current_edge_;
-		return *this;
 	}
 
-	bool operator ==(const Triangle_around_vertex_iterator& other) const{
+	bool equal(const Triangle_around_vertex_iterator& other) const{
 		return (complex_==other.complex_) && ((finished() &&other.finished()) || current_edge_ == other.current_edge_);
 	}
 
-	bool operator !=(const Triangle_around_vertex_iterator& other) const{
-		return !(*this == other);
-	}
-
-	Simplex_handle operator*(){
-		Root_vertex_handle v1 = link_[*current_edge_].first();
-		Root_vertex_handle v2 = link_[*current_edge_].second();
+	Simplex_handle dereference() const{
+		Root_vertex_handle v1 = (*link_)[*current_edge_].first();
+		Root_vertex_handle v2 = (*link_)[*current_edge_].second();
 		return Simplex_handle(v_,*(complex_->get_address(v1)),*(complex_->get_address(v2)));
 	}
 
-	bool finished() const{
-		return is_end_;
+	void increment(){
+		++current_edge_;
 	}
 
-	Triangle_around_vertex_iterator& operator++(){
-		++current_edge_;
-		is_end_ = (current_edge_ == link_.edge_range().end());
-		return(*this);
+private:
+	bool finished() const{
+		return is_end_ || (current_edge_ == link_->edge_range().end());
 	}
+
 };
 
 
@@ -97,7 +105,15 @@ public:
  *
  */
 template<typename SkeletonBlockerComplex>
-class Triangle_iterator{
+class Triangle_iterator :
+		public boost::iterator_facade<
+		Triangle_iterator <SkeletonBlockerComplex>,
+		typename SkeletonBlockerComplex::Simplex_handle const
+		, boost::forward_traversal_tag
+		, typename SkeletonBlockerComplex::Simplex_handle const
+		>
+{
+	friend class boost::iterator_core_access;
 private:
 	typedef typename SkeletonBlockerComplex::Vertex_handle Vertex_handle;
 	typedef typename SkeletonBlockerComplex::Root_vertex_handle Root_vertex_handle;
@@ -129,8 +145,8 @@ public:
 	 */
 	Triangle_iterator(const SkeletonBlockerComplex* complex,bool is_end):
 		complex_(complex),
-		current_vertex_(complex->vertex_range().begin()),
-		current_triangle_(complex->superior_triangle_range(*current_vertex_).end()), // xxx this line is problematic is the complex is empty
+		current_vertex_(complex->vertex_range().end()),
+		current_triangle_(), // xxx this line is problematic is the complex is empty
 		is_end_(true){
 		assert(!complex->empty());
 	}
@@ -144,48 +160,52 @@ public:
 	}
 
 
-	bool operator ==(const Triangle_iterator& other) {
-
+	bool equal(const Triangle_iterator& other) const{
 		bool both_are_finished = is_finished() && other.is_finished();
 		bool both_arent_finished = !is_finished() && !other.is_finished();
 		// if the two iterators are not finished, they must have the same state
-		return (complex_==other.complex_) && (both_are_finished	||
-				( (both_arent_finished) && current_vertex_ == other.current_vertex_ && current_triangle_ == other.current_triangle_));
+		return (complex_==other.complex_) &&
+				(both_are_finished	||
+						( (both_arent_finished) && current_vertex_ == other.current_vertex_ && current_triangle_ == other.current_triangle_));
 
 	}
 
-	bool operator !=(const Triangle_iterator& other){
-		return !(*this == other);
-	}
-
-	Simplex_handle operator*(){
+	Simplex_handle dereference() const{
 		return *current_triangle_;
 	}
 
+private:
+
+	// goto the next vertex that has a triangle pending or the
+	// end vertex iterator if none exists
 	void goto_next_vertex(){
+		assert(current_triangle_.finished()); //we mush have consume all triangles passing through the vertex
+		assert(!is_finished()); // we must not be done
+
 		++current_vertex_;
-		is_end_ = (current_vertex_ == complex_->vertex_range().end());
-		if (!is_end_){
-			STAVI other(complex_, *current_vertex_);
-			current_triangle_ = other;
+
+		if(!is_finished()){
+			current_triangle_ = STAVI(complex_, *current_vertex_);
+			if(current_triangle_.finished())
+				goto_next_vertex();
 		}
 	}
-
-	Triangle_iterator& operator++(){
+public:
+	void increment(){
 		if(!current_triangle_.finished()){
-			++current_triangle_;
-			while(current_triangle_.finished()&& !is_finished()){
+			++current_triangle_; // problem here
+			if(current_triangle_.finished())
 				goto_next_vertex();
-			}
 		}
 		else{
+			assert(!is_finished());
 			goto_next_vertex();
 		}
-		return(*this);
 	}
 
+private:
 	bool is_finished() const{
-		return is_end_;
+		return is_end_ || current_vertex_ == complex_->vertex_range().end();
 	}
 };
 

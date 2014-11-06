@@ -127,7 +127,7 @@ public:
 
 
 	bool equal(const Complex_edge_iterator& other) const{
-		return (complex== other.complex) &&(edge_iterator == other.edge_iterator);
+		return (complex == other.complex) && (edge_iterator == other.edge_iterator);
 	}
 
 	void increment(){

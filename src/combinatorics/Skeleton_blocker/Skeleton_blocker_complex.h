@@ -1156,64 +1156,42 @@ public:
 	/** @name Triangles iterators
 	 */
 	//@{
+private:
+	typedef Skeleton_blocker_link_complex<Skeleton_blocker_complex<SkeletonBlockerDS> > Link;
+	typedef Skeleton_blocker_link_superior<Skeleton_blocker_complex<SkeletonBlockerDS> > Superior_link;
+public:
+	typedef Triangle_around_vertex_iterator<Skeleton_blocker_complex,Superior_link> Superior_triangle_around_vertex_iterator;
+
+	typedef boost::iterator_range     < Triangle_around_vertex_iterator<Skeleton_blocker_complex,Link> > Complex_triangle_around_vertex_range;
 
 	/**
-	 * @brief Range over triangle around a vertex of the simplicial complex
+	 * @brief Range over triangles around a vertex of the simplicial complex.
 	 * Methods .begin() and .end() return a Triangle_around_vertex_iterator.
 	 *
 	 */
-	template<typename LinkType>
-	class Triangle_around_vertex_range;
-
-	/**
-	 * @brief Iterator over the triangle around a vertex 'v' of the simplicial complex.
-	 * The template LinkType has to either Skeleton_blocker_link_complex
-	 * or Skeleton_blocker_link_superior if one just wants the triangles whose
-	 * vertices are greater than 'v'.
-	 */
-	template<typename LinkType>
-	class Triangle_around_vertex_iterator;
-
-	typedef Skeleton_blocker_link_complex<Skeleton_blocker_complex<SkeletonBlockerDS> > Link;
-	typedef Skeleton_blocker_link_superior<Skeleton_blocker_complex<SkeletonBlockerDS> > Superior_link;
-
-	typedef Triangle_around_vertex_iterator<Superior_link> Superior_triangle_around_vertex_iterator;
-
-
-	/**@brief Returns a Triangle_around_vertex_range over all triangles around
-	 * a vertex of the simplicial complex.
-	 */
-	Triangle_around_vertex_range<Link> triangle_range(Vertex_handle v) const{
-		return Triangle_around_vertex_range<Link>(this,v);
+	Complex_triangle_around_vertex_range triangle_range(Vertex_handle v) const
+	{
+		auto begin = Triangle_around_vertex_iterator<Skeleton_blocker_complex,Link>(this,v);
+		auto end = Triangle_around_vertex_iterator<Skeleton_blocker_complex,Link>(this,v,0);
+		return Complex_triangle_around_vertex_range(begin,end);
 	}
 
 
-	/**@brief Returns a Triangle_around_vertex_range over superior triangles
-	 * around a vertex of the simplicial complex.
-	 */
-	Triangle_around_vertex_range<Superior_link> superior_triangle_range(Vertex_handle v) const{
-		return Triangle_around_vertex_range<Superior_link>(this,v);
-	}
+	typedef boost::iterator_range<Triangle_iterator<Skeleton_blocker_complex> > Complex_triangle_range;
 
-	//////////////
 	/**
-	 * @brief Range over triangles of the simplicial complex
-	 * Methods .begin() and .end() return a Triangle_vertex_iterator.
+	 * @brief Range over triangles of the simplicial complex.
+	 * Methods .begin() and .end() return a Triangle_around_vertex_iterator.
 	 *
 	 */
-	class Triangle_range;
-
-	/**
-	 * @brief Iterator over the triangles of the simplicial complex.
-	 */
-	class Triangle_iterator;
-
-	/**
-	 * @brief Returns a Triangle_range over all triangles of the simplicial complex.
-	 */
-	Triangle_range triangle_range() const{
-		return Triangle_range(this);
+	Complex_triangle_range triangle_range() const
+	{
+		auto begin = Triangle_iterator<Skeleton_blocker_complex>(this);
+		auto end = Triangle_iterator<Skeleton_blocker_complex>(this,0);
+		return Complex_triangle_range(begin,end);
 	}
+
+
 	//@}
 
 
@@ -1435,7 +1413,6 @@ unsigned make_complex_from_top_faces(Complex& complex,SimplexHandleIterator begi
 
 }  // namespace GUDHI
 
-#include "Skeleton_blocker_complex_iterators.h"
 
 
 #endif
