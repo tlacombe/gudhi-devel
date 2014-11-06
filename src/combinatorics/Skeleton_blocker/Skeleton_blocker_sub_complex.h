@@ -75,8 +75,8 @@ protected:
 	//	template<typename T> friend	bool
 	//	proper_faces_in_union(Skeleton_blocker_simplex<typename T::Root_vertex_handle> & sigma, Skeleton_blocker_sub_complex<T> & link1, Skeleton_blocker_sub_complex<T> & link2){
 
-	template<typename T> friend bool
-	proper_faces_in_union(Skeleton_blocker_simplex<typename T::Root_vertex_handle> & sigma, Skeleton_blocker_sub_complex<T> & link1, Skeleton_blocker_sub_complex<T> & link2);
+	//template<typename T> friend bool
+	//proper_faces_in_union(Skeleton_blocker_simplex<typename T::Root_vertex_handle> & sigma, Skeleton_blocker_sub_complex<T> & link1, Skeleton_blocker_sub_complex<T> & link2);
 
 	typedef std::map<Root_vertex_handle, Vertex_handle> IdAddressMap;
 	typedef typename IdAddressMap::value_type AddressPair;
@@ -193,7 +193,7 @@ public:
 	//	boost::optional<Simplex_handle> get_address(const Root_simplex_handle & s) const;
 
 
-private:
+//private:
 	/**
 	 *  same as get_address except that it will return a simplex in any case.
 	 *  The vertices that were not found are not added.
