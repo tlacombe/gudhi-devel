@@ -18,10 +18,12 @@ if(NOT Boost_FOUND)
 else()
 	INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 	LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})
-endif()
+endif()  
 
-include_directories(../../ ../../utils ../../combinatorics ../../geometry ../../topology)
+include_directories(BEFORE "../../" "../../utils" "../../combinatorics" "../../geometry" "../../topology")
 
 add_executable ( TestSkeletonBlockerComplex TestSkeletonBlockerComplex.cxx )
 add_executable ( TestSimplifiable           TestSimplifiable.cxx )
 add_executable ( TestContraction            TestContraction.cxx )
+
+

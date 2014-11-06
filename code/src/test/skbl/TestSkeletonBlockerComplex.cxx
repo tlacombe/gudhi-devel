@@ -7,7 +7,6 @@
 #include "Test.h"
 //#include "Skeleton_blocker/Simplex.h"
 #include "Skeleton_blocker/Skeleton_blocker_complex.h"
-#include "Skeleton_blocker/Skeleton_blocker_complex_iterators.h"
 #include "Skeleton_blocker/Skeleton_blocker_link_complex.h"
 #include "Skeleton_blocker/Skeleton_blocker_link_superior.h"
 #include "Skeleton_blocker/Skeleton_blocker_simple_traits.h"
@@ -200,35 +199,12 @@ bool test_iterator_triangles(){
 	}
 	test = test&&(num_triangles_seen==6);
 
-	TEST("superior triangles around 0 (should be 6 of them):");
-	num_triangles_seen=0;
-	for (auto t : complex.superior_triangle_range(0)){
-		PRINT(t);
-		++num_triangles_seen;
-	}
-	test = test&&(num_triangles_seen==6);
-
-	// bug
-	TEST("superior triangles around 1 (should be 0 of them):");
-	num_triangles_seen=0;
-	for (auto t : complex.superior_triangle_range(1)){
-		PRINT(t);
-		++num_triangles_seen;
-	}
-	test = test&&(num_triangles_seen==0);
-
 	// we now add another triangle
 	complex.add_vertex();
 	complex.add_edge(Vertex_handle(4),Vertex_handle(7));
 	complex.add_edge(Vertex_handle(3),Vertex_handle(7));
 	complex.add_blocker(Vertex_handle(0),Vertex_handle(1),Vertex_handle(6));
 	num_triangles_seen=0;
-	TEST("superior triangles around 3 (should be 1 of them):");
-	for (auto t : complex.superior_triangle_range(3)){
-		PRINT(t);
-		++num_triangles_seen;
-	}
-	test = test&&(num_triangles_seen==1);
 
 	TEST("triangles (should be 6 of them):");
 	num_triangles_seen=0;
