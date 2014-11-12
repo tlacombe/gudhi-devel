@@ -8,17 +8,14 @@
 #ifndef GUDHI_CLOCK_H_
 #define GUDHI_CLOCK_H_
 
-//#include <sys/time.h> xxx
-#include <iostream>
-#include <boost/timer.hpp>
+
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 class Clock{
 
 public:
-	Clock(){
-		end_called = false;
-		begin();
-		msg = "time";
+	Clock():end_called(false){
+		startTime = boost::posix_time::microsec_clock::local_time( );
 	}
 
 	Clock(const std::string& msg_){
@@ -27,14 +24,15 @@ public:
 		msg = msg_;
 	}
 
+
 	void begin() const{
 		end_called = false;
-		//gettimeofday(&startTime, NULL);
+		startTime = boost::posix_time::microsec_clock::local_time( );
 	}
 
 	void end() const{
 		end_called = true;
-		//gettimeofday(&endTime, NULL); xxx
+		endTime = boost::posix_time::microsec_clock::local_time( );
 	}
 
 	void print() const{
@@ -42,30 +40,27 @@ public:
 	}
 
 	friend std::ostream& operator<< (std::ostream& stream,const Clock& clock){
-		//		if(!clock.end_called) clock.end(); xxx
-		/*
-		if(!clock.end_called) clock.end();
+		if(!clock.end_called)
+			clock.end();
 
-		long totalTime =  (clock.endTime.tv_sec - clock.startTime.tv_sec) * 1000000L;
-		totalTime += (clock.endTime.tv_usec - clock.startTime.tv_usec);
-		stream << clock.msg <<":"<<clock.num_seconds() <<"s";
-		*/
+		if(!clock.end_called) stream << "end not called";
+		else{
+			stream << clock.msg <<":"<<clock.num_seconds() <<"s";
+		}
 		return stream;
+
 	}
 
 	double num_seconds() const{
-		return 0; //xxx
-	/*	if(!end_called) end();
-		long totalTime =  (endTime.tv_sec - startTime.tv_sec) * 1000000L;
-		totalTime += (endTime.tv_usec - startTime.tv_usec);
-		return (totalTime / 1000L)/(double) 1000;
-		*/
+		if(!end_called) return -1;
+		return (endTime-startTime).total_milliseconds()/1000.;
 	}
 
 private:
-	//mutable struct timeval startTime, endTime;
+	mutable boost::posix_time::ptime startTime, endTime;
 	mutable bool end_called;
 	std::string msg;
+
 };
 
 
