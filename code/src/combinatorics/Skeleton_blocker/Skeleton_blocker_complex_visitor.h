@@ -9,7 +9,7 @@
 #define GUDHI_COMPLEXVISITOR_H_
 
 
-namespace GUDHI{
+namespace Gudhi{
 
 namespace skbl {
 // todo rajouter les const

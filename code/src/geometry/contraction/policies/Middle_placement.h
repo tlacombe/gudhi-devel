@@ -11,7 +11,7 @@
 #include "Placement_policy.h"
 
 
-namespace GUDHI{
+namespace Gudhi{
 
 namespace contraction {
 

@@ -7,7 +7,7 @@
 #include<vector>
 #include <initializer_list>
 
-namespace GUDHI{
+namespace Gudhi{
 
 namespace skbl {
 

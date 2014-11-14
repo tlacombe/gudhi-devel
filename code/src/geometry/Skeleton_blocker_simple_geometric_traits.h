@@ -12,7 +12,7 @@
 #include <sstream>
 #include "combinatorics/Skeleton_blocker/Skeleton_blocker_simple_traits.h"
 
-namespace GUDHI{
+namespace Gudhi{
 
 namespace skbl{
 

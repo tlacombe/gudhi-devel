@@ -12,7 +12,7 @@
 #include "Valid_contraction_policy.h"
 
 
-namespace GUDHI{
+namespace Gudhi{
 
 namespace contraction {
 

@@ -37,7 +37,7 @@
 
 #include "utils/Utils.h"
 
-namespace GUDHI{
+namespace Gudhi{
 
 namespace contraction {
 

@@ -10,7 +10,7 @@
 
 #include <boost/optional.hpp>
 
-namespace GUDHI {
+namespace Gudhi {
 namespace contraction {
 
 template< typename EdgeProfile> class Placement_policy{

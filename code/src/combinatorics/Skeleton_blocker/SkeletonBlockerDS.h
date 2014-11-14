@@ -10,7 +10,7 @@
 #define GUDHI_SKELETONBLOCKERDS_H_
 
 
-namespace GUDHI {
+namespace Gudhi {
 
 namespace skbl {
 

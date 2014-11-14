@@ -10,7 +10,7 @@
 
 #include "Skeleton_blocker_sub_complex.h"
 
-namespace GUDHI{
+namespace Gudhi{
 
 namespace skbl {
 

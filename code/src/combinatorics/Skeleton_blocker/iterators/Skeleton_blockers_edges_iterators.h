@@ -11,7 +11,7 @@
 #include "boost/iterator/iterator_facade.hpp"
 
 
-namespace GUDHI{
+namespace Gudhi{
 
 namespace skbl {
 

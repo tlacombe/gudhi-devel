@@ -8,7 +8,7 @@
 #ifndef MUTABLE_PRIORITY_QUEUE_H_
 #define MUTABLE_PRIORITY_QUEUE_H_
 
-namespace GUDHI{
+namespace Gudhi{
 
 template<typename EdgeHandle,typename CompareCost, typename ID> class Mutable_queue{
 

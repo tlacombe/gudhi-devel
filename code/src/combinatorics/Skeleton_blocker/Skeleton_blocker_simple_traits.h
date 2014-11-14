@@ -12,7 +12,7 @@
 #include <sstream>
 #include "Skeleton_blocker_simplex.h"
 
-namespace GUDHI{
+namespace Gudhi{
 
 namespace skbl {
 
