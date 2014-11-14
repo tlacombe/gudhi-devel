@@ -11,7 +11,7 @@
 
 #include "Skeleton_blocker_link_complex.h"
 
-namespace GUDHI{
+namespace Gudhi{
 
 namespace skbl {
 

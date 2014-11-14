@@ -21,7 +21,7 @@
 
 
 
-namespace GUDHI {
+namespace Gudhi {
 
 
 namespace skbl {

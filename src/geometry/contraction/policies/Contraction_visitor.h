@@ -11,7 +11,7 @@
 #include "geometry/contraction/Edge_profile.h"
 #include "boost/optional.hpp"
 
-namespace GUDHI{
+namespace Gudhi{
 
 namespace contraction {
 

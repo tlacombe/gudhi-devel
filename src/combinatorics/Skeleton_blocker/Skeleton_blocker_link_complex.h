@@ -11,7 +11,7 @@
 #include "utils/Utils.h"
 #include "combinatorics/Skeleton_blocker/Skeleton_blocker_complex.h"
 
-namespace GUDHI{
+namespace Gudhi{
 
 namespace skbl {
 

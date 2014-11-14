@@ -32,7 +32,7 @@
 
 using namespace std;
 
-using namespace GUDHI;
+using namespace Gudhi;
 
 using namespace skbl;
 

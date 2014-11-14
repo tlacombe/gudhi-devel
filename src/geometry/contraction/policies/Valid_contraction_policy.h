@@ -8,7 +8,7 @@
 #ifndef GUDHI_VALID_CONTRACTION_POLICY_H_
 #define GUDHI_VALID_CONTRACTION_POLICY_H_
 
-namespace GUDHI {
+namespace Gudhi {
 namespace contraction {
 template< typename EdgeProfile> class Valid_contraction_policy{
 public:

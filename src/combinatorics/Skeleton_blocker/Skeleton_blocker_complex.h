@@ -40,7 +40,7 @@ using namespace std::chrono;
 #include "utils/Clock.h"
 
 
-namespace GUDHI {
+namespace Gudhi {
 
 namespace skbl {
 

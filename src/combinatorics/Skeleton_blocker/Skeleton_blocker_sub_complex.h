@@ -5,7 +5,7 @@
 #include "Skeleton_blocker_simplex.h"
 #include "utils/Utils.h"
 
-namespace GUDHI{
+namespace Gudhi{
 
 namespace skbl {
 
