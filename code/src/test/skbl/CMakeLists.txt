@@ -22,8 +22,8 @@ endif()
 
 include_directories(BEFORE "../../" "../../utils" "../../combinatorics" "../../geometry" "../../topology")
 
-add_executable ( TestSkeletonBlockerComplex TestSkeletonBlockerComplex.cxx )
-add_executable ( TestSimplifiable           TestSimplifiable.cxx )
-add_executable ( TestContraction            TestContraction.cxx )
+add_executable ( TestSkeletonBlockerComplex TestSkeletonBlockerComplex.cpp )
+add_executable ( TestSimplifiable           TestSimplifiable.cpp )
+add_executable ( TestContraction            TestContraction.cpp )
 
 
