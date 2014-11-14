@@ -7,6 +7,11 @@
  *
  */
 
+
+
+namespace GUDHI {
+namespace skbl {
+
 /**
  * \brief Data structure for representing a simplicial complex that
  * can be simplified.
@@ -210,3 +215,7 @@ struct SimplifiableSimplicialComplexDS
 	/// @}
 	/*************************************************/	
 };
+
+}  // namespace skbl
+}  // namespace GUDHI
+
