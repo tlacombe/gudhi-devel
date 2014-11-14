@@ -136,8 +136,17 @@ public:
 		is_end_(false){
 
 		assert(!complex->empty());
-
+		gotoFirstTriangle();
 	}
+
+private:
+	//goto to the first triangle or to the end if none
+	void gotoFirstTriangle(){
+		if(!is_finished() && current_triangle_.finished()){
+			goto_next_vertex();
+		}
+	}
+public:
 
 	/**
 	 * @brief ugly hack to get an iterator to the end
@@ -148,7 +157,6 @@ public:
 		current_vertex_(complex->vertex_range().end()),
 		current_triangle_(), // xxx this line is problematic is the complex is empty
 		is_end_(true){
-		assert(!complex->empty());
 	}
 
 

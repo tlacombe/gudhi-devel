@@ -254,17 +254,17 @@ private:
 	{
 		next_expand.clear();
 
-//	    high_resolution_clock::time_point tbeginfor = high_resolution_clock::now();
-//	    auto durationlooplink = std::chrono::duration_cast<std::chrono::microseconds>( tbeginfor - tbeginfor ).count();
+		//	    high_resolution_clock::time_point tbeginfor = high_resolution_clock::now();
+		//	    auto durationlooplink = std::chrono::duration_cast<std::chrono::microseconds>( tbeginfor - tbeginfor ).count();
 
 		for(auto sigma = simplices.begin(dim); sigma != simplices.end(dim); ++sigma){
-//		    high_resolution_clock::time_point tbeg = high_resolution_clock::now();
+			//		    high_resolution_clock::time_point tbeg = high_resolution_clock::now();
 			Simplex_handle t(*sigma);
 			Skeleton_blocker_link_superior<Skeleton_blocker_complex> link(*this,t);
 			// xxx all time here, most likely because accessing superior edges needs passing through lower one
 			// currently
 
-//			durationlooplink += std::chrono::duration_cast<std::chrono::microseconds>( high_resolution_clock::now() - tbeg ).count();
+			//			durationlooplink += std::chrono::duration_cast<std::chrono::microseconds>( high_resolution_clock::now() - tbeg ).count();
 
 			for(auto v : link.vertex_range()){
 				Vertex_handle v_in_complex(*this->get_address(  link.get_id(v)) );
@@ -273,10 +273,10 @@ private:
 				t.remove_vertex(v_in_complex);
 			}
 		}
-//	    high_resolution_clock::time_point t2 = high_resolution_clock::now();
-//	    auto durationlooptotal = std::chrono::duration_cast<std::chrono::microseconds>( t2 - tbeginfor ).count();
-//	    DBGVALUE(durationlooptotal);
-//	    DBGVALUE(durationlooplink);
+		//	    high_resolution_clock::time_point t2 = high_resolution_clock::now();
+		//	    auto durationlooptotal = std::chrono::duration_cast<std::chrono::microseconds>( t2 - tbeginfor ).count();
+		//	    DBGVALUE(durationlooptotal);
+		//	    DBGVALUE(durationlooplink);
 	}
 
 
@@ -1186,9 +1186,15 @@ public:
 	 */
 	Complex_triangle_range triangle_range() const
 	{
-		auto begin = Triangle_iterator<Skeleton_blocker_complex>(this);
 		auto end = Triangle_iterator<Skeleton_blocker_complex>(this,0);
-		return Complex_triangle_range(begin,end);
+		if(empty()){
+			return Complex_triangle_range(end,end);
+		}
+		else{
+			auto begin = Triangle_iterator<Skeleton_blocker_complex>(this);
+			return Complex_triangle_range(begin,end);
+		}
+
 	}
 
 
@@ -1219,16 +1225,21 @@ public:
 		);
 	}
 
-//	typedef Simplex_iterator<Skeleton_blocker_complex,Superior_link> Complex_simplex_iterator;
+	//	typedef Simplex_iterator<Skeleton_blocker_complex,Superior_link> Complex_simplex_iterator;
 	typedef Simplex_iterator<Skeleton_blocker_complex> Complex_simplex_iterator;
 
 	typedef boost::iterator_range     < Complex_simplex_iterator > Complex_simplex_range;
 
 	Complex_simplex_range simplex_range() const
 	{
-		Complex_simplex_iterator begin(this);
 		Complex_simplex_iterator end(this,true);
-		return Complex_simplex_range(begin,end);
+		if(empty()){
+			return Complex_simplex_range(end,end);
+		}
+		else{
+			Complex_simplex_iterator begin(this);
+			return Complex_simplex_range(begin,end);
+		}
 	}
 
 

@@ -270,6 +270,11 @@ bool test_iterator_simplices2(){
 	Complex complex(2);
 	complex.add_edge(Vertex_handle(0),Vertex_handle(1));
 
+	for(const auto& s:complex.triangle_range()){
+		s.dimension();
+		return false; // there are no triangles
+	}
+
 	unsigned num_simplices = 0 ;
 
 
@@ -314,6 +319,24 @@ bool test_iterator_simplices3(){
 	bool correct_number_simplices = (num_simplices == 6);
 	return correct_number_simplices;
 }
+
+bool test_iterator_simplices4(){
+	Complex empty_complex;
+	for(auto v : empty_complex.vertex_range()){
+		v;
+	}
+	for(auto e : empty_complex.edge_range()){
+		empty_complex[e];
+	}
+	for(auto t : empty_complex.triangle_range()){
+		t.dimension();
+	}
+	for(auto s : empty_complex.simplex_range()){
+		s.dimension();
+	}
+	return true;
+}
+
 
 
 
@@ -710,9 +733,7 @@ bool test_constructor2(){
 int main (int argc, char *argv[])
 {
 	Tests tests_complex;
-
 	tests_complex.add("test simplex",test_simplex);
-
 	tests_complex.add("test_link0",test_link0);
 	tests_complex.add("test_link1",test_link1);
 	tests_complex.add("test_link2",test_link2);
@@ -731,6 +752,8 @@ int main (int argc, char *argv[])
 	tests_complex.add("test iterator simplices",test_iterator_simplices);
 	tests_complex.add("test iterator simplices2",test_iterator_simplices2);
 	tests_complex.add("test iterator simplices3",test_iterator_simplices3);
+	tests_complex.add("test iterator simplices4",test_iterator_simplices4);
+
 
 	tests_complex.add("test iterator blockers",test_iterator_blockers);
 	tests_complex.add("test_iterator_triangles",test_iterator_triangles);
