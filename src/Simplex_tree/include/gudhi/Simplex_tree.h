@@ -27,12 +27,9 @@
 #include <boost/container/flat_map.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/graph/adjacency_list.hpp>
-#include "io.h"
 #include "Simplex_tree/Simplex_tree_node_explicit_storage.h"
 #include "Simplex_tree/Simplex_tree_siblings.h"
 #include "Simplex_tree/Simplex_tree_iterators.h"
-#include "Persistent_cohomology.h"
-#include "graph_simplicial_complex.h"
 #include "Simplex_tree/indexing_tag.h"
 
 /** \defgroup simplex_tree Filtered Complexes Package
