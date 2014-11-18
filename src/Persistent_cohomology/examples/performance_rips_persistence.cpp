@@ -20,7 +20,7 @@
   *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
 
-#include "io.h"
+#include "reader_utils.h"
 #include "graph_simplicial_complex.h"
 #include "distance_functions.h"
 #include "Simplex_tree.h"
