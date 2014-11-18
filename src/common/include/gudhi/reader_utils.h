@@ -20,8 +20,8 @@
   *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
 
-#ifndef GUDHI_IO_H
-#define GUDHI_IO_H
+#ifndef GUDHI_READER_UTILS_H
+#define GUDHI_READER_UTILS_H
 
 #include <iostream>
 #include <fstream>
@@ -107,7 +107,7 @@ read_graph ( std::string file_name )
   }
   in_.close();
 
-  if(max_h+1 != vertices.size()) 
+  if((size_t)(max_h+1) != vertices.size())
     { std::cerr << "Error: vertices must be labeled from 0 to n-1 \n"; }
 
   Graph_t skel_graph(edges.begin(),edges.end(),edges_fil.begin(),vertices.size());
@@ -177,4 +177,4 @@ bool read_hasse_simplex ( std::istream                 & in_
   return true;
 }
 
-#endif // GUDHI_IO_H
+#endif // GUDHI_READER_UTILS_H
