@@ -20,6 +20,8 @@
   *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
 
+namespace Gudhi{
+
 /** \brief Tag for a linear ordering of simplices. 
   *
   * \implements IndexingTag
@@ -28,3 +30,5 @@
 
 /* \brief Tag for a zigzag ordering of simplices. */
 //  struct zigzag_indexing_tag {};
+
+}  // namespace GUDHI

@@ -26,6 +26,8 @@
 #include "boost/container/flat_map.hpp"
 #include "Simplex_tree_node_explicit_storage.h"
 
+namespace Gudhi{
+
 /* \addtogroup simplex_tree
   * Represents a set of node of a Simplex_tree that share the same parent.
   * @{
@@ -121,5 +123,7 @@ public:
 };
 
 /* @} */ //end addtogroup simplex_tree
+
+}  // namespace GUDHI
 
 #endif // GUDHI_SIMPLEX_TREE_SIBLINGS

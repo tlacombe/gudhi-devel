@@ -25,6 +25,8 @@
 
 #include "boost/iterator/iterator_facade.hpp"
 
+namespace Gudhi{
+
 /* \addtogroup simplex_tree
   * Iterators and range types for the Simplex_tree.
   * @{
@@ -279,5 +281,7 @@ private:
 };
 
 /* @} */ //end addtogroup simplex_tree
+
+}  // namespace GUDHI
 
 #endif // SIMPLEX_TREE_ITERATORS_H

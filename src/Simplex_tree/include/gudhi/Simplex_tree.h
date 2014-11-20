@@ -27,10 +27,12 @@
 #include <boost/container/flat_map.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/graph/adjacency_list.hpp>
-#include "Simplex_tree/Simplex_tree_node_explicit_storage.h"
-#include "Simplex_tree/Simplex_tree_siblings.h"
-#include "Simplex_tree/Simplex_tree_iterators.h"
-#include "Simplex_tree/indexing_tag.h"
+#include "gudhi/Simplex_tree/Simplex_tree_node_explicit_storage.h"
+#include "gudhi/Simplex_tree/Simplex_tree_siblings.h"
+#include "gudhi/Simplex_tree/Simplex_tree_iterators.h"
+#include "gudhi/Simplex_tree/indexing_tag.h"
+
+namespace Gudhi{
 
 /** \defgroup simplex_tree Filtered Complexes Package
   * 
@@ -437,15 +439,15 @@ insert ( RandomAccessVertexRange & simplex
   {
     res_insert = curr_sib->members_.emplace(*vi, Node(curr_sib,filtration));
     if(!(has_children(res_insert.first))) 
-      { res_insert.first->second.children_ = new Siblings(curr_sib, *vi); }  
-    curr_sib = res_insert.first->second.children_;
+      { res_insert.first->second.assign_children( new Siblings(curr_sib, *vi)); }
+    curr_sib = res_insert.first->second.children();
   }
   res_insert = curr_sib->members_.emplace(*vi, Node(curr_sib,filtration));
   if(!res_insert.second) //if already in the complex
     { 
-      if(res_insert.first->second.filtration_ > filtration) //if filtration value modified
+      if(res_insert.first->second.filtration() > filtration) //if filtration value modified
       {
-        res_insert.first->second.filtration_ = filtration;
+        res_insert.first->second.assign_filtration(filtration);
         return res_insert;
       }
       return std::pair< Simplex_handle, bool > (null_simplex(),false);// if filtration value unchanged
@@ -801,5 +803,7 @@ std::istream& operator>> ( std::istream               & is
 }
 
 /** @} */ //end defgroup simplex_tree
+
+}  // namespace GUDHI
 
 #endif // GUDHI_FLAG_SIMPLEX_TREE_H

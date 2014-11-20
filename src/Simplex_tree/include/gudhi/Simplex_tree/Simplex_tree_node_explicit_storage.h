@@ -26,6 +26,8 @@
 #include <vector>
 #include <iostream>
 
+namespace Gudhi{
+
 /* \addtogroup simplex_tree
   * Represents a node of a Simplex_tree.
   * @{
@@ -86,7 +88,7 @@ class Simplex_tree_node_explicit_storage {
   
   Simplex_key key() { return simplex_key_; }
   
-private:  
+private:
    Siblings *              children_;
   
   // Data attached to simplex, explicit storage
@@ -96,5 +98,7 @@ private:
 };
 
 /* @} */ //end addtogroup simplex_tree
+
+}  // namespace GUDHI
 
 #endif // GUDHI_SIMPLEX_TREE_NODE_EXPLICIT_STORAGE_H
