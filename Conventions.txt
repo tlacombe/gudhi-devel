@@ -1,10 +1,29 @@
-Please read this convention before adding your package(s).
-The Gudhi directories are organised by 2 manners (Internal for svn developpers and User for external User/Developper).
-All headers are named *.h and all sources are named *.cpp.
+Please read this convention before adding your package(s) into Gudhi library.
+
+
+Compilation:
+*********************
 CMake is used for compilation purpose.
 
-Internal:
+
+
+Naming conventions:
 *********************
+
+All headers are named *.h and all sources are named *.cpp.
+Concepts are named with camel case starting with uppercase that is "PersistentHomology.h"
+for instance for the concept of Persitence homology.
+Classes and methods are named with underscore separator that is :
+- "Skeleton_blocker_contractor.h" for the class Skeleton_blocker_contractor
+- "int num_vertices() const" for a method
+
+
+Package organization:
+*********************
+The Gudhi directories are organised by 2 manners (Internal for svn developpers and User for external User/Developper).
+
+Internal:
+--------
 
 src/common/concept/common_concept.h
            doc/MainPage.h
@@ -37,7 +56,7 @@ Conventions.txt
 README
 
 User:
-*********************
+--------
 
 include/gudhi/*.h
 source/*.cpp
