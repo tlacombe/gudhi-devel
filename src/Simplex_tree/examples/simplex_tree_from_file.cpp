@@ -64,8 +64,7 @@ int main (int argc, char * const argv[])
   std::cout << "  Number of simplices = " << st.num_simplices() << std::endl;
   std::cout << std::endl << std::endl;
 
-// TODO : fix the iterators
-/*  std::cout << "Iterator on vertices: ";
+  std::cout << "Iterator on vertices: ";
     for( auto vertex : st.complex_vertex_range() ) { std::cout << vertex << " "; }
 
   std::cout << std::endl;
@@ -104,6 +103,6 @@ int main (int argc, char * const argv[])
     for( auto vertex : st.simplex_vertex_range(b_simplex) )
       { std::cout << vertex << " "; } std::cout << std::endl;
     }
-  }*/
+  }
   return 0;
 }
