@@ -1,7 +1,15 @@
 cmake_minimum_required(VERSION 2.6)
 project(GUDHISimplexTreeFromFile)
 
-find_package(Boost 1.45.0 COMPONENTS system)
+set(CMAKE_PREFIX_PATH "../../cmake/modules/")
+set(CMAKE_MODULE_PATH "../../cmake/modules/")
+message("CMAKE_PREFIX_PATH = ${CMAKE_PREFIX_PATH}")
+message("CMAKE_MODULE_PATH = ${CMAKE_MODULE_PATH}")
+
+find_package(Boost 1.45.0 COMPONENTS system thread)
+find_package(CGAL)
+find_package(GMPXX)
+find_package(GMP)
 
 if(MSVC)
 	# Turn off some VC++ warnings
@@ -22,6 +30,17 @@ else()
 
    include_directories(${Boost_INCLUDE_DIRS})
    include_directories(BEFORE "../../common/include/" "../include/" )
-   add_executable ( simplexTreeFromFile simplex_tree_from_file.cpp )
-   target_link_libraries(simplexTreeFromFile ${Boost_LIBRARIES})
+   add_executable ( simplex_tree_from_file simplex_tree_from_file.cpp )
+   target_link_libraries(simplex_tree_from_file ${Boost_LIBRARIES})
+   
+   # An example with Simplex-tree using CGAL alpha_shapes_3
+   if(GMPXX_FOUND AND GMP_FOUND AND CGAL_FOUND)
+      message("CGAL_include = ${CGAL_INCLUDE_DIRS}")
+      message("CGAL_lib = ${CGAL_LIBRARIES_DIR}")
+
+      include_directories(${Boost_INCLUDE_DIRS})
+      add_executable ( alpha_shapes_3_from_simplex_tree alpha_shapes_3_from_simplex_tree.cpp )
+      target_link_libraries(alpha_shapes_3_from_simplex_tree ${Boost_LIBRARIES} ${GMPXX_LIBRARIES} ${GMP_LIBRARIES} ${CGAL_LIBRARY})
+   endif()  
+   
 endif()  

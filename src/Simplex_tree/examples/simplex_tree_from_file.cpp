@@ -56,6 +56,7 @@ int main (int argc, char * const argv[])
   start = clock();
   st.expansion ( max_dim ); //expand the 1-skeleton until dimension max_dim
   end = clock();
+  std::cout << "max_dim = " << max_dim << "\n";
   std::cout << "Expand the simplex tree in "
        << (double)(end-start)/CLOCKS_PER_SEC << " s. \n";
 
