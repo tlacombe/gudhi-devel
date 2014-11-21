@@ -1,0 +1,26 @@
+To build the example, run in a Terminal:
+
+cd /path-to-example/
+cmake .
+make
+
+
+Example of use :
+
+Simplex tree construction with Z/2Z coefficients on points sampling a Klein bottle:
+
+./simplexTreeFromFile ../../../data/points/Klein_bottle_complex.txt 2
+Insert the 1-skeleton in the simplex tree in 0 s. 
+Expand the simplex tree in 0 s. 
+Information of the Simplex Tree: 
+  Number of vertices = 10   Number of simplices = 82
+
+with Z/3Z coefficients:
+
+./simplexTreeFromFile ../../../data/points/Klein_bottle_complex.txt 3
+
+Insert the 1-skeleton in the simplex tree in 0 s.
+Expand the simplex tree in 0 s.
+Information of the Simplex Tree:
+  Number of vertices = 10   Number of simplices = 106
+
