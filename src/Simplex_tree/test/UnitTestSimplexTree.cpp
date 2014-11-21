@@ -7,18 +7,14 @@
 
 #include <ctime>
 #include "gudhi/graph_simplicial_complex.h"
-//#include "gudhi/distance_functions.h"
 #include "gudhi/Simplex_tree.h"
 
-//using namespace boost::posix_time;
 using namespace Gudhi;
-
-//typedef int        Vertex_handle;
-//typedef double     Filtration_value;
 
 typedef Simplex_tree<> typeST;
 typedef std::pair< typeST::Simplex_handle, bool > typePairSimplexBool;
 typedef std::vector< Vertex_handle > typeVectorVertex;
+
 const Vertex_handle DEFAULT_VERTEX_HANDLE = (const Vertex_handle)-1;
 
 void test_empty_simplex_tree(typeST& tst)
@@ -34,6 +30,27 @@ void test_empty_simplex_tree(typeST& tst)
    BOOST_CHECK( tst.dimension() == -1 );
 }
 
+void test_iterators_on_empty_simplex_tree(typeST& tst)
+{
+	std::cout << "Iterator on vertices: " << std::endl;
+	for( auto vertex : tst.complex_vertex_range() )
+	{
+		std::cout << "vertice:" << vertex << std::endl;
+		BOOST_CHECK( false); // shall be empty
+	}
+	std::cout << "Iterator on simplices: " << std::endl;
+	for( auto simplex : tst.complex_simplex_range() )
+	{
+		BOOST_CHECK( false); // shall be empty
+	}
+
+	std::cout << "Iterator on Simplices in the filtration, with [filtration value]:" << std::endl;
+	for( auto f_simplex : tst.filtration_simplex_range() )
+	{
+		BOOST_CHECK( false); // shall be empty
+	}
+}
+
 BOOST_AUTO_TEST_CASE( simplex_tree_test )
 {
    // TEST OF DEFAULT CONSTRUCTOR
@@ -42,6 +59,7 @@ BOOST_AUTO_TEST_CASE( simplex_tree_test )
 
    test_empty_simplex_tree(st);
 
+   test_iterators_on_empty_simplex_tree(st);
    // TEST OF EMPTY INSERTION
    std::cout << "TEST OF EMPTY INSERTION" << std::endl;
    typeVectorVertex simplexVectorEmpty;
@@ -52,6 +70,8 @@ BOOST_AUTO_TEST_CASE( simplex_tree_test )
    BOOST_CHECK(returnEmptyValue.second == true);
 
    test_empty_simplex_tree(st);
+
+   test_iterators_on_empty_simplex_tree(st);
 
    // TEST OF INSERTION
    std::cout << "TEST OF INSERTION" << std::endl;
