@@ -28,8 +28,10 @@
 #include <boost/pending/disjoint_sets.hpp>
 #include <boost/intrusive/list.hpp>
 #include <boost/pool/object_pool.hpp>
-#include "Persistent_cohomology/Persistent_cohomology_column.h"
-#include "Persistent_cohomology/Field_Zp.h"
+#include "gudhi/Persistent_cohomology/Persistent_cohomology_column.h"
+#include "gudhi/Persistent_cohomology/Field_Zp.h"
+
+namespace Gudhi{
 
 /** \defgroup persistent_cohomology Persistent Cohomology Package
   *
@@ -764,5 +766,7 @@ public:
 };
 
 /** @} */ //end defgroup persistent_cohomology
+
+}  // namespace GUDHI
 
 #endif // _PERSISTENCECOMPUTATION_SIMPLEXTREE_

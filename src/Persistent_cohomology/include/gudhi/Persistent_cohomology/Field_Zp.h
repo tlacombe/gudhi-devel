@@ -23,6 +23,8 @@
 #ifndef GUDHI_FIELD_ZP_H
 #define GUDHI_FIELD_ZP_H
 
+namespace Gudhi{
+
 /** \brief Structure representing the coefficient field \f$\mathbb{Z}/p\mathbb{Z}\f$
   *
   * \implements CoefficientField
@@ -98,5 +100,7 @@ private:
 /** Property map Element -> Element, which associate to an element its inverse in the field.*/
   std::vector< Element > inverse_;
 };
+
+}  // namespace GUDHI
 
 #endif // GUDHI_FIELD_ZP_H

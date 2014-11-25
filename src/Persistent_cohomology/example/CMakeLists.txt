@@ -1,8 +1,15 @@
 cmake_minimum_required(VERSION 2.6)
 project(GUDHIExPersCohom)
 
+set(CMAKE_PREFIX_PATH "../../cmake/modules/")
+set(CMAKE_MODULE_PATH "../../cmake/modules/")
+message("CMAKE_PREFIX_PATH = ${CMAKE_PREFIX_PATH}")
+message("CMAKE_MODULE_PATH = ${CMAKE_MODULE_PATH}")
+
 find_package(Boost 1.45.0 COMPONENTS system unit_test_framework program_options)
-#TODO: find_package(gmp REQUIRED COMPONENTS)
+find_package(GMPXX)
+find_package(GMP)
+
 
 if(MSVC)
 	# Turn off some VC++ warnings
@@ -21,15 +28,15 @@ else()
    message("Boost_lib = ${Boost_LIBRARIES}")
 
    include_directories(${Boost_INCLUDE_DIRS})
-   include_directories(BEFORE "../../common" "../../common/include/gudhi" "../include/gudhi" "../../Simplex_tree/include/gudhi" "../../Hasse_complex/include/gudhi" )
+   include_directories(BEFORE "../../common" "../../common/include" "../include" "../../Simplex_tree/include" "../../Hasse_complex/include" )
    add_executable ( rips_persistence rips_persistence.cpp )
    target_link_libraries(rips_persistence ${Boost_LIBRARIES})
 
-   if(gmp_FOUND)
+   if(GMPXX_FOUND AND GMP_FOUND)
       add_executable ( rips_multifield_persistence rips_multifield_persistence.cpp )
-      target_link_libraries(rips_multifield_persistence ${Boost_LIBRARIES})
+      target_link_libraries(rips_multifield_persistence  ${Boost_LIBRARIES} ${GMPXX_LIBRARIES} ${GMP_LIBRARIES})
 
       add_executable ( performance_rips_persistence performance_rips_persistence.cpp )
-      target_link_libraries(performance_rips_persistence ${Boost_LIBRARIES})
+      target_link_libraries(performance_rips_persistence  ${Boost_LIBRARIES} ${GMPXX_LIBRARIES} ${GMP_LIBRARIES})
    endif()
 endif()  

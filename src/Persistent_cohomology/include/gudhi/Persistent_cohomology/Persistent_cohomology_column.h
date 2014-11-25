@@ -27,6 +27,8 @@
 #include "boost/intrusive/set.hpp"
 #include "boost/intrusive/list.hpp"
 
+namespace Gudhi{
+
 template < typename SimplexKey
          , typename ArithmeticElement 
          >
@@ -145,5 +147,7 @@ friend bool operator< ( const Persistent_cohomology_column& c1
   Col_type           col_;
   SimplexKey         class_key_;
 };
+
+}  // namespace GUDHI
 
 #endif // GUDHI_COLUMN_LIST_H

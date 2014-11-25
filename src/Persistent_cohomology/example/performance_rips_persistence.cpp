@@ -20,16 +20,17 @@
   *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
   */
 
-#include "reader_utils.h"
-#include "graph_simplicial_complex.h"
-#include "distance_functions.h"
-#include "Simplex_tree.h"
-#include "Persistent_cohomology.h"
-#include "Persistent_cohomology/Multi_field.h"
-#include "Persistent_cohomology/Field_Zp.h"
-#include "Hasse_complex.h"
+#include "gudhi/reader_utils.h"
+#include "gudhi/graph_simplicial_complex.h"
+#include "gudhi/distance_functions.h"
+#include "gudhi/Simplex_tree.h"
+#include "gudhi/Persistent_cohomology.h"
+#include "gudhi/Persistent_cohomology/Multi_field.h"
+#include "gudhi/Hasse_complex.h"
 
 #include <chrono>
+
+using namespace Gudhi;
 
 /* Compute the persistent homology of the complex cpx with coefficients in Z/pZ. */
 template< typename FilteredComplex>

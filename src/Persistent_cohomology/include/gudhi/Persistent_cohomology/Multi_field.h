@@ -26,6 +26,9 @@
 #include <iostream>
 #include <vector>
 #include <gmpxx.h>
+
+namespace Gudhi{
+
 /** \brief Structure representing coefficients in a set of finite fields simultaneously
   * using the chinese remainder theorem.
   *
@@ -158,5 +161,7 @@ public:
   Element               mult_id_all;
 
 };
+
+}  // namespace GUDHI
 
 #endif // GUDHI_MULTI_FIELD_H 
