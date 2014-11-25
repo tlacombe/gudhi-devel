@@ -27,11 +27,6 @@
 
 using namespace Gudhi;
 
-typedef std::vector< double > Point;
-typedef std::vector< Point >  Point_range;
-typedef int                   Vertex_handle;
-typedef double                Filtration_value;
-
 int main (int argc, char * const argv[])
 {
   if (argc != 3) {

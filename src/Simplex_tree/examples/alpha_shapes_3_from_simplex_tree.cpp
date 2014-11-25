@@ -11,15 +11,15 @@
 #include <boost/variant.hpp>
 #include <boost/optional.hpp>
 
-typedef CGAL::Exact_predicates_inexact_constructions_kernel Gt;
+typedef CGAL::Exact_predicates_inexact_constructions_kernel Kernel;
 
-typedef CGAL::Alpha_shape_vertex_base_3<Gt>          Vb;
-typedef CGAL::Alpha_shape_cell_base_3<Gt>            Fb;
+typedef CGAL::Alpha_shape_vertex_base_3<Kernel>          Vb;
+typedef CGAL::Alpha_shape_cell_base_3<Kernel>            Fb;
 typedef CGAL::Triangulation_data_structure_3<Vb,Fb>  Tds;
-typedef CGAL::Delaunay_triangulation_3<Gt,Tds>       Triangulation_3;
+typedef CGAL::Delaunay_triangulation_3<Kernel,Tds>       Triangulation_3;
 typedef CGAL::Alpha_shape_3<Triangulation_3>         Alpha_shape_3;
 
-typedef Gt::Point_3                                  Point;
+typedef Kernel::Point_3                                  Point;
 typedef Alpha_shape_3::Alpha_iterator               Alpha_iterator;
 
 
@@ -47,63 +47,7 @@ int main (int argc, char * const argv[])
 
   // compute alpha shape
   Alpha_shape_3 as(lp.begin(),lp.end());
-  std::cout << "Alpha shape computed in REGULARIZED mode by default"
-	    << std::endl;
-
-  // find optimal alpha value
-  Alpha_iterator opt = as.find_optimal_alpha(1);
-  std::cout << "Optimal alpha value to get one connected component is "
-	    <<  *opt    << std::endl;
-  as.set_alpha(*opt);
-
-  assert(as.number_of_solid_components() == 1);
-
-  std::cout << "nb of alphas:" << as.number_of_alphas() << std::endl;
-
-  std::list<Alpha_shape_3::Cell_handle> cells;
-  std::list<Alpha_shape_3::Facet>       facets;
-  std::list<Alpha_shape_3::Edge>        edges;
-  std::list<Alpha_shape_3::Vertex_handle>     vertices;
-  as.get_alpha_shape_cells(std::back_inserter(cells),Alpha_shape_3::INTERIOR);
-
-  as.get_alpha_shape_facets(std::back_inserter(facets),Alpha_shape_3::REGULAR);
-
-  as.get_alpha_shape_facets(std::back_inserter(facets),Alpha_shape_3::SINGULAR);
-
-  as.get_alpha_shape_edges(std::back_inserter(edges),Alpha_shape_3::SINGULAR);
-  as.get_alpha_shape_vertices(std::back_inserter(vertices),Alpha_shape_3::EXTERIOR);
-
-  std::cout << " The 0-shape has : " << std::endl;
-  std::cout << cells.size() << " interior tetrahedra" << std::endl;
-  std::cout << facets.size() << " boundary facets" << std::endl;
-  std::cout << edges.size()  << " singular edges" << std::endl;
-  std::cout << vertices.size() << " vertices" << std::endl;
-
-  //i'm not sure if this is the correct way to access the filtration
-  std::list<CGAL::Object>       objects;
-  as.filtration(std::back_inserter(objects));
-  std::cout << "filtration returns : " << objects.size() << " objects" << std::endl;
-  std::list<CGAL::Object>::iterator pos;
-  pos = objects.begin();
-  while (pos != objects.end()){
-	  pos++;
-  }
-
-  as.get_alpha_shape_cells(std::back_inserter(cells),Alpha_shape_3::INTERIOR);
-
-  as.get_alpha_shape_facets(std::back_inserter(facets),Alpha_shape_3::REGULAR);
-
-  as.get_alpha_shape_facets(std::back_inserter(facets),Alpha_shape_3::SINGULAR);
-
-  as.get_alpha_shape_edges(std::back_inserter(edges),Alpha_shape_3::SINGULAR);
-  as.get_alpha_shape_vertices(std::back_inserter(vertices),Alpha_shape_3::EXTERIOR);
-
-  std::cout << " The 0-shape has : " << std::endl;
-  std::cout << cells.size() << " interior tetrahedra" << std::endl;
-  std::cout << facets.size() << " boundary facets" << std::endl;
-  std::cout << edges.size()  << " singular edges" << std::endl;
-  std::cout << vertices.size() << " vertices" << std::endl;
-
+  std::cout << "Alpha shape computed in REGULARIZED mode by default" << std::endl;
 
   std::vector<CGAL::Object> the_objects;
   std::vector<Alpha_shape_3::FT> the_ft;
@@ -122,20 +66,26 @@ int main (int argc, char * const argv[])
   std::cout << "filtration_with_alpha_values returns : " << the_objects.size() << " objects" << std::endl;
   std::cout << "filtration_with_alpha_values returns : " << the_ft.size() << " FT" << std::endl;
 
-  as.get_alpha_shape_cells(std::back_inserter(cells),Alpha_shape_3::INTERIOR);
-
-  as.get_alpha_shape_facets(std::back_inserter(facets),Alpha_shape_3::REGULAR);
-
-  as.get_alpha_shape_facets(std::back_inserter(facets),Alpha_shape_3::SINGULAR);
-
-  as.get_alpha_shape_edges(std::back_inserter(edges),Alpha_shape_3::SINGULAR);
-  as.get_alpha_shape_vertices(std::back_inserter(vertices),Alpha_shape_3::EXTERIOR);
-
-  std::cout << " The 0-shape has : " << std::endl;
-  std::cout << cells.size() << " interior tetrahedra" << std::endl;
-  std::cout << facets.size() << " boundary facets" << std::endl;
-  std::cout << edges.size()  << " singular edges" << std::endl;
-  std::cout << vertices.size() << " vertices" << std::endl;
+  /*for(auto object_iterator: the_objects)
+  {*/
+  std::vector<CGAL::Object>::iterator object_iterator = the_objects.begin();
+  std::cout << "object_iterator type=" << (*object_iterator).type().name() << std::endl;
+  Vb type1;
+  if(CGAL::assign(type1,*object_iterator))
+	  std::cout << "intersection object is a type1=" << std::endl;
+  Fb type2;
+  if(CGAL::assign(type2,*object_iterator))
+	  std::cout << "intersection object is a type2=" << std::endl;
+  Tds type3;
+  if(CGAL::assign(type3,*object_iterator))
+	  std::cout << "intersection object is a type3=" << std::endl;
+   /* }
+   */
+  /*for(auto ft_iterator: the_ft)
+  {
+    if (ft_iterator < *opt)
+	  std::cout << "Approx=" << ft_iterator << std::endl;
+  }*/
 
 
   return 0;
