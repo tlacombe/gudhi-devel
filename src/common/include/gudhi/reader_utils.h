@@ -26,7 +26,7 @@
 #include <iostream>
 #include <fstream>
 #include <boost/graph/adjacency_list.hpp>
-#include "graph_simplicial_complex.h"
+#include "gudhi/graph_simplicial_complex.h"
 
 /**
  * \brief Read a set of points to turn it

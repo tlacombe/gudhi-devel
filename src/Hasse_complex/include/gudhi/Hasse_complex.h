@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <boost/iterator/counting_iterator.hpp>
 
+namespace Gudhi{
 
 template < class HasseCpx >
 struct Hasse_simplex 
@@ -212,5 +213,7 @@ std::istream& operator>> ( std::istream                & is
 
   return is;
 }
+
+}  // namespace GUDHI
 
 #endif // GUDHI_HASSE_DIAGRAM_H
