@@ -8,8 +8,18 @@ if [ ! -f $VERSION_FILE ]; then
     exit 1
 fi
 
-# TODO: CLEAN BEFORE PACKAGING
-##############################
+# SVN STATUS CHECK OR IF FORCED BY USER
+if [ "$1" != "-f" ]
+then
+  SVN_STATUS=`svn status $ROOT_DIR`
+  echo $SVN_STATUS
+fi
+
+if [ "$SVN_STATUS" != "" ]
+then
+    echo "Svn status must be empty to create a version!"
+    exit 1
+fi
 
 # TEMPORARY FOLDER CREATION
 VERSION_DATE=`date +"%Y-%m-%d-%H-%M-%S"`
@@ -24,6 +34,7 @@ cp $VERSION_FILE $VERSION_DIR
 cp $ROOT_DIR/README $VERSION_DIR
 cp $ROOT_DIR/Conventions.txt $VERSION_DIR
 cp $ROOT_DIR/COPYING $VERSION_DIR
+cp -r $ROOT_DIR/data $VERSION_DIR
 
 # PACKAGE LEVEL COPY
 PACKAGE_INC_DIR="/include"
