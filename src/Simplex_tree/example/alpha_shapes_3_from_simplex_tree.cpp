@@ -66,21 +66,37 @@ int main (int argc, char * const argv[])
   std::cout << "filtration_with_alpha_values returns : " << the_objects.size() << " objects" << std::endl;
   std::cout << "filtration_with_alpha_values returns : " << the_ft.size() << " FT" << std::endl;
 
-  /*for(auto object_iterator: the_objects)
-  {*/
-  std::vector<CGAL::Object>::iterator object_iterator = the_objects.begin();
-  std::cout << "object_iterator type=" << (*object_iterator).type().name() << std::endl;
-  Vb type1;
-  if(CGAL::assign(type1,*object_iterator))
-	  std::cout << "intersection object is a type1=" << std::endl;
-  Fb type2;
-  if(CGAL::assign(type2,*object_iterator))
-	  std::cout << "intersection object is a type2=" << std::endl;
-  Tds type3;
-  if(CGAL::assign(type3,*object_iterator))
-	  std::cout << "intersection object is a type3=" << std::endl;
-   /* }
-   */
+  typename Alpha_shape_3::Cell_handle cell;
+  typename Alpha_shape_3::Facet      facet;
+  typename Alpha_shape_3::Edge       edge;
+  typename Alpha_shape_3::Vertex_handle  vertex;
+
+  typename Alpha_shape_3::size_type count_vertices = 0;
+  typename Alpha_shape_3::size_type count_edges = 0;
+  typename Alpha_shape_3::size_type count_facets = 0;
+  typename Alpha_shape_3::size_type count_cells = 0;
+
+  for(auto object_iterator: the_objects)
+  {
+	  if(CGAL::assign(cell,object_iterator))
+		  count_cells++;
+		  //std::cout << "intersection object is a cell=" << std::endl;
+	  if(CGAL::assign(facet,object_iterator))
+		  count_facets++;
+		  //std::cout << "intersection object is a facet=" << std::endl;
+	  if(CGAL::assign(edge,object_iterator))
+		  count_edges++;
+		  //std::cout << "intersection object is a edge=" << std::endl;
+	  if(CGAL::assign(vertex,object_iterator))
+		  count_vertices++;
+		  //std::cout << "intersection object is a edge=" << std::endl;
+
+  }
+  std::cout << "vertices \t\t" << count_vertices << std::endl;
+  std::cout << "edges \t\t"    << count_edges << std::endl;
+  std::cout << "facets \t\t"   << count_facets << std::endl;
+  std::cout << "cells \t\t"    << count_cells << std::endl;
+
   /*for(auto ft_iterator: the_ft)
   {
     if (ft_iterator < *opt)
