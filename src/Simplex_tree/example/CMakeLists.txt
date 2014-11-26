@@ -39,8 +39,8 @@ else()
       message("CGAL_lib = ${CGAL_LIBRARIES_DIR}")
 
       include_directories(${Boost_INCLUDE_DIRS})
-      add_executable ( alpha_shapes_3_from_simplex_tree alpha_shapes_3_from_simplex_tree.cpp )
-      target_link_libraries(alpha_shapes_3_from_simplex_tree ${Boost_LIBRARIES} ${GMPXX_LIBRARIES} ${GMP_LIBRARIES} ${CGAL_LIBRARY})
+      add_executable ( simplex_tree_from_alpha_shapes_3 simplex_tree_from_alpha_shapes_3.cpp )
+      target_link_libraries(simplex_tree_from_alpha_shapes_3 ${Boost_LIBRARIES} ${GMPXX_LIBRARIES} ${GMP_LIBRARIES} ${CGAL_LIBRARY})
    endif()  
    
 endif()  

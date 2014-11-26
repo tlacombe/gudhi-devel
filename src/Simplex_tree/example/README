@@ -24,6 +24,6 @@ Expand the simplex tree in 0 s.
 Information of the Simplex Tree:
   Number of vertices = 10   Number of simplices = 106
 
-*** Alpha-shapes 3 computed from a Simplex_tree:
+*** Simplex_tree computed from a Alpha-shapes 3:
 
-./alpha_shapes_3_from_simplex_tree ../../../data/points/bunny_5000
+./simplex_tree_from_alpha_shapes_3 ../../../data/points/bunny_5000
