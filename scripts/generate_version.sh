@@ -1,5 +1,7 @@
 #!/bin/bash
-
+#usage bash generate_version.sh : dont generate if svn st non empty
+#usage bash generate_version.sh -f : generate even if svn is empty
+#usage bash generate_version.sh -f DIR : generate even if svn is empty and save library in dir
 # VERSION CHECK
 ROOT_DIR=..
 VERSION_FILE="$ROOT_DIR/Version.txt"
@@ -64,6 +66,17 @@ do
   fi
 done
 
-# ZIP DIR AND REMOVE IT
-tar -zcf "$VERSION_DIR.tar.gz" "$VERSION_DIR"
-rm -rf "$VERSION_DIR"
+
+#INSTALL to some directory 
+if [ $# -eq 3 ]; then
+	bash generate_version.sh -f
+	echo $VERSION_DIR
+	mv "$VERSION_DIR" "$2"
+else
+	# ZIP DIR AND REMOVE IT
+	tar -zcf "$VERSION_DIR.tar.gz" "$VERSION_DIR"
+	rm -rf "$VERSION_DIR"
+fi
+
+
+
