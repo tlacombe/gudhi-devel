@@ -31,6 +31,8 @@ else()
    include_directories(BEFORE "../../common" "../../common/include" "../include" "../../Simplex_tree/include" "../../Hasse_complex/include" )
    add_executable ( rips_persistence rips_persistence.cpp )
    target_link_libraries(rips_persistence ${Boost_LIBRARIES})
+   add_executable ( rips_persistence_from_alpha_shape_3 rips_persistence_from_alpha_shape_3.cpp )
+   target_link_libraries(rips_persistence_from_alpha_shape_3 ${Boost_LIBRARIES})
 
    if(GMPXX_FOUND AND GMP_FOUND)
       add_executable ( rips_multifield_persistence rips_multifield_persistence.cpp )
