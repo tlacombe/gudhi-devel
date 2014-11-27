@@ -5,6 +5,7 @@
 # VERSION CHECK
 ROOT_DIR=..
 VERSION_FILE="$ROOT_DIR/Version.txt"
+
 if [ ! -f $VERSION_FILE ]; then
     echo "File not found! : $VERSION_FILE"
     exit 1
@@ -15,6 +16,13 @@ if [ "$1" != "-f" ]
 then
   SVN_STATUS=`svn status $ROOT_DIR`
   echo $SVN_STATUS
+fi
+
+
+TARGET_DIR=""
+if [ "$2" != "-f" ]; then
+	TARGET_DIR = $2
+	echo "Install folder : $TARGET_DIR"
 fi
 
 if [ "$SVN_STATUS" != "" ]
@@ -68,10 +76,9 @@ done
 
 
 #INSTALL to some directory 
-if [ $# -eq 3 ]; then
-	bash generate_version.sh -f
-	echo $VERSION_DIR
-	mv "$VERSION_DIR" "$2"
+if [ "$TARGET_DIR" != "" ]; then
+	echo "Install in dir $TARGET_DIR"	
+	mv "$VERSION_DIR" "$TARGET_DIR"
 else
 	# ZIP DIR AND REMOVE IT
 	tar -zcf "$VERSION_DIR.tar.gz" "$VERSION_DIR"
