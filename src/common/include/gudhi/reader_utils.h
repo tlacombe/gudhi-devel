@@ -139,12 +139,13 @@ bool read_simplex ( std::istream                 & in_
                   , std::vector< Vertex_handle > & simplex
                   , Filtration_value             & fil )
 {
-  int dim;
+  int dim=0;
   if(!(in_ >> dim)) return false;
   Vertex_handle v;
-  for(int i=0; i<dim+1; ++i) 
+  for(int i=0; i<dim+1; ++i)
   { in_ >> v; simplex.push_back(v); }
   in_ >> fil;
+  in_.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // ignore until the carriage return
   return true;
 }
 

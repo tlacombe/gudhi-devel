@@ -772,7 +772,7 @@ std::ostream& operator<< ( std::ostream               & os
       os << st.dimension(sh) << " ";
       for(auto v : st.simplex_vertex_range(sh))
         { os << v << " ";}
-      os << st.filtration(sh) << "     " << st.key(sh) << " \n";
+      os << st.filtration(sh) << "\n";// TODO: VR - why adding the key ?? not read ?? << "     " << st.key(sh) << " \n";
     }
   return os;
 }
@@ -780,7 +780,7 @@ template< typename T1, typename T2, typename T3 >
 std::istream& operator>> ( std::istream               & is 
                          , Simplex_tree< T1, T2, T3 > & st )
 {
-  assert(st.num_simplices() == 0);
+  //assert(st.num_simplices() == 0);
 
   std::vector< typename Simplex_tree<T1,T2,T3>::Vertex_handle > simplex;
   typename Simplex_tree<T1,T2,T3>::Filtration_value             fil;
@@ -790,8 +790,9 @@ std::istream& operator>> ( std::istream               & is
   while(read_simplex( is, simplex, fil )) //read all simplices in the file as a list of vertices
   {
     ++num_simplices;
-    if(max_dim < simplex.size()-1) { max_dim = simplex.size()-1; }
-    if(max_fil < fil)              { max_fil = fil; }
+    int dim = (int)simplex.size() - 1; // Warning : simplex_size needs to be casted in int - Can be 0
+    if(max_dim < dim) { max_dim = dim;}
+    if(max_fil < fil) { max_fil = fil;}
     st.insert(simplex,fil); //insert every simplex in the simplex tree
     simplex.clear();
   }
