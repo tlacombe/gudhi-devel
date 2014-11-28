@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6)
-project(GUDHI_new)
+project(GUDHI)
 
 find_package(Boost		REQUIRED COMPONENTS)
 
@@ -10,9 +10,18 @@ if(MSVC)
 else()
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -std=c++11 -Wall -Wpedantic -lboost_system -lgmpxx -lgmp")
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -O0")	
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
 endif()
 
-include_directories(include/)
+
+find_package(Boost) 
+if(NOT Boost_FOUND)
+  message(FATAL_ERROR "NOTICE: This demo requires Boost and will not be compiled.")
+else()
+    INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
+    LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})
+	include_directories(include/)
                       
-add_subdirectory(example/Skeleton_blocker)                   
-add_subdirectory(example/Contraction)                   
+	add_subdirectory(example/Skeleton_blocker)                   
+	add_subdirectory(example/Contraction)                   
+endif()  
