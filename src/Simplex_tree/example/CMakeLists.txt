@@ -29,7 +29,9 @@ else()
    message("Boost_lib = ${Boost_LIBRARIES}")
 
    include_directories(${Boost_INCLUDE_DIRS})
-   include_directories(BEFORE "../../common/include/" "../include/" )
+   include_directories("../../common/include/" "../include/" ) # For svn only
+   include_directories("../../include/" ) # For User versions only
+
    add_executable ( simplex_tree_from_file simplex_tree_from_file.cpp )
    target_link_libraries(simplex_tree_from_file ${Boost_LIBRARIES})
    
@@ -38,7 +40,6 @@ else()
       message("CGAL_include = ${CGAL_INCLUDE_DIRS}")
       message("CGAL_lib = ${CGAL_LIBRARIES_DIR}")
 
-      include_directories(${Boost_INCLUDE_DIRS})
       add_executable ( simplex_tree_from_alpha_shapes_3 simplex_tree_from_alpha_shapes_3.cpp )
       target_link_libraries(simplex_tree_from_alpha_shapes_3 ${Boost_LIBRARIES} ${GMPXX_LIBRARIES} ${GMP_LIBRARIES} ${CGAL_LIBRARY})
    endif()  

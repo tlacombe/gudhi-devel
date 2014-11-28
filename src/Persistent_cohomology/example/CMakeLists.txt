@@ -28,7 +28,8 @@ else()
    message("Boost_lib = ${Boost_LIBRARIES}")
 
    include_directories(${Boost_INCLUDE_DIRS})
-   include_directories(BEFORE "../../common" "../../common/include" "../include" "../../Simplex_tree/include" "../../Hasse_complex/include" )
+   include_directories("../../common" "../../common/include" "../include" "../../Simplex_tree/include" "../../Hasse_complex/include" ) # For svn only
+   include_directories("../../include") # For user only
    add_executable ( rips_persistence rips_persistence.cpp )
    target_link_libraries(rips_persistence ${Boost_LIBRARIES})
    add_executable ( rips_persistence_from_alpha_shape_3 rips_persistence_from_alpha_shape_3.cpp )

@@ -41,47 +41,47 @@ void program_options( int argc, char *   argv[]
 
 int main (int argc, char * argv[]) 
 {
-  std::string      simplex_tree_file;
-  std::string      output_file  ;
-  int              p         ;
-  Filtration_value min_persistence;
+	std::string      simplex_tree_file;
+	std::string      output_file  ;
+	int              p         ;
+	Filtration_value min_persistence;
 
-  program_options(argc,argv,simplex_tree_file,output_file,p,min_persistence);
+	program_options(argc,argv,simplex_tree_file,output_file,p,min_persistence);
 
-  // Construct the Rips complex in a Simplex Tree
-  Simplex_tree<> simplex_tree;
+	// Construct the Rips complex in a Simplex Tree
+	Simplex_tree<> simplex_tree;
 
-  std::ifstream simplex_tree_stream(simplex_tree_file);
-  simplex_tree_stream >> simplex_tree;
+	std::ifstream simplex_tree_stream(simplex_tree_file);
+	simplex_tree_stream >> simplex_tree;
 
-  std::cout << "The complex contains " << simplex_tree.num_simplices() << " simplices" << std::endl;
-  std::cout << "   - dimension " << simplex_tree.dimension() << "   - filtration " << simplex_tree.filtration() << std::endl;
+	std::cout << "The complex contains " << simplex_tree.num_simplices() << " simplices" << std::endl;
+	std::cout << "   - dimension " << simplex_tree.dimension() << "   - filtration " << simplex_tree.filtration() << std::endl;
 
-  std::cout << std::endl << std::endl << "Iterator on Simplices in the filtration, with [filtration value]:" << std::endl;
-  for( auto f_simplex : simplex_tree.filtration_simplex_range() )
-  { std::cout << "   " << "[" << simplex_tree.filtration(f_simplex) << "] ";
-  for( auto vertex : simplex_tree.simplex_vertex_range(f_simplex) )
-  { std::cout << vertex << " "; }
-  std::cout << std::endl;
-  }
+	std::cout << std::endl << std::endl << "Iterator on Simplices in the filtration, with [filtration value]:" << std::endl;
+	for( auto f_simplex : simplex_tree.filtration_simplex_range() )
+	{ std::cout << "   " << "[" << simplex_tree.filtration(f_simplex) << "] ";
+	for( auto vertex : simplex_tree.simplex_vertex_range(f_simplex) )
+	{ std::cout << vertex << " "; }
+	std::cout << std::endl;
+	}
 
-// Sort the simplices in the order of the filtration
-  //simplex_tree.initialize_filtration();
+	// Sort the simplices in the order of the filtration
+	simplex_tree.initialize_filtration();
 
-// Compute the persistence diagram of the complex
-  Persistent_cohomology< Simplex_tree<>, Field_Zp > pcoh( simplex_tree );
-  pcoh.init_coefficients( p ); //initilizes the coefficient field for homology
-  
-  pcoh.compute_persistent_cohomology( min_persistence );
+	// Compute the persistence diagram of the complex
+	Persistent_cohomology< Simplex_tree<>, Field_Zp > pcoh( simplex_tree );
+	pcoh.init_coefficients( p ); //initilizes the coefficient field for homology
 
-// Output the diagram in output_file
-  if(output_file.empty()) {  pcoh.output_diagram(); }
-  else {
-   std::ofstream out(output_file);
-   pcoh.output_diagram(out);
-   out.close(); }
+	pcoh.compute_persistent_cohomology( min_persistence );
 
-  return 0;
+	// Output the diagram in output_file
+	if(output_file.empty()) {  pcoh.output_diagram(); }
+	else {
+		std::ofstream out(output_file);
+		pcoh.output_diagram(out);
+		out.close(); }
+
+	return 0;
 }
 
 
