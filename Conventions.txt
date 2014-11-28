@@ -40,6 +40,7 @@ src/common/concept/common_concept.h
                      CMakeLists.txt
     package2/...
     ...
+    cmake/modules/*.cmake
 
 data/points/kl.txt
             sphere_3D.txt
@@ -54,15 +55,21 @@ CMakeLists.txt
 Version.txt
 Conventions.txt
 README
+COPYING
 
 User:
 --------
 
 include/gudhi/*.h
 source/*.cpp
-example/*.cpp
-        CMakeLists.txt
+example/package1/*.cpp
+                 CMakeLists.txt
+        package2/*.cpp
+                 CMakeLists.txt
+        ...
+cmake/modules/*.cmake
 CMakeLists.txt
 Version.txt
 Conventions.txt
 README
+COPYING
