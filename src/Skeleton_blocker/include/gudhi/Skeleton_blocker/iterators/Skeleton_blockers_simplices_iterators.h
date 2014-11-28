@@ -11,12 +11,12 @@
 #include <memory>
 #include <list>
 #include <iostream>
-#include "utils/Utils.h"
+#include "gudhi/Utils.h"
 #include "boost/iterator/iterator_facade.hpp"
 
 
-#include "combinatorics/Skeleton_blocker/Skeleton_blocker_link_complex.h"
-#include "combinatorics/Skeleton_blocker/Skeleton_blocker_link_superior.h"
+#include "gudhi/Skeleton_blocker_link_complex.h"
+#include "gudhi/Skeleton_blocker/Skeleton_blocker_link_superior.h"
 
 
 

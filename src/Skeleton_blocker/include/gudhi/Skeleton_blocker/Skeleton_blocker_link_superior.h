@@ -9,7 +9,7 @@
 #ifndef GUDHI_SKELETON_BLOCKER_LINK_SUPERIOR_H_
 #define GUDHI_SKELETON_BLOCKER_LINK_SUPERIOR_H_
 
-#include "Skeleton_blocker_link_complex.h"
+#include "gudhi/Skeleton_blocker_link_complex.h"
 
 namespace Gudhi{
 

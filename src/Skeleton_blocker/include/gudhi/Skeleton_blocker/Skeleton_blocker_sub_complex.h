@@ -1,9 +1,9 @@
 #ifndef GUDHI_SKELETON_BLOCKER_SUB_COMPLEX_H
 #define GUDHI_SKELETON_BLOCKER_SUB_COMPLEX_H
 
-#include "Skeleton_blocker_complex.h"
-#include "Skeleton_blocker_simplex.h"
-#include "utils/Utils.h"
+#include "gudhi/Skeleton_blocker_complex.h"
+#include "gudhi/Skeleton_blocker/Skeleton_blocker_simplex.h"
+#include "gudhi/Utils.h"
 
 namespace Gudhi{
 

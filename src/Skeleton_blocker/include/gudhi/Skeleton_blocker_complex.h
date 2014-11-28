@@ -28,16 +28,15 @@ using namespace std::chrono;
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/range/adaptor/map.hpp>
 
-#include "iterators/Skeleton_blockers_iterators.h"
-#include "Skeleton_blocker_link_complex.h"
-#include "Skeleton_blocker_link_superior.h"
-#include "Skeleton_blocker_sub_complex.h"
-#include "Skeleton_blocker_simplex.h"
+#include "gudhi/Skeleton_blocker/iterators/Skeleton_blockers_iterators.h"
+#include "gudhi/Skeleton_blocker_link_complex.h"
+#include "gudhi/Skeleton_blocker/Skeleton_blocker_link_superior.h"
+#include "gudhi/Skeleton_blocker/Skeleton_blocker_sub_complex.h"
+#include "gudhi/Skeleton_blocker/Skeleton_blocker_simplex.h"
 
-#include "Skeleton_blocker_complex_visitor.h"
-#include "internal/Top_faces.h"
-#include "utils/Utils.h"
-#include "utils/Clock.h"
+#include "gudhi/Skeleton_blocker/Skeleton_blocker_complex_visitor.h"
+#include "gudhi/Skeleton_blocker/internal/Top_faces.h"
+#include "gudhi/Utils.h"
 
 
 namespace Gudhi {
@@ -308,7 +307,6 @@ public:
 		}
 
 		// then add blockers
-		Clock cb("blockers");
 		for(int current_dim = 1 ; current_dim <=dim ; ++current_dim){
 			std::list<Simplex_handle> expansion_simplices;
 			compute_next_expand(set_simplices,current_dim,expansion_simplices);
@@ -319,7 +317,6 @@ public:
 				}
 			}
 		}
-		std::cout << cb<< std::endl;
 	}
 
 

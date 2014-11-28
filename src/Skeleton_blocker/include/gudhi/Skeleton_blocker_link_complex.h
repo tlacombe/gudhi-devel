@@ -8,8 +8,8 @@
 #ifndef GUDHI_SKELETON_BLOCKERS_LINK_COMPLEX_H_
 #define GUDHI_SKELETON_BLOCKERS_LINK_COMPLEX_H_
 
-#include "utils/Utils.h"
-#include "combinatorics/Skeleton_blocker/Skeleton_blocker_complex.h"
+#include "gudhi/Utils.h"
+#include "gudhi/Skeleton_blocker_complex.h"
 
 namespace Gudhi{
 

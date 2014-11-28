@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6)
-project(GUDHI)
+project(GUDHI_new)
 
 find_package(Boost		REQUIRED COMPONENTS)
 
@@ -12,13 +12,7 @@ else()
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -O0")	
 endif()
 
-include_directories(. utils combinatorics geometry topology 
-                      Nearest_neighbors/include/gudhi
-                      Simplex_tree/include/gudhi
-                      Persistent_cohomology/include/gudhi 
-                      Hasse_complex/include/gudhi 
-                      utilities/include/gudhi )
+include_directories(include/)
                       
-add_subdirectory(test/skbl/)                   
-
-
+add_subdirectory(example/Skeleton_blocker)                   
+add_subdirectory(example/Contraction)                   
