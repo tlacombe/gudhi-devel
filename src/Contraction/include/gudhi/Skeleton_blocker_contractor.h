@@ -5,8 +5,8 @@
  *      Author: dsalinas
  */
 
-#ifndef GUDHI_EDGE_CONTRACTION_H_
-#define GUDHI_EDGE_CONTRACTION_H_
+#ifndef GUDHI_SKELETON_BLOCKER_CONTRACTOR_H_
+#define GUDHI_SKELETON_BLOCKER_CONTRACTOR_H_
 
 #include <memory>
 #include <cassert>
