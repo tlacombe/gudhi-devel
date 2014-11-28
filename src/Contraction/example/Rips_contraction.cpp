@@ -15,30 +15,18 @@
 using namespace std;
 using namespace Gudhi;
 using namespace skbl;
+using namespace contraction;
 
 struct Geometry_trait{
 	typedef std::vector<double> Point;
 };
 
 typedef Geometry_trait::Point Point;
-typedef Skeleton_blocker_complex<Skeleton_blocker_simple_traits> AbstractComplex;
 typedef Skeleton_blocker_simple_geometric_traits<Geometry_trait> Complex_geometric_traits;
-
-
 typedef Skeleton_blocker_geometric_complex< Complex_geometric_traits > Complex;
-
-typedef Complex::Vertex_handle Vertex_handle;
-typedef Complex::Simplex_handle Simplex_handle;
-
-typedef Complex::Root_vertex_handle Root_vertex_handle;
-
-using namespace contraction;
-
+typedef Edge_profile<Complex> Profile;
 typedef Skeleton_blocker_contractor<Complex> Complex_contractor;
 
-typedef Edge_profile<Complex> Profile;
-
-// compute the distance todo utiliser Euclidean_geometry a la place
 template<typename Point>
 double eucl_distance(const Point& a,const Point& b){
 	double res = 0;
@@ -50,16 +38,14 @@ double eucl_distance(const Point& a,const Point& b){
 	return sqrt(res);
 }
 
-// build the Rips complex todo utiliser Euclidean_geometry a la place
 template<typename ComplexType>
 void build_rips(ComplexType& complex, double offset){
 	if (offset<=0) return;
 	auto vertices = complex.vertex_range();
 	for (auto p = vertices.begin(); p != vertices.end(); ++p)
 		for (auto q = p; ++q != vertices.end(); /**/)
-		if (eucl_distance(complex.point(*p), complex.point(*q)) < 2 * offset){
+			if (eucl_distance(complex.point(*p), complex.point(*q)) < 2 * offset)
 				complex.add_edge(*p,*q);
-			}
 }
 
 
@@ -69,12 +55,7 @@ void test_contraction_rips(string name_file, double offset){
 	boost::timer::auto_cpu_timer t;
 	Complex complex;
 
-	ifstream stream(name_file);
-	if(!stream.is_open()){
-		std::cerr << "could not open file "<<name_file<<std::endl;
-		return;
-	}
-//	// load the points
+	// load the points
 	Skeleton_blocker_off_reader<Complex> off_reader(name_file,complex,true);
 	if(!off_reader.is_valid()){
 		std::cerr << "Unable to read file:"<<name_file<<std::endl;
