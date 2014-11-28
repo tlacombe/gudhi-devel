@@ -5,13 +5,13 @@
  *      Author: dsalinas
  */
 
-#ifndef GUDHI_SKELETON_BLOCKER_CONTRACTOR_H_
-#define GUDHI_SKELETON_BLOCKER_CONTRACTOR_H_
+#ifndef GUDHI_EDGE_CONTRACTION_H_
+#define GUDHI_EDGE_CONTRACTION_H_
 
 #include <memory>
 #include <cassert>
 
-// todo remove the queue to be independent from cgal
+// todo remove the queue to be independent from cgald
 #include "gudhi/Contraction/CGAL_queue/Modifiable_priority_queue.h"
 //#include <CGAL/Modifiable_priority_queue.h>
 

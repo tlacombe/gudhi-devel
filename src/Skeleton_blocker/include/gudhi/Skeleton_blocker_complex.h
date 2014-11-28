@@ -8,11 +8,6 @@
 #ifndef GUDHI_SKELETON_BLOCKER_COMPLEX_H
 #define GUDHI_SKELETON_BLOCKER_COMPLEX_H
 
-///todo remove
-#include <chrono>
-using namespace std;
-using namespace std::chrono;
-
 
 #include <map>
 #include <list>

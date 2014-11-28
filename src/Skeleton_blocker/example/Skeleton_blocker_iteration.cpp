@@ -4,8 +4,11 @@
 #include <string>
 #include <fstream>
 #include <sstream>
-#include "gudhi/Skeleton_blocker_complex.h"
-#include "gudhi/Skeleton_blocker/Skeleton_blocker_simple_traits.h"
+
+
+#include "gudhi/Skeleton_blocker.h"
+//#include "gudhi/Skeleton_blocker_complex.h"
+//#include "gudhi/Skeleton_blocker/Skeleton_blocker_simple_traits.h"
 
 using namespace std;
 using namespace Gudhi;
@@ -16,18 +19,25 @@ typedef Complex::Vertex_handle Vertex_handle;
 typedef Complex::Simplex_handle Simplex;
 
 
+Complex build_complete_complex(int n){
+	// build a full complex with 10 vertices and 2^n-1 simplices
+		Complex complex;
+		for(int i=0;i<n;i++)
+			complex.add_vertex();
+		for(int i=0;i<n;i++)
+			for(int j=0;j<i;j++)
+				//note that add_edge, add the edge and all its cofaces
+				complex.add_edge(Vertex_handle(i),Vertex_handle(j));
+		return complex;
+}
+
 int main (int argc, char *argv[]){
 	boost::timer::auto_cpu_timer t;
 
 	const int n = 15;
-		
-	// build a full complex with 10 vertices and 2^10-1 simplices
-	Complex complex;
-	for(int i=0;i<n;i++)
-		complex.add_vertex();
-	for(int i=0;i<n;i++)
-		for(int j=0;j<i;j++)
-			complex.add_edge(Vertex_handle(i),Vertex_handle(j));
+
+	// build a full complex with 10 vertices and 2^n-1 simplices
+	Complex complex(build_complete_complex(n));
 
 	// this is just to illustrate iterators, to count number of vertices
 	// or edges, complex.num_vertices() and complex.num_edges() are
@@ -39,9 +49,10 @@ int main (int argc, char *argv[]){
 	}
 
 	unsigned num_edges = 0;
-	for(auto e : complex.edge_range())
+	for(auto e : complex.edge_range()){
 		if(e==e);
 		++num_edges;
+	}
 
 	unsigned euler = 0;
 	unsigned num_simplices = 0;
@@ -55,8 +66,8 @@ int main (int argc, char *argv[]){
 		else 
 			euler -= 1;
 	}
-	std::cout << "Saw "<<num_vertices<<" vertices,"<<num_edges<<" edges and "<<num_simplices<<" simplices"<<std::endl;
-	std::cout << "The Euler Characteristic is"<<euler<<std::endl;
+	std::cout << "Saw "<<num_vertices<<" vertices, "<<num_edges<<" edges and "<<num_simplices<<" simplices"<<std::endl;
+	std::cout << "The Euler Characteristic is "<<euler<<std::endl;
 	return EXIT_SUCCESS;
 }
 
