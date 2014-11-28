@@ -21,7 +21,7 @@ fi
 
 TARGET_DIR=""
 if [ "$2" != "-f" ]; then
-	TARGET_DIR = $2
+	TARGET_DIR=$2
 	echo "Install folder : $TARGET_DIR"
 fi
 
@@ -78,7 +78,8 @@ done
 #INSTALL to some directory 
 if [ "$TARGET_DIR" != "" ]; then
 	echo "Install in dir $TARGET_DIR"	
-	mv "$VERSION_DIR" "$TARGET_DIR"
+	echo "mv ${VERSION_DIR}/* $TARGET_DIR"	
+	mv "${VERSION_DIR}"/* "$TARGET_DIR"		
 else
 	# ZIP DIR AND REMOVE IT
 	tar -zcf "$VERSION_DIR.tar.gz" "$VERSION_DIR"
