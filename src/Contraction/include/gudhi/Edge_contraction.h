@@ -11,16 +11,11 @@
 
 
 #include "gudhi/Skeleton_blocker_contractor.h"
-#include "gudhi/Contraction/Edge_profile.h"
-#include "gudhi/Contraction/policies/Cost_policy.h"
 #include "gudhi/Contraction/policies/Edge_length_cost.h"
-#include "gudhi/Contraction/policies/Placement_policy.h"
 #include "gudhi/Contraction/policies/First_vertex_placement.h"
 #include "gudhi/Contraction/policies/Valid_contraction_policy.h"
 #include "gudhi/Contraction/policies/Dummy_valid_contraction.h"
 #include "gudhi/Contraction/policies/Link_condition_valid_contraction.h"
-#include "gudhi/Contraction/policies/Contraction_visitor.h"
-#include "gudhi/Skeleton_blocker/Skeleton_blocker_complex_visitor.h"
 #include "gudhi/Utils.h"
 
 

@@ -3,5 +3,5 @@ project(GUDHIskbl)
 
 add_executable ( SkeletonBlockerIteration Skeleton_blocker_iteration.cpp )
 
-target_link_libraries( SkeletonBlockerIteration ${Boost_LIBRARY_DIRS} ${Boost_TIMER_LIBRARY})	
+target_link_libraries( SkeletonBlockerIteration ${Boost_TIMER_LIBRARY})	
 

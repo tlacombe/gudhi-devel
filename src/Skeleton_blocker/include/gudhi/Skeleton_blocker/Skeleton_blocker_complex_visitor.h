@@ -9,6 +9,8 @@
 #define GUDHI_COMPLEXVISITOR_H_
 
 
+#include "gudhi/Skeleton_blocker/Skeleton_blocker_simplex.h"
+
 namespace Gudhi{
 
 namespace skbl {
