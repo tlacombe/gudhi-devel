@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.6)
 project(GUDHI)
 
-find_package(Boost		REQUIRED COMPONENTS)
 
+find_package(Boost REQUIRED COMPONENTS system filesystem unit_test_framework chrono timer REQUIRED)
 
 if(MSVC)
 	# Turn off some VC++ warnings
@@ -18,10 +18,10 @@ find_package(Boost)
 if(NOT Boost_FOUND)
   message(FATAL_ERROR "NOTICE: This demo requires Boost and will not be compiled.")
 else()
-    INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
-    LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})
+    INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})    
+    LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})                      
 	include_directories(include/)
-                      
+	
 	add_subdirectory(example/Skeleton_blocker)                   
 	add_subdirectory(example/Contraction)                   
 endif()  
