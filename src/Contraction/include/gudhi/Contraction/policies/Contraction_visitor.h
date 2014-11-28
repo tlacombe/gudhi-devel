@@ -8,7 +8,7 @@
 #ifndef GUDHI_CONTRACTION_VISITOR_H_
 #define GUDHI_CONTRACTION_VISITOR_H_
 
-#include "geometry/contraction/Edge_profile.h"
+#include "gudhi/Contraction/Edge_profile.h"
 #include "boost/optional.hpp"
 
 namespace Gudhi{

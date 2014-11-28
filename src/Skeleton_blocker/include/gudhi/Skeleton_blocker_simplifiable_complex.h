@@ -8,7 +8,7 @@
 #ifndef GUDHI_SKELETON_BLOCKERS_SIMPLIFIABLE_COMPLEX_H_
 #define GUDHI_SKELETON_BLOCKERS_SIMPLIFIABLE_COMPLEX_H_
 
-#include "Skeleton_blocker_sub_complex.h"
+#include "gudhi/Skeleton_blocker/Skeleton_blocker_sub_complex.h"
 
 namespace Gudhi{
 

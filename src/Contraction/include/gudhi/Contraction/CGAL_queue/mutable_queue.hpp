@@ -22,10 +22,10 @@
 #include <vector>
 #include <algorithm>
 #include <functional>
-#include <property_map.h>
-#include <mutable_heap.hpp>
-#include <array_binary_tree.hpp>
 #include <iterator>
+#include "gudhi/Contraction/CGAL_queue/property_map.h"
+#include "gudhi/Contraction/CGAL_queue/mutable_heap.hpp"
+#include "gudhi/Contraction/CGAL_queue/array_binary_tree.hpp"
 
 namespace CGAL { namespace internal {
 namespace boost_ {

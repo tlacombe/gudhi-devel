@@ -21,9 +21,10 @@
 
 #include <climits> // Neeeded by the following Boost header for CHAR_BIT.
 #include <boost/optional.hpp>
+#ifdef CGAL_SURFACE_MESH_SIMPLIFICATION_USE_RELAXED_HEAP
 #include <boost/pending/relaxed_heap.hpp>
 #else
-#include <mutable_queue.hpp>
+#include "gudhi/Contraction/CGAL_queue/mutable_queue.hpp"
 
 
 namespace CGAL {
@@ -78,7 +79,7 @@ public:
   typedef Compare_     Compare;
   typedef ID_          ID ;
   
-  #ifndef CGAL_SURFACE_MESH_SIMPLIFICATION_USE_RELAXED_HEAP
+  #ifdef CGAL_SURFACE_MESH_SIMPLIFICATION_USE_RELAXED_HEAP
   typedef boost::relaxed_heap<IndexedType,Compare,ID> Heap;
   #else
   typedef  internal::mutable_queue_with_remove<IndexedType,std::vector<IndexedType>,Compare,ID> Heap;

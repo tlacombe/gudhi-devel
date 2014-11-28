@@ -10,7 +10,7 @@
 
 #include <string>
 #include <sstream>
-#include "combinatorics/Skeleton_blocker/Skeleton_blocker_simple_traits.h"
+#include "gudhi/Skeleton_blocker/Skeleton_blocker_simple_traits.h"
 
 namespace Gudhi{
 

@@ -13,6 +13,8 @@
 #include <cassert>
 
 
+
+//todo use my new visitor based off instead
 /**
  * @brief OFF reader, save the content of the file (vertices and maximal faces) in 'complex'.
  * The class Complex has to handle the following operations:

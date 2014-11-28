@@ -12,7 +12,7 @@
 #include <cassert>
 
 // todo remove the queue to be independent from cgal
-#include "CGAL_queue/Modifiable_priority_queue.h"
+#include "gudhi/Contraction/CGAL_queue/Modifiable_priority_queue.h"
 //#include <CGAL/Modifiable_priority_queue.h>
 
 
@@ -21,21 +21,21 @@
 #include <boost/scoped_ptr.hpp>
 
 
-#include "Edge_profile.h"
-#include "policies/Cost_policy.h"
-#include "policies/Edge_length_cost.h"
-#include "policies/Placement_policy.h"
-#include "policies/First_vertex_placement.h"
+#include "gudhi/Contraction/Edge_profile.h"
+#include "gudhi/Contraction/policies/Cost_policy.h"
+#include "gudhi/Contraction/policies/Edge_length_cost.h"
+#include "gudhi/Contraction/policies/Placement_policy.h"
+#include "gudhi/Contraction/policies/First_vertex_placement.h"
 
-#include "policies/Valid_contraction_policy.h"
-#include "policies/Dummy_valid_contraction.h" //xxx remove
-#include "policies/Link_condition_valid_contraction.h" //xxx remove
+#include "gudhi/Contraction/policies/Valid_contraction_policy.h"
+#include "gudhi/Contraction/policies/Dummy_valid_contraction.h" //xxx remove
+#include "gudhi/Contraction/policies/Link_condition_valid_contraction.h" //xxx remove
 
-#include "policies/Contraction_visitor.h"
+#include "gudhi/Contraction/policies/Contraction_visitor.h"
 
-#include "combinatorics/Skeleton_blocker/Skeleton_blocker_complex_visitor.h"
+#include "gudhi/Skeleton_blocker/Skeleton_blocker_complex_visitor.h"
 
-#include "utils/Utils.h"
+#include "gudhi/Utils.h"
 
 namespace Gudhi{
 

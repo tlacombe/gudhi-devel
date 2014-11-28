@@ -9,9 +9,9 @@
 #define SKELETON_BLOCKER_GEOMETRIC_COMPLEX_H_
 
 
-#include "utils/Utils.h"
-#include "combinatorics/Skeleton_blocker/Skeleton_blocker_simplifiable_complex.h"
-#include "combinatorics/Skeleton_blocker/Skeleton_blocker_sub_complex.h"
+#include "gudhi/Utils.h"
+#include "gudhi/Skeleton_blocker_simplifiable_complex.h"
+#include "gudhi/Skeleton_blocker/Skeleton_blocker_sub_complex.h"
 
 
 

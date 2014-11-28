@@ -8,7 +8,7 @@
 #ifndef GUDHI_LINK_CONDITION_VALID_CONTRACTION_H_
 #define GUDHI_LINK_CONDITION_VALID_CONTRACTION_H_
 
-#include "utils/Utils.h"
+#include "gudhi/Utils.h"
 #include "Valid_contraction_policy.h"
 
 

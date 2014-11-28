@@ -15,7 +15,7 @@
 //#include "Skeleton_blocker/Simplex.h"
 #include "gudhi/Skeleton_blocker_complex.h"
 #include "gudhi/Skeleton_blocker/iterators/Skeleton_blockers_iterators.h"
-#include "gudhi/Skeleton_blocker/Skeleton_blocker_simplifiable_complex.h"
+#include "gudhi/Skeleton_blocker_simplifiable_complex.h"
 #include "gudhi/Skeleton_blocker/Skeleton_blocker_simple_traits.h"
 
 
