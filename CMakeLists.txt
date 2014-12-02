@@ -4,8 +4,8 @@ project(GUDHI)
 #find_package(Boost 1.45.0 COMPONENTS system filesystem unit_test_framework chrono timer)
 find_package(Boost REQUIRED COMPONENTS system filesystem unit_test_framework chrono timer REQUIRED)
 
-set(CMAKE_PREFIX_PATH "src/cmake/modules/")
-set(CMAKE_MODULE_PATH "src/cmake/modules/")
+set(CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/src/cmake/modules/")
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/src/cmake/modules/")
 message("CMAKE_PREFIX_PATH = ${CMAKE_PREFIX_PATH}")
 message("CMAKE_MODULE_PATH = ${CMAKE_MODULE_PATH}")
 
