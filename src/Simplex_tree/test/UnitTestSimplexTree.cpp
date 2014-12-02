@@ -15,7 +15,6 @@
 #include "gudhi/Simplex_tree.h"
 
 
-
 using namespace Gudhi;
 
 typedef Simplex_tree<> typeST;
@@ -85,7 +84,8 @@ BOOST_AUTO_TEST_CASE( simplex_tree_when_empty )
 	test_iterators_on_empty_simplex_tree(st);
 }
 
-bool AreAlmostTheSame(float a, float b) {
+bool AreAlmostTheSame(float a, float b)
+{
 	return std::fabs(a - b) < std::numeric_limits<float>::epsilon();
 }
 
@@ -96,7 +96,8 @@ BOOST_AUTO_TEST_CASE( simplex_tree_from_file )
 	std::cout << "TEST OF SIMPLEX TREE FROM A FILE" << std::endl;
 	typeST st;
 
-	std::ifstream simplex_tree_stream("simplex_tree_for_unit_test.txt");
+	std::string inputFile("simplex_tree_for_unit_test.txt");
+	std::ifstream simplex_tree_stream(inputFile.c_str());
 	simplex_tree_stream >> st;
 
 	// Display the Simplex_tree
@@ -121,6 +122,7 @@ BOOST_AUTO_TEST_CASE( simplex_tree_from_file )
 		BOOST_CHECK(previous_size <= size); // Check list is sorted (because of sorted filtrations in simplex_tree.txt)
 		previous_size = size;
 	}
+	simplex_tree_stream.close();
 }
 
 void test_simplex_tree_contains(typeST& simplexTree, typeSimplex simplex, int pos)
