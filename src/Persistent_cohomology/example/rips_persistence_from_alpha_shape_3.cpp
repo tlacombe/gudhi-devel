@@ -48,6 +48,9 @@ int main (int argc, char * argv[])
 
 	program_options(argc,argv,simplex_tree_file,output_file,p,min_persistence);
 
+	std::cout << "Simplex_tree from file=" << simplex_tree_file.c_str() << " - output_file=" << output_file.c_str() << std::endl;
+	std::cout << "     - p=" << p << " - min_persistence=" << min_persistence << std::endl;
+
 	// Construct the Rips complex in a Simplex Tree
 	Simplex_tree<> simplex_tree;
 
@@ -57,13 +60,14 @@ int main (int argc, char * argv[])
 	std::cout << "The complex contains " << simplex_tree.num_simplices() << " simplices" << std::endl;
 	std::cout << "   - dimension " << simplex_tree.dimension() << "   - filtration " << simplex_tree.filtration() << std::endl;
 
+	/*
 	std::cout << std::endl << std::endl << "Iterator on Simplices in the filtration, with [filtration value]:" << std::endl;
 	for( auto f_simplex : simplex_tree.filtration_simplex_range() )
 	{ std::cout << "   " << "[" << simplex_tree.filtration(f_simplex) << "] ";
 	for( auto vertex : simplex_tree.simplex_vertex_range(f_simplex) )
 	{ std::cout << vertex << " "; }
 	std::cout << std::endl;
-	}
+	}*/
 
 	// Sort the simplices in the order of the filtration
 	simplex_tree.initialize_filtration();
