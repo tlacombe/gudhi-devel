@@ -349,7 +349,7 @@ BOOST_AUTO_TEST_CASE( simplex_tree_insertion )
 
 	//    1
 	//    o
-	//   / \
+	//   /X\
 	//  o---o---o
 	//  2   0   3
 

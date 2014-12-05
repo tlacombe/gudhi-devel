@@ -8,6 +8,9 @@ message("Boost_lib = ${Boost_LIBRARIES}")
 add_executable ( simplex_tree_from_file simplex_tree_from_file.cpp )
 target_link_libraries(simplex_tree_from_file ${Boost_LIBRARIES})
    
+add_executable ( simple_simplex_tree simple_simplex_tree.cpp )
+target_link_libraries(simple_simplex_tree ${Boost_LIBRARIES})
+   
 # An example with Simplex-tree using CGAL alpha_shapes_3
 if(GMPXX_FOUND AND GMP_FOUND AND CGAL_FOUND)
    message("CGAL_lib = ${CGAL_LIBRARIES_DIR}")
