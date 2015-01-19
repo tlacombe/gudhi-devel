@@ -479,6 +479,35 @@ class Simplex_tree {
     return res_insert;
   }
 
+
+  /** \brief Insert a N-simplex, represented by a list of Vertex_handle, in the simplicial complex.
+   *
+   * @param[in]  Nsimplex the list of Vertex_handle, representing the vertices of the new N-simplex
+   * @param[in]  filtration the filtration value assigned to the new N-simplex.
+  */
+  template<class RandomAccessVertexRange>
+  void insertNSimplex(RandomAccessVertexRange& Nsimplex) {
+    if (Nsimplex.size() > 1) {
+      for (unsigned int NIndex = 0; NIndex < Nsimplex.size(); NIndex++) {
+        // insert N (N-1)-Simplex
+        RandomAccessVertexRange NsimplexMinusOne;
+        for (unsigned int NListIter = 0; NListIter < Nsimplex.size() - 1; NListIter++) {
+          // (N-1)-Simplex creation
+          NsimplexMinusOne.push_back( Nsimplex[(NIndex + NListIter) % Nsimplex.size()]);
+        }
+        // (N-1)-Simplex recursive call
+        insertNSimplex(NsimplexMinusOne);
+      }
+      // N-Simplex insert
+      insert(Nsimplex,0.0);
+    } else if (Nsimplex.size() == 1) {
+      // 1-Simplex insert - End of recursivity
+      insert(Nsimplex,0.0);
+    } else {
+      // Nothing to insert - empty vector
+    }
+  }
+
   /** \brief Assign a value 'key' to the key of the simplex
    * represented by the Simplex_handle 'sh'. */
   void assign_key(Simplex_handle sh, Simplex_key key) {
