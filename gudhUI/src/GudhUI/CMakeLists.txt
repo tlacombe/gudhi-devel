@@ -1,33 +1,26 @@
 cmake_minimum_required(VERSION 2.8)
 project(GudhUI)
 
+#Specify Gudhi's path here
+#for instance
 SET(Gudhi_Path "/home/dsalinas/Documents/CodeSVN/gudhi/src/include")
-
 
 set(EXECUTABLE_OUTPUT_PATH bin/${CMAKE_BUILD_TYPE})
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -frounding-math -Wall -pedantic")
-#set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g")
-#set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ")
 
 find_package(Boost REQUIRED COMPONENTS)
 find_package(CGAL  COMPONENTS Qt4)
-
-include(${CGAL_USE_FILE})
-
-set( QT_USE_QTXML    TRUE )
-set( QT_USE_QTMAIN   TRUE )
-set( QT_USE_QTSCRIPT  TRUE )
-set( QT_USE_QTOPENGL  TRUE )
 find_package(Qt4)
-
 find_package(OpenGL)
-
 find_package(QGLViewer)
 
 if ( CGAL_FOUND AND CGAL_Qt4_FOUND AND QT4_FOUND AND OPENGL_FOUND AND QGLVIEWER_FOUND )
-	include( ${QT_USE_FILE} )
 
+	set( QT_USE_QTXML    TRUE )
+	set( QT_USE_QTMAIN   TRUE )
+	set( QT_USE_QTSCRIPT  TRUE )
+	set( QT_USE_QTOPENGL  TRUE )
 	SET(Boost_USE_STATIC_LIBS ON)
 	SET(Boost_USE_MULTITHREAD OFF)
 
@@ -35,8 +28,9 @@ if ( CGAL_FOUND AND CGAL_Qt4_FOUND AND QT4_FOUND AND OPENGL_FOUND AND QGLVIEWER_
 	LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})
 	
 	include(${QT_USE_FILE})
-	include_directories (${QGLVIEWER_INCLUDE_DIR})
+	include(${CGAL_USE_FILE})
 
+	include_directories (${QGLVIEWER_INCLUDE_DIR})
 	include_directories(.)	
 	include_directories(${Gudhi_Path})
 
