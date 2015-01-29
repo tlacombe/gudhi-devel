@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE( simplex_tree_when_empty )
   std::cout << "TEST OF EMPTY INSERTION" << std::endl;
   typeVectorVertex simplexVectorEmpty;
   BOOST_CHECK(simplexVectorEmpty.empty() == true);
-  typePairSimplexBool returnEmptyValue = st.insertNSimplex(simplexVectorEmpty,
+  typePairSimplexBool returnEmptyValue = st.insert_simplex(simplexVectorEmpty,
                                                    DEFAULT_FILTRATION_VALUE);
   BOOST_CHECK(returnEmptyValue.first == typeST::Simplex_handle(NULL));
   BOOST_CHECK(returnEmptyValue.second == true);
@@ -193,7 +193,7 @@ BOOST_AUTO_TEST_CASE( simplex_tree_insertion )
   BOOST_CHECK( firstSimplexVector.size() == 1 );
   typeSimplex firstSimplex = std::make_pair(
       firstSimplexVector, Filtration_value(FIRST_FILTRATION_VALUE));
-  typePairSimplexBool returnValue = st.insertNSimplex(firstSimplex.first,
+  typePairSimplexBool returnValue = st.insert_simplex(firstSimplex.first,
                                               firstSimplex.second);
 
   test_simplex_tree_insert_returns_true (returnValue);
@@ -208,7 +208,7 @@ BOOST_AUTO_TEST_CASE( simplex_tree_insertion )
   typeSimplex secondSimplex = std::make_pair(
       secondSimplexVector, Filtration_value(FIRST_FILTRATION_VALUE));
   returnValue =
-  st.insertNSimplex ( secondSimplex.first, secondSimplex.second );
+  st.insert_simplex ( secondSimplex.first, secondSimplex.second );
 
   test_simplex_tree_insert_returns_true (returnValue);
   set_and_test_simplex_tree_dim_fil(st, secondSimplexVector.size(), secondSimplex.second);
@@ -223,7 +223,7 @@ BOOST_AUTO_TEST_CASE( simplex_tree_insertion )
   typeSimplex thirdSimplex = std::make_pair(
       thirdSimplexVector, Filtration_value(SECOND_FILTRATION_VALUE));
   returnValue =
-  st.insertNSimplex ( thirdSimplex.first, thirdSimplex.second );
+  st.insert_simplex ( thirdSimplex.first, thirdSimplex.second );
 
   test_simplex_tree_insert_returns_true (returnValue);
   set_and_test_simplex_tree_dim_fil(st, thirdSimplexVector.size(), thirdSimplex.second);
@@ -237,7 +237,7 @@ BOOST_AUTO_TEST_CASE( simplex_tree_insertion )
   typeSimplex fourthSimplex = std::make_pair(
       fourthSimplexVector, Filtration_value(FIRST_FILTRATION_VALUE));
   returnValue =
-  st.insertNSimplex ( fourthSimplex.first, fourthSimplex.second );
+  st.insert_simplex ( fourthSimplex.first, fourthSimplex.second );
 
   test_simplex_tree_insert_returns_true (returnValue);
   set_and_test_simplex_tree_dim_fil(st, fourthSimplexVector.size(), fourthSimplex.second);
@@ -252,7 +252,7 @@ BOOST_AUTO_TEST_CASE( simplex_tree_insertion )
   typeSimplex fifthSimplex = std::make_pair(
       fifthSimplexVector, Filtration_value(SECOND_FILTRATION_VALUE));
   returnValue =
-  st.insertNSimplex ( fifthSimplex.first, fifthSimplex.second );
+  st.insert_simplex ( fifthSimplex.first, fifthSimplex.second );
 
   test_simplex_tree_insert_returns_true (returnValue);
   set_and_test_simplex_tree_dim_fil(st, fifthSimplexVector.size(), fifthSimplex.second);
@@ -267,7 +267,7 @@ BOOST_AUTO_TEST_CASE( simplex_tree_insertion )
   typeSimplex sixthSimplex = std::make_pair(
       sixthSimplexVector, Filtration_value(SECOND_FILTRATION_VALUE));
   returnValue =
-  st.insertNSimplex ( sixthSimplex.first, sixthSimplex.second );
+  st.insert_simplex ( sixthSimplex.first, sixthSimplex.second );
 
   test_simplex_tree_insert_returns_true (returnValue);
   set_and_test_simplex_tree_dim_fil(st, sixthSimplexVector.size(), sixthSimplex.second);
@@ -283,7 +283,7 @@ BOOST_AUTO_TEST_CASE( simplex_tree_insertion )
   typeSimplex seventhSimplex = std::make_pair(
       seventhSimplexVector, Filtration_value(THIRD_FILTRATION_VALUE));
   returnValue =
-  st.insertNSimplex ( seventhSimplex.first, seventhSimplex.second );
+  st.insert_simplex ( seventhSimplex.first, seventhSimplex.second );
 
   test_simplex_tree_insert_returns_true (returnValue);
   set_and_test_simplex_tree_dim_fil(st, seventhSimplexVector.size(), seventhSimplex.second);
@@ -297,7 +297,7 @@ BOOST_AUTO_TEST_CASE( simplex_tree_insertion )
   typeSimplex eighthSimplex = std::make_pair(
       eighthSimplexVector, Filtration_value(FIRST_FILTRATION_VALUE));
   returnValue =
-  st.insertNSimplex ( eighthSimplex.first, eighthSimplex.second );
+  st.insert_simplex ( eighthSimplex.first, eighthSimplex.second );
 
   test_simplex_tree_insert_returns_true (returnValue);
   set_and_test_simplex_tree_dim_fil(st, eighthSimplexVector.size(), eighthSimplex.second);
@@ -312,7 +312,7 @@ BOOST_AUTO_TEST_CASE( simplex_tree_insertion )
   typeSimplex ninethSimplex = std::make_pair(
       ninethSimplexVector, Filtration_value(SECOND_FILTRATION_VALUE));
   returnValue =
-  st.insertNSimplex ( ninethSimplex.first, ninethSimplex.second );
+  st.insert_simplex ( ninethSimplex.first, ninethSimplex.second );
 
   test_simplex_tree_insert_returns_true (returnValue);
   set_and_test_simplex_tree_dim_fil(st, ninethSimplexVector.size(), ninethSimplex.second);
@@ -326,7 +326,7 @@ BOOST_AUTO_TEST_CASE( simplex_tree_insertion )
   typeSimplex tenthSimplex = std::make_pair(
       tenthSimplexVector, Filtration_value(FOURTH_FILTRATION_VALUE));  // With a different filtration value
   returnValue =
-  st.insertNSimplex ( tenthSimplex.first, tenthSimplex.second );
+  st.insert_simplex ( tenthSimplex.first, tenthSimplex.second );
 
   BOOST_CHECK(returnValue.second == false);
   typeST::Simplex_handle shReturned = returnValue.first;  // Simplex_handle = boost::container::flat_map< Vertex_handle, Node >::iterator
@@ -345,7 +345,7 @@ BOOST_AUTO_TEST_CASE( simplex_tree_insertion )
   typeSimplex eleventhSimplex = std::make_pair(
       eleventhSimplexVector, Filtration_value(FOURTH_FILTRATION_VALUE));
   returnValue =
-  st.insertNSimplex ( eleventhSimplex.first, eleventhSimplex.second );
+  st.insert_simplex ( eleventhSimplex.first, eleventhSimplex.second );
 
   BOOST_CHECK(returnValue.second == false);
   shReturned = returnValue.first;  // Simplex_handle = boost::container::flat_map< Vertex_handle, Node >::iterator
@@ -429,7 +429,7 @@ BOOST_AUTO_TEST_CASE( NSimplexAndSubfaces_tree_insertion )
   SimplexVector1.push_back(SECOND_VERTEX_HANDLE);
   SimplexVector1.push_back(FIRST_VERTEX_HANDLE);
   BOOST_CHECK( SimplexVector1.size() == 3 );
-  st.insertNSimplexAndSubfaces ( SimplexVector1 );
+  st.insert_simplex_and_subfaces ( SimplexVector1 );
 
   BOOST_CHECK( st.num_vertices() == (size_t)3 ); // +3 (2, 1 and 0 are not existing)
 
@@ -438,7 +438,7 @@ BOOST_AUTO_TEST_CASE( NSimplexAndSubfaces_tree_insertion )
   typeVectorVertex SimplexVector2;
   SimplexVector2.push_back(FOURTH_VERTEX_HANDLE);
   BOOST_CHECK( SimplexVector2.size() == 1 );
-  st.insertNSimplexAndSubfaces ( SimplexVector2 );
+  st.insert_simplex_and_subfaces ( SimplexVector2 );
 
   BOOST_CHECK( st.num_vertices() == (size_t)4 ); // +1 (3 is not existing)
 
@@ -448,7 +448,7 @@ BOOST_AUTO_TEST_CASE( NSimplexAndSubfaces_tree_insertion )
   SimplexVector3.push_back(FOURTH_VERTEX_HANDLE);
   SimplexVector3.push_back(FIRST_VERTEX_HANDLE);
   BOOST_CHECK( SimplexVector3.size() == 2 );
-  st.insertNSimplexAndSubfaces ( SimplexVector3 );
+  st.insert_simplex_and_subfaces ( SimplexVector3 );
 
   BOOST_CHECK( st.num_vertices() == (size_t)4 );  // Not incremented (all are existing)
 
@@ -458,7 +458,7 @@ BOOST_AUTO_TEST_CASE( NSimplexAndSubfaces_tree_insertion )
   SimplexVector4.push_back(SECOND_VERTEX_HANDLE);
   SimplexVector4.push_back(FIRST_VERTEX_HANDLE);
   BOOST_CHECK( SimplexVector4.size() == 2 );
-  st.insertNSimplexAndSubfaces ( SimplexVector4 );
+  st.insert_simplex_and_subfaces ( SimplexVector4 );
 
   BOOST_CHECK( st.num_vertices() == (size_t)4 );  // Not incremented (all are existing)
 
@@ -469,7 +469,7 @@ BOOST_AUTO_TEST_CASE( NSimplexAndSubfaces_tree_insertion )
   SimplexVector5.push_back(FIFTH_VERTEX_HANDLE);
   SimplexVector5.push_back(SIXTH_VERTEX_HANDLE);
   BOOST_CHECK( SimplexVector5.size() == 3 );
-  st.insertNSimplexAndSubfaces ( SimplexVector5 );
+  st.insert_simplex_and_subfaces ( SimplexVector5 );
 
   BOOST_CHECK( st.num_vertices() == (size_t)6 );
 
@@ -481,7 +481,7 @@ BOOST_AUTO_TEST_CASE( NSimplexAndSubfaces_tree_insertion )
   SimplexVector6.push_back(SEVENTH_VERTEX_HANDLE);
   SimplexVector6.push_back(EIGHTH_VERTEX_HANDLE);
   BOOST_CHECK( SimplexVector6.size() == 4 );
-  st.insertNSimplexAndSubfaces ( SimplexVector6 );
+  st.insert_simplex_and_subfaces ( SimplexVector6 );
 
   BOOST_CHECK( st.num_vertices() == (size_t)8 ); // +2 (6 and 7 are not existing - 0 and 1 are already existing)
 

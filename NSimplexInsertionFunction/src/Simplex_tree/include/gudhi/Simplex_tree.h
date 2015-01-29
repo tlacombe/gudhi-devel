@@ -449,7 +449,7 @@ class Simplex_tree {
    * The type RandomAccessVertexRange must be a range for which .begin() and
    * .end() return random access iterators, with 'value_type' Vertex_handle. */
   template<class RandomAccessVertexRange>
-  std::pair<Simplex_handle, bool> insertNSimplex(RandomAccessVertexRange & simplex,
+  std::pair<Simplex_handle, bool> insert_simplex(RandomAccessVertexRange & simplex,
                                          Filtration_value filtration) {
     if (simplex.empty()) {
       return std::pair<Simplex_handle, bool>(null_simplex(), true);
@@ -487,7 +487,7 @@ class Simplex_tree {
    * @param[in]  filtration the filtration value assigned to the new N-simplex.
   */
   template<class RandomAccessVertexRange>
-  void insertNSimplexAndSubfaces(RandomAccessVertexRange& Nsimplex,
+  void insert_simplex_and_subfaces(RandomAccessVertexRange& Nsimplex,
                                          Filtration_value filtration = 0.0) {
     if (Nsimplex.size() > 1) {
       for (unsigned int NIndex = 0; NIndex < Nsimplex.size(); NIndex++) {
@@ -498,13 +498,13 @@ class Simplex_tree {
           NsimplexMinusOne.push_back( Nsimplex[(NIndex + NListIter) % Nsimplex.size()]);
         }
         // (N-1)-Simplex recursive call
-        insertNSimplexAndSubfaces(NsimplexMinusOne);
+        insert_simplex_and_subfaces(NsimplexMinusOne);
       }
       // N-Simplex insert
-      insertNSimplex(Nsimplex, filtration);
+      insert_simplex(Nsimplex, filtration);
     } else if (Nsimplex.size() == 1) {
       // 1-Simplex insert - End of recursivity
-      insertNSimplex(Nsimplex, filtration);
+      insert_simplex(Nsimplex, filtration);
     } else {
       // Nothing to insert - empty vector
     }
@@ -863,7 +863,7 @@ std::istream& operator>>(std::istream & is, Simplex_tree<T1, T2, T3> & st) {
     if (max_fil < fil) {
       max_fil = fil;
     }
-    st.insertNSimplex(simplex, fil);  // insert every simplex in the simplex tree
+    st.insert_simplex(simplex, fil);  // insert every simplex in the simplex tree
     simplex.clear();
   }
   st.set_num_simplices(num_simplices);
