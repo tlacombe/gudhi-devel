@@ -234,7 +234,7 @@ class Simplex_tree {
    *
    * The filtration must be valid. If the filtration has not been initialized yet, the
    * method initializes it (i.e. order the simplices). */
-  Filtration_simplex_range filtration_simplex_range(linear_indexing_tag) {
+  Filtration_simplex_range filtration_simplex_range(Indexing_tag) {
     if (filtration_vect_.empty()) {
       initialize_filtration();
     }

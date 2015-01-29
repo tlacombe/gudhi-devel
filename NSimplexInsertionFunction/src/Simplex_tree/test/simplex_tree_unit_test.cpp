@@ -22,10 +22,11 @@ typedef std::vector<Vertex_handle> typeVectorVertex;
 typedef std::pair<typeVectorVertex, Filtration_value> typeSimplex;
 
 const Vertex_handle DEFAULT_VERTEX_HANDLE = (const Vertex_handle) -1;
+const Filtration_value DEFAULT_FILTRATION_VALUE = (const Filtration_value) 0.0;
 
 void test_empty_simplex_tree(typeST& tst) {
   BOOST_CHECK(tst.null_vertex() == DEFAULT_VERTEX_HANDLE);
-  BOOST_CHECK(tst.filtration() == Filtration_value(0));
+  BOOST_CHECK(tst.filtration() == DEFAULT_FILTRATION_VALUE);
   BOOST_CHECK(tst.num_vertices() == (size_t) 0);
   BOOST_CHECK(tst.num_simplices() == (size_t) 0);
   typeST::Siblings* STRoot = tst.root();
@@ -145,7 +146,7 @@ void test_simplex_tree_insert_returns_true(const typePairSimplexBool& returnValu
 }
 
 // Global variables
-Filtration_value max_fil = 0.0;
+Filtration_value max_fil = DEFAULT_FILTRATION_VALUE;
 int dim_max = -1;
 
 void set_and_test_simplex_tree_dim_fil(typeST& simplexTree, int vectorSize, const Filtration_value& fil) {
@@ -405,31 +406,7 @@ BOOST_AUTO_TEST_CASE( simplex_tree_insertion )
 
 }
 
-bool test_simplex_tree_contains(typeST& simplexTree, typeVectorVertex& simplexVector) {
-  auto f_simplex = simplexTree.filtration_simplex_range().begin();
-  unsigned int NbSimplex = simplexTree.filtration_simplex_range().size();
-  std::cout << "test_simplex_tree_contains - NbSimplex=" << NbSimplex << std::endl;
-
-  for (unsigned int i = 0; i < NbSimplex; i++) {
-
-    int simplexIndex = simplexVector.size() - 1;
-    for (auto vertex : simplexTree.simplex_vertex_range(*f_simplex)) {
-      std::cout << "test_simplex_tree_contains - vertex=" << vertex << "||" << simplexVector.at(simplexIndex) << "||" << i << std::endl;
-      if (vertex != simplexVector.at(simplexIndex))
-      {
-        std::cout << "test_simplex_tree_contains - CONTINUE" << std::endl;
-        f_simplex++;
-        continue;
-      }
-      simplexIndex--;
-    }
-    std::cout << "test_simplex_tree_contains - RETURNS TRUE" << std::endl;
-    return true; // all the element are equals
-  }
-  return false;
-}
-
-BOOST_AUTO_TEST_CASE( Nsimplex_tree_insertion )
+BOOST_AUTO_TEST_CASE( NSimplexAndSubfaces_tree_insertion )
 {
   Vertex_handle FIRST_VERTEX_HANDLE = (Vertex_handle)0;
   Vertex_handle SECOND_VERTEX_HANDLE = (Vertex_handle) 1;
@@ -523,7 +500,18 @@ BOOST_AUTO_TEST_CASE( Nsimplex_tree_insertion )
   /*   A facet [3,4,5]        */
   /*   A cell  [0,1,6,7]      */
 
-  test_simplex_tree_contains(st,SimplexVector4);
+  typeSimplex simplexPair1 = std::make_pair(SimplexVector1, DEFAULT_FILTRATION_VALUE);
+  typeSimplex simplexPair2 = std::make_pair(SimplexVector2, DEFAULT_FILTRATION_VALUE);
+  typeSimplex simplexPair3 = std::make_pair(SimplexVector3, DEFAULT_FILTRATION_VALUE);
+  typeSimplex simplexPair4 = std::make_pair(SimplexVector4, DEFAULT_FILTRATION_VALUE);
+  typeSimplex simplexPair5 = std::make_pair(SimplexVector5, DEFAULT_FILTRATION_VALUE);
+  typeSimplex simplexPair6 = std::make_pair(SimplexVector6, DEFAULT_FILTRATION_VALUE);
+  test_simplex_tree_contains(st,simplexPair1,6);  // (2,1,0) is in position 6
+  test_simplex_tree_contains(st,simplexPair2,7);  // (3) is in position 7
+  test_simplex_tree_contains(st,simplexPair3,8);  // (3,0) is in position 8
+  test_simplex_tree_contains(st,simplexPair4,2);  // (1,0) is in position 2
+  test_simplex_tree_contains(st,simplexPair5,14);  // (3,4,5) is in position 14
+  test_simplex_tree_contains(st,simplexPair6,26);  // (7,6,1,0) is in position 26
   // Display the Simplex_tree - Can not be done in the middle of 2 inserts
   std::cout << "The complex contains " << st.num_simplices() << " simplices" << std::endl;
   std::cout << "   - dimension " << st.dimension() << "   - filtration " << st.filtration() << std::endl;
