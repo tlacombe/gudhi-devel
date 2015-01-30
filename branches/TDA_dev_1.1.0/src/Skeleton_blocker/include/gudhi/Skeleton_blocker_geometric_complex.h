@@ -37,7 +37,7 @@ namespace skbl {
  */
 template<typename SkeletonBlockerGeometricDS>
 class Skeleton_blocker_geometric_complex :
-    public Skeleton_blocker_simplifiable_complex<SkeletonBlockerGeometricDS> {
+public Skeleton_blocker_simplifiable_complex<SkeletonBlockerGeometricDS> {
  public:
   typedef typename SkeletonBlockerGeometricDS::GT GT;
 
@@ -94,6 +94,16 @@ class Skeleton_blocker_geometric_complex :
   /**
    * Constructs the link of 'simplex' with points coordinates.
    */
+  Geometric_link link(Vertex_handle v) const {
+    Geometric_link link(*this, Simplex_handle(v));
+    // we now add the point info
+    add_points_to_link(link);
+    return link;
+  }
+
+  /**
+   * Constructs the link of 'simplex' with points coordinates.
+   */
   Geometric_link link(const Simplex_handle& simplex) const {
     Geometric_link link(*this, simplex);
     // we now add the point info
@@ -110,7 +120,9 @@ class Skeleton_blocker_geometric_complex :
     add_points_to_link(link);
     return link;
   }
+
  private:
+
   void add_points_to_link(Geometric_link& link) const {
     for (Vertex_handle v : link.vertex_range()) {
       Root_vertex_handle v_root(link.get_id(v));
@@ -119,8 +131,8 @@ class Skeleton_blocker_geometric_complex :
   }
 };
 
-}  // namespace skbl
+} // namespace skbl
 
-}  // namespace Gudhi
+} // namespace Gudhi
 
 #endif  // SRC_SKELETON_BLOCKER_INCLUDE_GUDHI_SKELETON_BLOCKER_GEOMETRIC_COMPLEX_H_

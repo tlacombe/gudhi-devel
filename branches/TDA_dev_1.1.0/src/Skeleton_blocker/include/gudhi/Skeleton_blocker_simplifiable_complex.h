@@ -22,11 +22,11 @@
 #ifndef SRC_SKELETON_BLOCKER_INCLUDE_GUDHI_SKELETON_BLOCKER_SIMPLIFIABLE_COMPLEX_H_
 #define SRC_SKELETON_BLOCKER_INCLUDE_GUDHI_SKELETON_BLOCKER_SIMPLIFIABLE_COMPLEX_H_
 
-#include "gudhi/Skeleton_blocker/Skeleton_blocker_sub_complex.h"
-
 #include <list>
 #include <vector>
 #include <set>
+
+#include "gudhi/Skeleton_blocker/Skeleton_blocker_sub_complex.h"
 
 namespace Gudhi {
 
@@ -56,6 +56,7 @@ class Skeleton_blocker_simplifiable_complex : public Skeleton_blocker_complex<Sk
   typedef typename SkeletonBlockerComplex::Root_simplex_handle Root_simplex_handle;
   typedef typename SkeletonBlockerComplex::Blocker_handle Blocker_handle;
 
+
   typedef typename SkeletonBlockerComplex::Root_simplex_iterator Root_simplex_iterator;
   typedef typename SkeletonBlockerComplex::Simplex_handle_iterator Simplex_handle_iterator;
   typedef typename SkeletonBlockerComplex::BlockerMap BlockerMap;
@@ -65,13 +66,13 @@ class Skeleton_blocker_simplifiable_complex : public Skeleton_blocker_complex<Sk
 
   typedef typename SkeletonBlockerComplex::Visitor Visitor;
 
+
   /** @name Constructors / Destructors / Initialization
    */
   //@{
-  Skeleton_blocker_simplifiable_complex(int num_vertices_ = 0,
-                                        Visitor* visitor_ = NULL)
-      : Skeleton_blocker_complex<SkeletonBlockerDS>(num_vertices_, visitor_) {
-  }
+
+  explicit Skeleton_blocker_simplifiable_complex(int num_vertices_ = 0, Visitor* visitor_ = NULL) :
+      Skeleton_blocker_complex<SkeletonBlockerDS>(num_vertices_, visitor_) { }
 
   /**
    * @brief Constructor with a list of simplices
@@ -79,13 +80,10 @@ class Skeleton_blocker_simplifiable_complex : public Skeleton_blocker_complex<Sk
    * of simplices of a simplicial complex, sorted with increasing dimension.
    * todo take iterator instead
    */
-  Skeleton_blocker_simplifiable_complex(std::list<Simplex_handle>& simplices,
-                                        Visitor* visitor_ = NULL)
-      : Skeleton_blocker_complex<SkeletonBlockerDS>(simplices, visitor_) {
-  }
+  explicit Skeleton_blocker_simplifiable_complex(std::list<Simplex_handle>& simplices, Visitor* visitor_ = NULL) :
+      Skeleton_blocker_complex<SkeletonBlockerDS>(simplices, visitor_) { }
 
-  virtual ~Skeleton_blocker_simplifiable_complex() {
-  }
+  virtual ~Skeleton_blocker_simplifiable_complex() { }
 
   //@}
 
@@ -106,27 +104,12 @@ class Skeleton_blocker_simplifiable_complex : public Skeleton_blocker_complex<Sk
     return res;
   }
 
- private:
-  /**
-   * @returns the list of blockers of the simplex
-   *
-   * @todo a enlever et faire un iterateur sur tous les blockers a la place
-   */
-  std::list<Blocker_handle> get_blockers() {
-    std::list < Blocker_handle > res;
-    for (auto blocker : this->blocker_range()) {
-      res.push_back(blocker);
-    }
-    return res;
-  }
-
- public:
   /**
    * Removes all the popable blockers of the complex and delete them.
    * @returns the number of popable blockers deleted
    */
   void remove_popable_blockers() {
-    std::list < Vertex_handle > vertex_to_check;
+    std::list<Vertex_handle> vertex_to_check;
     for (auto v : this->vertex_range())
       vertex_to_check.push_front(v);
 
@@ -140,8 +123,7 @@ class Skeleton_blocker_simplifiable_complex : public Skeleton_blocker_complex<Sk
         for (auto block : this->blocker_range(v)) {
           if (this->is_popable_blocker(block)) {
             for (Vertex_handle nv : *block)
-              if (nv != v)
-                vertex_to_check.push_back(nv);
+              if (nv != v) vertex_to_check.push_back(nv);
             this->delete_blocker(block);
             blocker_popable_found = true;
             break;
@@ -168,15 +150,42 @@ class Skeleton_blocker_simplifiable_complex : public Skeleton_blocker_complex<Sk
   }
 
   /**
+   * @brief Removes all the popable blockers of the complex passing through v and delete them.
+   * Also remove popable blockers in the neighborhood if they became popable.
+   *
+   */
+  void remove_all_popable_blockers(Vertex_handle v) {
+    std::list<Vertex_handle> vertex_to_check;
+    vertex_to_check.push_front(v);
+
+    while (!vertex_to_check.empty()) {
+      Vertex_handle v = vertex_to_check.front();
+      vertex_to_check.pop_front();
+
+      bool blocker_popable_found = true;
+      while (blocker_popable_found) {
+        blocker_popable_found = false;
+        for (auto block : this->blocker_range(v)) {
+          if (this->is_popable_blocker(block)) {
+            for (Vertex_handle nv : *block)
+              if (nv != v) vertex_to_check.push_back(nv);
+            this->delete_blocker(block);
+            blocker_popable_found = true;
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  /**
    * Remove the star of the vertex 'v'
    */
   void remove_star(Vertex_handle v) {
     // we remove the blockers that are not consistent anymore
-
-    update_blockers_after_remove_star_of_vertex_or_edge(static_cast<Simplex_handle>(v));
-
+    update_blockers_after_remove_star_of_vertex_or_edge(Simplex_handle(v));
     while (this->degree(v) > 0) {
-      Vertex_handle w(*(adjacent_vertices(v.vertex, this->skeleton).first));
+      Vertex_handle w(* (adjacent_vertices(v.vertex, this->skeleton).first));
       this->remove_edge(v, w);
     }
     this->remove_vertex(v);
@@ -188,11 +197,9 @@ class Skeleton_blocker_simplifiable_complex : public Skeleton_blocker_complex<Sk
    * Furthermore, all simplices tau of the form sigma \setminus simplex_to_be_removed must be added
    * whenever the dimension of tau is at least 2.
    */
-  void update_blockers_after_remove_star_of_vertex_or_edge(
-      const Simplex_handle& simplex_to_be_removed) {
-    std::list < Blocker_handle > blockers_to_update;
-    if (simplex_to_be_removed.empty())
-      return;
+  void update_blockers_after_remove_star_of_vertex_or_edge(const Simplex_handle& simplex_to_be_removed) {
+    std::list <Blocker_handle> blockers_to_update;
+    if (simplex_to_be_removed.empty()) return;
 
     auto v0 = simplex_to_be_removed.first_vertex();
     for (auto blocker : this->blocker_range(v0)) {
@@ -202,8 +209,8 @@ class Skeleton_blocker_simplifiable_complex : public Skeleton_blocker_complex<Sk
 
     for (auto blocker_to_update : blockers_to_update) {
       Simplex_handle sub_blocker_to_be_added;
-      bool sub_blocker_need_to_be_added = (blocker_to_update->dimension()
-          - simplex_to_be_removed.dimension()) >= 2;
+      bool sub_blocker_need_to_be_added =
+          (blocker_to_update->dimension() - simplex_to_be_removed.dimension()) >= 2;
       if (sub_blocker_need_to_be_added) {
         sub_blocker_to_be_added = *blocker_to_update;
         sub_blocker_to_be_added.difference(simplex_to_be_removed);
@@ -262,7 +269,7 @@ class Skeleton_blocker_simplifiable_complex : public Skeleton_blocker_complex<Sk
    * remove all blockers that contains sigma
    */
   void remove_blocker_containing_simplex(const Simplex_handle& sigma) {
-    std::vector < Blocker_handle > blockers_to_remove;
+    std::vector <Blocker_handle> blockers_to_remove;
     for (auto blocker : this->blocker_range(sigma.first_vertex())) {
       if (blocker->contains(sigma))
         blockers_to_remove.push_back(blocker);
@@ -275,7 +282,7 @@ class Skeleton_blocker_simplifiable_complex : public Skeleton_blocker_complex<Sk
    * remove all blockers that contains sigma
    */
   void remove_blocker_include_in_simplex(const Simplex_handle& sigma) {
-    std::vector < Blocker_handle > blockers_to_remove;
+    std::vector <Blocker_handle> blockers_to_remove;
     for (auto blocker : this->blocker_range(sigma.first_vertex())) {
       if (sigma.contains(*blocker))
         blockers_to_remove.push_back(blocker);
@@ -286,20 +293,19 @@ class Skeleton_blocker_simplifiable_complex : public Skeleton_blocker_complex<Sk
 
  public:
   enum simplifiable_status {
-    NOT_HOMOTOPY_EQ,
-    MAYBE_HOMOTOPY_EQ,
-    HOMOTOPY_EQ
+    NOT_HOMOTOPY_EQ, MAYBE_HOMOTOPY_EQ, HOMOTOPY_EQ
   };
-  simplifiable_status is_remove_star_homotopy_preserving(
-      const Simplex_handle& simplex) {
+
+  simplifiable_status is_remove_star_homotopy_preserving(const Simplex_handle& simplex) {
+    // todo write a virtual method 'link' in Skeleton_blocker_complex which will be overloaded by the current one of Skeleton_blocker_geometric_complex
+    // then call it there to build the link and return the value of link.is_contractible()
     return MAYBE_HOMOTOPY_EQ;
   }
 
   enum contractible_status {
-    NOT_CONTRACTIBLE,
-    MAYBE_CONTRACTIBLE,
-    CONTRACTIBLE
+    NOT_CONTRACTIBLE, MAYBE_CONTRACTIBLE, CONTRACTIBLE
   };
+
   /**
    * @brief %Test if the complex is reducible using a strategy defined in the class
    * (by default it tests if the complex is a cone)
@@ -310,11 +316,11 @@ class Skeleton_blocker_simplifiable_complex : public Skeleton_blocker_complex<Sk
    * be solved with the help of geometry.
    */
   virtual contractible_status is_contractible() const {
-    if (this->is_cone())
+    if (this->is_cone()) {
       return CONTRACTIBLE;
-    else
+    } else {
       return MAYBE_CONTRACTIBLE;
-    // return this->is_cone();
+    }
   }
 
   /** @Edge contraction operations
@@ -328,8 +334,7 @@ class Skeleton_blocker_simplifiable_complex : public Skeleton_blocker_complex<Sk
    * If ignore_popable_blockers is false then the
    * result is true iff all blocker containing ab are popable.
    */
-  bool link_condition(Vertex_handle a, Vertex_handle b,
-                      bool ignore_popable_blockers = false) const {
+  bool link_condition(Vertex_handle a, Vertex_handle b, bool ignore_popable_blockers = false) const {
     for (auto blocker : this->const_blocker_range(a))
       if (blocker->contains(b)) {
         // false if ignore_popable_blockers is false
@@ -346,8 +351,7 @@ class Skeleton_blocker_simplifiable_complex : public Skeleton_blocker_complex<Sk
    * If ignore_popable_blockers is false then the
    * result is true iff all blocker containing ab are popable.
    */
-  bool link_condition(Edge_handle & e,
-                      bool ignore_popable_blockers = false) const {
+  bool link_condition(Edge_handle & e, bool ignore_popable_blockers = false) const {
     const Graph_edge& edge = (*this)[e];
     assert(this->get_address(edge.first()));
     assert(this->get_address(edge.second()));
@@ -360,11 +364,9 @@ class Skeleton_blocker_simplifiable_complex : public Skeleton_blocker_complex<Sk
   /**
    * Compute simplices beta such that a.beta is an order 0 blocker
    * that may be used to construct a new blocker after contracting ab.
-   * Suppose that the link condition Link(ab) = Link(a) inter Link(b)
-   * is satisfied.
+   * It requires that the link condition is satisfied.
    */
-  void tip_blockers(Vertex_handle a, Vertex_handle b,
-                    std::vector<Simplex_handle> & buffer) const {
+  void tip_blockers(Vertex_handle a, Vertex_handle b, std::vector<Simplex_handle> & buffer) const {
     for (auto const & blocker : this->const_blocker_range(a)) {
       Simplex_handle beta = (*blocker);
       beta.remove_vertex(a);
@@ -375,6 +377,7 @@ class Skeleton_blocker_simplifiable_complex : public Skeleton_blocker_complex<Sk
     this->add_neighbours(b, n);
     this->remove_neighbours(a, n);
     n.remove_vertex(a);
+
 
     for (Vertex_handle y : n) {
       Simplex_handle beta;
@@ -394,8 +397,7 @@ class Skeleton_blocker_simplifiable_complex : public Skeleton_blocker_complex<Sk
    */
   void swap_edge(Vertex_handle a, Vertex_handle b, Vertex_handle x) {
     this->add_edge(a, x);
-    if (this->visitor)
-      this->visitor->on_swaped_edge(a, b, x);
+    if (this->visitor) this->visitor->on_swaped_edge(a, b, x);
     this->remove_edge(b, x);
   }
 
@@ -404,7 +406,7 @@ class Skeleton_blocker_simplifiable_complex : public Skeleton_blocker_complex<Sk
    * @brief removes all blockers passing through the edge 'ab'
    */
   void delete_blockers_around_vertex(Vertex_handle v) {
-    std::list < Blocker_handle > blockers_to_delete;
+    std::list <Blocker_handle> blockers_to_delete;
     for (auto blocker : this->blocker_range(v)) {
       blockers_to_delete.push_back(blocker);
     }
@@ -413,14 +415,14 @@ class Skeleton_blocker_simplifiable_complex : public Skeleton_blocker_complex<Sk
       blockers_to_delete.pop_back();
     }
   }
+
   /**
    * @brief removes all blockers passing through the edge 'ab'
    */
   void delete_blockers_around_edge(Vertex_handle a, Vertex_handle b) {
-    std::list < Blocker_handle > blocker_to_delete;
+    std::list<Blocker_handle> blocker_to_delete;
     for (auto blocker : this->blocker_range(a))
-      if (blocker->contains(b))
-        blocker_to_delete.push_back(blocker);
+      if (blocker->contains(b)) blocker_to_delete.push_back(blocker);
     while (!blocker_to_delete.empty()) {
       this->delete_blocker(blocker_to_delete.back());
       blocker_to_delete.pop_back();
@@ -451,7 +453,7 @@ class Skeleton_blocker_simplifiable_complex : public Skeleton_blocker_complex<Sk
     if (!link_condition(a, b))
       delete_blockers_around_edge(a, b);
 
-    std::set < Simplex_handle > blockers_to_add;
+    std::set<Simplex_handle> blockers_to_add;
 
     get_blockers_to_be_added_after_contraction(a, b, blockers_to_add);
 
@@ -471,31 +473,26 @@ class Skeleton_blocker_simplifiable_complex : public Skeleton_blocker_complex<Sk
   }
 
  private:
-  void get_blockers_to_be_added_after_contraction(
-      Vertex_handle a, Vertex_handle b,
-      std::set<Simplex_handle>& blockers_to_add) {
+  void get_blockers_to_be_added_after_contraction(Vertex_handle a, Vertex_handle b, std::set<Simplex_handle>& blockers_to_add) {
     blockers_to_add.clear();
 
-    typedef Skeleton_blocker_link_complex<
-        Skeleton_blocker_complex<SkeletonBlockerDS> > LinkComplexType;
+    typedef Skeleton_blocker_link_complex<Skeleton_blocker_complex<SkeletonBlockerDS> > LinkComplexType;
 
     LinkComplexType link_a(*this, a);
     LinkComplexType link_b(*this, b);
 
-    std::vector < Simplex_handle > vector_alpha, vector_beta;
+    std::vector<Simplex_handle> vector_alpha, vector_beta;
 
     tip_blockers(a, b, vector_alpha);
     tip_blockers(b, a, vector_beta);
 
-    for (auto alpha = vector_alpha.begin(); alpha != vector_alpha.end();
-        ++alpha) {
+    for (auto alpha = vector_alpha.begin(); alpha != vector_alpha.end(); ++alpha) {
       for (auto beta = vector_beta.begin(); beta != vector_beta.end(); ++beta) {
         Simplex_handle sigma = *alpha;
         sigma.union_vertices(*beta);
         Root_simplex_handle sigma_id = this->get_id(sigma);
-        if (this->contains(sigma)
-            && proper_faces_in_union<SkeletonBlockerComplex>(sigma_id, link_a,
-                                                             link_b)) {
+        if (this->contains(sigma) &&
+            proper_faces_in_union<SkeletonBlockerComplex>(sigma_id, link_a, link_b)) {
           // Blocker_handle blocker = new Simplex_handle(sigma);
           sigma.add_vertex(a);
           blockers_to_add.insert(sigma);
@@ -508,7 +505,7 @@ class Skeleton_blocker_simplifiable_complex : public Skeleton_blocker_complex<Sk
    * delete all blockers that passes through a or b
    */
   void delete_blockers_around_vertices(Vertex_handle a, Vertex_handle b) {
-    std::vector < Blocker_handle > blocker_to_delete;
+    std::vector<Blocker_handle> blocker_to_delete;
     for (auto bl : this->blocker_range(a))
       blocker_to_delete.push_back(bl);
     for (auto bl : this->blocker_range(b))
@@ -539,12 +536,9 @@ class Skeleton_blocker_simplifiable_complex : public Skeleton_blocker_complex<Sk
     // We notify the visitor that all edges incident to 'a' had changed
     boost_adjacency_iterator v, v_end;
 
-    for (tie(v, v_end) = adjacent_vertices(a.vertex, this->skeleton);
-        v != v_end; ++v)
-      if (this->visitor)
-        this->visitor->on_changed_edge(a, Vertex_handle(*v));
+    for (tie(v, v_end) = adjacent_vertices(a.vertex, this->skeleton); v != v_end; ++v)
+      if (this->visitor) this->visitor->on_changed_edge(a, Vertex_handle(*v));
   }
-
   //@}
 };
 
