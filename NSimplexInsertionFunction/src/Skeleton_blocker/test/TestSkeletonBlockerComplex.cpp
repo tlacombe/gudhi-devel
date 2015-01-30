@@ -26,13 +26,10 @@
 #include <sstream>
 #include "gudhi/Utils.h"
 #include "gudhi/Test.h"
-//#include "Skeleton_blocker/Simplex.h"
 #include "gudhi/Skeleton_blocker_complex.h"
 #include "gudhi/Skeleton_blocker_link_complex.h"
 #include "gudhi/Skeleton_blocker/Skeleton_blocker_link_superior.h"
 #include "gudhi/Skeleton_blocker/Skeleton_blocker_simple_traits.h"
-//#include "Simple_vertex.h"
-//#include "Simple_edge.h"
 
 using namespace std;
 
@@ -49,10 +46,10 @@ typedef Complex::Root_simplex_handle Root_simplex_handle;
 typedef Simplex_handle::Simplex_vertex_const_iterator Simplex_vertex_const_iterator;
 typedef Complex::Edge_handle Edge_handle;
 
-// true iff v \in complex
+// true if v in complex
 bool assert_vertex(Complex &complex,Vertex_handle v){
 	//assert(complex.contains(v));
-	return complex.contains(v);
+	return complex.contains(static_cast<Simplex_handle>(v));
 }
 
 bool assert_simplex(Complex &complex,Root_vertex_handle a,Root_vertex_handle b,Root_vertex_handle c){
@@ -206,7 +203,7 @@ bool test_iterator_triangles(){
 	int num_triangles_seen=0;
 	//for (auto t : complex.triangle_range(5)){
 	TEST("triangles around 5 (should be 2 of them):");
-	for (auto t : complex.triangle_range(5)){
+	for (auto t : complex.triangle_range(Vertex_handle(5))){
 		PRINT(t);
 		++num_triangles_seen;
 	}
@@ -214,7 +211,7 @@ bool test_iterator_triangles(){
 
 	num_triangles_seen=0;
 	TEST("triangles around 0 (should be 6 of them):");
-	for (auto t : complex.triangle_range(0)){
+	for (auto t : complex.triangle_range(Vertex_handle(0))){
 		PRINT(t);
 		++num_triangles_seen;
 	}
@@ -732,7 +729,7 @@ list<Simplex_handle> subfaces(Simplex_handle top_face){
 bool test_constructor2(){
 	Simplex_handle simplex;
 	for(int i =0 ; i < 5;++i)
-		simplex.add_vertex(i);
+		simplex.add_vertex(static_cast<Vertex_handle>(i));
 
 	list <Simplex_handle> simplices(subfaces(simplex));
 	simplices.remove(simplex);

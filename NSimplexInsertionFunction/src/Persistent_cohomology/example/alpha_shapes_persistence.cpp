@@ -256,7 +256,7 @@ int main (int argc, char * const argv[])
     if (filtr > filtration_max) {
       filtration_max = filtr;
     }
-    simplex_tree.insert(the_simplex_tree, filtr);
+    simplex_tree.insert_simplex(the_simplex_tree, filtr);
     if (the_alpha_value_iterator != the_alpha_values.end())
       ++the_alpha_value_iterator;
     else
