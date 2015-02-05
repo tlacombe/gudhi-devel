@@ -1,24 +1,24 @@
- /*    This file is part of the Gudhi Library. The Gudhi library 
-  *    (Geometric Understanding in Higher Dimensions) is a generic C++ 
-  *    library for computational topology.
-  *
-  *    Author(s):       David Salinas
-  *
-  *    Copyright (C) 2014  INRIA Sophia Antipolis-Mediterranee (France)
-  *
-  *    This program is free software: you can redistribute it and/or modify
-  *    it under the terms of the GNU General Public License as published by
-  *    the Free Software Foundation, either version 3 of the License, or
-  *    (at your option) any later version.
-  *
-  *    This program is distributed in the hope that it will be useful,
-  *    but WITHOUT ANY WARRANTY; without even the implied warranty of
-  *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  *    GNU General Public License for more details.
-  *
-  *    You should have received a copy of the GNU General Public License
-  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-  */
+/*    This file is part of the Gudhi Library. The Gudhi library
+ *    (Geometric Understanding in Higher Dimensions) is a generic C++
+ *    library for computational topology.
+ *
+ *    Author(s):       David Salinas
+ *
+ *    Copyright (C) 2014  INRIA Sophia Antipolis-Mediterranee (France)
+ *
+ *    This program is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation, either version 3 of the License, or
+ *    (at your option) any later version.
+ *
+ *    This program is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
@@ -30,6 +30,7 @@
 #include "gudhi/Skeleton_blocker_link_complex.h"
 #include "gudhi/Skeleton_blocker/Skeleton_blocker_link_superior.h"
 #include "gudhi/Skeleton_blocker/Skeleton_blocker_simple_traits.h"
+#include "gudhi/Skeleton_blocker/internal/Trie.h"
 
 using namespace std;
 
@@ -77,9 +78,9 @@ void build_complete(int n,Complex& complex){
 	for(int i=0;i<n;i++)
 		complex.add_vertex();
 
-//	for(int i=n-1;i>=0;i--)
-//		for(int j=i-1;j>=0;j--)
-//			complex.add_edge(Vertex_handle(i),Vertex_handle(j));
+	//	for(int i=n-1;i>=0;i--)
+	//		for(int j=i-1;j>=0;j--)
+	//			complex.add_edge(Vertex_handle(i),Vertex_handle(j));
 
 	for(int i=0;i<n;i++)
 		for(int j=0;j<i;j++)
@@ -88,7 +89,7 @@ void build_complete(int n,Complex& complex){
 
 
 bool test_simplex(){
-//	PRINT("test simplex");
+	//	PRINT("test simplex");
 	Simplex_handle simplex(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2),Vertex_handle(3));
 	for (auto i = simplex.begin() ; i != simplex.end() ; ++i){
 		PRINT(*i);
@@ -696,7 +697,7 @@ bool test_constructor(){
 	add_triangle(1,2,4,simplices);
 
 
-	Complex complex(simplices);
+	Complex complex(simplices.begin(),simplices.end());
 
 	PRINT(complex.to_string());
 
@@ -734,7 +735,7 @@ bool test_constructor2(){
 	list <Simplex_handle> simplices(subfaces(simplex));
 	simplices.remove(simplex);
 
-	Complex complex(simplices);
+	Complex complex(simplices.begin(),simplices.end());
 
 	PRINT(complex.to_string());
 
@@ -744,6 +745,143 @@ bool test_constructor2(){
 
 	return ( complex.num_vertices()==5&&complex.num_edges()==10&&  complex.num_blockers()==1);
 }
+
+
+bool test_constructor3(){
+	typedef Vertex_handle Vh;
+	typedef Simplex_handle Sh;
+	std::vector<Simplex_handle> simplices;
+	auto subf(subfaces(Sh(Vh(0),Vh(1),Vh(2))));
+	subf.pop_back(); //remove max face -> now a blocker 012
+	simplices.insert(simplices.begin(),subf.begin(),subf.end());
+	DBGCONT(simplices);
+	Complex complex(simplices.begin(),simplices.end());
+
+	DBGVALUE(complex.to_string());
+	if(complex.num_blockers()!=1) return false;
+		Sh expected_blocker(Vh(0),Vh(1),Vh(2));
+		for(auto b : complex.const_blocker_range())
+			if(*b!=expected_blocker) return false;
+
+
+	return complex.num_vertices()==3 && complex.num_blockers()==1;
+}
+
+bool test_constructor4(){
+	typedef Vertex_handle Vh;
+	typedef Simplex_handle Sh;
+	std::vector<Simplex_handle> simplices;
+	auto subf(subfaces(Sh(Vh(0),Vh(1),Vh(2),Vh(3))));
+	simplices.insert(simplices.begin(),subf.begin(),subf.end());
+
+	simplices.push_back(Sh(Vh(4)));
+	simplices.push_back(Sh(Vh(4),Vh(1)));
+	simplices.push_back(Sh(Vh(4),Vh(0)));
+
+	DBGCONT(simplices);
+	Complex complex(simplices.begin(),simplices.end());
+
+	DBGVALUE(complex.to_string());
+	if(complex.num_blockers()!=1) return false;
+		Sh expected_blocker(Vh(0),Vh(1),Vh(4));
+		for(auto b : complex.const_blocker_range())
+			if(*b!=expected_blocker) return false;
+
+	return complex.num_vertices()==5 && complex.num_blockers()==1 && complex.num_edges()==8;
+}
+
+
+
+bool test_constructor5(){
+	typedef Vertex_handle Vh;
+	typedef Simplex_handle Sh;
+	std::vector<Simplex_handle> simplices;
+	auto subf(subfaces(Sh(Vh(0),Vh(1),Vh(2))));
+	simplices.insert(simplices.begin(),subf.begin(),subf.end());
+
+	simplices.push_back(Sh(Vh(3)));
+	simplices.push_back(Sh(Vh(3),Vh(1)));
+	simplices.push_back(Sh(Vh(3),Vh(2)));
+	simplices.push_back(Sh(Vh(4)));
+	simplices.push_back(Sh(Vh(4),Vh(1)));
+	simplices.push_back(Sh(Vh(4),Vh(0)));
+	simplices.push_back(Sh(Vh(5)));
+	simplices.push_back(Sh(Vh(5),Vh(2)));
+	simplices.push_back(Sh(Vh(5),Vh(0)));
+
+	DBGCONT(simplices);
+	Complex complex(simplices.begin(),simplices.end());
+
+	DBGVALUE(complex.to_string());
+
+	return complex.num_vertices()==6 && complex.num_blockers()==3 && complex.num_edges()==9;
+}
+
+
+bool test_constructor6(){
+	typedef Vertex_handle Vh;
+	typedef Simplex_handle Sh;
+	std::vector<Simplex_handle> simplices;
+	auto subf(subfaces(Sh(Vh(0),Vh(1),Vh(2),Vh(3))));
+	for(auto s:subf){
+		Sh s1(Vh(0),Vh(1),Vh(2),Vh(3));
+		Sh s2(Vh(1),Vh(2),Vh(3));
+		if(s!=s1 && s!=s2) simplices.push_back(s);
+	}
+
+	DBGCONT(simplices);
+	Complex complex(simplices.begin(),simplices.end());
+
+	DBGVALUE(complex.to_string());
+
+	if(complex.num_blockers()!=1) return false;
+	Sh expected_blocker(Vh(1),Vh(2),Vh(3));
+	for(auto b : complex.const_blocker_range())
+		if(*b!=expected_blocker) return false;
+	return complex.num_vertices()==4 && complex.num_blockers()==1 && complex.num_edges()==6;
+}
+
+
+bool test_constructor7(){
+	typedef Vertex_handle Vh;
+	typedef Simplex_handle Sh;
+	std::vector<Simplex_handle> simplices;
+	simplices.push_back(Sh(Vh(0),Vh(1),Vh(2)));
+	simplices.push_back(Sh(Vh(1),Vh(2),Vh(3)));
+	simplices.push_back(Sh(Vh(3),Vh(0),Vh(2)));
+	simplices.push_back(Sh(Vh(3),Vh(0),Vh(1)));
+
+	//get complex from top faces
+	Complex complex(make_complex_from_top_faces<Complex>(simplices.begin(),simplices.end()));
+
+	DBGVALUE(complex.to_string());
+
+	if(complex.num_blockers()!=1) return false;
+	Sh expected_blocker(Vh(0),Vh(1),Vh(2),Vh(3));
+	for(auto b : complex.const_blocker_range())
+		if(*b!=expected_blocker) return false;
+	return complex.num_vertices()==4 && complex.num_blockers()==1 && complex.num_edges()==6;
+}
+
+
+bool test_constructor8(){
+	typedef Vertex_handle Vh;
+	typedef Simplex_handle Sh;
+	std::vector<Simplex_handle> simplices;
+	simplices.push_back(Sh(Vh(0),Vh(1)));
+	simplices.push_back(Sh(Vh(2),Vh(1)));
+	simplices.push_back(Sh(Vh(0),Vh(2)));
+	simplices.push_back(Sh(Vh(3),Vh(1)));
+	simplices.push_back(Sh(Vh(2),Vh(3)));
+
+	//get complex from top faces
+	Complex complex(make_complex_from_top_faces<Complex>(simplices.begin(),simplices.end()));
+
+	DBGVALUE(complex.to_string());
+
+	return complex.num_vertices()==4 && complex.num_blockers()==2 && complex.num_edges()==5;
+}
+
 
 
 
@@ -778,6 +916,13 @@ int main (int argc, char *argv[])
 
 	tests_complex.add("test_constructor_list_simplices",test_constructor);
 	tests_complex.add("test_constructor_list_simplices2",test_constructor2);
+	tests_complex.add("test_constructor_list_simplices3",test_constructor3);
+	tests_complex.add("test_constructor_list_simplices4",test_constructor4);
+	tests_complex.add("test_constructor_list_simplices5",test_constructor5);
+	tests_complex.add("test_constructor_list_simplices6",test_constructor6);
+	tests_complex.add("test_constructor_list_simplices7",test_constructor7);
+	tests_complex.add("test_constructor_list_simplices8",test_constructor8);
+
 
 	if(tests_complex.run()){
 		return EXIT_SUCCESS;
