@@ -80,7 +80,7 @@
     <addaction name="actionPoints"/>
     <addaction name="actionEdges"/>
     <addaction name="actionTriangles"/>
-    <addaction name="actionChange_projection"/>
+    <addaction name="actionReduce_dimension"/>
    </widget>
    <widget class="QMenu" name="menuTopology">
     <property name="title">
@@ -183,9 +183,9 @@
     <string>Triangles</string>
    </property>
   </action>
-  <action name="actionChange_projection">
+  <action name="actionReduce_dimension">
    <property name="text">
-    <string>Change projection</string>
+    <string>Reduce dimension</string>
    </property>
   </action>
   <action name="actionShow_complex_stats">

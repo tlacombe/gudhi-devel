@@ -19,7 +19,7 @@
 #include "utils/Edge_collapsor.h"
 #include "utils/Edge_contractor.h"
 #include "utils/Persistence_compute.h"
-
+#include "utils/Dimension_reduction.h"
 #include "gudhi/Skeleton_blocker/Skeleton_blocker_simple_geometric_traits.h"
 #include "gudhi/Skeleton_blocker_geometric_complex.h"
 
@@ -36,6 +36,7 @@ class CGAL_geometric_flag_complex_wrapper{
 	Complex& complex_;
 	typedef typename Complex::Vertex_handle Vertex_handle;
 	typedef typename Complex::Point Point;
+
 
 	const bool load_only_points_;
 
@@ -159,7 +160,7 @@ public:
 	}
 
 	void collapse_edges(unsigned num_collapses){
-		Edge_collapsor<Complex> collapsor(complex_,complex_.num_edges());
+		Edge_collapsor<Complex> collapsor(complex_,num_collapses);
 	}
 
 
@@ -281,7 +282,12 @@ private:
 		}
 	}
 public:
+	typedef typename Complex::GT::Point_3 Point_3;
 
+	std::vector<Point_3> compute_dim_reduction(int reduced_dimension = 3){
+		Dimension_reduction<Complex> points_reduced_space(complex_,reduced_dimension);
+		return points_reduced_space.reduced_points();
+	}
 
 	unsigned num_vertices() const{
 		return  complex_.num_vertices();

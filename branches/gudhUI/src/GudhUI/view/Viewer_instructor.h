@@ -85,18 +85,28 @@ public:
 	void set_color_edge(Edge_handle eh);
 	void set_color_triangle(const Simplex_handle& triangle);
 
+
+
+	void set_projection_from_first_three_coordinates();
+	/**
+	 * specify points coordinates of projections
+	 */
+	void set_projection_to_specific_points(std::vector<Point_3> points);
+
+
+
+
+private:
 	/**
 	 * Viewer_instructor is in charge of deleting the projector
 	 */
 	void change_projector(Projector3D* new_projector);
 
-
-private:
 	/**
 	 * Projection to 3D needed for the viewer.
 	 */
 	Point_3 proj(Vertex_handle v) const;
-//	Point_3 proj(const Point& p) const;
+	//	Point_3 proj(const Point& p) const;
 
 	public slots :
 

@@ -15,8 +15,8 @@ class Projector3D{
 public:
 	typedef Geometry_trait::Point Point;
 	typedef Geometry_trait::Point_3 Point_3;
-
-	virtual Point_3 operator()(const Point&) const  = 0;
+	typedef typename Complex::Vertex_handle Vertex_handle;
+	virtual Point_3 operator()(Vertex_handle) const  = 0;
 
 	virtual ~Projector3D(){
 	}

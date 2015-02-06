@@ -88,6 +88,9 @@ MainWindow::connectActions(){
 					SLOT(change_draw_edges()));
 	QObject::connect(this->actionTriangles, SIGNAL(triggered()), this->viewer_instructor_,
 					SLOT(change_draw_triangles()));
+	QObject::connect(this->actionReduce_dimension, SIGNAL(triggered()), this,
+					SLOT(show_reduce_dimension_menu()));
+
 
 	//topology
 	QObject::connect(this->actionShow_homology_group, SIGNAL(triggered()), this,
@@ -129,6 +132,7 @@ MainWindow::off_file_open(){
 	if (!fileName.isEmpty()){
 		model_.off_file_open(fileName.toStdString());
 		init_view();
+		viewer_instructor_->set_projection_from_first_three_coordinates();
 	}
 }
 
@@ -139,6 +143,7 @@ MainWindow::off_points_open(){
 	if (!fileName.isEmpty()){
 		model_.off_points_open(fileName.toStdString());
 		init_view();
+		viewer_instructor_->set_projection_from_first_three_coordinates();
 	}
 }
 
@@ -223,8 +228,7 @@ MainWindow::contract_edges(unsigned num_collapses){
 
 void
 MainWindow::collapse_edges(){
-	std::cerr <<"Collapse "<<100<< " edges\n";
-	model_.collapse_edges(100);
+	model_.collapse_edges(-1);
 	update_view();
 }
 
@@ -276,6 +280,20 @@ MainWindow::persistence_menu(){
 void
 MainWindow::compute_persistence(int p,double threshold,int max_dim,double min_pers){
 	model_.show_persistence(p,threshold,max_dim,min_pers);
+}
+
+
+void
+MainWindow::show_reduce_dimension_menu(){
+	bool ok;
+	int dim = QInputDialog::getInt(this, tr("Please specify the reduced dimension"),
+			tr("Reduced dimension:"), 3, 2, 1000, 1, &ok);
+	srand(time(NULL));
+	if (ok){
+		viewer_instructor_->set_projection_to_specific_points(model_.compute_dim_reduction(dim));
+		init_view();
+	}
+
 }
 
 

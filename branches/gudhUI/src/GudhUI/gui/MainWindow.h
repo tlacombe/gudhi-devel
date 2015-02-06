@@ -84,6 +84,7 @@ public:
 	void persistence_menu();
 	void compute_persistence(int p,double threshold,int max_dim,double min_pers);
 
+	void show_reduce_dimension_menu();
 
 
 public:
