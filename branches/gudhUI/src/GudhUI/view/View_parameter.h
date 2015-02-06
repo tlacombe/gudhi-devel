@@ -92,7 +92,7 @@ public:
 		size_edges = 2;
 
 		light_edges = 0.3;
-		light_triangles = 0.85;
+		light_triangles = 0.7;
 		theta = 0;
 		phi = 0;
 	}

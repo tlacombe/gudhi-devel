@@ -7,7 +7,7 @@ SET(Gudhi_Path "/home/dsalinas/Documents/CodeSVN/gudhi/src/include")
 
 set(EXECUTABLE_OUTPUT_PATH bin/${CMAKE_BUILD_TYPE})
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -frounding-math -Wall -pedantic")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -frounding-math -Wall -pedantic")
 
 find_package(Boost REQUIRED COMPONENTS)
 find_package(CGAL  COMPONENTS Qt4)

@@ -75,6 +75,8 @@ else()
   include_directories(src/Simplex_tree/include/)
   include_directories(src/Skeleton_blocker/include/)
 
+  add_subdirectory(src/GudhUI/)
+
   add_subdirectory(src/Simplex_tree/test)
   add_subdirectory(src/Simplex_tree/example)
   add_subdirectory(src/Persistent_cohomology/test)
