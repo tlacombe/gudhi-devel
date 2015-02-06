@@ -9,12 +9,13 @@
 #include "Viewer_instructor.h"
 #include "utils/UI_utils.h"
 #include "FirstCoordProjector.h"
+#include "Projection_from_points.h"
 
 
 Viewer_instructor::Viewer_instructor(QWidget* parent,
 		Viewer* viewer,
 		const Complex& mesh
-):viewer_(viewer),mesh_(mesh),projector_(new FirstCoordProjector3D()){
+):viewer_(viewer),mesh_(mesh),projector_(new FirstCoordProjector3D<Complex>(mesh)){
 	viewer_->set_instructor(this);
 }
 
@@ -22,6 +23,10 @@ Viewer_instructor::Viewer_instructor(QWidget* parent,
 void
 Viewer_instructor::initialize_bounding_box(){
 	auto pair_bounding_box = compute_bounding_box_corners();
+	std::cout<<"bounding box:\n";
+	std::cout<<pair_bounding_box.first<<"  --  ";
+	std::cout<<pair_bounding_box.second<<"\n";
+
 	viewer_->set_bounding_box(pair_bounding_box.first,pair_bounding_box.second);
 	viewer_->init_scene();
 }
@@ -50,6 +55,7 @@ Viewer_instructor::compute_bounding_box_corners(){
 			z_max = (std::max)(z_max,pt.z());
 
 		}
+		if(z_min==0&&z_max==0) z_max=1;
 		return std::make_pair(
 				Point_3(x_min,y_min,z_min),
 				Point_3(x_max,y_max,z_max)
@@ -173,6 +179,20 @@ Viewer_instructor::set_color_triangle(const Simplex_handle& triangle){
 	viewer_->set_color(Color(view_params_.light_triangles,view_params_.light_triangles,view_params_.light_triangles));
 }
 
+
+void
+Viewer_instructor::set_projection_from_first_three_coordinates(){
+	projector_.reset(new FirstCoordProjector3D<Complex>(mesh_));
+}
+
+void
+Viewer_instructor::set_projection_to_specific_points(std::vector<Point_3> points){
+	std::cout <<"set new proj\n";
+	projector_.reset(new Projection_from_points(points));
+}
+
+
+
 void
 Viewer_instructor::change_projector(Projector3D* new_projector){
 	projector_.reset(new_projector);
@@ -181,9 +201,8 @@ Viewer_instructor::change_projector(Projector3D* new_projector){
 
 Viewer_instructor::Point_3
 Viewer_instructor::proj(Vertex_handle v) const{
-	return (*projector_)(mesh_.point(v));
+	return (*projector_)(v);
 }
-
 
 void
 Viewer_instructor::sceneChanged(){
