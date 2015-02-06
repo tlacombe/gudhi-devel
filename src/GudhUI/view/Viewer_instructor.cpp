@@ -22,14 +22,14 @@ Viewer_instructor::Viewer_instructor(QWidget* parent,
 void
 Viewer_instructor::initialize_bounding_box(){
 	auto pair_bounding_box = compute_bounding_box_corners();
-	viewer_->set_bounding_box(proj(pair_bounding_box.first),proj(pair_bounding_box.second));
+	viewer_->set_bounding_box(pair_bounding_box.first,pair_bounding_box.second);
 	viewer_->init_scene();
 }
 
-std::pair<Complex::Point,Complex::Point>
+std::pair<Viewer_instructor::Point_3,Viewer_instructor::Point_3>
 Viewer_instructor::compute_bounding_box_corners(){
 	if(mesh_.empty()){
-		return std::make_pair(Point(-1,-1,-1,1),Point(1,1,1,1));
+		return std::make_pair(Point_3(-1,-1,-1),Point_3(1,1,1));
 	}
 	else{
 		double x_min = 1e10;
@@ -40,7 +40,7 @@ Viewer_instructor::compute_bounding_box_corners(){
 		double z_max = -1e10;
 		for( auto vi : mesh_.vertex_range())
 		{
-			auto pt = proj(mesh_.point(vi));
+			auto pt = proj(vi);
 			x_min = (std::min)(x_min,pt.x());
 			y_min = (std::min)(y_min,pt.y());
 			z_min = (std::min)(z_min,pt.z());
@@ -51,8 +51,8 @@ Viewer_instructor::compute_bounding_box_corners(){
 
 		}
 		return std::make_pair(
-				Point(x_min,y_min,z_min,1.),
-				Point(x_max,y_max,z_max,1.)
+				Point_3(x_min,y_min,z_min),
+				Point_3(x_max,y_max,z_max)
 		);
 	}
 }
@@ -105,9 +105,9 @@ Viewer_instructor::draw_edges(){
 
 	for(auto edge : mesh_.edge_range()){
 		set_color_edge(edge);
-		const Point& a = mesh_.point(mesh_.first_vertex(edge));
-		const Point& b = mesh_.point(mesh_.second_vertex(edge)) ;
-		viewer_->draw_edges(proj(a),proj(b));
+//		const Point& a = mesh_.point(mesh_.first_vertex(edge));
+//		const Point& b = mesh_.point(mesh_.second_vertex(edge)) ;
+		viewer_->draw_edges(proj(mesh_.first_vertex(edge)),proj(mesh_.second_vertex(edge)));
 	}
 
 	viewer_->end_draw_edges();
@@ -122,10 +122,10 @@ Viewer_instructor::draw_triangles(){
 		set_color_triangle(fit);
 		if(view_params_.triangle_mode){
 			auto fit_it  = fit.begin();
-			const Point& p1 = mesh_.point(*fit_it);
-			const Point& p2 = mesh_.point(*(++fit_it));
-			const Point& p3 = mesh_.point(*(++fit_it));
-			viewer_->draw_triangles(proj(p1),proj(p2),proj(p3));
+			const Point_3& p1 = proj(*fit_it);
+			const Point_3& p2 = proj(*(++fit_it));
+			const Point_3& p3 = proj(*(++fit_it));
+			viewer_->draw_triangles(p1,p2,p3);
 		}
 	}
 	viewer_->end_draw_triangles();
@@ -138,7 +138,7 @@ Viewer_instructor::draw_points(){
 	{
 		viewer_->set_size_point(view_params_.size_vertices);
 		set_color_vertex(vi);
-		viewer_->draw_points(proj(mesh_.point(vi)));
+		viewer_->draw_points(proj(vi));
 	}
 	viewer_->end_draw_points();
 }
@@ -173,10 +173,15 @@ Viewer_instructor::set_color_triangle(const Simplex_handle& triangle){
 	viewer_->set_color(Color(view_params_.light_triangles,view_params_.light_triangles,view_params_.light_triangles));
 }
 
+void
+Viewer_instructor::change_projector(Projector3D* new_projector){
+	projector_.reset(new_projector);
+}
+
 
 Viewer_instructor::Point_3
-Viewer_instructor::proj(const Point& p) const{
-	return (*projector_)(p);
+Viewer_instructor::proj(Vertex_handle v) const{
+	return (*projector_)(mesh_.point(v));
 }
 
 

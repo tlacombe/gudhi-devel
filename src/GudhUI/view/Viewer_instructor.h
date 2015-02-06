@@ -46,7 +46,7 @@ public:
 
 	void initialize_bounding_box();
 
-	std::pair<Point,Point> compute_bounding_box_corners();
+	std::pair<Point_3,Point_3> compute_bounding_box_corners();
 
 	void show_entire_scene();
 
@@ -83,14 +83,20 @@ public:
 	 */
 	void set_color_vertex(Vertex_handle vh);
 	void set_color_edge(Edge_handle eh);
-
 	void set_color_triangle(const Simplex_handle& triangle);
+
+	/**
+	 * Viewer_instructor is in charge of deleting the projector
+	 */
+	void change_projector(Projector3D* new_projector);
+
 
 private:
 	/**
 	 * Projection to 3D needed for the viewer.
 	 */
-	Point_3 proj(const Point& p) const;
+	Point_3 proj(Vertex_handle v) const;
+//	Point_3 proj(const Point& p) const;
 
 	public slots :
 
