@@ -1,6 +1,8 @@
 #include "Persistence_diagrams_graph.h"
 #include <list>
 
+#include <iostream>
+
 // Planar_neighbors_finder is a data structure used to find if a query point from U has planar neighbors in V with the planar distance.
 // V's points have to be added manually using their index. A neighbor returned is automatically removed but we can also
 // remove points manually using their index.

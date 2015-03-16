@@ -35,7 +35,7 @@ inline void Neighbors_finder::add(int v_point_index)
 inline int Neighbors_finder::pull_near(int u_point_index)
 {
     int v_challenger = g.corresponding_point_in_v(u_point_index);
-    if(g.distance(u_point_index, v_challenger) < r){
+    if(planar_neighbors_f.contains(v_challenger) && g.distance(u_point_index, v_challenger) < r){
          planar_neighbors_f.remove(v_challenger);
          return v_challenger;
     }

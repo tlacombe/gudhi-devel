@@ -1,9 +1,9 @@
 #include "Layered_neighbors_finder.h"
 #include <deque>
 
-//template<typename Persistence_diagram1, typename Persistence_diagram2>
-//double bottleneck_distance(Persistence_diagram1& diag1, Persistence_diagram2& diag2, double e = 0.);
 
+template<typename Persistence_diagram1, typename Persistence_diagram2>
+double bottleneck_distance(Persistence_diagram1& diag1, Persistence_diagram2& diag2, double e = 0.);
 
 class Graph_matching{
 
@@ -52,17 +52,17 @@ inline bool Graph_matching::multi_augment()
         return false;
     Layered_neighbors_finder* layered_nf = layering();
     double rn = sqrt(g.size());
-    int ln = layered_nf->layers_number();
+    int nblmax = layered_nf->vlayers_number()*2 + 1;
     // verification of a necessary criterion
-    if((unmatched_in_u.size() > rn && ln*2. >= rn) || ln==0)
+    if((unmatched_in_u.size() > rn && nblmax > rn) || nblmax==0)
         return false;
+    bool successful = false;
     std::list<int>* tries = new std::list<int>(unmatched_in_u);
     for(auto it = tries->cbegin(); it != tries->cend(); it++)
-        augment(layered_nf, *it, ln);
+        successful = successful || augment(layered_nf, *it, nblmax);
     delete tries;
     delete layered_nf;
-    // Since layers_number > 0, we know that at least 1 augment has returned true
-    return true;
+    return successful;
 }
 
 inline void Graph_matching::set_r(double r){
@@ -108,13 +108,14 @@ bool Graph_matching::augment(Layered_neighbors_finder *layered_nf, int start, in
     std::deque<int> path;
     path.emplace_back(start);
     do{
-        if((int) path.size() > max_depth*2 +1){
+        if((int) path.size() > max_depth){
             path.pop_back();
             path.pop_back();
         }
         if(path.empty())
             return false;
-        path.emplace_back(layered_nf->pull_near(path.back(),path.size()/2));
+        int w = path.back();
+        path.emplace_back(layered_nf->pull_near(w,path.size()/2));
         while(path.back()==null_point_index()){
             path.pop_back();
             path.pop_back();

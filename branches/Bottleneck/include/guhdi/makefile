@@ -1,4 +1,4 @@
-CXX= g++-4.9 -O0
+CXX= CXX= g++-4.9 -O0 -gdwarf-3
 CFLAGS= -std=c++11 -Wall -Wextra 
 
 all:

@@ -2,6 +2,8 @@
 #include <set>
 #include <cmath>
 
+#include <iostream>
+
 // Diagram_point is the type of the persistence diagram's points
 typedef typename std::pair<double,double> Diagram_point;
 
