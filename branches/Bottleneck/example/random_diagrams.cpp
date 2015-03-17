@@ -1,4 +1,4 @@
-#include "../include/guhdi/Graph_matching.h"
+#include "../include/gudhi/Graph_matching.h"
 #include <iostream>
 
 int main()
