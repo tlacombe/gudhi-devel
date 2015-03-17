@@ -44,12 +44,12 @@ template<typename Persistence_diagram1, typename Persistence_diagram2>
 Persistence_diagrams_graph::Persistence_diagrams_graph(Persistence_diagram1& diag1, Persistence_diagram2& diag2, double e)
     : u(), v()
 {
-    for(auto it = diag1.begin(); it != diag1.end(); ++it)
+    for(auto it = diag1.cbegin(); it != diag1.cend(); ++it)
         if(it->second - it->first > e)
-            u.emplace_back(it->first, it->second);
-    for(auto it = diag2.begin(); it != diag2.end(); ++it)
+            u.emplace_back(*it);
+    for(auto it = diag2.cbegin(); it != diag2.cend(); ++it)
         if(it->second - it->first > e)
-            v.emplace_back(it->first, it->second);
+            v.emplace_back(*it);
     if(u.size() < v.size())
         swap(u,v);
 }
