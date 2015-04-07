@@ -30,6 +30,8 @@ if(GMP_FOUND)
 endif()
 
 find_package(CGAL)
+# for 0-persistence module
+find_package(ANN)
 
 # Required programs for unitary tests purpose
 FIND_PROGRAM( LCOV_PATH lcov )
@@ -69,6 +71,7 @@ else()
   message(STATUS "boost include dirs:" ${Boost_INCLUDE_DIRS})
 
   include_directories(src/common/include/)
+  include_directories(src/0_persistence/include/)
   include_directories(src/Alpha_shapes/include/)
   include_directories(src/Bottleneck/include/)
   include_directories(src/Contraction/include/)
@@ -89,6 +92,7 @@ else()
   add_subdirectory(src/Alpha_shapes/test)
   add_subdirectory(src/Bottleneck/example)
   add_subdirectory(src/Bottleneck/test)
+  add_subdirectory(src/0_persistence/example)
 
   # data points generator
   add_subdirectory(data/points/generator)
