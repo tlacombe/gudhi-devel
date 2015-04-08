@@ -96,7 +96,7 @@ int main(int argc, char *argv[]){
 	cout << "Dimension: " << dim << endl;
       }
       // else check that dimension is preserved
-      else if (dim != row.size()) {
+      else if (dim != static_cast<int>(row.size())) {
 	cerr << "Error: mismatched dimension in " 
 	     << input_file_name << " at line " << (nb_points+1) << endl;
 	return -1;
