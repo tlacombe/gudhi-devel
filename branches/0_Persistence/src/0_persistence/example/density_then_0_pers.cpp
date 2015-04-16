@@ -47,29 +47,34 @@ using namespace std;
 
 
 //rename for brevity
-typedef Vertex<ANNPoint,Cluster_Info > Point;
+typedef Vertex<ANNPoint, Cluster_Info > Point;
 
 // comparison function object for vector indices
+
 template<class V> class Less_Than {
-  protected:
+ protected:
   V& v;
-  public:
-  Less_Than (V& v_): v(v_){}
-  bool operator()(const int a, const int  b) const 
-  {return Point::Less_Than()(v[a], v[b]);}
+ public:
+
+  Less_Than(V& v_) : v(v_) { }
+
+  bool operator()(const int a, const int b) const {
+    return Point::Less_Than()(v[a], v[b]);
+  }
 };
 
 
 // main function
-int main(int argc, char *argv[]){
-  
-  if(argc!=5){
-    cout<<"Usage:"<<endl<<argv[0]<<" <input filename> <Number of neighbors> <Rips radius> <persistence threshold>"<<endl;
+
+int main(int argc, char *argv[]) {
+
+  if (argc != 5) {
+    cout << "Usage:" << endl << argv[0] << " <input filename> <Number of neighbors> <Rips radius> <persistence threshold>" << endl;
     exit(0);
   }
 
 
-  int com=1;
+  int com = 1;
   vector< Point > point_cloud;
 
   //read in data points
@@ -81,98 +86,91 @@ int main(int argc, char *argv[]){
   int dim = -1;
   int nb_points = 0;
   string lineData;
-  while(getline(input, lineData))
-    {
-      // read next point's coordinates
-      double d;
-      vector<double> row;
-      stringstream lineStream(lineData);
-      while (lineStream >> d)
-	row.push_back(d);
+  while (getline(input, lineData)) {
+    // read next point's coordinates
+    double d;
+    vector<double> row;
+    stringstream lineStream(lineData);
+    while (lineStream >> d)
+      row.push_back(d);
 
-      // set up dim if not already done
-      if (dim < 0) {
-	dim = row.size();
-	cout << "Dimension: " << dim << endl;
-      }
-      // else check that dimension is preserved
-      else if (dim != static_cast<int>(row.size())) {
-	cerr << "Error: mismatched dimension in " 
-	     << input_file_name << " at line " << (nb_points+1) << endl;
-	return -1;
-      }
-	  
-      // create new point and corresponding vertex
-      ANNPoint p(dim);
-      p.coord = new double[dim];
-      for (int i=0; i<dim; i++)
-	p.coord[i] = row[i];
-      Point v(p);
-      v.data.boundary_flag=false;
-      point_cloud.push_back(v);
-      nb_points++;
+    // set up dim if not already done
+    if (dim < 0) {
+      dim = row.size();
+      cout << "Dimension: " << dim << endl;
+    }// else check that dimension is preserved
+    else if (dim != static_cast<int> (row.size())) {
+      cerr << "Error: mismatched dimension in "
+          << input_file_name << " at line " << (nb_points + 1) << endl;
+      return -1;
     }
+
+    // create new point and corresponding vertex
+    ANNPoint p(dim);
+    p.coord = new double[dim];
+    for (int i = 0; i < dim; i++)
+      p.coord[i] = row[i];
+    Point v(p);
+    v.data.boundary_flag = false;
+    point_cloud.push_back(v);
+    nb_points++;
+  }
   input.close();
   cout << "Number of input points: " << nb_points << endl;
 
+  // compute density
+  int num_neighb = atoi(argv[com++]);
+  // get rips parameter
+  double r = atof(argv[com++]);
 
-  //create distance structure
-  Distance_ANN< vector< Point >::iterator > metric_information;
-  metric_information.initialize(point_cloud.begin(),
-				point_cloud.end(),
-				dim);
+  // create distance structure
+  Distance_ANN< vector< Point >::iterator > metric_information(point_cloud.begin(),
+                                                               point_cloud.end(),
+                                                               dim,
+                                                               r * r);
 
-
-  
-  //compute density
-  int num_neighb= atoi(argv[com++]);
-  distance_to_density(point_cloud.begin(),point_cloud.end(),
-		      num_neighb, metric_information);
+  distance_to_density(point_cloud.begin(), point_cloud.end(),
+                      num_neighb, metric_information);
 
 
   // sort point cloud and retrieve permutation (for pretty output)
   vector<int> perm;
   perm.reserve(nb_points);
-  for(int i=0; i < nb_points; i++)
+  for (int i = 0; i < nb_points; i++)
     perm.push_back(i);
   std::sort(perm.begin(), perm.end(), Less_Than<vector<Point> >(point_cloud));
   // store inverse permutation as array of iterators on initial point cloud
   vector< vector<Point>::iterator> pperm;
   pperm.reserve(nb_points);
-  for (int i=0; i<nb_points; i++)
+  for (int i = 0; i < nb_points; i++)
     pperm.push_back(point_cloud.begin());
-  for (int i=0; i<nb_points; i++)
+  for (int i = 0; i < nb_points; i++)
     pperm[perm[i]] = (point_cloud.begin() + i);
   // operate permutation on initial point cloud 
   vector<Point> pc;
   pc.reserve(nb_points);
-  for (int i=0; i<nb_points; i++)
+  for (int i = 0; i < nb_points; i++)
     pc.push_back(point_cloud[i]);
-  for (int i=0; i<nb_points; i++)
+  for (int i = 0; i < nb_points; i++)
     point_cloud[i] = pc[perm[i]];
+
+  // update distance structure --- since it relies on the order of entry
+  metric_information.initialize(point_cloud.begin(), point_cloud.end());
   
-  //update distance structure --- since it relies on the order of entry
-  metric_information.initialize(point_cloud.begin(),point_cloud.end(), dim);
-
-  //set rips parameter
-  double r = atof(argv[com++]);
-  metric_information.mu = r*r;
-
-
-  //create cluster data structure
+  // create cluster data structure
   Cluster< vector< Point >::iterator > output_clusters;
-  //set threshold
+  // set threshold
   output_clusters.tau = atof(argv[com++]);
-  
+
   // perform clustering
-  compute_persistence(point_cloud.begin(),point_cloud.end(),
-		      metric_information,output_clusters);
+  compute_persistence(point_cloud.begin(), point_cloud.end(),
+                      metric_information, output_clusters);
 
 
   // compress data structure:
   // attach each data point to its cluster's root directly
   // to speed up output processing
-  attach_to_clusterheads(point_cloud.begin(),point_cloud.end());
+  attach_to_clusterheads(point_cloud.begin(), point_cloud.end());
 
   // output clusters (use permutation to preserve original point order)
   ofstream out;
@@ -184,10 +182,10 @@ int main(int argc, char *argv[]){
   out.open("diagram.txt");
   output_clusters.output_intervals(out);
   out.close();
-  
+
   //output colored clusters to COFF file (first 3 dimensions are selected)
   out.open("clusters_3d.coff");
-  output_clusters.output_clusters_coff(out,point_cloud.begin(),point_cloud.end());
+  output_clusters.output_clusters_coff(out, point_cloud.begin(), point_cloud.end());
   out.close();
-  
+
 }

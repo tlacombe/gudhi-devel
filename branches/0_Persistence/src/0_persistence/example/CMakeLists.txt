@@ -5,6 +5,14 @@ if(ANN_FOUND)
   message("ANN_INCLUDE_DIR = ${ANN_INCLUDE_DIR}")
   include_directories(${ANN_INCLUDE_DIR})
 
+if (GCOVR_PATH)
+  # for gcovr to make coverage reports - Corbera Jenkins plugin
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fprofile-arcs -ftest-coverage")	
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fprofile-arcs -ftest-coverage")
+endif()
+
+
   add_executable ( simple0persistence simple_0_persistence.cpp )
   target_link_libraries(simple0persistence ${ANN_LIBRARIES})
   add_test(simple0persistence_1 ${CMAKE_CURRENT_BINARY_DIR}/simple0persistence ${CMAKE_SOURCE_DIR}/data/points/0_persistence/spiral_w_density.txt 10 1e-3)
