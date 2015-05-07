@@ -20,18 +20,17 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SRC_0_PERSISTENCE_INCLUDE_GUDHI_0_PERSISTENCE_DISTANCE_H_
-#define SRC_0_PERSISTENCE_INCLUDE_GUDHI_0_PERSISTENCE_DISTANCE_H_
+#ifndef SRC_TOMATO_INCLUDE_GUDHI_TOMATO_GRAPH__H_
+#define SRC_TOMATO_INCLUDE_GUDHI_TOMATO_GRAPH__H_
 
 #include <vector>
 #include <cassert>
 
-/** \brief Distance Oracle Concept
- * provide a list of neighbors
- * and return Distance
+/** \brief Graph Oracle Concept
+ * provides a list of neighbors and return Graph
  */
 template <class Iterator>
-class Distance {
+class Graph {
  public:
   /**
    *****************************************************************************************
@@ -47,4 +46,4 @@ class Distance {
   virtual void get_neighbors(Iterator queryPoint, std::vector<Iterator>& out) = 0;
 };
 
-#endif  // SRC_0_PERSISTENCE_INCLUDE_GUDHI_0_PERSISTENCE_DISTANCE_H_
+#endif  // SRC_TOMATO_INCLUDE_GUDHI_TOMATO_GRAPH__H_

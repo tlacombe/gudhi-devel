@@ -1,8 +1,8 @@
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-// File:		Interval.h
+// File:		Cluster.h
 // Programmer:		Primoz Skraba
-// Description:		Interval data structure
+// Description:		Basic Cluster data structure
 // Last modified:	August 10, 2009 (Version 0.1)
 //----------------------------------------------------------------------
 //  Copyright (c) 2009 Primoz Skraba.  All Rights Reserved.
@@ -24,60 +24,21 @@
 //
 //
 //-----------------------------------------------------------------------
-//----------------------------------------------------------------------
-// History:
-//	Revision 0.1  August 10, 2009
-//		Initial release
-//----------------------------------------------------------------------
-//----------------------------------------------------------------------
+/*
+#ifndef SRC_TOMATO_INCLUDE_GUDHI_TOMATO_CLUSTER_BASE__H_
+#define SRC_TOMATO_INCLUDE_GUDHI_TOMATO_CLUSTER_BASE__H_
 
-#ifndef __INTERVAL__H
-#define __INTERVAL__H
+#include <set>
 
-#include<cassert>
-
-//======================
-// basic data structure
-// for holding birth and
-// death times
-//======================
-
-
-class Interval{
- private: 
-  double bi;
-  double de;
-  bool infinite;
-  
+//outline for cluster class
+template<class Iterator>
+class Cluster_Base {
  public:
-  Interval(){}
-
-  Interval(double b){
-    bi = b;
-    infinite = true;
-  }
-  
-  void close(double d){
-    de = d;
-    infinite = false;
-  }
-  
-  double birth(){
-    return bi;
-  }
-  
-
-  double death(){
-    assert(!infinite);
-    return de;
-  }
-  
-  bool inf(){
-    return infinite;
-  }
+  virtual void new_cluster(Iterator);
+  virtual bool merge(Iterator, Iterator);
+  virtual Iterator gradient(Iterator x, std::set<Iterator>);
 };
 
+#endif  // SRC_TOMATO_INCLUDE_GUDHI_TOMATO_CLUSTER_BASE__H_
 
-
-
-#endif
+*/

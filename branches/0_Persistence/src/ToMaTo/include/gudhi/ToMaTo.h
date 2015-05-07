@@ -24,29 +24,21 @@
 //
 //
 //-----------------------------------------------------------------------
-//----------------------------------------------------------------------
-// History:
-//	Revision 0.1  August 10, 2009
-//		Initial release
-//----------------------------------------------------------------------
-//----------------------------------------------------------------------
 
-#ifndef __CORE__H
-#define __CORE__H
+#ifndef SRC_TOMATO_INCLUDE_GUDHI_TOMATO__H_
+#define SRC_TOMATO_INCLUDE_GUDHI_TOMATO__H_
 
 #include <iostream>
 #include <vector>
 #include <cassert>
 #include <set> 
 
-#include "gudhi/0_persistence/Cluster_base.h"
-#include "gudhi/0_persistence/Cluster.h"
-#include "gudhi/0_persistence/Density.h"
-#include "gudhi/0_persistence/Distance_ANN.h"
-#include "gudhi/0_persistence/Distance.h"
-#include "gudhi/0_persistence/Interval.h"
-#include "gudhi/0_persistence/Point.h"
-#include "gudhi/0_persistence/Vertex.h"
+#include "gudhi/ToMaTo/Cluster_base.h"
+#include "gudhi/ToMaTo/Cluster.h"
+#include "gudhi/ToMaTo/Density.h"
+#include "gudhi/ToMaTo/Graph.h"
+#include "gudhi/ToMaTo/Interval.h"
+#include "gudhi/ToMaTo/Vertex.h"
 
 //--------------------------
 // Vertex class should 
@@ -57,14 +49,14 @@
 //    sink(itself)->set_sink
 //--------------------------
 
-
 //-----------------------------
 // Follow linked list to the end
 //-----------------------------
-template<class Iterator>
-Iterator find_sink(Iterator in){
+
+template <class Iterator>
+Iterator find_sink(Iterator in) {
   assert(in != Iterator());
-  while(in->get_sink() != in){
+  while (in->get_sink() != in) {
     in = in->get_sink();
     assert(in != Iterator());
   }
@@ -75,38 +67,37 @@ Iterator find_sink(Iterator in){
 //-----------------------------
 // collapse union-find data structure
 //-----------------------------
+
 template <class Iterator>
-void attach_to_clusterheads(Iterator start, Iterator end){
-  for(Iterator it=start;it!=end;it++){
+void attach_to_clusterheads(Iterator start, Iterator end) {
+  for (Iterator it = start; it != end; it++) {
     it->set_sink(find_sink(it));
   }
-   
+
 }
 
 
 //-----------------------------
 // main algorithm
 //-----------------------------
-template <class Iterator, class Distance, class Cluster>
-  void compute_persistence(Iterator start, 
-			   Iterator end, 
-			   Distance &Distance_Oracle,
-			   Cluster &Cluster_Data_Struct){
-  
 
-
+template <class Iterator, class Graph, class Cluster>
+void compute_persistence(Iterator start,
+                         Iterator end,
+                         Graph& Distance_Oracle,
+                         Cluster& Cluster_Data_Struct) {
   Iterator gradient;
   Iterator sink;
   std::vector<Iterator> adjacent_nodes;
   typename std::vector<Iterator>::iterator neighb;
 
-  
+
   //=================================
   // assume vertex container is 
   // presorted by function value
   //=================================
-  for(Iterator vit=start; vit != end; vit++){
-        
+  for (Iterator vit = start; vit != end; vit++) {
+
     //--------------------------------
     // clear adjacency list
     //--------------------------------
@@ -115,26 +106,24 @@ template <class Iterator, class Distance, class Cluster>
     //-----------------------------------
     // get neighbors
     //-----------------------------------
-    Distance_Oracle.get_neighbors(vit,adjacent_nodes);
-   
+    Distance_Oracle.get_neighbors(vit, adjacent_nodes);
+
     //-----------------------------------
     // find gradient, if it exists
     //-----------------------------------
     gradient = vit;
-    for(neighb = adjacent_nodes.begin();
-	neighb != adjacent_nodes.end();
-	neighb++){
+    for (neighb = adjacent_nodes.begin(); neighb != adjacent_nodes.end(); neighb++) {
       assert(*neighb != vit);
       if (*neighb < gradient)
-	gradient = *neighb;
+        gradient = *neighb;
     }
-    
-    
+
+
     //------------------------------
     // if no gradient, then declare
     // vit a peak
     //------------------------------
-    if(gradient == vit){
+    if (gradient == vit) {
       //-----------------------
       //set the sink to itself
       //-----------------------
@@ -144,15 +133,13 @@ template <class Iterator, class Distance, class Cluster>
       // check to make sure it
       // worked 
       //-----------------------
-      assert(find_sink(vit)==vit);
+      assert(find_sink(vit) == vit);
 
       //-----------------------
       // create new cluster
       //-----------------------
       Cluster_Data_Struct.new_cluster(vit);
-    }
-
-    else{
+    } else {
       //----------------------------------
       // gradient has been found
       // attach vit to gradient's cluster
@@ -165,68 +152,68 @@ template <class Iterator, class Distance, class Cluster>
       // (important invariant in the 
       // following)
       //----------------------------------
-      assert(vit->get_sink()==find_sink(vit));
-      
+      assert(vit->get_sink() == find_sink(vit));
+
       //------------------------------
       // Go through the neighbors again
       // to see if their clusters 
       // can be merged with vit's
       //------------------------------
-      for(neighb = adjacent_nodes.begin();
-	  neighb != adjacent_nodes.end();
-	  neighb++){
-	
-	//----------------------
-	// only consider older
-	// neighbors
-	//----------------------
-	if(vit<*neighb)
-	  continue;
+      for (neighb = adjacent_nodes.begin();
+           neighb != adjacent_nodes.end();
+           neighb++) {
 
-	//----------------------
-	// find sink of neighbor
-	//----------------------
-	sink = find_sink(*neighb);
+        //----------------------
+        // only consider older
+        // neighbors
+        //----------------------
+        if (vit<*neighb)
+          continue;
 
-	//----------------------------------
-	// check that vit is still right
-	// below its cluster's root
-	// (cf invariant)
-	//----------------------------------
-	assert(vit->get_sink()==find_sink(vit));
+        //----------------------
+        // find sink of neighbor
+        //----------------------
+        sink = find_sink(*neighb);
 
-	//----------------------------
-	// no need to do anything
-	// if neighb's sink is the 
-	// same as vit's
-	//----------------------------
-	if (sink==vit->get_sink())
-	  continue;
+        //----------------------------------
+        // check that vit is still right
+        // below its cluster's root
+        // (cf invariant)
+        //----------------------------------
+        assert(vit->get_sink() == find_sink(vit));
 
-	//----------------------------
-	//check if merge conditions
-	// are met
-	//----------------------------
-	if(Cluster_Data_Struct.merge(vit,sink)){
+        //----------------------------
+        // no need to do anything
+        // if neighb's sink is the 
+        // same as vit's
+        //----------------------------
+        if (sink == vit->get_sink())
+          continue;
 
-	  //-------------------------
-	  // If so, then merge cluster 
-	  // with lower peak into 
-	  // cluster with higher peak
-	  //-------------------------
-	  if (vit->get_sink()->func() >= sink->func())
-	    sink->set_sink(vit->get_sink());
-	  else {
-	    vit->get_sink()->set_sink(sink);
+        //----------------------------
+        //check if merge conditions
+        // are met
+        //----------------------------
+        if (Cluster_Data_Struct.merge(vit, sink)) {
 
-	    //-------------------------
-	    // compress path from vit 
-	    // to root on the fly
-	    // (cf invariant)
-	    //-------------------------
-	    vit->set_sink(sink);
-	  }
-	}
+          //-------------------------
+          // If so, then merge cluster 
+          // with lower peak into 
+          // cluster with higher peak
+          //-------------------------
+          if (vit->get_sink()->func() >= sink->func())
+            sink->set_sink(vit->get_sink());
+          else {
+            vit->get_sink()->set_sink(sink);
+
+            //-------------------------
+            // compress path from vit 
+            // to root on the fly
+            // (cf invariant)
+            //-------------------------
+            vit->set_sink(sink);
+          }
+        }
       }
 
     }
@@ -234,12 +221,4 @@ template <class Iterator, class Distance, class Cluster>
 
 }
 
-
-
-#endif
-
-
-
-
-
-
+#endif  // SRC_TOMATO_INCLUDE_GUDHI_TOMATO__H_

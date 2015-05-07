@@ -1,8 +1,8 @@
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-// File:		Cluster.h
+// File:		Point.h
 // Programmer:		Primoz Skraba
-// Description:		Basic Cluster data structure
+// Description:		Example Point data struture for use with ANN
 // Last modified:	August 10, 2009 (Version 0.1)
 //----------------------------------------------------------------------
 //  Copyright (c) 2009 Primoz Skraba.  All Rights Reserved.
@@ -24,45 +24,55 @@
 //
 //
 //-----------------------------------------------------------------------
-//----------------------------------------------------------------------
-// History:
-//	Revision 0.1  August 10, 2009
-//		Initial release
-//----------------------------------------------------------------------
-//----------------------------------------------------------------------
 
-#ifndef __CLUSTER__H
-#define __CLUSTER__H
+#ifndef SRC_TOMATO_INCLUDE_GUDHI_TOMATO_ANN_ANN_POINT__H_
+#define SRC_TOMATO_INCLUDE_GUDHI_TOMATO_ANN_ANN_POINT__H_
 
-#include <vector>
-#include <map>
-#include <set>
+#include <iostream>
 
-
-//outline for cluster class
-template<class Iterator>
-class Cluster_Base{
+class ANNPoint {
  public:
-  void new_cluster(Iterator);
-  bool merge(Iterator,Iterator);
-  void update(std::vector<Iterator>,Iterator);
-  bool test(Iterator);
-  bool neighbor_test(Iterator);
-  bool valid_neighborhood(std::set<Iterator>,Iterator);
-  Iterator gradient(Iterator x,std::set<Iterator>);
- 
+
+  typedef struct {
+    bool operator()(const ANNPoint a, const ANNPoint b) const {
+      for (int i = 0; i < a.dim; i++) {
+        if (a.coord[i] < b.coord[i]) return true;
+        else if (a.coord[i] > b.coord[i]) return false;
+      }
+      return false;
+    }
+  } Less_Than;
+
+  double *coord;
+  int dim;
+
+  ANNPoint() { }
+
+  ANNPoint(int d) {
+    dim = d;
+  }
+
+  //------------------------------------------------------------------------
+  // I/O functions
+  //------------------------------------------------------------------------
+
+  friend std::istream& operator>>(std::istream &in, ANNPoint &out) {
+    int i;
+    out.coord = new double[out.dim];
+    for (i = 0; i < out.dim; i++) {
+      in >> out.coord[i];
+    }
+    return in;
+  }
+
+  friend std::ostream& operator<<(std::ostream &out, const ANNPoint &in) {
+    int i;
+    for (i = 0; i < in.dim; i++) {
+      out << in.coord[i] << " ";
+    }
+    return out;
+  }
+
 };
 
-
-//==============================
-//Auxillary cluster information
-//==============================
-class Cluster_Info{
-public:
-  bool boundary_flag;
-  
-};
-
-
-
-#endif
+#endif  // SRC_TOMATO_INCLUDE_GUDHI_TOMATO_POINT__H_

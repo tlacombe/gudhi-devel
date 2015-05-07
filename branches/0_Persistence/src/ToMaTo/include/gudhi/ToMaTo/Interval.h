@@ -1,8 +1,8 @@
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
-// File:		Point.h
+// File:		Interval.h
 // Programmer:		Primoz Skraba
-// Description:		Example Point data struture for use with ANN
+// Description:		Interval data structure
 // Last modified:	August 10, 2009 (Version 0.1)
 //----------------------------------------------------------------------
 //  Copyright (c) 2009 Primoz Skraba.  All Rights Reserved.
@@ -31,64 +31,49 @@
 //----------------------------------------------------------------------
 //----------------------------------------------------------------------
 
-#ifndef __POINT_H
-#define __POINT_H
+#ifndef SRC_TOMATO_INCLUDE_GUDHI_TOMATO_INTERVAL__H_
+#define SRC_TOMATO_INCLUDE_GUDHI_TOMATO_INTERVAL__H_
 
-#include <iostream>
+#include <cassert>
 
-class ANNPoint{
+//======================
+// basic data structure
+// for holding birth and
+// death times
+//======================
 
-public:
+class Interval {
+ private:
+  double birth;
+  double death;
+  bool infinite;
 
-  typedef struct { 
-    bool operator()(const ANNPoint a, const ANNPoint  b) const {
-      for (int i=0; i<a.dim; i++) {
-	if (a.coord[i] < b.coord[i]) return true;
-	else if (a.coord[i] > b.coord[i]) return false;
-      }
-      return false;
-    }
-  } Less_Than;
+ public:
 
+  Interval() { }
 
-
-  double *coord;
-  int dim;
-  
-
-  ANNPoint(){}
-  
-  ANNPoint(int d){
-    dim = d;
+  Interval(double birth_) {
+    birth = birth_;
+    infinite = true;
   }
 
-  
-  //------------------------------------------------------------------------
-  // I/O functions
-  //------------------------------------------------------------------------
-  friend std::istream& operator >>(std::istream &in, ANNPoint &out) {
-    int i;
-    out.coord = new double[out.dim]; 
-    for(i=0;i<out.dim;i++){
-      in>>out.coord[i];
-    }
-    return in;
-  }
-   
-
-  friend std::ostream& operator<<(std::ostream &out, const ANNPoint &in) {
-    int i;
-    for(i=0;i<in.dim;i++){
-      out<<in.coord[i]<<" ";
-    }
-    return out;
+  void close(double death_) {
+    death = death_;
+    infinite = false;
   }
 
+  double getBirth() {
+    return birth;
+  }
+
+  double getDeath() {
+    assert(!infinite);
+    return death;
+  }
+
+  bool isInfinite() {
+    return infinite;
+  }
 };
 
-
-
-
-
-
-#endif
+#endif  // SRC_TOMATO_INCLUDE_GUDHI_TOMATO_INTERVAL__H_

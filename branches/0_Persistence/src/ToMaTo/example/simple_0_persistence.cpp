@@ -24,13 +24,6 @@
 //
 //
 //-----------------------------------------------------------------------
-//----------------------------------------------------------------------
-// History:
-//	Revision 0.1  August 10, 2009
-//		Initial release
-//----------------------------------------------------------------------
-//----------------------------------------------------------------------
-
 
 
 #include <iostream>
@@ -40,13 +33,16 @@
 #include <algorithm>
 
 
-#include "gudhi/Core.h"
+#include "gudhi/ToMaTo.h"
+#include "gudhi/ToMaTo/ANN/ANN_Graph.h"
+#include "gudhi/ToMaTo/ANN/ANN_Point.h"
 
 using namespace std;
 
+//using namespace Gudhi::ToMaTo;
 
 //rename for brevity
-typedef Vertex<ANNPoint, Cluster_Info > Point;
+typedef Vertex<ANNPoint> Point;
 
 // comparison function object for vector indices
 
@@ -97,7 +93,7 @@ int main(int argc, char *argv[]) {
     if (dim < 0) {
       dim = row.size() - 1; // reserve last coordinate for function value
       cout << "Dimension: " << dim << endl;
-    }      // else check that dimension is preserved
+    }// else check that dimension is preserved
     else if (dim != static_cast<int> (row.size()) - 1) {
       cerr << "Error: mismatched dimension in "
           << input_file_name << " at line " << (nb_points + 1) << endl;
@@ -111,7 +107,6 @@ int main(int argc, char *argv[]) {
       p.coord[i] = row[i];
     Point v(p);
     v.set_func(row[dim]);
-    v.data.boundary_flag = false;
     point_cloud.push_back(v);
     nb_points++;
   }
@@ -144,7 +139,7 @@ int main(int argc, char *argv[]) {
   double r = atof(argv[com++]);
 
   // create distance structure
-  Distance_ANN< vector< Point >::iterator > metric_information(point_cloud.begin(),
+  Graph_ANN< vector< Point >::iterator > metric_information(point_cloud.begin(),
                                                                point_cloud.end(),
                                                                dim,
                                                                r * r);
@@ -178,7 +173,7 @@ int main(int argc, char *argv[]) {
   out.close();
 
   //output colored clusters to COFF file (first 3 dimensions are selected)
-  out.open("clusters_3d.coff");
+  out.open("clusters_3d.off");
   output_clusters.output_clusters_coff(out, point_cloud.begin(), point_cloud.end());
   out.close();
 

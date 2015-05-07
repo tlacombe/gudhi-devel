@@ -20,14 +20,14 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SRC_0_PERSISTENCE_INCLUDE_GUDHI_0_PERSISTENCE_DISTANCE_ANN_H_
-#define SRC_0_PERSISTENCE_INCLUDE_GUDHI_0_PERSISTENCE_DISTANCE_ANN_H_
+#ifndef SRC_TOMATO_INCLUDE_GUDHI_TOMATO_ANN_ANN_GRAPH__H_
+#define SRC_TOMATO_INCLUDE_GUDHI_TOMATO_ANN_ANN_GRAPH__H_
 
 #include <ANN/ANN.h>
 
 #include <vector>
 
-#include "gudhi/0_persistence/Distance.h"
+#include "gudhi/ToMaTo/Graph.h"
 
 //--------------------------
 // when the vertex class
@@ -36,7 +36,7 @@
 // assumes a coord member
 //--------------------------
 
- /** \brief Distance_ANN is an implementation of the Distance concept using ANN points.
+ /** \brief Graph_ANN is an implementation of the Graph concept using ANN points.
   * Uses annkFRSearch on a ANNkd_tree to get rips neighbors.
   *  @param  ANNkd_tree* <I>kd:</I>         Persistent data structure for ANN kd tree.
   *  @param  int         <I>num_points:</I> Number of points in the data structure.
@@ -45,8 +45,8 @@
   *  @param  double      <I>mu:</I>         Rips parameter of the data structure.
   */
 template <class Iterator>
-class Distance_ANN : public Distance<Iterator> {
- private:
+class Graph_ANN : public Graph<Iterator> {
+ protected:
   //----------------------
   // persistent data structure
   // for kd tree
@@ -65,10 +65,31 @@ class Distance_ANN : public Distance<Iterator> {
 
  private:
   /** \brief Default copy constructor is disabled.*/
-  Distance_ANN(const Distance_ANN& ref) = delete;
+  Graph_ANN(const Graph_ANN& ref) = delete;
   /** \brief Default operator= is disabled.*/
-  Distance_ANN& operator=(const Distance_ANN& ref) = delete;
+  Graph_ANN& operator=(const Graph_ANN& ref) = delete;
 
+ public:
+    /**
+   *****************************************************************************************
+   *  @brief      Constructs the tree structure.
+   *
+   *  @usage      Call initialize ANN kd tree structure with start_ and end_ iterators on a list of points.
+   *              Sets the dimension and te rips parameter value of the class
+   *  @note       num_points is computed again. 
+   * 
+   *  @param[in] off_file_name OFF file name and path.
+   *  @param[in] mu_    Rips parameter of the data structure.
+   *
+   *  @return     None
+   ****************************************************************************************/
+Graph_ANN(const std::string& off_file_name, double mu_)
+      : kd(nullptr),
+      num_points(-1),
+      dim(-1),
+      start(nullptr),
+      mu(mu_) {
+  }
  public:
   /**
  *****************************************************************************************
@@ -85,7 +106,7 @@ class Distance_ANN : public Distance<Iterator> {
  *
  *  @return     None
  ****************************************************************************************/
-Distance_ANN(Iterator start_, Iterator end_, int dim_, double mu_)
+Graph_ANN(Iterator start_, Iterator end_, int dim_, double mu_)
       : kd(nullptr),
       num_points(end_ - start_),
       dim(dim_),
@@ -95,7 +116,7 @@ Distance_ANN(Iterator start_, Iterator end_, int dim_, double mu_)
   }
 
   /** \brief Destructor; deallocates the kd tree structure from ANN. */
-  ~Distance_ANN() {
+  ~Graph_ANN() {
     delete kd;
   }
 
@@ -143,7 +164,7 @@ Distance_ANN(Iterator start_, Iterator end_, int dim_, double mu_)
  *  @brief         Get rips neighbors
  *
  *  @usage         Sets a vector of neighbors points from a query point.
- *  @note          Neighbors are found from rips. Rips parameter is set on Distance_ANN constructor. 
+ *  @note          Neighbors are found from rips. Rips parameter is set on Graph_ANN constructor. 
  * 
  *  @param[in]     queryPoint Iterator on the point from which the function finds the neighbors.
  *  @param[in,out] out        Vector of Iterator on neighbors points.
@@ -166,9 +187,7 @@ Distance_ANN(Iterator start_, Iterator end_, int dim_, double mu_)
     double *ndist = new double[nb_neighb];
     memset(ndist, 0, sizeof (double)*nb_neighb);
 
-    int test = kd->annkFRSearch(queryPoint->geometry.coord, mu, nb_neighb, neighb, ndist);
-
-    assert(test == nb_neighb);
+    assert(kd->annkFRSearch(queryPoint->geometry.coord, mu, nb_neighb, neighb, ndist) == nb_neighb);
     for (int i = 0; i < nb_neighb; i++) {
       Iterator nit = start + neighb[i];
       if (nit != queryPoint) {
@@ -178,56 +197,7 @@ Distance_ANN(Iterator start_, Iterator end_, int dim_, double mu_)
     delete[] ndist;
     delete[] neighb;
   }
-
-  //----------------------------------
-  // get number of neighbors
-  // for density estimation
-  //----------------------------------
-/**
- *****************************************************************************************
- *  @brief      Get number of neighbors in a given radius.
- *
- *  @note       Rips parameter set on Distance_ANN constructor is not used. 
- * 
- *  @param[in]  queryPoint Iterator on the point from which the function finds the neighbors.
- *  @param[in]  radius     radius of rips parameter.
- *
- *  @return     Number of neighbors.
- ****************************************************************************************/
-  int get_num_neighbors(Iterator queryPoint, double radius) {
-    int nb_neighb = kd->annkFRSearch(queryPoint->geometry.coord, radius*radius, 0);
-    return nb_neighb;
-  }
-
-  //----------------------------------
-  // get distances to k nearest neighbors
-  // for density estimation
-  //----------------------------------
-
-  void get_neighbors_dist(Iterator queryPoint, int k, double *ndist) {
-    int *neighb = new int[k];
-    memset(neighb, 0, sizeof (int)*k);
-
-    kd->annkSearch(queryPoint->geometry.coord, k, neighb, ndist, 0);
-    delete[] neighb;
-  }
-
-  //----------------------------------
-  // get distances neighbors within r
-  // for density estimation
-  //----------------------------------  
-
-  int get_neighbors_dist_r(Iterator queryPoint, double radius, double *ndist) {
-    int nb_neighb = kd->annkFRSearch(queryPoint->geometry.coord, radius*radius, 0);
-
-    int *neighb = new int[nb_neighb];
-    memset(neighb, 0, sizeof (int)*nb_neighb);
-    int test = kd->annkFRSearch(queryPoint->geometry.coord, radius*radius, nb_neighb, neighb, ndist, 0);
-
-    delete[] neighb;
-    return test;
-  }
  
 };
 
-#endif  // SRC_0_PERSISTENCE_INCLUDE_GUDHI_0_PERSISTENCE_DISTANCE_ANN_H_
+#endif  // SRC_TOMATO_INCLUDE_GUDHI_TOMATO_GRAPH_ANN__H_
