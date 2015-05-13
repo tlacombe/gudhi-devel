@@ -34,29 +34,15 @@
 
 
 #include "gudhi/ToMaTo.h"
-#include "gudhi/ToMaTo/ANN/ANN_Graph.h"
-#include "gudhi/ToMaTo/ANN/ANN_Point.h"
+#include "gudhi/ToMaTo/ANN/ANN_graph.h"
+#include "gudhi/ToMaTo/ANN/ANN_point.h"
 
 using namespace std;
 
 //using namespace Gudhi::ToMaTo;
 
 //rename for brevity
-typedef Vertex<ANNPoint> Point;
-
-// comparison function object for vector indices
-
-template<class V> class Less_Than {
- protected:
-  V& v;
- public:
-
-  Less_Than(V& v_) : v(v_) { }
-
-  bool operator()(const int a, const int b) const {
-    return Point::Less_Than()(v[a], v[b]);
-  }
-};
+typedef Vertex<ANN_point> Point;
 
 
 // main function
@@ -77,6 +63,10 @@ int main(int argc, char *argv[]) {
   ifstream input;
   input.open(input_file_name.c_str());
   assert(input.good());
+
+
+  // create distance structure
+  ANN_graph< Point > metric_information;
 
   int dim = -1;
   int nb_points = 0;
@@ -101,81 +91,34 @@ int main(int argc, char *argv[]) {
     }
 
     // create new point and corresponding vertex
-    ANNPoint p(dim);
+    ANN_point p(dim);
     p.coord = new double[dim];
     for (int i = 0; i < dim; i++)
       p.coord[i] = row[i];
     Point v(p);
     v.set_func(row[dim]);
-    point_cloud.push_back(v);
+    metric_information.push_back(v);
     nb_points++;
   }
   input.close();
-  cout << "Number of input points: " << nb_points << endl;
+  cout << "Number of input points: " << nb_points << " - dimension = " << dim << endl;
 
-
-  // sort point cloud and retrieve permutation (for pretty output)
-  vector<int> perm;
-  perm.reserve(nb_points);
-  for (int i = 0; i < nb_points; i++)
-    perm.push_back(i);
-  std::sort(perm.begin(), perm.end(), Less_Than<vector<Point> >(point_cloud));
-  // store inverse permutation as array of iterators on initial point cloud
-  vector< vector<Point>::iterator> pperm;
-  pperm.reserve(nb_points);
-  for (int i = 0; i < nb_points; i++)
-    pperm.push_back(point_cloud.begin());
-  for (int i = 0; i < nb_points; i++)
-    pperm[perm[i]] = (point_cloud.begin() + i);
-  // operate permutation on initial point cloud 
-  vector<Point> pc;
-  pc.reserve(nb_points);
-  for (int i = 0; i < nb_points; i++)
-    pc.push_back(point_cloud[i]);
-  for (int i = 0; i < nb_points; i++)
-    point_cloud[i] = pc[perm[i]];
-
+  metric_information.set_dimension(dim);
   //set rips parameter
   double r = atof(argv[com++]);
+  metric_information.set_sqrad(r*r);
+  
+  metric_information.set_persistence_threshold(atof(argv[com++]));
+  metric_information.construct_ANN_tree();
 
-  // create distance structure
-  Graph_ANN< vector< Point >::iterator > metric_information(point_cloud.begin(),
-                                                               point_cloud.end(),
-                                                               dim,
-                                                               r * r);
+  metric_information.compute_persistence();
+  
+  //output barcode
+  metric_information.output_intervals("simple_diagram.txt");
 
-
-
-  //create cluster data structure
-  Cluster< vector< Point >::iterator > output_clusters;
-  //set threshold
-  output_clusters.tau = atof(argv[com++]);
-
-  // perform clustering
-  compute_persistence(point_cloud.begin(), point_cloud.end(),
-                      metric_information, output_clusters);
-
-
-  // compress data structure:
-  // attach each data point to its cluster's root directly
-  // to speed up output processing
-  attach_to_clusterheads(point_cloud.begin(), point_cloud.end());
+  //output colored clusters to OFF file (first 3 dimensions are selected)
+  metric_information.output_clusters_off("simple_clusters.off");
 
   // output clusters (use permutation to preserve original point order)
-  ofstream out;
-  out.open("clusters.txt");
-  output_clusters.output_clusters(out, pperm.begin(), pperm.end());
-  out.close();
-
-  //output barcode
-  out.open("diagram.txt");
-  output_clusters.output_intervals(out);
-  out.close();
-
-  //output colored clusters to COFF file (first 3 dimensions are selected)
-  out.open("clusters_3d.off");
-  output_clusters.output_clusters_coff(out, point_cloud.begin(), point_cloud.end());
-  out.close();
-
-
+  metric_information.output_clusters("simple_clusters.txt");
 }

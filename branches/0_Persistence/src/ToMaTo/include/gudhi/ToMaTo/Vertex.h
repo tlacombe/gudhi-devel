@@ -50,6 +50,7 @@ class Vertex {
   // as template template parameters cannot inherit defaults
   // though multiple levels 
   typedef typename Container<Vertex>::iterator Iterator;
+  typedef Point_Class Point;
 
  protected:
   Iterator sink;
@@ -61,9 +62,9 @@ class Vertex {
     bool operator()(const Vertex a, const Vertex b) const {
       if (a.func() > b.func()) return true;
       else if (a.func() < b.func()) return false;
-      else return typename Point_Class::Less_Than()(a.geometry, b.geometry);
+      else return typename Point_Class::less_than()(a.geometry, b.geometry);
     }
-  } Less_Than;
+  } less_than;
 
   //store geometry
   Point_Class geometry;

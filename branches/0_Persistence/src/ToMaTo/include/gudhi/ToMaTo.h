@@ -35,7 +35,6 @@
 
 #include "gudhi/ToMaTo/Cluster_base.h"
 #include "gudhi/ToMaTo/Cluster.h"
-#include "gudhi/ToMaTo/Density.h"
 #include "gudhi/ToMaTo/Graph.h"
 #include "gudhi/ToMaTo/Interval.h"
 #include "gudhi/ToMaTo/Vertex.h"

@@ -26,7 +26,7 @@
 #include <vector>
 
 #include "gudhi/ToMaTo.h"
-#include "gudhi/ToMaTo/ANN/ANN_Graph.h"
+#include "gudhi/ToMaTo/ANN/ANN_graph.h"
 
 //--------------------------
 // when the vertex class
@@ -35,61 +35,78 @@
 // assumes a coord member
 //--------------------------
 
-/** \brief ANN_Graph_with_density is an implementation of the ANN_Graph.
+/** \brief ANN_graph_with_density is an implementation of the ANN_Graph.
  */
-template <class Iterator>
-class ANN_Graph_with_density : public Graph_ANN<Iterator> {
- private:
+template <class Vertex>
+class ANN_graph_with_density : public ANN_graph<Vertex> {
+  typedef typename std::vector< Vertex >::iterator Iterator;
+  
   /** \name Constructor/Destructor
    * @{ */
 
  private:
-  /** \brief Default copy constructor is disabled.*/
-  ANN_Graph_with_density(const ANN_Graph_with_density& ref) = delete;
   /** \brief Default operator= is disabled.*/
-  ANN_Graph_with_density& operator=(const ANN_Graph_with_density& ref) = delete;
+  ANN_graph_with_density& operator=(const ANN_graph_with_density& ref) = delete;
 
  public:
-
-    /**
+/**
    *****************************************************************************************
    *  @brief      Constructs the tree structure.
    *
-   *  @usage      Call initialize ANN kd tree structure with start_ and end_ iterators on a list of points.
-   *              Sets the dimension and te rips parameter value of the class
+   *  @usage      Default constructor
    *  @note       num_points is computed again. 
    * 
-   *  @param[in] off_file_name OFF file name and path.
-   *  @param[in] mu_    Rips parameter of the data structure.
-   *
    *  @return     None
    ****************************************************************************************/
-  ANN_Graph_with_density(const std::string& off_file_name, double mu_)
-      : Graph_ANN<Iterator>(off_file_name, mu_) { }
+  ANN_graph_with_density()
+      : ANN_graph<Vertex>() { }
 
   /** \brief Destructor. */
-  ~ANN_Graph_with_density() { }
+  ~ANN_graph_with_density() { }
 
   /** @} */ // end constructor/destructor
+  
+//------------------------------
+// distance to measure
+//------------------------------
+void distance_to_density(int k)
+{
+  Iterator it;
+  double sum;
+  double *ndist = new double[k];
 
+  for(it=Graph< Vertex >::point_cloud.begin();it!=Graph< Vertex >::point_cloud.end();it++){
+    get_neighbors_dist(it,k,ndist);  
+    sum=0;
+    for (int i=0; i<k; ++i) {
+      sum += ndist[i]*ndist[i];
+    }
+    it->set_func(sqrt((double)k/(double)sum));
+  }  
+
+  delete ndist;
+  Graph<Vertex>::sort_and_permute();
+}
+
+
+ private:
   //----------------------------------
   // get number of neighbors
   // for density estimation
   //----------------------------------
-
   /**
    *****************************************************************************************
    *  @brief      Get number of neighbors in a given radius.
    *
-   *  @note       Rips parameter set on ANN_Graph_with_density constructor is not used. 
+   *  @note       Rips parameter set on ANN_graph_with_density constructor is not used. 
    * 
    *  @param[in]  queryPoint Iterator on the point from which the function finds the neighbors.
    *  @param[in]  radius     radius of rips parameter.
    *
    *  @return     Number of neighbors.
    ****************************************************************************************/
-/*    int get_num_neighbors(Iterator queryPoint, double radius) {
-      int nb_neighb = kd->annkFRSearch(queryPoint->geometry.coord, radius*radius, 0);
+    int get_num_neighbors(Iterator queryPoint, double radius) {
+      int nb_neighb = ANN_graph<Vertex>::kd->annkFRSearch(queryPoint->geometry.coord, radius*radius, 0);
       return nb_neighb;
     }
 
@@ -102,7 +119,7 @@ class ANN_Graph_with_density : public Graph_ANN<Iterator> {
       int *neighb = new int[k];
       memset(neighb, 0, sizeof (int)*k);
 
-      kd->annkSearch(queryPoint->geometry.coord, k, neighb, ndist, 0);
+      ANN_graph<Vertex>::kd->annkSearch(queryPoint->geometry.coord, k, neighb, ndist, 0);
       delete[] neighb;
     }
 
@@ -112,16 +129,15 @@ class ANN_Graph_with_density : public Graph_ANN<Iterator> {
     //----------------------------------  
 
     int get_neighbors_dist_r(Iterator queryPoint, double radius, double *ndist) {
-      int nb_neighb = kd->annkFRSearch(queryPoint->geometry.coord, radius*radius, 0);
+      int nb_neighb = ANN_graph<Vertex>::kd->annkFRSearch(queryPoint->geometry.coord, radius*radius, 0);
 
       int *neighb = new int[nb_neighb];
       memset(neighb, 0, sizeof (int)*nb_neighb);
-      int test = kd->annkFRSearch(queryPoint->geometry.coord, radius*radius, nb_neighb, neighb, ndist, 0);
+      int test = ANN_graph<Vertex>::kd->annkFRSearch(queryPoint->geometry.coord, radius*radius, nb_neighb, neighb, ndist, 0);
 
       delete[] neighb;
       return test;
     }
-   */
 };
 
 #endif  // SRC_TOMATO_INCLUDE_GUDHI_TOMATO_GRAPH_ANN__H_

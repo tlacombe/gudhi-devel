@@ -30,25 +30,25 @@
 
 #include <iostream>
 
-class ANNPoint {
+class ANN_point {
  public:
 
   typedef struct {
-    bool operator()(const ANNPoint a, const ANNPoint b) const {
+    bool operator()(const ANN_point a, const ANN_point b) const {
       for (int i = 0; i < a.dim; i++) {
         if (a.coord[i] < b.coord[i]) return true;
         else if (a.coord[i] > b.coord[i]) return false;
       }
       return false;
     }
-  } Less_Than;
+  } less_than;
 
   double *coord;
   int dim;
 
-  ANNPoint() { }
+  ANN_point() { }
 
-  ANNPoint(int d) {
+  ANN_point(int d) {
     dim = d;
   }
 
@@ -56,7 +56,7 @@ class ANNPoint {
   // I/O functions
   //------------------------------------------------------------------------
 
-  friend std::istream& operator>>(std::istream &in, ANNPoint &out) {
+  friend std::istream& operator>>(std::istream &in, ANN_point &out) {
     int i;
     out.coord = new double[out.dim];
     for (i = 0; i < out.dim; i++) {
@@ -65,7 +65,7 @@ class ANNPoint {
     return in;
   }
 
-  friend std::ostream& operator<<(std::ostream &out, const ANNPoint &in) {
+  friend std::ostream& operator<<(std::ostream &out, const ANN_point &in) {
     int i;
     for (i = 0; i < in.dim; i++) {
       out << in.coord[i] << " ";
