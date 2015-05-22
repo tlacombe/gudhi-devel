@@ -1,53 +1,40 @@
-//----------------------------------------------------------------------
-//----------------------------------------------------------------------
-// File:		Cluster_Basic.h
-// Programmer:		Primoz Skraba
-// Description:		Basic Cluster data structure
-// Last modified:	Sept 8, 2009 (Version 0.1)
-//----------------------------------------------------------------------
-//  Copyright (c) 2009 Primoz Skraba.  All Rights Reserved.
-//-----------------------------------------------------------------------
-//
-//
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
-//
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
-//
-//-----------------------------------------------------------------------
-//----------------------------------------------------------------------
-// History:
-//	Revision 0.1  August 10, 2009
-//		Initial release
-//----------------------------------------------------------------------
-//----------------------------------------------------------------------
+/*    This file is part of the Gudhi Library. The Gudhi library
+ *    (Geometric Understanding in Higher Dimensions) is a generic C++
+ *    library for computational topology.
+ *
+ *    Author(s):       Primoz Skraba
+ *
+ *    Copyright (C) 2009 Primoz Skraba.  All Rights Reserved.
+ *
+ *    This program is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation, either version 3 of the License, or
+ *    (at your option) any later version.
+ *
+ *    This program is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
+#ifndef SRC_TOMATO_INCLUDE_GUDHI_TOMATO_CLUSTER_H_
+#define SRC_TOMATO_INCLUDE_GUDHI_TOMATO_CLUSTER_H_
 
-#ifndef SRC_TOMATO_INCLUDE_GUDHI_TOMATO_CLUSTER__H_
-#define SRC_TOMATO_INCLUDE_GUDHI_TOMATO_CLUSTER__H_
-
-#include <iostream>
 #include <fstream>
-#include <cmath>
 #include <ctime>
-#include <algorithm>
+#include <algorithm> // for min
 #include <vector>
 #include <map>
+#include <set>
 
 #include "gudhi/ToMaTo/Interval.h"
 
 //==============================
-//basic implementation of 
-//cluster class
+// basic implementation of
+// cluster class
 //==============================
 
 template<class Iterator>
@@ -55,34 +42,33 @@ class Cluster {
  private:
   std::vector<Interval> Int_Data;
   //--------------------------------
-  // since we are storing it as a 
+  // since we are storing it as a
   // vector, it is equivalent to
   // storing an iterator
   //--------------------------------
   std::map<Iterator, int> Generator;
   //--------------------------------
-  //for faster searching
+  // for faster searching
   //--------------------------------
 
  public:
   double tau;
 
   //----------------------
-  //create a new interval
+  // create a new interval
   //----------------------
 
   virtual void new_cluster(Iterator x) {
     Generator[x] = Int_Data.size();
     Int_Data.push_back(Interval(x->func()));
-
   }
 
-  //----------------------
-  // Merge two intervals 
-  // note this will only output 
-  // correctly if persistence 
-  // threshold is set to infty
-  //----------------------
+  //-----------------------------
+  // Merge two intervals
+  // note this will only output
+  // correctly if persistence
+  // threshold is set to infinity
+  //-----------------------------
 
   virtual bool merge(Iterator x, Iterator y) {
     // note: by hypothesis, y->func() >= x->func()
@@ -96,7 +82,7 @@ class Cluster {
     //---------------------------------
     if (std::min(x->get_sink()->func(), y->func()) < x->func() + tau) {
       //---------------------------------
-      //kill younger interval
+      // kill younger interval
       //---------------------------------
       int i = Generator[x->get_sink()];
       int j = Generator[y];
@@ -114,14 +100,14 @@ class Cluster {
   }
 
   //----------------------------
-  //unwieghted gradient choice
+  // unweighted gradient choice
   //----------------------------
 
   virtual Iterator gradient(Iterator x, std::set<Iterator> &List) {
     typename std::set<Iterator>::iterator it;
     Iterator y = x;
     //--------------------
-    //find oldest neighbor
+    // find oldest neighbor
     //--------------------
     for (it = List.begin(); it != List.end(); it++) {
       if (*it < y)
@@ -132,22 +118,22 @@ class Cluster {
   }
 
   //------------------------------------------------------------
-  // weighted gradient choice -- 
-  // need access to Distance struct 
-  // this simplest way to do this is to 
-  // derive from Cluster_Basic and   add a pointer to a 
+  // weighted gradient choice --
+  // need access to Distance struct
+  // this simplest way to do this is to
+  // derive from Cluster_Basic and add a pointer to a
   // distance structure
   //------------------------------------------------------------
-  // Iterator gradient(Iterator x,std::set<Iterator> &List){
+  // Iterator gradient(Iterator x,std::set<Iterator> &List) {
   // double dist1 =...;
   // double dist2 =...;
-  // return ((x->func()-y1->func())/dist1<(x->func()-y2->func())/dist2) ? y1 : y2; 
-  //}
+  // return ((x->func()-y1->func())/dist1<(x->func()-y2->func())/dist2) ? y1 : y2;
+  // }
 
 
-  //------------------------------
-  // Output intervals 
-  //------------------------------
+  //-----------------
+  // Output intervals
+  //-----------------
 
   void output_intervals(std::ofstream &out) {
     std::vector<Interval>::iterator it;
@@ -170,26 +156,25 @@ class Cluster {
 
   template <class IIterator>
   void output_clusters(std::ofstream &out, IIterator start, IIterator finish) {
-    //------------------------------
-    //run through and 
-    //create map from prominent peaks 
-    //------------------------------
+    //------------------------------------------------
+    // run through and create map from prominent peaks
+    //------------------------------------------------
     std::map<Iterator, int> cluster_ids;
 
     cluster_ids.clear();
 
     int i = 1;
-    //------------
-    //number nodes
-    //------------
+    //-------------
+    // number nodes
+    //-------------
     for (IIterator it = start; it != finish; it++) {
       // assert(find_sink(*it) == (*it)->get_sink());
       typename std::map<Iterator, int>::iterator mit =
           cluster_ids.find(find_sink(*it));
       if (mit == cluster_ids.end()) {
-        //--------------
+        //------------------
         // check peak height
-        //--------------
+        //------------------
         if (find_sink(*it)->func() >= tau)
           cluster_ids[find_sink(*it)] = i++;
       }
@@ -198,11 +183,10 @@ class Cluster {
     for (IIterator it = start; it != finish; it++) {
       //--------------
       // check peak height
-      // if it is ok, then 
+      // if it is ok, then
       // output cluster number
       // otherwise output NaN
       //--------------
-      // out<<(*it)->geometry<<" ";
       if (find_sink(*it)->func() >= tau)
         out << cluster_ids[find_sink(*it)];
       else
@@ -219,8 +203,7 @@ class Cluster {
   //------------------------------
 
   void output_clusters_coff(std::ofstream &out, Iterator start, Iterator finish) {
-    //run through and 
-    //create map from prominent peaks
+    // run through and create map from prominent peaks
     std::map<Iterator, double*> colors;
     std::set<Iterator> peaks;
 
@@ -231,7 +214,7 @@ class Cluster {
 
     int num_nodes = 0;
     //------------
-    //number nodes
+    // number nodes
     //------------
     for (Iterator it = start; it != finish; it++) {
       peaks.insert(find_sink(it));
@@ -239,7 +222,7 @@ class Cluster {
     }
 
     //--------------------------------
-    //create color scheme
+    // create color scheme
     //--------------------------------
     std::cout << "Number of clusters: "
         << assign_colors(colors, peaks, tau) << std::endl;
@@ -264,12 +247,19 @@ class Cluster {
           << colors[sink][2] << " "
           << ".75" << std::endl;
     }
-
   }
 
  private:
+  Iterator find_sink(Iterator in) {
+    assert(in != Iterator());
+    while (in->get_sink() != in) {
+      in = in->get_sink();
+      assert(in != Iterator());
+    }
+    return in;
+  }
   //---------------------------------------------
-  // This is heuristic to assign colors 
+  // This is heuristic to assign colors
   // for the clusters for outputting to an OFF
   // file. Also filters out those clusters whose peak
   // is lower than the threshold tau
@@ -278,11 +268,10 @@ class Cluster {
   int assign_colors(std::map<Iterator, double*>& cluster_colors,
                     std::set<Iterator> &clusters,
                     double tau) {
-
     int nb_clusters = clusters.size();
     int res = 0;
 
-    // reduce nb_clusters to the actual number of clusters 
+    // reduce nb_clusters to the actual number of clusters
     for (typename std::set<Iterator>::iterator cit = clusters.begin();
          cit != clusters.end(); cit++)
       // check if cluster does not appear below tau
@@ -296,14 +285,14 @@ class Cluster {
 
 
     std::vector<double*> colors;
-    colors.reserve(nb_clusters + 1); // additional entry is for black
+    colors.reserve(nb_clusters + 1);  // additional entry is for black
     //---------------------------------
     // just choose circularly
     //---------------------------------
-    //double ratio =  sqrt(3)/6;
+    // double ratio =  sqrt(3)/6;
     for (int i = 0; i < nb_clusters; ++i) {
-      colors[i] = new double [3];
-      double theta = (double) 2 * i * M_PI / (double) nb_clusters;
+      colors[i] = new double[3];
+      double theta = static_cast<double>(2 * i * M_PI) / static_cast<double>(nb_clusters);
       if (theta >= 0 && theta < M_PI / 3) {
         colors[i][0] = 1;
         colors[i][1] = 3 * theta / M_PI;
@@ -324,14 +313,14 @@ class Cluster {
         colors[i][0] = 3 * (theta - 4 * M_PI / 3) / M_PI;
         colors[i][1] = 0;
         colors[i][2] = 1;
-      } else { // theta >= 5*M_PI/3 && theta < 2*M_PI
+      } else {  // theta >= 5*M_PI/3 && theta < 2*M_PI
         colors[i][0] = 1;
         colors[i][1] = 0;
         colors[i][2] = 1 - 3 * (theta - 5 * M_PI / 3) / M_PI;
       }
     }
     // force black at index nb_clusters
-    colors[nb_clusters] = new double [3];
+    colors[nb_clusters] = new double[3];
     colors[nb_clusters][0] = 0;
     colors[nb_clusters][1] = 0;
     colors[nb_clusters][2] = 0;
@@ -344,14 +333,14 @@ class Cluster {
     // first, create identity
     //---------------------------------
     for (int i = 0; i < nb_clusters; ++i)
-      perm [i] = i;
+      perm[i] = i;
     //---------------------------------
     // then, permute it
     //---------------------------------
     srand((unsigned) time(NULL));
     for (int i = 0; i < nb_clusters - 1; ++i) {
       int tmp = perm[i];
-      int j = i + (int) ((double) rand() * (nb_clusters - i) / RAND_MAX);
+      int j = i + static_cast<int>(rand() * (nb_clusters - i) / RAND_MAX);
       perm[i] = perm[j];
       perm[j] = tmp;
     }
@@ -366,15 +355,15 @@ class Cluster {
       if (find_sink(*cit)->func() >= tau) {
         cluster_colors[*cit] = colors[perm[k++]];
         res++;
-      } else
-        cluster_colors[*cit] = colors[nb_clusters]; // black
+      } else {
+        cluster_colors[*cit] = colors[nb_clusters];  // black
+      }
     }
 
     delete perm;
 
     return res;
   }
-
 };
 
-#endif  // SRC_TOMATO_INCLUDE_GUDHI_TOMATO_CLUSTER__H_
+#endif  // SRC_TOMATO_INCLUDE_GUDHI_TOMATO_CLUSTER_H_

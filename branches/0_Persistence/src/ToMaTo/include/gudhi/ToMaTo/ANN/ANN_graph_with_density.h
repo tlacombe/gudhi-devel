@@ -2,9 +2,9 @@
  *    (Geometric Understanding in Higher Dimensions) is a generic C++
  *    library for computational topology.
  *
- *    Author(s):       Vincent Rouvreau
+ *    Author(s):       Primoz Skraba
  *
- *    Copyright (C) 2015  INRIA Saclay (France)
+ *    Copyright (C) 2009 Primoz Skraba.  All Rights Reserved.
  *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -20,8 +20,8 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SRC_TOMATO_INCLUDE_GUDHI_TOMATO_ANN_ANN_GRAPH_WITH_DENSITY_ANN__H_
-#define SRC_TOMATO_INCLUDE_GUDHI_TOMATO_ANN_ANN_GRAPH_WITH_DENSITY__H_
+#ifndef SRC_TOMATO_INCLUDE_GUDHI_TOMATO_ANN_ANN_GRAPH_WITH_DENSITY_H_
+#define SRC_TOMATO_INCLUDE_GUDHI_TOMATO_ANN_ANN_GRAPH_WITH_DENSITY_H_
 
 #include <vector>
 
@@ -40,10 +40,9 @@
 template <class Vertex>
 class ANN_graph_with_density : public ANN_graph<Vertex> {
   typedef typename std::vector< Vertex >::iterator Iterator;
-  
+
   /** \name Constructor/Destructor
    * @{ */
-
  private:
   /** \brief Default operator= is disabled.*/
   ANN_graph_with_density& operator=(const ANN_graph_with_density& ref) = delete;
@@ -64,30 +63,27 @@ class ANN_graph_with_density : public ANN_graph<Vertex> {
   /** \brief Destructor. */
   ~ANN_graph_with_density() { }
 
-  /** @} */ // end constructor/destructor
-  
+  /** @} */  // end constructor/destructor
+
 //------------------------------
 // distance to measure
 //------------------------------
-void distance_to_density(int k)
-{
+void distance_to_density(int k) {
+  std::cout << "distance_to_density" << std::endl;
   Iterator it;
   double sum;
   double *ndist = new double[k];
 
-  for(it=Graph< Vertex >::point_cloud.begin();it!=Graph< Vertex >::point_cloud.end();it++){
-    get_neighbors_dist(it,k,ndist);  
-    sum=0;
-    for (int i=0; i<k; ++i) {
+  for (it = Graph< Vertex >::point_cloud.begin(); it != Graph< Vertex >::point_cloud.end(); it++) {
+    get_neighbors_dist(it, k, ndist);
+    sum = 0;
+    for (int i = 0; i < k; ++i) {
       sum += ndist[i]*ndist[i];
     }
-    it->set_func(sqrt((double)k/(double)sum));
-  }  
-
+    it->set_func(sqrt(static_cast<double>(k)/static_cast<double>(sum)));
+  }
   delete ndist;
-  Graph<Vertex>::sort_and_permute();
 }
-
 
  private:
   //----------------------------------
@@ -114,7 +110,6 @@ void distance_to_density(int k)
     // get distances to k nearest neighbors
     // for density estimation
     //----------------------------------
-
     void get_neighbors_dist(Iterator queryPoint, int k, double *ndist) {
       int *neighb = new int[k];
       memset(neighb, 0, sizeof (int)*k);
@@ -126,18 +121,19 @@ void distance_to_density(int k)
     //----------------------------------
     // get distances neighbors within r
     // for density estimation
-    //----------------------------------  
-
+    //----------------------------------
     int get_neighbors_dist_r(Iterator queryPoint, double radius, double *ndist) {
-      int nb_neighb = ANN_graph<Vertex>::kd->annkFRSearch(queryPoint->geometry.coord, radius*radius, 0);
+      int nb_neighb = ANN_graph<Vertex>::kd->annkFRSearch(queryPoint->geometry.coord,
+                                                          radius*radius, 0);
 
       int *neighb = new int[nb_neighb];
       memset(neighb, 0, sizeof (int)*nb_neighb);
-      int test = ANN_graph<Vertex>::kd->annkFRSearch(queryPoint->geometry.coord, radius*radius, nb_neighb, neighb, ndist, 0);
+      int test = ANN_graph<Vertex>::kd->annkFRSearch(queryPoint->geometry.coord,
+                                                     radius*radius, nb_neighb, neighb, ndist, 0);
 
       delete[] neighb;
       return test;
     }
 };
 
-#endif  // SRC_TOMATO_INCLUDE_GUDHI_TOMATO_GRAPH_ANN__H_
+#endif  // SRC_TOMATO_INCLUDE_GUDHI_TOMATO_ANN_ANN_GRAPH_WITH_DENSITY_H_

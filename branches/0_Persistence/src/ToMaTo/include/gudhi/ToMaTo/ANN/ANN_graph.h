@@ -4,7 +4,7 @@
  *
  *    Author(s):       Primoz Skraba
  *
- *    Copyright (C) 2009-2015
+ *    Copyright (C) 2009 Primoz Skraba.  All Rights Reserved.
  *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -20,8 +20,8 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SRC_TOMATO_INCLUDE_GUDHI_TOMATO_ANN_ANN_GRAPH__H_
-#define SRC_TOMATO_INCLUDE_GUDHI_TOMATO_ANN_ANN_GRAPH__H_
+#ifndef SRC_TOMATO_INCLUDE_GUDHI_TOMATO_ANN_ANN_GRAPH_H_
+#define SRC_TOMATO_INCLUDE_GUDHI_TOMATO_ANN_ANN_GRAPH_H_
 
 #include <ANN/ANN.h>
 
@@ -30,8 +30,6 @@
 #include "gudhi/ToMaTo/Graph.h"
 #include "gudhi/ToMaTo/Cluster.h"
 #include "gudhi/ToMaTo/ANN/ANN_point.h"
-
-
 
 //--------------------------
 // when the vertex class
@@ -74,7 +72,6 @@ class ANN_graph : public Graph< Vertex > {
   ANN_graph& operator=(const ANN_graph& ref) = delete;
 
  public:
-
   /**
    *****************************************************************************************
    *  @brief      Constructs the tree structure.
@@ -93,7 +90,7 @@ class ANN_graph : public Graph< Vertex > {
     delete kd;
   }
 
-  /** @} */ // end constructor/destructor
+  /** @} */  // end constructor/destructor
 
   /**
    *****************************************************************************************
@@ -127,13 +124,10 @@ class ANN_graph : public Graph< Vertex > {
    *
    *  @return     None
    ****************************************************************************************/
-  void set_sqrad(const int squared_radius_) {
+  void set_sqrad(const double squared_radius_) {
     squared_radius = squared_radius_;
   }
 
-  void output_diagram(std::ostream& ostream_ = std::cout) {
-    ostream_  << " " << std::endl;
-  }
   /**
    *****************************************************************************************
    *  @brief      Constructs the ANN kd tree structure
@@ -147,12 +141,11 @@ class ANN_graph : public Graph< Vertex > {
    *  @return     None.
    ****************************************************************************************/
   void construct_ANN_tree() {
-    // Sort cloud points by function value - Constructs the permutation list
-    Graph< Vertex >::sort_and_permute();
     // Assert on default constructed value
-    assert(dim == -1);
+    assert(dim != -1);
     int i = 0;
     int num_points = Graph< Vertex >::point_cloud.size();
+    std::cout << "initialize - dim=" << dim << " - num_points=" << num_points << std::endl;
     //------------------
     // memory allocation
     //------------------
@@ -220,11 +213,17 @@ class ANN_graph : public Graph< Vertex > {
         out.push_back(nit);
       }
     }
+
     delete[] ndist;
     delete[] neighb;
   }
 
-
+  virtual void compute_persistence() {
+    std::cout << "ANN_graph compute_persistence" << std::endl;
+    Graph< Vertex >::sort_and_permute();
+    construct_ANN_tree();
+    Graph< Vertex >::compute_persistence();
+  }
 };
 
-#endif  // SRC_TOMATO_INCLUDE_GUDHI_TOMATO_GRAPH_ANN__H_
+#endif  // SRC_TOMATO_INCLUDE_GUDHI_TOMATO_ANN_ANN_GRAPH_H_

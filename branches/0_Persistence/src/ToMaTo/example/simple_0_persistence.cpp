@@ -109,7 +109,6 @@ int main(int argc, char *argv[]) {
   metric_information.set_sqrad(r*r);
   
   metric_information.set_persistence_threshold(atof(argv[com++]));
-  metric_information.construct_ANN_tree();
 
   metric_information.compute_persistence();
   

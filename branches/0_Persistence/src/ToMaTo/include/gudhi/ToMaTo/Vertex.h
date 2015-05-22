@@ -1,42 +1,35 @@
-//----------------------------------------------------------------------
-//----------------------------------------------------------------------
-// File:		Vertex.h
-// Programmer:		Primoz Skraba
-// Description:		Main point data structure example
-// Last modified:	August 10, 2009 (Version 0.1)
-//----------------------------------------------------------------------
-//  Copyright (c) 2009 Primoz Skraba.  All Rights Reserved.
-//-----------------------------------------------------------------------
-//
-//
-//    This program is free software: you can redistribute it and/or modify
-//    it under the terms of the GNU General Public License as published by
-//    the Free Software Foundation, either version 3 of the License, or
-//    (at your option) any later version.
-//
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
-//
-//-----------------------------------------------------------------------
+/*    This file is part of the Gudhi Library. The Gudhi library
+ *    (Geometric Understanding in Higher Dimensions) is a generic C++
+ *    library for computational topology.
+ *
+ *    Author(s):       Primoz Skraba
+ *
+ *    Copyright (C) 2009 Primoz Skraba.  All Rights Reserved.
+ *
+ *    This program is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation, either version 3 of the License, or
+ *    (at your option) any later version.
+ *
+ *    This program is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
-#ifndef SRC_TOMATO_INCLUDE_GUDHI_TOMATO_VERTEX__H_
-#define SRC_TOMATO_INCLUDE_GUDHI_TOMATO_VERTEX__H_
+#ifndef SRC_TOMATO_INCLUDE_GUDHI_TOMATO_VERTEX_H_
+#define SRC_TOMATO_INCLUDE_GUDHI_TOMATO_VERTEX_H_
 
 
 #include <iostream>
 #include <fstream>
-#include <iostream>
 #include <vector>
+#include <memory>  // for allocator<>
 
-//
-//basic templated class of
-//vertex class
+// Vertex template class
 
 template<class Point_Class,
 template <typename S, typename D = std::allocator<S> >
@@ -48,9 +41,8 @@ class Vertex {
   // change the above template definition to take
   // the set template (i.e. include a partial ordering)
   // as template template parameters cannot inherit defaults
-  // though multiple levels 
+  // though multiple levels
   typedef typename Container<Vertex>::iterator Iterator;
-  typedef Point_Class Point;
 
  protected:
   Iterator sink;
@@ -58,15 +50,18 @@ class Vertex {
 
  public:
   typedef struct {
-
     bool operator()(const Vertex a, const Vertex b) const {
-      if (a.func() > b.func()) return true;
-      else if (a.func() < b.func()) return false;
-      else return typename Point_Class::less_than()(a.geometry, b.geometry);
+      if (a.func() > b.func()) {
+        return true;
+      } else if (a.func() < b.func()) {
+        return false;
+      } else {
+        return typename Point_Class::less_than()(a.geometry, b.geometry);
+      }
     }
   } less_than;
 
-  //store geometry
+  // store geometry
   Point_Class geometry;
 
   Vertex() { }
@@ -75,8 +70,7 @@ class Vertex {
     geometry = p;
   }
 
-  //set function value
-  // when initializing
+  // set function value on construction
   Vertex(double f_value) {
     f = f_value;
   }
@@ -85,26 +79,25 @@ class Vertex {
     sink = x;
   }
 
-  //return iterator
+  // return iterator
   Iterator get_sink() const {
     return sink;
   }
 
-  //set function value
+  // set function value
   void set_func(double x) {
     f = x;
   }
-  
-  //return function value
+
+  // return function value
   double func() const {
     return f;
   }
 
-  //difference operator
+  // difference operator
   double operator-(const Vertex &B) const {
     return this->func() - B->func();
   }
-
 };
 
-#endif  // SRC_TOMATO_INCLUDE_GUDHI_TOMATO_VERTEX__H_
+#endif  // SRC_TOMATO_INCLUDE_GUDHI_TOMATO_VERTEX_H_

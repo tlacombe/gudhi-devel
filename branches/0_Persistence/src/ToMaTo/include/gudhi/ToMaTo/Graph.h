@@ -4,7 +4,7 @@
  *
  *    Author(s):       Primoz Skraba
  *
- *    Copyright (C) 2009-2015
+ *    Copyright (C) 2009 Primoz Skraba.  All Rights Reserved.
  *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -20,11 +20,13 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SRC_TOMATO_INCLUDE_GUDHI_TOMATO_GRAPH__H_
-#define SRC_TOMATO_INCLUDE_GUDHI_TOMATO_GRAPH__H_
+#ifndef SRC_TOMATO_INCLUDE_GUDHI_TOMATO_GRAPH_H_
+#define SRC_TOMATO_INCLUDE_GUDHI_TOMATO_GRAPH_H_
 
 #include <vector>
 #include <cassert>
+#include <string>
+#include <algorithm>  // for sort
 
 #include "gudhi/ToMaTo/Cluster.h"
 #include "gudhi/ToMaTo/Vertex.h"
@@ -32,8 +34,8 @@
 template<class V> class less_than {
  protected:
   std::vector<V>& v;
- public:
 
+ public:
   less_than(std::vector<V>& v_) : v(v_) { }
 
   bool operator()(const int a, const int b) const {
@@ -53,7 +55,7 @@ class Graph {
    * Graph can compute_persistence
    * Graph must be  get rips neighbors.
    *  @param  std::vector<Vertex>    <I>point_cloud:</I>             Points determining the graph.
-   *  @param  std::vector<Iterator>  <I>inverse_permutation:</I>  Inverse permutation as array of iterators on initial point cloud.
+   *  @param  std::vector<Iterator>  <I>inverse_permutation:</I>     Inverse permutation as array of iterators on initial point cloud.
    *  @param  Cluster<Iterator>      <I>cluster_data_structure:</I>  Cluster data structure.
    */
 
@@ -101,7 +103,7 @@ class Graph {
     return cluster_data_structure.tau;
   }
 
-  void compute_persistence() {
+  virtual void compute_persistence() {
     Iterator gradient;
     Iterator sink;
     std::vector<Iterator> adjacent_nodes;
@@ -109,11 +111,10 @@ class Graph {
 
 
     //=================================
-    // assume vertex container is 
+    // assume vertex container is
     // pre-sorted by function value
     //=================================
     for (Iterator vit = point_cloud.begin(); vit != point_cloud.end(); vit++) {
-
       //--------------------------------
       // clear adjacency list
       //--------------------------------
@@ -141,14 +142,13 @@ class Graph {
       //------------------------------
       if (gradient == vit) {
         //-----------------------
-        //set the sink to itself
+        // set the sink to itself
         //-----------------------
         vit->set_sink(vit);
 
-        //-----------------------
-        // check to make sure it
-        // worked 
-        //-----------------------
+        //-----------------------------
+        // check to make sure it worked
+        //-----------------------------
         assert(find_sink(vit) == vit);
 
         //-----------------------
@@ -162,28 +162,25 @@ class Graph {
         //----------------------------------
         vit->set_sink(find_sink(gradient));
 
-        //----------------------------------
-        // check that vit is right
-        // below the cluster root
-        // (important invariant in the 
-        // following)
-        //----------------------------------
+        //-----------------------------------------------
+        // check that vit is right below the cluster root
+        // (important invariant in the following)
+        //-----------------------------------------------
         assert(vit->get_sink() == find_sink(vit));
 
         //------------------------------
         // Go through the neighbors again
-        // to see if their clusters 
+        // to see if their clusters
         // can be merged with vit's
         //------------------------------
         for (neighb = adjacent_nodes.begin();
              neighb != adjacent_nodes.end();
              neighb++) {
-
           //----------------------
           // only consider older
           // neighbors
           //----------------------
-          if (vit<*neighb)
+          if (vit < *neighb)
             continue;
 
           //----------------------
@@ -200,30 +197,29 @@ class Graph {
 
           //----------------------------
           // no need to do anything
-          // if neighb's sink is the 
+          // if neighb's sink is the
           // same as vit's
           //----------------------------
           if (sink == vit->get_sink())
             continue;
 
           //----------------------------
-          //check if merge conditions
+          // check if merge conditions
           // are met
           //----------------------------
           if (cluster_data_structure.merge(vit, sink)) {
-
-            //-------------------------
-            // If so, then merge cluster 
-            // with lower peak into 
+            //--------------------------
+            // If so, then merge cluster
+            // with lower peak into
             // cluster with higher peak
-            //-------------------------
-            if (vit->get_sink()->func() >= sink->func())
+            //--------------------------
+            if (vit->get_sink()->func() >= sink->func()) {
               sink->set_sink(vit->get_sink());
-            else {
+            } else {
               vit->get_sink()->set_sink(sink);
 
               //-------------------------
-              // compress path from vit 
+              // compress path from vit
               // to root on the fly
               // (cf invariant)
               //-------------------------
@@ -231,13 +227,13 @@ class Graph {
             }
           }
         }
-
       }
     }
     attach_to_clusterheads();
   }
 
   void sort_and_permute() {
+    std::cout << "sort_and_permute" << std::endl;
     int num_points = point_cloud.size();
     // sort point cloud and retrieve permutation (for pretty output)
     std::vector<int> perm;
@@ -246,16 +242,6 @@ class Graph {
     for (int i = 0; i < num_points; i++) {
       perm.push_back(i);
     }
-    // ----------------------
-    std::ofstream out;
-    out.open("1.txt");
-    if (out.is_open()) {
-      for (int i = 0; i < num_points; i++) {
-        out << point_cloud[i].geometry << "|" << point_cloud[i].func() << std::endl;
-      }
-      out.close();
-    }
-    // ----------------------
 
     std::sort(perm.begin(), perm.end(), less_than<Vertex>(point_cloud));
     // store inverse permutation as array of iterators on initial point cloud
@@ -264,23 +250,13 @@ class Graph {
       inverse_permutation.push_back(point_cloud.begin());
     for (int i = 0; i < num_points; i++)
       inverse_permutation[perm[i]] = (point_cloud.begin() + i);
-    // operate permutation on initial point cloud 
+    // operate permutation on initial point cloud
     std::vector<Vertex> pc;
     pc.reserve(num_points);
     for (int i = 0; i < num_points; i++)
       pc.push_back(point_cloud[i]);
     for (int i = 0; i < num_points; i++)
       point_cloud[i] = pc[perm[i]];
-    // ----------------------
-    //std::ofstream out;
-    out.open("2.txt");
-    if (out.is_open()) {
-      for (int i = 0; i < num_points; i++) {
-        out << point_cloud[i].geometry << "|" << point_cloud[i].func() << std::endl;
-      }
-      out.close();
-    }
-    // ----------------------
   }
 
   bool output_intervals(const std::string& file_name) {
@@ -320,7 +296,6 @@ class Graph {
   }
 
  private:
-
   Iterator find_sink(Iterator in) {
     assert(in != Iterator());
     while (in->get_sink() != in) {
@@ -334,8 +309,7 @@ class Graph {
     for (Iterator vit = point_cloud.begin(); vit != point_cloud.end(); vit++) {
       vit->set_sink(find_sink(vit));
     }
-
   }
 };
 
-#endif  // SRC_TOMATO_INCLUDE_GUDHI_TOMATO_GRAPH__H_
+#endif  // SRC_TOMATO_INCLUDE_GUDHI_TOMATO_GRAPH_H_

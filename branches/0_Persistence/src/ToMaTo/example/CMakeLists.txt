@@ -12,7 +12,7 @@ if (GCOVR_PATH)
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fprofile-arcs -ftest-coverage")
 endif()
 
-  add_definitions(-DDEBUG_TRACES)
+  #add_definitions(-DDEBUG_TRACES)
   add_executable ( simple0persistence simple_0_persistence.cpp )
   target_link_libraries(simple0persistence ${ANN_LIBRARIES})
   add_test(simple0persistence_1 ${CMAKE_CURRENT_BINARY_DIR}/simple0persistence ${CMAKE_SOURCE_DIR}/data/points/0_persistence/spiral_w_density.txt 10 1e-3)
