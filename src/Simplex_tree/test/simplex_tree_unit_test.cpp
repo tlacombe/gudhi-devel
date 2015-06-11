@@ -1,9 +1,11 @@
 #define BOOST_TEST_MODULE simplex_tree test
 #include <boost/test/included/unit_test.hpp>
+#include <boost/range/adaptor/reversed.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/chrono/thread_clock.hpp>
 #include <iostream>
 #include <string>
+#include <algorithm>
 
 #include <utility> // std::pair, std::make_pair
 
@@ -170,6 +172,21 @@ void set_and_test_simplex_tree_dim_fil(typeST& simplexTree, int vectorSize, cons
   BOOST_CHECK(simplexTree.dimension() == dim_max);
   BOOST_CHECK(AreAlmostTheSame(simplexTree.filtration(), max_fil));
   BOOST_CHECK(simplexTree.num_simplices() == nb_simplices);
+}
+
+void test_cofaces(typeST& st, std::vector<Vertex_handle> v, int dim, int res)
+{
+	auto cofaces = st.coface(v, dim);
+	BOOST_CHECK(cofaces.size() == (size_t)res);
+	for (unsigned long i = 0; i < cofaces.size(); ++i)
+	{
+		std::cout << "(";
+		auto j = cofaces[i].begin();
+		std::cout << j->first;
+		for (auto j = cofaces[i].begin() + 1; j != cofaces[i].end(); ++j)
+			std::cout << "," << j->first;
+		std::cout << ")" << std::endl;
+	}
 }
 
 BOOST_AUTO_TEST_CASE( simplex_tree_insertion )
@@ -596,90 +613,56 @@ BOOST_AUTO_TEST_CASE( NSimplexAndSubfaces_tree_insertion )
 	std::cout << "COFACE ALGORITHM" << std::endl;
 	std::vector<Vertex_handle> v;
 	v.push_back(3);
-	std::cout << "Cofaces of (3) of all dimensions: " << std::endl;
-	auto cofaces = st.coface(v, 0);
-	for (unsigned long i = 0; i < cofaces.size(); ++i)
-	{
-		std::cout << "(";
-		auto j = cofaces[i].begin();
-		std::cout << j->first;
-		for (auto j = cofaces[i].begin() + 1; j != cofaces[i].end(); ++j)
-			std::cout << "," << j->first;
-		std::cout << ")" << std::endl;
-	}
+	std::cout << "Star of (3):" << std::endl;
+	test_cofaces(st, v, 0, 4);
 	v.clear();
 	v.push_back(1);
 	v.push_back(7);
 	std::cout << "Star of (1,7): " << std::endl;
-	cofaces = st.coface(v, 0);
-	for (unsigned long i = 0; i < cofaces.size(); ++i)
-	{
-		std::cout << "(";
-		auto j = cofaces[i].begin();
-		std::cout << j->first;
-		for (auto j = cofaces[i].begin() + 1; j != cofaces[i].end(); ++j)
-			std::cout << "," << j->first;
-		std::cout << ")" << std::endl;
-	}
+	test_cofaces(st, v, 0, 3);
 	std::cout << "Cofaces of (1,7) of dimension 2: " << std::endl;
-	cofaces = st.coface(v, 1);
-	for (unsigned long i = 0; i < cofaces.size(); ++i)
-	{
-		std::cout << "(";
-		auto j = cofaces[i].begin();
-		std::cout << j->first;
-		for (auto j = cofaces[i].begin() + 1; j != cofaces[i].end(); ++j)
-			std::cout << "," << j->first;
-		std::cout << ")" << std::endl;
-	}
-
+	test_cofaces(st, v, 1, 2);
+	
+	// TEST Off read + COFACE ALGORITHM
+	std::cout << "********************************************************************" << std::endl;
 	typeST st2;
 	st2.tree_from_off("test.off");
-	std::cout << "Cofaces of (0) of a cube of dimension 1: " << std::endl;
+	std::cout << "Cofaces of (0) of a cube of dimension 1, created after an off file: " << std::endl;
 	v.clear();
 	v.push_back(0);
-	cofaces = st2.coface(v, 1);
-	for (unsigned long i = 0; i < cofaces.size(); ++i)
-	{
-		std::cout << "(";
-		auto j = cofaces[i].begin();
-		std::cout << j->first;
-		for (auto j = cofaces[i].begin() + 1; j != cofaces[i].end(); ++j)
-			std::cout << "," << j->first;
-		std::cout << ")" << std::endl;
-	}
-//	typeST st2 = st;
-// 	typeST st3 = local_move(st);
+	test_cofaces(st2, v, 1, 6);
+	std::cout << "Cofaces with a codimension too high (codimension + vetices > tree.dimension)" << std::endl;
+	test_cofaces(st2, v, 5, 0);
+	std::cout << "Cofaces with an empty codimension" << std::endl;
+	test_cofaces(st2, v, -1, 0);
+	std::cout << "Cofaces in an empty simplex tree" << std::endl;
+	typeST empty_tree;
+	test_cofaces(empty_tree, v, 1, 0);
+	std::cout << "Cofaces of an empty simplex" << std::endl;
+	v.clear();
+	test_cofaces(st2, v, 1, 0);
 
+
+	std::cout << "********************************************************************" << std::endl;
+	// TEST Copy constructor / Move / Delete
 	/*
+	typeST st3 = st;
+ //	typeST st3 = Gudhi::Simplex_tree<linear_indexing_tag, double, int, int>::move_test(st);
 	std::cout << "Printing st" << std::endl;
 	std::cout << &st << std::endl;
 	std::cout << st;
-	std::cout << "Printing a copy of st" << std::endl;
-	std::cout << &st2 << std::endl;
-	std::cout << st2;
-	std::cout << "Printing a move of st" << std::endl;
-	std::cout << &st3 << std::endl;
-	std::cout << st3;
-	std::cout << "Printing st" << std::endl;
-	std::cout << &st;
-	std::cout << st;
-	st.suppr();
-	std::cout << st;
-	
-	std::cout << "Printing st" << std::endl;
-	std::cout << &st << std::endl;
 	st.print_tree();
 	std::cout << "Printing a copy of st" << std::endl;
-	std::cout << &st2 << std::endl;
-	st.print_tree();
-	std::cout << "Printing a move of st" << std::endl;
 	std::cout << &st3 << std::endl;
-	st.print_tree();
-	std::cout << "Printing st" << std::endl;
-	std::cout << &st << std::endl;
-	st.print_tree();
-	st.suppr();
-	st.print_tree();
-	*/
+	//std::cout << st3;
+	st3.print_tree();
+//	std::cout << "Printing a move of st" << std::endl;
+//	std::cout << &st4<< std::endl;
+//	std::cout << st4;
+//	std::cout << "Printing st" << std::endl;
+//	std::cout << &st << std::endl;
+//	std::cout << st;
+//	st.suppr();
+//	std::cout << st;
+*/
 }

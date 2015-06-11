@@ -121,7 +121,7 @@ private:
 
     	if(!goto_next_uncomment_line(line)) return false;
     	std::istringstream iss(line);
-   		if(is_off_file){
+   		if(is_off_file && !is_noff_file){
 	  		off_info_.dim = 3;
 	  		if(!(iss >> off_info_.num_vertices >> off_info_.num_faces >> off_info_.num_edges)){
 	  			std::cerr << "incorrect number of vertices/faces/edges\n";
@@ -142,8 +142,8 @@ private:
 		uncomment_line.clear();
 		do
 			std::getline(stream_, uncomment_line);
-    	while(uncomment_line[0] == '%');// || uncomment_line.empty());
-		return (uncomment_line.size()>0 && uncomment_line[0] != '%');
+    	while(uncomment_line[0] == '#');// || uncomment_line.empty());
+		return (uncomment_line.size()>0 && uncomment_line[0] != '#');
 	}
 
 
@@ -168,10 +168,16 @@ private:
 		while(goto_next_uncomment_line(line)){
 			std::istringstream iss(line);
 			int num_face_vertices;
+			int vertex;
 			iss >> num_face_vertices;
 			std::vector<int> face;
-			face.assign(std::istream_iterator<int>(iss),std::istream_iterator<int>());
-			if(!face.size() == off_info_.num_vertices) return false;
+			for (int i = 0; i < num_face_vertices; ++i)
+			{
+				iss >> vertex;
+				face.push_back(vertex);
+			}
+//			face.assign(std::istream_iterator<int>(iss),std::istream_iterator<int>());
+//			if((int)face.size() != off_info_.num_vertices) return false;
 			visitor.maximal_face(face);
 		}
 		return true;
