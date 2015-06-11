@@ -26,6 +26,8 @@
 #include <gudhi/Simplex_tree/Simplex_tree_node_explicit_storage.h>
 #include <gudhi/Simplex_tree/Simplex_tree_siblings.h>
 #include <gudhi/Simplex_tree/Simplex_tree_iterators.h>
+#include <gudhi/Simplex_tree/Simplex_tree_off_visitor.h>
+#include <gudhi/Off_reader.h>
 #include <gudhi/Simplex_tree/indexing_tag.h>
 
 #include <boost/container/flat_map.hpp>
@@ -35,6 +37,9 @@
 #include <algorithm>
 #include <utility>
 #include <vector>
+#include <fstream>
+#include <iterator>
+#include <type_traits>
 
 namespace Gudhi {
   
@@ -223,16 +228,7 @@ class Simplex_tree {
   /** \brief Returns a range over the simplices of the simplicial complex,
    * in the order of the filtration.
    *
-   * The filtration is a monotonic function \f$ f: \mathbf{K} \rightarrow \mathbb{R} \f$, i.e. if two simplices
-   * \f$\tau\f$ and \f$\sigma\f$ satisfy \f$\tau \subseteq \sigma\f$ then
-   * \f$f(\tau) \leq f(\sigma)\f$.
-   *
-   * The method returns simplices ordered according to increasing filtration values. Ties are
-   * resolved by considering inclusion relation (subsimplices appear before their cofaces). If two
-   * simplices have same filtration value but are not comparable w.r.t. inclusion, lexicographic
-   * order is used.
-   *
-   * The filtration must be valid. If the filtration has not been initialized yet, the
+   * The filtration is a monotonic function \f$ f: \mathbf{K} \rightarrow \mathbb{R} \f$, i.e. if two simplices * \f$\tau\f$ and \f$\sigma\f$ satisfy \f$\tau \subseteq \sigma\f$ then * \f$f(\tau) \leq f(\sigma)\f$.  * * The method returns simplices ordered according to increasing filtration values. Ties are * resolved by considering inclusion relation (subsimplices appear before their cofaces). If two * simplices have same filtration value but are not comparable w.r.t. inclusion, lexicographic * order is used.  * * The filtration must be valid. If the filtration has not been initialized yet, the
    * method initializes it (i.e. order the simplices). */
   Filtration_simplex_range filtration_simplex_range(Indexing_tag) {
     if (filtration_vect_.empty()) {
@@ -289,6 +285,28 @@ class Simplex_tree {
         dimension_(-1) {
   }
 
+  Simplex_tree(Simplex_tree& copy) : root_(NULL, -1)
+  {
+	  null_vertex_ = copy.null_vertex_;
+	  threshold_ = copy.threshold_;
+	  num_simplices_ = copy.num_simplices_;
+	  filtration_vect_ = copy.filtration_vect_;
+	  dimension_ = copy.dimension_;
+	  for (auto sh = copy.root_.members().begin(); sh != copy.root_.members().end(); ++sh)
+	  	root_.insert(sh->first, sh->second.filtration()); // member vide
+	  for (auto sh = copy.root_.members().begin(), sh_root = root_.members().begin(); sh != copy.root_.members().end(); ++sh)
+	  {
+	  	if (has_children(sh))
+		{
+			Siblings* sib = new Siblings();
+		  	rec_copy(sh->second.children(), sib);
+			sh_root->second.assign_children(sib);
+		}
+	  }
+  }
+
+//	Simplex_tree(Simplex_tree&&old):filtration_vect_(std::move(old.filtration_vect_)),;
+
   /** \brief Destructor; deallocates the whole tree structure. */
   ~Simplex_tree() {
     for (auto sh = root_.members().begin(); sh != root_.members().end(); ++sh) {
@@ -309,7 +327,63 @@ class Simplex_tree {
     delete sib;
   }
 
+
+  void rec_copy(Siblings * sib, Siblings * curr_sib) 
+  {
+	  for (auto sh = sib->members().begin(); sh != sib->members().end(); ++sh)
+	  	curr_sib->insert(sh->first, sh->second.filtration()); // member vide
+	  for (auto sh = sib->members().begin(), sh_root = curr_sib->members().begin(); sh != sib->members().end(); ++sh)
+	  {
+	  	if (has_children(sh))
+		{
+			Siblings* newSib = new Siblings();
+		  	rec_copy(sh->second.children(), newSib);
+			sh_root->second.assign_children(newSib);
+		}
+	  }
+  }
+
  public:
+void suppr()
+{
+    for (auto sh = root_.members().begin(); sh != root_.members().end(); ++sh) {
+		if (has_children(sh)) {
+			rec_delete(sh->second.children());
+		}
+    }
+}
+
+void print_tree()
+{
+	for (auto sh = root_.members().begin(); sh != root_.members().end(); ++sh)
+	{
+		std::cout << sh->first << " ";
+		if (has_children(sh))
+			rec_print(sh->second.children());
+		std::cout << std::endl;
+	}
+}
+
+
+template <typename T> 
+static typename std::remove_reference<T>::type&& move_test(T&& arg)
+{
+	return static_cast<typename std::remove_reference<T>::type&&>(arg);
+}
+
+
+private:
+void rec_print(Siblings * sib)
+{
+	for (auto sh = sib->members().begin(); sh != sib->members().end(); ++sh)
+	{
+		std::cout << sh->first << " ";
+		if (has_children(sh))
+			rec_print(sh->second.children());
+	}
+}
+
+public:
   /** \brief Returns the key associated to a simplex.
    *
    * The filtration must be initialized. */
@@ -465,7 +539,7 @@ class Simplex_tree {
       if (!(has_children(res_insert.first))) {
         res_insert.first->second.assign_children(new Siblings(curr_sib, *vi));
       }
-      curr_sib = res_insert.first->second.children();
+        curr_sib = res_insert.first->second.children();
     }
     res_insert = curr_sib->members_.emplace(*vi, Node(curr_sib, filtration));
     if (!res_insert.second) {  // if already in the complex
@@ -599,6 +673,110 @@ class Simplex_tree {
     std::stable_sort(filtration_vect_.begin(), filtration_vect_.end(),
                      is_before_in_filtration(this));
   }
+    
+private:
+    
+    /** Recursive search of cofaces
+     */
+    template <class RandomAccessVertexRange>
+    void rec_coface(RandomAccessVertexRange &vertices, Siblings *curr_sib, Dictionary *curr_res, std::vector<Dictionary>& cofaces, unsigned int length, unsigned long codimension)
+    {
+        for (auto sib = curr_sib->members().begin(); sib != curr_sib->members().end() && (vertices.empty() || sib->first <= vertices[vertices.size()-1]); ++sib)
+        {
+			bool continueRecursion = (codimension == length || curr_res->size() <= codimension); // dimension of actual simplex <= codimension
+            if (vertices.empty())
+            {
+                if (curr_res->size() >= length && continueRecursion)
+                    // If we reached the end of the vertices, and the simplex has more vertices than the given simplex, we found a coface
+                {
+                    curr_res->emplace(sib->first, sib->second);
+					bool egalDim = (codimension == length || curr_res->size() == codimension); // dimension of actual simplex == codimension
+					if (egalDim)
+ 	                   cofaces.push_back(*curr_res);
+                    if (has_children(sib))
+                        rec_coface(vertices, sib->second.children(), curr_res, cofaces, length, codimension);
+                    curr_res->erase(curr_res->end()-1);
+                }
+            }
+            else if (continueRecursion)
+            {
+                if (sib->first == vertices[vertices.size()-1]) // If curr_sib matches with the top vertex
+                {
+                    curr_res->emplace(sib->first, sib->second);
+					bool egalDim = (codimension == length || curr_res->size() == codimension); // dimension of actual simplex == codimension
+                    if (vertices.size() == 1 &&  curr_res->size() > length && egalDim)
+                        cofaces.push_back(*curr_res);
+                    if (has_children(sib))
+                    { // Rec call
+                        Vertex_handle tmp = vertices[vertices.size()-1];
+                        vertices.pop_back();
+                        rec_coface(vertices, sib->second.children(), curr_res, cofaces, length, codimension);
+                        vertices.push_back(tmp);
+                    }
+                    curr_res->erase(curr_res->end()-1);
+                }
+                else // (sib->first < vertices[vertices.size()-1])
+                {
+                    if (has_children(sib))
+                    {
+                        curr_res->emplace(sib->first, sib->second);
+                        rec_coface(vertices, sib->second.children(), curr_res, cofaces, length, codimension);
+                        curr_res->erase(curr_res->end()-1);
+                    }
+                }
+            }
+        }
+    }
+    
+	public:
+	/** \brief Compute the cofaces of a n simplex
+	 * \param vertices List of vertices which represent the n simplex.
+	 * \param codimension The function returns the n+codimension-simplices. If codimension = 0, return all cofaces
+	 * \return Vector of Dictionary, empty vector if no cofaces found. 
+	 * \warning n+codimension must be lower than Simplex_tree dimension, otherwise an an empty vector is returned.
+	 */
+
+	template<class RandomAccessVertexRange>
+	std::vector<Dictionary> coface(const RandomAccessVertexRange &vertices, int codimension)
+{
+	   RandomAccessVertexRange copy = vertices;
+	   std::vector<Dictionary> cofaces;
+	   std::sort(copy.begin(), copy.end(), std::greater<Vertex_handle>());  // must be sorted in decreasing order
+	   if (root_.members().empty()) {
+	   std::cerr << "Simplex_tree::coface - empty Simplex_tree" << std::endl;
+	   return cofaces;  // ----->>
+	   }
+	   if (vertices.empty()) {
+	   std::cerr << "Simplex_tree::coface - empty vertices list" << std::endl;
+	   return cofaces;  // ----->>
+	   }
+	   if (codimension < 0) {
+	   std::cerr << "Simplex_tree::coface - codimension is empty" << std::endl;
+	   return cofaces;  // ----->>
+	   }
+	   if (codimension + vertices.size() > (unsigned long)dimension_) {
+	   std::cerr << "Simplex_tree::coface - codimension + vertices list size cannot be greater than Simplex_tree dimension" << std::endl;
+	   return cofaces;  // ----->>
+	   }
+	   std::sort(copy.begin(), copy.end(), std::greater<Vertex_handle>());  // must be sorted in decreasing order
+	   Dictionary res;
+	   rec_coface(copy, &root_, &res, cofaces, vertices.size(), codimension + vertices.size());
+	   return cofaces;
+}
+
+/** \brief Transform off format to simplex tree
+ *  \param path Path to the off file
+*/
+	void tree_from_off(std::string name)
+	{
+		std::vector<Vertex_handle> v;
+		std::ifstream stream(name);
+		Off_reader file(stream);
+		St_off_visitor<> Off_tree;
+		if (file.read(Off_tree))
+			for (unsigned int i = 0; i < Off_tree.numFaces(); ++i)
+				insert_simplex_and_subfaces(Off_tree.getFaces()[i]);	
+	}
 
  private:
   /** \brief Returns true iff the list of vertices of sh1
