@@ -176,7 +176,11 @@ void set_and_test_simplex_tree_dim_fil(typeST& simplexTree, int vectorSize, cons
 
 void test_cofaces(typeST& st, std::vector<Vertex_handle> v, int dim, int res)
 {
-	auto cofaces = st.coface(v, dim);
+	std::vector<typeST::Dictionary> cofaces;
+	if (dim == 0)
+		cofaces = st.star(st.find(v));
+	else
+		cofaces = st.coface(st.find(v), dim);
 	BOOST_CHECK(cofaces.size() == (size_t)res);
 	for (unsigned long i = 0; i < cofaces.size(); ++i)
 	{
@@ -607,62 +611,38 @@ BOOST_AUTO_TEST_CASE( NSimplexAndSubfaces_tree_insertion )
 		}
 		std::cout << std::endl;
 	}
-
-	std::cout << "********************************************************************" << std::endl;
-	// TEST COFACE ALGORITHM
-	std::cout << "COFACE ALGORITHM" << std::endl;
-	std::vector<Vertex_handle> v;
-	v.push_back(3);
-	std::cout << "Star of (3):" << std::endl;
-	test_cofaces(st, v, 0, 4);
-	v.clear();
-	v.push_back(1);
-	v.push_back(7);
-	std::cout << "Star of (1,7): " << std::endl;
-	test_cofaces(st, v, 0, 3);
-	std::cout << "Cofaces of (1,7) of dimension 2: " << std::endl;
-	test_cofaces(st, v, 1, 2);
-	
-	// TEST Off read + COFACE ALGORITHM
-	std::cout << "********************************************************************" << std::endl;
-	typeST st2;
-	st2.tree_from_off("test.off");
-	std::cout << "Cofaces of (0) of a cube of dimension 1, created after an off file: " << std::endl;
-	v.clear();
-	v.push_back(0);
-	test_cofaces(st2, v, 1, 6);
-	std::cout << "Cofaces with a codimension too high (codimension + vetices > tree.dimension)" << std::endl;
-	test_cofaces(st2, v, 5, 0);
-	std::cout << "Cofaces with an empty codimension" << std::endl;
-	test_cofaces(st2, v, -1, 0);
-	std::cout << "Cofaces in an empty simplex tree" << std::endl;
-	typeST empty_tree;
-	test_cofaces(empty_tree, v, 1, 0);
-	std::cout << "Cofaces of an empty simplex" << std::endl;
-	v.clear();
-	test_cofaces(st2, v, 1, 0);
-
-
-	std::cout << "********************************************************************" << std::endl;
-	// TEST Copy constructor / Move / Delete
-	/*
-	typeST st3 = st;
- //	typeST st3 = Gudhi::Simplex_tree<linear_indexing_tag, double, int, int>::move_test(st);
-	std::cout << "Printing st" << std::endl;
-	std::cout << &st << std::endl;
-	std::cout << st;
-	st.print_tree();
-	std::cout << "Printing a copy of st" << std::endl;
-	std::cout << &st3 << std::endl;
-	//std::cout << st3;
-	st3.print_tree();
-//	std::cout << "Printing a move of st" << std::endl;
-//	std::cout << &st4<< std::endl;
-//	std::cout << st4;
-//	std::cout << "Printing st" << std::endl;
-//	std::cout << &st << std::endl;
-//	std::cout << st;
-//	st.suppr();
-//	std::cout << st;
-*/
+    
+    std::cout << "********************************************************************" << std::endl;
+    // TEST COFACE ALGORITHM
+    st.set_dimension(3);
+    std::cout << "COFACE ALGORITHM" << std::endl;
+    std::vector<Vertex_handle> v;
+    v.push_back(3);
+    std::cout << "Star of (3):" << std::endl;
+    test_cofaces(st, v, 0, 4);
+    v.clear();
+    v.push_back(1);
+    v.push_back(7);
+    std::cout << "Star of (1,7): " << std::endl;
+    test_cofaces(st, v, 0, 3);
+    std::cout << "Cofaces of (1,7) of dimension 2: " << std::endl;
+    test_cofaces(st, v, 1, 2);
+    std::cout << "Cofaces with a codimension too high (codimension + vetices > tree.dimension)" << std::endl;
+    test_cofaces(st, v, 5, 0);
+    std::cout << "Cofaces with an empty codimension" << std::endl;
+    test_cofaces(st, v, -1, 0);
+    std::cout << "Cofaces in an empty simplex tree" << std::endl;
+    typeST empty_tree;
+    test_cofaces(empty_tree, v, 1, 0);
+    std::cout << "Cofaces of an empty simplex" << std::endl;
+    v.clear();
+    test_cofaces(st, v, 1, 0);
+ 
+ /*
+    // TEST Off read
+    std::cout << "********************************************************************" << std::endl;
+    typeST st2;
+    st2.tree_from_off("test.off");
+    std::cout << st2;
+  */  
 }
