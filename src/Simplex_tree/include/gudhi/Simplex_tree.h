@@ -472,7 +472,10 @@ public:
   template<class RandomAccessVertexRange>
   Simplex_handle find(RandomAccessVertexRange & s) {
     if (s.begin() == s.end())
+	{
       std::cerr << "Empty simplex \n";
+	  return null_simplex();
+	}
 
     sort(s.begin(), s.end());
 
@@ -727,42 +730,55 @@ private:
             }
         }
     }
-    
-	public:
-	/** \brief Compute the cofaces of a n simplex
-	 * \param vertices List of vertices which represent the n simplex.
-	 * \param codimension The function returns the n+codimension-simplices. If codimension = 0, return all cofaces
-	 * \return Vector of Dictionary, empty vector if no cofaces found. 
-	 * \warning n+codimension must be lower than Simplex_tree dimension, otherwise an an empty vector is returned.
-	 */
 
-	template<class RandomAccessVertexRange>
-	std::vector<Dictionary> coface(const RandomAccessVertexRange &vertices, int codimension)
-{
-	   RandomAccessVertexRange copy = vertices;
-	   std::vector<Dictionary> cofaces;
-	   std::sort(copy.begin(), copy.end(), std::greater<Vertex_handle>());  // must be sorted in decreasing order
-	   if (root_.members().empty()) {
-	   std::cerr << "Simplex_tree::coface - empty Simplex_tree" << std::endl;
-	   return cofaces;  // ----->>
-	   }
-	   if (vertices.empty()) {
-	   std::cerr << "Simplex_tree::coface - empty vertices list" << std::endl;
-	   return cofaces;  // ----->>
-	   }
-	   if (codimension < 0) {
-	   std::cerr << "Simplex_tree::coface - codimension is empty" << std::endl;
-	   return cofaces;  // ----->>
-	   }
-	   if (codimension + vertices.size() > (unsigned long)dimension_) {
-	   std::cerr << "Simplex_tree::coface - codimension + vertices list size cannot be greater than Simplex_tree dimension" << std::endl;
-	   return cofaces;  // ----->>
-	   }
-	   std::sort(copy.begin(), copy.end(), std::greater<Vertex_handle>());  // must be sorted in decreasing order
-	   Dictionary res;
-	   rec_coface(copy, &root_, &res, cofaces, vertices.size(), codimension + vertices.size());
-	   return cofaces;
-}
+public:
+    /** \brief Compute the star of a n simplex
+     * \param vertices List of vertices which represent the n simplex.
+     * \return Vector of Dictionary, empty vector if no cofaces found.
+     */
+    
+    std::vector<Dictionary> star(const Simplex_handle &vertices)	{
+        return coface(vertices, 0);
+    }
+    
+    
+    
+    /** \brief Compute the cofaces of a n simplex
+     * \param vertices List of vertices which represent the n simplex.
+     * \param codimension The function returns the n+codimension-simplices. If codimension = 0, return all cofaces (equivalent of star function)
+     * \return Vector of Dictionary, empty vector if no cofaces found.
+     * \warning n+codimension must be lower than Simplex_tree dimension, otherwise an an empty vector is returned.
+     */
+    
+    std::vector<Dictionary> coface(const Simplex_handle &vertices, int codimension)	{
+        std::vector<Dictionary> cofaces;
+		if (dimension_ == -1)
+		{
+            std::cerr << "Simplex_tree::coface - empty simplex tree" << std::endl;
+			return cofaces; // ----->>
+		}
+        if (vertices == null_simplex()) {
+            std::cerr << "Simplex_tree::coface - empty vertices list" << std::endl;
+            return cofaces;  // ----->>
+        }
+        if (codimension < 0) {
+            std::cerr << "Simplex_tree::coface - codimension is empty" << std::endl;
+            return cofaces;  // ----->>
+        }
+        std::vector<Vertex_handle> copy;
+		Simplex_vertex_range rg = simplex_vertex_range(vertices);
+		for (auto it = rg.begin(); it != rg.end(); ++it)
+			copy.push_back(*it);
+        if (codimension + copy.size() > (unsigned long)(dimension_ + 1) || (codimension == 0 && copy.size() > (unsigned long)dimension_) ) {
+            std::cerr << "Simplex_tree::coface - codimension + vertices list size cannot be greater than Simplex_tree dimension" << std::endl;
+            return cofaces;  // ----->>
+        }
+        std::sort(copy.begin(), copy.end(), std::greater<Vertex_handle>());  // must be sorted in decreasing order
+        Dictionary res;
+        rec_coface(copy, &root_, &res, cofaces, copy.size(), codimension + copy.size());
+        return cofaces;
+    }
+    
 
 /** \brief Transform off format to simplex tree
  *  \param path Path to the off file
