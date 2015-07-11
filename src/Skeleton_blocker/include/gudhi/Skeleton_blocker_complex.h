@@ -687,9 +687,9 @@ class Skeleton_blocker_complex {
    */
   void add_blocker(Blocker_handle blocker) {
     if (contains_blocker(*blocker)) {
-      // std::cerr << "ATTEMPT TO ADD A BLOCKER ALREADY THERE ---> BLOCKER IGNORED" << endl;
       return;
-    } else {
+    }
+    else {
       if (visitor)
         visitor->on_add_blocker(*blocker);
       num_blockers_++;
@@ -1375,7 +1375,7 @@ class Skeleton_blocker_complex {
   /**
    * @brief Returns a Complex_simplex_around_vertex_range over all the simplices around a vertex of the complex
    */
-  Complex_simplex_around_vertex_range simplex_range(Vertex_handle v) const {
+  Complex_simplex_around_vertex_range star_simplex_range(Vertex_handle v) const {
     assert(contains_vertex(v));
     return Complex_simplex_around_vertex_range(
                                                Complex_simplex_around_vertex_iterator(this, v),
@@ -1388,9 +1388,9 @@ class Skeleton_blocker_complex {
   typedef boost::iterator_range < Complex_simplex_iterator > Complex_simplex_range;
 
   /**
-   * @brief Returns a Complex_simplex_range over all the simplices of the complex
+   * @brief Returns a Complex_star_simplex_range over all the simplices of the complex
    */
-  Complex_simplex_range simplex_range() const {
+  Complex_simplex_range complex_simplex_range() const {
     Complex_simplex_iterator end(this, true);
     if (empty()) {
       return Complex_simplex_range(end, end);

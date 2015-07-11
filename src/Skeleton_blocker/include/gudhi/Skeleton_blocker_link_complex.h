@@ -67,13 +67,15 @@ class Skeleton_blocker_link_complex : public Skeleton_blocker_sub_complex<
   /**
    * If the parameter only_superior_vertices is true,
    * only vertices greater than the one of alpha are added.
+   * Only vertices are computed if only_vertices is true.
    */
   Skeleton_blocker_link_complex(const ComplexType & parent_complex,
                                 const Simplex_handle& alpha_parent_adress,
-                                bool only_superior_vertices = false)
+                                bool only_superior_vertices = false,
+                                bool only_vertices = false)
       : only_superior_vertices_(only_superior_vertices) {
     if (!alpha_parent_adress.empty())
-      build_link(parent_complex, alpha_parent_adress);
+      build_link(parent_complex, alpha_parent_adress, only_vertices);
   }
 
   /**
@@ -269,13 +271,16 @@ class Skeleton_blocker_link_complex : public Skeleton_blocker_sub_complex<
    */
   void build_link(const ComplexType & parent_complex,
                   const Simplex_handle& alpha_parent_adress,
-                  bool is_alpha_blocker = false) {
+                  bool is_alpha_blocker = false,
+                  bool only_vertices = false) {
     assert(is_alpha_blocker || parent_complex.contains(alpha_parent_adress));
     compute_link_vertices(parent_complex, alpha_parent_adress,
                           only_superior_vertices_);
-    compute_link_edges(parent_complex, alpha_parent_adress, is_alpha_blocker);
-    compute_link_blockers(parent_complex, alpha_parent_adress,
-                          is_alpha_blocker);
+    if(!only_vertices) {
+      compute_link_edges(parent_complex, alpha_parent_adress, is_alpha_blocker);
+      compute_link_blockers(parent_complex, alpha_parent_adress,
+                            is_alpha_blocker);
+    }
   }
 
   /**

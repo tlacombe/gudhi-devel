@@ -269,7 +269,7 @@ bool test_iterator_simplices(){
 
 	for(auto pair : expected_num_simplices){
 		unsigned num_simplices_around = 0;
-		for(const auto& simplex : complex.simplex_range(pair.first)){
+		for(const auto& simplex : complex.star_simplex_range(pair.first)){
 			simplex.dimension();
 			DBGVALUE(simplex);
 			++num_simplices_around;
@@ -300,13 +300,13 @@ bool test_iterator_simplices2(){
 
 	DBGVALUE(complex.to_string());
 
-	for(const auto& simplex : complex.simplex_range(Vertex_handle(0))){
+	for(const auto& simplex : complex.star_simplex_range(Vertex_handle(0))){
 		simplex.dimension();
 		DBGVALUE(simplex);
 	}
 
 
-	for(const auto& simplex : complex.simplex_range()){
+	for(const auto& simplex : complex.complex_simplex_range()){
 		DBGVALUE(simplex);
 		simplex.dimension();
 		++num_simplices;
@@ -325,13 +325,13 @@ bool test_iterator_simplices3(){
 
 	unsigned num_simplices = 0 ;
 
-	for(const auto& simplex : complex.simplex_range(Vertex_handle(0))){
+	for(const auto& simplex : complex.star_simplex_range(Vertex_handle(0))){
 		simplex.dimension();
 		DBGVALUE(simplex);
 	}
 
 
-	for(const auto& simplex : complex.simplex_range()){
+	for(const auto& simplex : complex.complex_simplex_range()){
 		DBGVALUE(simplex);
 		simplex.dimension();
 		++num_simplices;
@@ -351,7 +351,7 @@ bool test_iterator_simplices4(){
 	for(auto t : empty_complex.triangle_range()){
 		t.dimension();
 	}
-	for(auto s : empty_complex.simplex_range()){
+	for(auto s : empty_complex.complex_simplex_range()){
 		s.dimension();
 	}
 	return true;
