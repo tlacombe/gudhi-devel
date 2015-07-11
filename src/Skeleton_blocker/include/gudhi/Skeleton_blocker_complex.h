@@ -1081,12 +1081,16 @@ class Skeleton_blocker_complex {
   void remove_star(const Simplex_handle& sigma);
 
   /**
-   * @brief add a maximal simplex plus all its cofaces.
+   * @brief add a simplex.
    * @details the simplex must have dimension greater than one (otherwise use add_vertex or add_edge).
+   * all its faces must have already been added.
+   * All vertices lower than the higher vertex of sigma must already be present in the complex.
    */
   void add_simplex(const Simplex_handle& sigma);
 
  private:
+  void add_blockers_after_simplex_insertion(Simplex_handle s);
+
   /**
    * remove all blockers that contains sigma
    */
