@@ -158,7 +158,7 @@ void build_rips(ComplexType& complex, double offset){
 	for (auto p = vertices.begin(); p != vertices.end(); ++p)
 		for (auto q = p; ++q != vertices.end(); )
 			if (eucl_distance(complex.point(*p), complex.point(*q)) < 2 * offset)
-				complex.add_edge(*p,*q);
+				complex.add_edge_without_blockers(*p,*q);
 }
 
 int main (int argc, char *argv[])

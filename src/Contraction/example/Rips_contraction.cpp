@@ -50,7 +50,7 @@ void build_rips(ComplexType& complex, double offset){
 	for (auto p = vertices.begin(); p != vertices.end(); ++p)
 		for (auto q = p; ++q != vertices.end(); /**/){
 			if ( squared_dist(complex.point(*p), complex.point(*q)) < 4 * offset * offset)
-				complex.add_edge(*p,*q);
+				complex.add_edge_without_blockers(*p,*q);
 		}
 }
 
