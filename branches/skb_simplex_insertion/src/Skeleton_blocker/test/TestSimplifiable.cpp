@@ -237,17 +237,16 @@ bool test_collapse3(){
 }
 
 bool test_add_simplex(){
-	Complex complex(5);
+	Complex complex(4);
 	build_complete(4,complex);
-	complex.add_blocker(Simplex_handle(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2)));
-	// Print result
+	complex.add_blocker(Simplex_handle(Vertex_handle(0),Vertex_handle(1),Vertex_handle(3)));
 	cerr << "initial complex:\n"<< complex.to_string();
 	cerr <<endl<<endl;
 
-	complex.add_simplex(Simplex_handle(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2),Vertex_handle(3)));
+	complex.add_simplex(Simplex_handle(Vertex_handle(0),Vertex_handle(1),Vertex_handle(3)));
 	cerr << "complex after add_simplex:\n"<< complex.to_string();
-
-	return complex.num_blockers()==0;
+	return complex.num_blockers()==1 
+	   && complex.contains_blocker(Simplex_handle(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2),Vertex_handle(3)));
 }
 
 bool test_add_simplex2(){
@@ -270,13 +269,27 @@ bool test_add_simplex2(){
 			copy.add_simplex(simplex);
 	}
 
-
 	cerr << "complex after add_simplex:\n"<< copy.to_string();
-
 
 	return complex.num_blockers()==copy.num_blockers() &&
 			complex.num_edges()==copy.num_edges() &&
 			complex.num_vertices()==copy.num_vertices();
+}
+
+
+bool test_add_simplex3(){
+	Complex complex(5);
+	build_complete(5,complex);
+	complex.remove_edge(Vertex_handle(3),Vertex_handle(4));
+	Simplex_handle sigma(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2));
+	complex.add_blocker(sigma);
+	// Print result
+	cerr << "initial complex:\n"<< complex.to_string();
+	cerr <<endl<<endl;
+	complex.add_simplex(sigma);
+	//should create two blockers 0123 and 0124
+	cerr << "complex after adding simplex 012:\n"<< complex.to_string();
+	return complex.num_blockers()==2;
 }
 
 
@@ -345,7 +358,7 @@ int main (int argc, char *argv[])
 
 	tests_simplifiable_complex.add("Test add simplex",test_add_simplex);
 	tests_simplifiable_complex.add("Test add simplex2",test_add_simplex2);
-
+	tests_simplifiable_complex.add("Test add simplex3",test_add_simplex3);
 
 	tests_simplifiable_complex.run();
 

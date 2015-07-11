@@ -207,11 +207,6 @@ void Skeleton_blocker_complex<SkeletonBlockerDS>::remove_star(const Simplex_hand
   }
 }
 
-/**
- * @brief add a maximal simplex plus all its cofaces. All vertices lower than the higher vertex of
- * sigma must already be present.
- * @details the simplex must have dimension greater than one (otherwise use add_vertex or add_edge).
- */
 template<typename SkeletonBlockerDS>
 void Skeleton_blocker_complex<SkeletonBlockerDS>::add_simplex(const Simplex_handle& sigma) {
   assert(!this->contains(sigma));
@@ -223,11 +218,23 @@ void Skeleton_blocker_complex<SkeletonBlockerDS>::add_simplex(const Simplex_hand
   while (num_vertex_to_add--) add_vertex();
 
   for (auto u_it = sigma.begin(); u_it != sigma.end(); ++u_it)
-    for (auto v_it = u_it; ++v_it != sigma.end(); /**/) {
-      // std::cout << "add edge" << *u_it << " " << *v_it << std::endl;
+    for (auto v_it = u_it; ++v_it != sigma.end(); /**/) 
       add_edge(*u_it, *v_it);
-    }
   remove_blocker_include_in_simplex(sigma);
+
+  add_blockers_after_simplex_insertion(sigma);
+}
+
+template<typename SkeletonBlockerDS>
+void Skeleton_blocker_complex<SkeletonBlockerDS>::add_blockers_after_simplex_insertion(Simplex_handle sigma){
+  if(sigma.dimension() < 1) return;
+  auto link_sigma = this->link(sigma);
+  for(auto v : link_sigma.vertex_range()) {
+    auto v_in_current = this->convert_handle_from_another_complex(link_sigma,v);
+    sigma.add_vertex(v_in_current);
+    this->add_blocker(sigma);
+    sigma.remove_vertex(v_in_current);
+  }
 }
 
 /**
@@ -340,7 +347,7 @@ Skeleton_blocker_complex<SkeletonBlockerDS>::contract_edge(Vertex_handle a, Vert
   assert(this->contains_vertex(a));
   assert(this->contains_vertex(b));
 
-  if(this->contains_edge(a, b))
+  if(!this->contains_edge(a, b))
     this->add_edge(a, b);
 
   // if some blockers passes through 'ab', we need to remove them.
