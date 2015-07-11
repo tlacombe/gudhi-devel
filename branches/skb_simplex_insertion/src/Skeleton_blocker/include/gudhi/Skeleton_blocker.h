@@ -157,7 +157,7 @@ of a simplicial complex.
 	// we use a reference to a simplex instead of a copy
 	// value here because a simplex is a set of integers
 	// and copying it cost time
-	for(const Simplex & s : complex.simplex_range()){
+	for(const Simplex & s : complex.star_simplex_range()){
 		++num_simplices;
 		if(s.dimension()%2 == 0) 
 			euler += 1;
@@ -193,7 +193,7 @@ The Euler Characteristic is 1
 	make_complex_from_top_faces(complex,simplices.begin(),simplices.end());
 
 	std::cout << "Simplices:"<<std::endl;
-	for(const Simplex & s : complex.simplex_range())
+	for(const Simplex & s : complex.star_simplex_range())
 		std::cout << s << " ";
 	std::cout << std::endl;
 
@@ -211,7 +211,7 @@ The Euler Characteristic is 1
 	complex = Complex(simplices.begin(),simplices.end());
 
 	std::cout << "Simplices:"<<std::endl;
-	for(const Simplex & s : complex.simplex_range())
+	for(const Simplex & s : complex.star_simplex_range())
 		std::cout << s << " ";
 	std::cout << std::endl;
 

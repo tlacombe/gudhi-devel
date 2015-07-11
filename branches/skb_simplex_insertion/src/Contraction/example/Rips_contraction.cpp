@@ -88,7 +88,7 @@ int main (int argc, char *argv[])
 	contractor.contract_edges();
 
 	std::cout << "Counting final number of simplices \n";
-	unsigned num_simplices = std::distance(complex.simplex_range().begin(),complex.simplex_range().end());
+	unsigned num_simplices = std::distance(complex.complex_simplex_range().begin(),complex.complex_simplex_range().end());
 
 	std::cout << "Final complex has "<<
 			complex.num_vertices()<<" vertices, "<<

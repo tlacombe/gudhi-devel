@@ -53,7 +53,7 @@ int main (int argc, char *argv[]){
 
 
 	std::cout << "Simplices:"<<std::endl;
-	for(const Simplex & s : complex.simplex_range())
+	for(const Simplex & s : complex.complex_simplex_range())
 		std::cout << s << " ";
 	std::cout << std::endl;
 
@@ -71,7 +71,7 @@ int main (int argc, char *argv[]){
 	complex = Complex(simplices.begin(),simplices.end());
 
 	std::cout << "Simplices:"<<std::endl;
-	for(const Simplex & s : complex.simplex_range())
+	for(const Simplex & s : complex.complex_simplex_range())
 		std::cout << s << " ";
 	std::cout << std::endl;
 

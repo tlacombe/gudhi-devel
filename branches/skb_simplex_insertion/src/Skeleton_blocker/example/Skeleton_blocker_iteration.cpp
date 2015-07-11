@@ -66,7 +66,7 @@ int main (int argc, char *argv[]){
 	for(auto v : complex.vertex_range()) {
 	  std::cout << "Vertex " << v <<std::endl;
 	  ++num_vertices;
-        }
+    }
 
 	// such loop can also be done directly with distance as iterators are STL compliant
 	auto edges = complex.edge_range();
@@ -77,7 +77,7 @@ int main (int argc, char *argv[]){
 	// we use a reference to a simplex instead of a copy
 	// value here because a simplex is a set of integers
 	// and copying it cost time
-	for(const Simplex & s : complex.simplex_range()){
+	for(const Simplex & s : complex.complex_simplex_range()){
 		++num_simplices;
 		if(s.dimension()%2 == 0) 
 			euler += 1;

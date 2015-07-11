@@ -258,7 +258,7 @@ bool test_add_simplex2(){
 
 	Complex copy(complex.num_vertices());
 
-	std::vector<Simplex_handle> simplices(complex.simplex_range().begin(),complex.simplex_range().end());
+	std::vector<Simplex_handle> simplices(complex.complex_simplex_range().begin(),complex.complex_simplex_range().end());
 	sort(simplices.begin(),simplices.end(),[&](const Simplex_handle& s1,const Simplex_handle& s2){
 		return s1.dimension()<s2.dimension();
 	});
