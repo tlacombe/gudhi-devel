@@ -289,7 +289,9 @@ bool test_add_simplex3(){
 	complex.add_simplex(sigma);
 	//should create two blockers 0123 and 0124
 	cerr << "complex after adding simplex 012:\n"<< complex.to_string();
-	return complex.num_blockers()==2;
+	return complex.num_blockers()==2
+	&& complex.contains_blocker(Simplex_handle(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2),Vertex_handle(3)))
+	&& complex.contains_blocker(Simplex_handle(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2),Vertex_handle(4)));
 }
 
 
