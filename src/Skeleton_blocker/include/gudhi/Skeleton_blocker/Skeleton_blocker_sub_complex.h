@@ -66,7 +66,7 @@ class Skeleton_blocker_sub_complex : public ComplexType {
 
  public:
   using ComplexType::add_vertex;
-  using ComplexType::add_edge;
+  using ComplexType::add_edge_without_blockers;
   using ComplexType::add_blocker;
 
   typedef typename ComplexType::Vertex_handle Vertex_handle;
@@ -110,11 +110,11 @@ class Skeleton_blocker_sub_complex : public ComplexType {
    * It assumes that both vertices corresponding to v1_root and v2_root are present
    * in the sub-complex.
    */
-  void add_edge(Root_vertex_handle v1_root, Root_vertex_handle v2_root) {
+  void add_edge_without_blockers(Root_vertex_handle v1_root, Root_vertex_handle v2_root) {
     auto v1_sub(this->get_address(v1_root));
     auto v2_sub(this->get_address(v2_root));
     assert(v1_sub && v2_sub);
-    this->ComplexType::add_edge(*v1_sub, *v2_sub);
+    this->ComplexType::add_edge_without_blockers(*v1_sub, *v2_sub);
   }
 
   /**
@@ -150,7 +150,7 @@ class Skeleton_blocker_sub_complex : public ComplexType {
       parent_complex.add_neighbours(x, x_neigh, true);
       x_neigh.intersection(simplex);
       for (auto y : x_neigh) {
-        this->add_edge(parent_complex[x].get_id(), parent_complex[y].get_id());
+        this->add_edge_without_blockers(parent_complex[x].get_id(), parent_complex[y].get_id());
       }
     }
 

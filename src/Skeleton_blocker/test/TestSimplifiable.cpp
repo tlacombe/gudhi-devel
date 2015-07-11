@@ -63,7 +63,7 @@ void build_complete(int n,Complex& complex){
 		complex.add_vertex();
 	for(int i=0;i<n;i++)
 		for(int j=0;j<i;j++)
-			complex.add_edge(Vertex_handle(i),Vertex_handle(j));
+			complex.add_edge_without_blockers(Vertex_handle(i),Vertex_handle(j));
 }
 
 bool test_contraction1(){
@@ -155,8 +155,8 @@ bool test_collapse0(){
 	Complex complex(5);
 	build_complete(4,complex);
 	complex.add_vertex();
-	complex.add_edge(static_cast<Vertex_handle>(2), static_cast<Vertex_handle>(4));
-	complex.add_edge(static_cast<Vertex_handle>(3), static_cast<Vertex_handle>(4));
+	complex.add_edge_without_blockers(static_cast<Vertex_handle>(2), static_cast<Vertex_handle>(4));
+	complex.add_edge_without_blockers(static_cast<Vertex_handle>(3), static_cast<Vertex_handle>(4));
 	// Print result
 	cerr << "initial complex :\n"<< complex.to_string();
 	cerr <<endl<<endl;
@@ -197,9 +197,9 @@ bool test_collapse2(){
 	Complex complex(5);
 	build_complete(4,complex);
 	complex.add_vertex();
-	complex.add_edge(Vertex_handle(1),Vertex_handle(4));
-	complex.add_edge(Vertex_handle(2),Vertex_handle(4));
-	complex.add_edge(Vertex_handle(3),Vertex_handle(4));
+	complex.add_edge_without_blockers(Vertex_handle(1),Vertex_handle(4));
+	complex.add_edge_without_blockers(Vertex_handle(2),Vertex_handle(4));
+	complex.add_edge_without_blockers(Vertex_handle(3),Vertex_handle(4));
 	complex.add_blocker(Simplex_handle(Vertex_handle(1),Vertex_handle(2),Vertex_handle(3),Vertex_handle(4)));
 	// Print result
 	cerr << "initial complex :\n"<< complex.to_string();
@@ -220,9 +220,9 @@ bool test_collapse3(){
 	Complex complex(5);
 	build_complete(4,complex);
 	complex.add_vertex();
-	complex.add_edge(Vertex_handle(1),Vertex_handle(4));
-	complex.add_edge(Vertex_handle(2),Vertex_handle(4));
-	complex.add_edge(Vertex_handle(3),Vertex_handle(4));
+	complex.add_edge_without_blockers(Vertex_handle(1),Vertex_handle(4));
+	complex.add_edge_without_blockers(Vertex_handle(2),Vertex_handle(4));
+	complex.add_edge_without_blockers(Vertex_handle(3),Vertex_handle(4));
 	complex.add_blocker(Simplex_handle(Vertex_handle(1),Vertex_handle(2),Vertex_handle(3),Vertex_handle(4)));
 	// Print result
 	cerr << "initial complex:\n"<< complex.to_string();
@@ -264,7 +264,7 @@ bool test_add_simplex2(){
 	});
 	for(const auto & simplex : simplices){
 		if(!copy.contains(simplex) && simplex.dimension()==1)
-			copy.add_edge(simplex.first_vertex(),simplex.last_vertex());
+			copy.add_edge_without_blockers(simplex.first_vertex(),simplex.last_vertex());
 		if(!copy.contains(simplex) && simplex.dimension()>1)
 			copy.add_simplex(simplex);
 	}
@@ -294,14 +294,31 @@ bool test_add_simplex3(){
 	&& complex.contains_blocker(Simplex_handle(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2),Vertex_handle(4)));
 }
 
+bool test_add_edge(){
+	Complex complex(4);
+	for(unsigned i=0u;i<4;i++)
+		complex.add_edge(Vertex_handle(i),Vertex_handle((i+1)%4));
+
+	// Print result
+	cerr << "initial complex:\n"<< complex.to_string();
+	cerr <<endl<<endl;
+	complex.add_edge(Vertex_handle(1),Vertex_handle(3));
+	//should create two blockers 013 and 012
+	cerr << "complex after adding edge 13:\n"<< complex.to_string();
+	return complex.num_blockers()==2
+	&& complex.contains_blocker(Simplex_handle(Vertex_handle(0),Vertex_handle(1),Vertex_handle(3)))
+	&& complex.contains_blocker(Simplex_handle(Vertex_handle(1),Vertex_handle(2),Vertex_handle(3)));
+}
+
+
 
 
 bool test_remove_popable_blockers(){
 	Complex complex;
 	build_complete(4,complex);
 	complex.add_vertex();
-	complex.add_edge(Vertex_handle(3),Vertex_handle(4));
-	complex.add_edge(Vertex_handle(2),Vertex_handle(4));
+	complex.add_edge_without_blockers(Vertex_handle(3),Vertex_handle(4));
+	complex.add_edge_without_blockers(Vertex_handle(2),Vertex_handle(4));
 	Simplex_handle sigma1=Simplex_handle(Vertex_handle(1),Vertex_handle(2),Vertex_handle(3));
 	Simplex_handle sigma2=Simplex_handle(Vertex_handle(2),Vertex_handle(3),Vertex_handle(4));
 
@@ -322,11 +339,11 @@ bool test_remove_popable_blockers(){
 	build_complete(4,complex);
 	complex.add_vertex();
 	complex.add_vertex();
-	complex.add_edge(Vertex_handle(3),Vertex_handle(4));
-	complex.add_edge(Vertex_handle(2),Vertex_handle(4));
-	complex.add_edge(Vertex_handle(2),Vertex_handle(5));
-	complex.add_edge(Vertex_handle(3),Vertex_handle(5));
-	complex.add_edge(Vertex_handle(4),Vertex_handle(5));
+	complex.add_edge_without_blockers(Vertex_handle(3),Vertex_handle(4));
+	complex.add_edge_without_blockers(Vertex_handle(2),Vertex_handle(4));
+	complex.add_edge_without_blockers(Vertex_handle(2),Vertex_handle(5));
+	complex.add_edge_without_blockers(Vertex_handle(3),Vertex_handle(5));
+	complex.add_edge_without_blockers(Vertex_handle(4),Vertex_handle(5));
 	sigma1=Simplex_handle(Vertex_handle(1),Vertex_handle(2),Vertex_handle(3));
 	sigma2=Simplex_handle(Vertex_handle(2),Vertex_handle(3),Vertex_handle(4));
 
@@ -361,6 +378,7 @@ int main (int argc, char *argv[])
 	tests_simplifiable_complex.add("Test add simplex",test_add_simplex);
 	tests_simplifiable_complex.add("Test add simplex2",test_add_simplex2);
 	tests_simplifiable_complex.add("Test add simplex3",test_add_simplex3);
+	tests_simplifiable_complex.add("Test add edge",test_add_edge);
 
 	tests_simplifiable_complex.run();
 

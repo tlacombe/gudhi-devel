@@ -194,7 +194,7 @@ class Skeleton_blocker_link_complex : public Skeleton_blocker_sub_complex<
             }
           }
           if (new_edge)
-            this->add_edge(*x_link, *y_link);
+            this->add_edge_without_blockers(*x_link, *y_link);
         }
       }
     }

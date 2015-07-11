@@ -81,11 +81,11 @@ void build_complete(int n,Complex& complex){
 
 	//	for(int i=n-1;i>=0;i--)
 	//		for(int j=i-1;j>=0;j--)
-	//			complex.add_edge(Vertex_handle(i),Vertex_handle(j));
+	//			complex.add_edge_without_blockers(Vertex_handle(i),Vertex_handle(j));
 
 	for(int i=0;i<n;i++)
 		for(int j=0;j<i;j++)
-			complex.add_edge(Vertex_handle(i),Vertex_handle(j));
+			complex.add_edge_without_blockers(Vertex_handle(i),Vertex_handle(j));
 }
 
 
@@ -139,7 +139,7 @@ bool test_iterator_edge(){
 	Complex complex(n);
 	for(int i=0;i<n;i++)
 		for(int j=0;j<i;j++)
-			complex.add_edge(Vertex_handle(i),Vertex_handle(j));
+			complex.add_edge_without_blockers(Vertex_handle(i),Vertex_handle(j));
 	complex.remove_edge(Vertex_handle(2),Vertex_handle(3));
 	complex.remove_edge(Vertex_handle(3),Vertex_handle(5));
 	cerr << "complex.num_edges():"<<complex.num_edges()<<endl;
@@ -157,7 +157,7 @@ bool test_iterator_edge2(){
 	Complex complex(n);
 	for(int i=0;i<n;i++)
 		for(int j=0;j<i;j++)
-			complex.add_edge(Vertex_handle(i),Vertex_handle(j));
+			complex.add_edge_without_blockers(Vertex_handle(i),Vertex_handle(j));
 	complex.remove_edge(Vertex_handle(2),Vertex_handle(3));
 	complex.remove_edge(Vertex_handle(3),Vertex_handle(5));
 	cerr << "complex.num_edges():"<<complex.num_edges()<<endl;
@@ -176,7 +176,7 @@ bool test_iterator_edge3(){
 	Complex complex(n);
 	for(int i=0;i<n;i++)
 		for(int j=0;j<i;j++)
-			complex.add_edge(Vertex_handle(i),Vertex_handle(j));
+			complex.add_edge_without_blockers(Vertex_handle(i),Vertex_handle(j));
 	complex.remove_edge(Vertex_handle(2),Vertex_handle(3));
 	complex.remove_edge(Vertex_handle(3),Vertex_handle(5));
 	cerr << "complex.num_edges():"<<complex.num_edges()<<endl;
@@ -195,10 +195,10 @@ bool test_iterator_triangles(){
 	Complex complex(n);
 	//create a "ring" around '0'
 	for(int i=1;i<n;i++)
-		complex.add_edge(Vertex_handle(0),Vertex_handle(i));
+		complex.add_edge_without_blockers(Vertex_handle(0),Vertex_handle(i));
 	for(int i=1;i<n-1;i++)
-		complex.add_edge(Vertex_handle(i),Vertex_handle(i+1));
-	complex.add_edge(Vertex_handle(1),Vertex_handle(6));
+		complex.add_edge_without_blockers(Vertex_handle(i),Vertex_handle(i+1));
+	complex.add_edge_without_blockers(Vertex_handle(1),Vertex_handle(6));
 
 	PRINT(complex.to_string());
 
@@ -221,8 +221,8 @@ bool test_iterator_triangles(){
 
 	// we now add another triangle
 	complex.add_vertex();
-	complex.add_edge(Vertex_handle(4),Vertex_handle(7));
-	complex.add_edge(Vertex_handle(3),Vertex_handle(7));
+	complex.add_edge_without_blockers(Vertex_handle(4),Vertex_handle(7));
+	complex.add_edge_without_blockers(Vertex_handle(3),Vertex_handle(7));
 	complex.add_blocker(Simplex_handle(Vertex_handle(0),Vertex_handle(1),Vertex_handle(6)));
 	num_triangles_seen=0;
 
@@ -243,16 +243,16 @@ bool test_iterator_triangles(){
 
 bool test_iterator_simplices(){
 	Complex complex(6);
-	complex.add_edge(Vertex_handle(0),Vertex_handle(1));
-	complex.add_edge(Vertex_handle(1),Vertex_handle(2));
-	complex.add_edge(Vertex_handle(2),Vertex_handle(0));
-	complex.add_edge(Vertex_handle(1),Vertex_handle(3));
-	complex.add_edge(Vertex_handle(2),Vertex_handle(3));
-	complex.add_edge(Vertex_handle(2),Vertex_handle(5));
-	complex.add_edge(Vertex_handle(3),Vertex_handle(5));
-	complex.add_edge(Vertex_handle(2),Vertex_handle(4));
-	complex.add_edge(Vertex_handle(4),Vertex_handle(5));
-	complex.add_edge(Vertex_handle(3),Vertex_handle(4));
+	complex.add_edge_without_blockers(Vertex_handle(0),Vertex_handle(1));
+	complex.add_edge_without_blockers(Vertex_handle(1),Vertex_handle(2));
+	complex.add_edge_without_blockers(Vertex_handle(2),Vertex_handle(0));
+	complex.add_edge_without_blockers(Vertex_handle(1),Vertex_handle(3));
+	complex.add_edge_without_blockers(Vertex_handle(2),Vertex_handle(3));
+	complex.add_edge_without_blockers(Vertex_handle(2),Vertex_handle(5));
+	complex.add_edge_without_blockers(Vertex_handle(3),Vertex_handle(5));
+	complex.add_edge_without_blockers(Vertex_handle(2),Vertex_handle(4));
+	complex.add_edge_without_blockers(Vertex_handle(4),Vertex_handle(5));
+	complex.add_edge_without_blockers(Vertex_handle(3),Vertex_handle(4));
 
 	complex.add_blocker(Simplex_handle(Vertex_handle(2),Vertex_handle(3),Vertex_handle(4),Vertex_handle(5)));
 
@@ -288,7 +288,7 @@ bool test_iterator_simplices(){
 
 bool test_iterator_simplices2(){
 	Complex complex(2);
-	complex.add_edge(Vertex_handle(0),Vertex_handle(1));
+	complex.add_edge_without_blockers(Vertex_handle(0),Vertex_handle(1));
 
 	for(const auto& s:complex.triangle_range()){
 		s.dimension();
@@ -318,9 +318,9 @@ bool test_iterator_simplices2(){
 
 bool test_iterator_simplices3(){
 	Complex complex(3);
-	complex.add_edge(Vertex_handle(0),Vertex_handle(1));
-	complex.add_edge(Vertex_handle(1),Vertex_handle(2));
-	complex.add_edge(Vertex_handle(2),Vertex_handle(0));
+	complex.add_edge_without_blockers(Vertex_handle(0),Vertex_handle(1));
+	complex.add_edge_without_blockers(Vertex_handle(1),Vertex_handle(2));
+	complex.add_edge_without_blockers(Vertex_handle(2),Vertex_handle(0));
 	complex.add_blocker(Simplex_handle(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2)));
 
 	unsigned num_simplices = 0 ;
@@ -377,7 +377,7 @@ bool test_iterator_blockers(){
 	}
 	for (int i=10;i<15;i++){
 		for (int j=i+1;j<15;j++)
-			complex.add_edge(Vertex_handle(i),Vertex_handle(j));
+			complex.add_edge_without_blockers(Vertex_handle(i),Vertex_handle(j));
 	}
 
 	complex.add_blocker(Simplex_handle(Vertex_handle(10),Vertex_handle(11),Vertex_handle(12)));
@@ -408,7 +408,7 @@ bool test_link0(){
 
 	enum { a, b, c, d, n };
 	Complex complex(n);
-	complex.add_edge(Vertex_handle(b),Vertex_handle(c));complex.add_edge(Vertex_handle(c),Vertex_handle(d));
+	complex.add_edge_without_blockers(Vertex_handle(b),Vertex_handle(c));complex.add_edge_without_blockers(Vertex_handle(c),Vertex_handle(d));
 	Simplex_handle alpha = Simplex_handle(Vertex_handle(c));
 	Skeleton_blocker_link_complex<Complex> L(complex,alpha);
 
@@ -436,7 +436,7 @@ bool test_link1(){
 	}
 	for (int i=10;i<15;i++){
 		for (int j=i+1;j<15;j++)
-			complex.add_edge(Vertex_handle(i),Vertex_handle(j));
+			complex.add_edge_without_blockers(Vertex_handle(i),Vertex_handle(j));
 	}
 	Simplex_handle alpha(Vertex_handle(12),Vertex_handle(14));
 	Skeleton_blocker_link_complex<Complex> L(complex,alpha);
@@ -474,7 +474,7 @@ bool test_link2(){
 	}
 	for (int i=10;i<15;i++){
 		for (int j=i+1;j<15;j++)
-			complex.add_edge(Vertex_handle(i),Vertex_handle(j));
+			complex.add_edge_without_blockers(Vertex_handle(i),Vertex_handle(j));
 	}
 	complex.add_blocker(Simplex_handle(Vertex_handle(10),Vertex_handle(11),Vertex_handle(13)));
 	alpha = Simplex_handle(Vertex_handle(12),Vertex_handle(14));
@@ -516,7 +516,7 @@ bool test_link3(){
 	}
 	for (int i=10;i<15;i++){
 		for (int j=i+1;j<15;j++)
-			complex.add_edge(Vertex_handle(i),Vertex_handle(j));
+			complex.add_edge_without_blockers(Vertex_handle(i),Vertex_handle(j));
 	}
 	complex.add_blocker(Simplex_handle(Vertex_handle(10),Vertex_handle(11),Vertex_handle(12)));
 	alpha = Simplex_handle(Vertex_handle(12),Vertex_handle(14));
@@ -552,7 +552,7 @@ bool test_link4(){
 	}
 	for (int i=10;i<15;i++){
 		for (int j=i+1;j<15;j++)
-			complex.add_edge(Vertex_handle(i),Vertex_handle(j));
+			complex.add_edge_without_blockers(Vertex_handle(i),Vertex_handle(j));
 	}
 	complex.add_blocker(Simplex_handle(Vertex_handle(10),Vertex_handle(11),Vertex_handle(12),Vertex_handle(13)));
 	Simplex_handle alpha(Vertex_handle(12),Vertex_handle(14));
@@ -624,10 +624,10 @@ bool test_link7(){
 	complex.add_vertex();
 	complex.add_vertex();
 	for(int i = 3; i<6; ++i){
-		complex.add_edge(Vertex_handle(i),Vertex_handle(6));
-		complex.add_edge(Vertex_handle(i),Vertex_handle(7));
+		complex.add_edge_without_blockers(Vertex_handle(i),Vertex_handle(6));
+		complex.add_edge_without_blockers(Vertex_handle(i),Vertex_handle(7));
 	}
-	complex.add_edge(Vertex_handle(6),Vertex_handle(7));
+	complex.add_edge_without_blockers(Vertex_handle(6),Vertex_handle(7));
 	complex.add_blocker(Simplex_handle(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2)));
 	complex.add_blocker(Simplex_handle(Vertex_handle(3),Vertex_handle(4),Vertex_handle(5)));
 
