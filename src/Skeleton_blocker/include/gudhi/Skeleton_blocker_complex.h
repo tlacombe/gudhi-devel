@@ -578,7 +578,7 @@ class Skeleton_blocker_complex {
   /**
    * @brief Adds all edges of a simplex to the simplicial complex without adding blockers.
    */
-  void add_edge_without_blockerss(const Simplex_handle & sigma) {
+  void add_edge_without_blockers(const Simplex_handle & sigma) {
     Simplex_handle_iterator i, j;
     for (i = sigma.begin(); i != sigma.end(); ++i)
       for (j = i, j++; j != sigma.end(); ++j)

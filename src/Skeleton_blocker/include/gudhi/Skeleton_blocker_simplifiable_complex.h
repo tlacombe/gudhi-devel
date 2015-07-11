@@ -229,7 +229,8 @@ template<typename SkeletonBlockerDS>
 void Skeleton_blocker_complex<SkeletonBlockerDS>::add_blockers_after_simplex_insertion(Simplex_handle sigma){
   if(sigma.dimension() < 1) return;
   //todo for efficiency restricts the computation of the link to its vertices as it is all what we need here
-  auto link_sigma = this->link(sigma);
+  Skeleton_blocker_link_complex<Skeleton_blocker_complex<SkeletonBlockerDS>> 
+    link_sigma(*this,sigma,false,true);
   for(auto v : link_sigma.vertex_range()) {
     auto v_in_current = this->convert_handle_from_another_complex(link_sigma,v);
     sigma.add_vertex(v_in_current);
