@@ -61,7 +61,7 @@ class Skeleton_blocker_off_flag_visitor_reader {
     if (!load_only_points_) {
       for (size_t i = 0; i < face.size(); ++i)
         for (size_t j = i + 1; j < face.size(); ++j) {
-          complex_.add_edge(Vertex_handle(face[i]), Vertex_handle(face[j]));
+          complex_.add_edge_without_blockers(Vertex_handle(face[i]), Vertex_handle(face[j]));
         }
     }
   }

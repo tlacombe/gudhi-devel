@@ -207,7 +207,7 @@ class Skeleton_blocker_complex {
     while (num_vertex-- >= 0) add_vertex();
 
     for (const auto& e : edges)
-      add_edge(e.first, e.second);
+      add_edge_without_blockers(e.first, e.second);
   }
 
   template<typename SimpleHandleOutputIterator>
@@ -541,35 +541,48 @@ class Skeleton_blocker_complex {
   }
 
   /**
-   * @brief Adds an edge between vertices a and b and all its cofaces.
+   * @brief Adds an edge between vertices a and b.
+   * @details For instance, the complex contains edge 01 and 12, then calling
+   * add_edge with vertex 0 and 2 will create a complex containing
+   * the edges 01, 12, 20 but not the triangle 012 (and hence this complex
+   * will contains a blocker 012).
    */
-  Edge_handle add_edge(Vertex_handle a, Vertex_handle b) {
+  Edge_handle add_edge(Vertex_handle a, Vertex_handle b) {    
+    auto res = add_edge_without_blockers(a,b);
+    add_blockers_after_simplex_insertion(Simplex_handle(a,b));
+    return res;
+  }
+
+  /**
+   * @brief Adds an edge between vertices a and b without blockers.
+   * @details For instance, the complex contains edge 01 and 12, then calling
+   * add_edge with vertex 0 and 2 will create a complex containing
+   * the triangle 012.
+   */
+  Edge_handle add_edge_without_blockers(Vertex_handle a, Vertex_handle b) {
     assert(contains_vertex(a) && contains_vertex(b));
     assert(a != b);
 
     auto edge_handle((*this)[std::make_pair(a, b)]);
-    // std::pair<Edge_handle,bool> pair_descr_bool = (*this)[std::make_pair(a,b)];
-    // Edge_handle edge_descr;
-    // bool edge_present = pair_descr_bool.second;
     if (!edge_handle) {
       edge_handle = boost::add_edge(a.vertex, b.vertex, skeleton).first;
       (*this)[*edge_handle].setId(get_id(a), get_id(b));
       degree_[a.vertex]++;
       degree_[b.vertex]++;
       if (visitor)
-        visitor->on_add_edge(a, b);
+        visitor->on_add_edge_without_blockers(a, b);
     }
     return *edge_handle;
   }
 
   /**
-   * @brief Adds all edges and their cofaces of a simplex to the simplicial complex.
+   * @brief Adds all edges of a simplex to the simplicial complex without adding blockers.
    */
-  void add_edges(const Simplex_handle & sigma) {
+  void add_edge_without_blockerss(const Simplex_handle & sigma) {
     Simplex_handle_iterator i, j;
     for (i = sigma.begin(); i != sigma.end(); ++i)
       for (j = i, j++; j != sigma.end(); ++j)
-        add_edge(*i, *j);
+        add_edge_without_blockers(*i, *j);
   }
 
   /**
@@ -1082,7 +1095,7 @@ class Skeleton_blocker_complex {
 
   /**
    * @brief add a simplex.
-   * @details the simplex must have dimension greater than one (otherwise use add_vertex or add_edge).
+   * @details the simplex must have dimension greater than one (otherwise use add_vertex or add_edge_without_blockers).
    * all its faces must have already been added.
    * All vertices lower than the higher vertex of sigma must already be present in the complex.
    */

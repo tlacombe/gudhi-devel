@@ -219,7 +219,7 @@ void Skeleton_blocker_complex<SkeletonBlockerDS>::add_simplex(const Simplex_hand
 
   for (auto u_it = sigma.begin(); u_it != sigma.end(); ++u_it)
     for (auto v_it = u_it; ++v_it != sigma.end(); /**/) 
-      add_edge(*u_it, *v_it);
+      add_edge_without_blockers(*u_it, *v_it);
   remove_blocker_include_in_simplex(sigma);
 
   add_blockers_after_simplex_insertion(sigma);
@@ -304,7 +304,7 @@ void Skeleton_blocker_complex<SkeletonBlockerDS>::tip_blockers(Vertex_handle a, 
 template<typename SkeletonBlockerDS>
 void
 Skeleton_blocker_complex<SkeletonBlockerDS>::swap_edge(Vertex_handle a, Vertex_handle b, Vertex_handle x) {
-  this->add_edge(a, x);
+  this->add_edge_without_blockers(a, x);
   if (this->visitor) this->visitor->on_swaped_edge(a, b, x);
   this->remove_edge(b, x);
 }
@@ -349,7 +349,7 @@ Skeleton_blocker_complex<SkeletonBlockerDS>::contract_edge(Vertex_handle a, Vert
   assert(this->contains_vertex(b));
 
   if(!this->contains_edge(a, b))
-    this->add_edge(a, b);
+    this->add_edge_without_blockers(a, b);
 
   // if some blockers passes through 'ab', we need to remove them.
   if (!link_condition(a, b))
@@ -456,3 +456,6 @@ Skeleton_blocker_complex<SkeletonBlockerDS>::notify_changed_edges(Vertex_handle 
 }  // namespace Gudhi
 
 #endif  // SRC_SKELETON_BLOCKER_INCLUDE_GUDHI_SKELETON_BLOCKER_SIMPLIFIABLE_COMPLEX_H_
+
+
+

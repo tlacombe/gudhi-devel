@@ -42,14 +42,13 @@ typedef Complex::Simplex_handle Simplex;
 
 Complex build_complete_complex(int n){
 	// build a full complex with n vertices and 2^n-1 simplices
-		Complex complex;
-		for(int i=0;i<n;i++)
-			complex.add_vertex();
-		for(int i=0;i<n;i++)
-			for(int j=0;j<i;j++)
-				//note that add_edge, add the edge and all its cofaces
-				complex.add_edge(Vertex_handle(i),Vertex_handle(j));
-		return complex;
+	Complex complex;
+	for(int i=0;i<n;i++)
+		complex.add_vertex();
+	for(int i=0;i<n;i++)
+		for(int j=0;j<i;j++)
+			complex.add_edge_without_blockers(Vertex_handle(i),Vertex_handle(j));
+	return complex;
 }
 
 int main (int argc, char *argv[]){

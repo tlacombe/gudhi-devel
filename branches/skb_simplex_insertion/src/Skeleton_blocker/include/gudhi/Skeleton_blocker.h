@@ -138,8 +138,7 @@ of a simplicial complex.
 		complex.add_vertex();
 	for(int i=0;i<n;i++)
 		for(int j=0;j<i;j++)
-			//note that add_edge adds the edge and all its cofaces
-			complex.add_edge(Vertex_handle(i),Vertex_handle(j));
+			complex.add_edge_without_blockers(Vertex_handle(i),Vertex_handle(j));
 
 	// this is just to illustrate iterators, to count number of vertices
 	// or edges, complex.num_vertices() and complex.num_edges() are
