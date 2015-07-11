@@ -27,7 +27,7 @@ class Viewer_instructor : public QWidget{
 	typedef Complex::Point Point;
 	typedef Complex::Vertex_handle Vertex_handle;
 	typedef Complex::Edge_handle Edge_handle;
-	typedef Complex::Simplex_handle Simplex_handle;
+	typedef Complex::Simplex Simplex;
 
 
 	Viewer* viewer_;
@@ -84,7 +84,7 @@ public:
 	void set_color_vertex(Vertex_handle vh);
 	void set_color_edge(Edge_handle eh);
 
-	void set_color_triangle(const Simplex_handle& triangle);
+	void set_color_triangle(const Simplex& triangle);
 
 private:
 	/**

@@ -48,20 +48,20 @@ namespace skbl {
 template<typename SkeletonBlockerComplex, typename Link>
 class Simplex_around_vertex_iterator :
 public boost::iterator_facade < Simplex_around_vertex_iterator<SkeletonBlockerComplex, Link>
-, typename SkeletonBlockerComplex::Simplex_handle
+, typename SkeletonBlockerComplex::Simplex
 , boost::forward_traversal_tag
-, typename SkeletonBlockerComplex::Simplex_handle
+, typename SkeletonBlockerComplex::Simplex
 > {
   friend class boost::iterator_core_access;
   typedef SkeletonBlockerComplex Complex;
   typedef typename Complex::Vertex_handle Vertex_handle;
   typedef typename Complex::Edge_handle Edge_handle;
-  typedef typename Complex::Simplex_handle Simplex_handle;
+  typedef typename Complex::Simplex Simplex;
 
   // Link_vertex_handle == Complex_Vertex_handle but this renaming helps avoiding confusion
   typedef typename Link::Vertex_handle Link_vertex_handle;
 
-  typedef typename Gudhi::skbl::Trie<Simplex_handle> Trie;
+  typedef typename Gudhi::skbl::Trie<Simplex> Trie;
 
  private:
   const Complex* complex;
@@ -120,7 +120,7 @@ public boost::iterator_facade < Simplex_around_vertex_iterator<SkeletonBlockerCo
     Trie* res = new Trie(parent_vertex(link_vh), parent);
     for (Link_vertex_handle nv : link_v->vertex_range(link_vh)) {
       if (link_vh < nv) {
-        Simplex_handle simplex_node_plus_nv(res->simplex());
+        Simplex simplex_node_plus_nv(res->simplex());
         simplex_node_plus_nv.add_vertex(parent_vertex(nv));
         if (complex->contains(simplex_node_plus_nv)) {
           res->add_child(build_trie(nv, res));
@@ -177,13 +177,13 @@ public boost::iterator_facade < Simplex_around_vertex_iterator<SkeletonBlockerCo
 
   }
 
-  Simplex_handle dereference() const {
+  Simplex dereference() const {
     assert(!nodes_to_be_seen.empty());
     Trie* first_node = nodes_to_be_seen.front();
     return first_node->simplex();
   }
 
-  Simplex_handle get_trie_address() const {
+  Simplex get_trie_address() const {
     assert(!nodes_to_be_seen.empty());
     return nodes_to_be_seen.front();
   }
@@ -201,9 +201,9 @@ public boost::iterator_facade < Simplex_around_vertex_iterator<SkeletonBlockerCo
 template<typename SkeletonBlockerComplex>
 class Simplex_iterator :
 public boost::iterator_facade < Simplex_iterator<SkeletonBlockerComplex>
-, typename SkeletonBlockerComplex::Simplex_handle
+, typename SkeletonBlockerComplex::Simplex
 , boost::forward_traversal_tag
-, typename SkeletonBlockerComplex::Simplex_handle
+, typename SkeletonBlockerComplex::Simplex
 > {
   typedef Skeleton_blocker_link_superior<SkeletonBlockerComplex> Link;
 
@@ -214,7 +214,7 @@ public boost::iterator_facade < Simplex_iterator<SkeletonBlockerComplex>
   typedef SkeletonBlockerComplex Complex;
   typedef typename Complex::Vertex_handle Vertex_handle;
   typedef typename Complex::Edge_handle Edge_handle;
-  typedef typename Complex::Simplex_handle Simplex_handle;
+  typedef typename Complex::Simplex Simplex;
   typedef typename Complex::Complex_vertex_iterator Complex_vertex_iterator;
   typedef typename Link::Vertex_handle Link_vertex_handle;
 
@@ -291,7 +291,7 @@ public boost::iterator_facade < Simplex_iterator<SkeletonBlockerComplex>
     }
   }
 
-  Simplex_handle dereference() const {
+  Simplex dereference() const {
     return current_simplex_around_current_vertex_.dereference();
   }
 

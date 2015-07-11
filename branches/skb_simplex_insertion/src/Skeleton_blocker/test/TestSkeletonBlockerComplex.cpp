@@ -42,15 +42,15 @@ using namespace skbl;
 typedef Skeleton_blocker_complex<Skeleton_blocker_simple_traits> Complex;
 typedef Complex::Vertex_handle Vertex_handle;
 typedef Complex::Root_vertex_handle Root_vertex_handle;
-typedef Complex::Simplex_handle Simplex_handle;
+typedef Complex::Simplex Simplex;
 typedef Complex::Root_simplex_handle Root_simplex_handle;
-typedef Simplex_handle::Simplex_vertex_const_iterator Simplex_vertex_const_iterator;
+typedef Simplex::Simplex_vertex_const_iterator Simplex_vertex_const_iterator;
 typedef Complex::Edge_handle Edge_handle;
 
 // true if v in complex
 bool assert_vertex(Complex &complex,Vertex_handle v){
 	//assert(complex.contains(v));
-	return complex.contains(static_cast<Simplex_handle>(v));
+	return complex.contains(static_cast<Simplex>(v));
 }
 
 bool assert_simplex(Complex &complex,Root_vertex_handle a,Root_vertex_handle b,Root_vertex_handle c){
@@ -91,7 +91,7 @@ void build_complete(int n,Complex& complex){
 
 bool test_simplex(){
 	//	PRINT("test simplex");
-	Simplex_handle simplex(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2),Vertex_handle(3));
+	Simplex simplex(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2),Vertex_handle(3));
 	for (auto i = simplex.begin() ; i != simplex.end() ; ++i){
 		PRINT(*i);
 		auto j = i;
@@ -223,7 +223,7 @@ bool test_iterator_triangles(){
 	complex.add_vertex();
 	complex.add_edge_without_blockers(Vertex_handle(4),Vertex_handle(7));
 	complex.add_edge_without_blockers(Vertex_handle(3),Vertex_handle(7));
-	complex.add_blocker(Simplex_handle(Vertex_handle(0),Vertex_handle(1),Vertex_handle(6)));
+	complex.add_blocker(Simplex(Vertex_handle(0),Vertex_handle(1),Vertex_handle(6)));
 	num_triangles_seen=0;
 
 	TEST("triangles (should be 6 of them):");
@@ -254,7 +254,7 @@ bool test_iterator_simplices(){
 	complex.add_edge_without_blockers(Vertex_handle(4),Vertex_handle(5));
 	complex.add_edge_without_blockers(Vertex_handle(3),Vertex_handle(4));
 
-	complex.add_blocker(Simplex_handle(Vertex_handle(2),Vertex_handle(3),Vertex_handle(4),Vertex_handle(5)));
+	complex.add_blocker(Simplex(Vertex_handle(2),Vertex_handle(3),Vertex_handle(4),Vertex_handle(5)));
 
 	bool correct_number_simplices = true;
 
@@ -321,7 +321,7 @@ bool test_iterator_simplices3(){
 	complex.add_edge_without_blockers(Vertex_handle(0),Vertex_handle(1));
 	complex.add_edge_without_blockers(Vertex_handle(1),Vertex_handle(2));
 	complex.add_edge_without_blockers(Vertex_handle(2),Vertex_handle(0));
-	complex.add_blocker(Simplex_handle(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2)));
+	complex.add_blocker(Simplex(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2)));
 
 	unsigned num_simplices = 0 ;
 
@@ -369,8 +369,8 @@ auto blocker_range(Map map) -> decltype( map | boost::adaptors::map_values){
 
 bool test_iterator_blockers(){
 	Complex complex;
-	Simplex_handle alpha;
-	Simplex_handle vertex_set_expected;
+	Simplex alpha;
+	Simplex vertex_set_expected;
 	// Build the complexes
 	for (int i=0;i<20;i++){
 		complex.add_vertex();
@@ -380,10 +380,10 @@ bool test_iterator_blockers(){
 			complex.add_edge_without_blockers(Vertex_handle(i),Vertex_handle(j));
 	}
 
-	complex.add_blocker(Simplex_handle(Vertex_handle(10),Vertex_handle(11),Vertex_handle(12)));
-	complex.add_blocker(Simplex_handle(Vertex_handle(2),Vertex_handle(1),Vertex_handle(10)));
-	complex.add_blocker(Simplex_handle(Vertex_handle(10),Vertex_handle(9),Vertex_handle(15)));
-	complex.add_blocker(Simplex_handle(Vertex_handle(1),Vertex_handle(9),Vertex_handle(8)));
+	complex.add_blocker(Simplex(Vertex_handle(10),Vertex_handle(11),Vertex_handle(12)));
+	complex.add_blocker(Simplex(Vertex_handle(2),Vertex_handle(1),Vertex_handle(10)));
+	complex.add_blocker(Simplex(Vertex_handle(10),Vertex_handle(9),Vertex_handle(15)));
+	complex.add_blocker(Simplex(Vertex_handle(1),Vertex_handle(9),Vertex_handle(8)));
 
 	// Print result
 	int num_blockers=0;
@@ -409,7 +409,7 @@ bool test_link0(){
 	enum { a, b, c, d, n };
 	Complex complex(n);
 	complex.add_edge_without_blockers(Vertex_handle(b),Vertex_handle(c));complex.add_edge_without_blockers(Vertex_handle(c),Vertex_handle(d));
-	Simplex_handle alpha = Simplex_handle(Vertex_handle(c));
+	Simplex alpha = Simplex(Vertex_handle(c));
 	Skeleton_blocker_link_complex<Complex> L(complex,alpha);
 
 	auto L2 = complex.link(alpha);
@@ -438,7 +438,7 @@ bool test_link1(){
 		for (int j=i+1;j<15;j++)
 			complex.add_edge_without_blockers(Vertex_handle(i),Vertex_handle(j));
 	}
-	Simplex_handle alpha(Vertex_handle(12),Vertex_handle(14));
+	Simplex alpha(Vertex_handle(12),Vertex_handle(14));
 	Skeleton_blocker_link_complex<Complex> L(complex,alpha);
 	// Complexes built
 
@@ -466,8 +466,8 @@ bool test_link1(){
 bool test_link2(){
 	Complex complex;
 
-	Simplex_handle alpha;
-	Simplex_handle vertex_set_expected;
+	Simplex alpha;
+	Simplex vertex_set_expected;
 	// Build the complexes
 	for (int i=0;i<20;i++){
 		complex.add_vertex();
@@ -476,8 +476,8 @@ bool test_link2(){
 		for (int j=i+1;j<15;j++)
 			complex.add_edge_without_blockers(Vertex_handle(i),Vertex_handle(j));
 	}
-	complex.add_blocker(Simplex_handle(Vertex_handle(10),Vertex_handle(11),Vertex_handle(13)));
-	alpha = Simplex_handle(Vertex_handle(12),Vertex_handle(14));
+	complex.add_blocker(Simplex(Vertex_handle(10),Vertex_handle(11),Vertex_handle(13)));
+	alpha = Simplex(Vertex_handle(12),Vertex_handle(14));
 	Skeleton_blocker_link_complex<Complex> L(complex,alpha);
 	// Complexes built
 
@@ -508,8 +508,8 @@ bool test_link2(){
 bool test_link3(){
 	Complex complex;
 
-	Simplex_handle alpha;
-	Simplex_handle vertex_set_expected;
+	Simplex alpha;
+	Simplex vertex_set_expected;
 	// Build the complexes
 	for (int i=0;i<20;i++){
 		complex.add_vertex();
@@ -518,8 +518,8 @@ bool test_link3(){
 		for (int j=i+1;j<15;j++)
 			complex.add_edge_without_blockers(Vertex_handle(i),Vertex_handle(j));
 	}
-	complex.add_blocker(Simplex_handle(Vertex_handle(10),Vertex_handle(11),Vertex_handle(12)));
-	alpha = Simplex_handle(Vertex_handle(12),Vertex_handle(14));
+	complex.add_blocker(Simplex(Vertex_handle(10),Vertex_handle(11),Vertex_handle(12)));
+	alpha = Simplex(Vertex_handle(12),Vertex_handle(14));
 	Skeleton_blocker_link_complex<Complex> L(complex,alpha);
 	// Complexes built
 
@@ -554,8 +554,8 @@ bool test_link4(){
 		for (int j=i+1;j<15;j++)
 			complex.add_edge_without_blockers(Vertex_handle(i),Vertex_handle(j));
 	}
-	complex.add_blocker(Simplex_handle(Vertex_handle(10),Vertex_handle(11),Vertex_handle(12),Vertex_handle(13)));
-	Simplex_handle alpha(Vertex_handle(12),Vertex_handle(14));
+	complex.add_blocker(Simplex(Vertex_handle(10),Vertex_handle(11),Vertex_handle(12),Vertex_handle(13)));
+	Simplex alpha(Vertex_handle(12),Vertex_handle(14));
 	Skeleton_blocker_link_complex<Complex> L(complex,alpha);
 	// Complexes built
 
@@ -579,9 +579,9 @@ bool test_link5(){
 	Complex complex(0,new Print_complex_visitor<Vertex_handle>());
 	// Build the complexes
 	build_complete(4,complex);
-	complex.add_blocker(Simplex_handle(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2),Vertex_handle(3)));
+	complex.add_blocker(Simplex(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2),Vertex_handle(3)));
 
-	Simplex_handle alpha(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2));
+	Simplex alpha(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2));
 
 
 	Skeleton_blocker_link_complex<Complex> L(complex,alpha);	// Complexes built
@@ -599,9 +599,9 @@ bool test_link6(){
 	Complex complex(0,new Print_complex_visitor<Vertex_handle>());
 	// Build the complexes
 	build_complete(4,complex);
-	complex.add_blocker(Simplex_handle(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2)));
+	complex.add_blocker(Simplex(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2)));
 
-	Simplex_handle alpha(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2));
+	Simplex alpha(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2));
 
 	Skeleton_blocker_link_complex<Complex> link_blocker_alpha;
 
@@ -628,10 +628,10 @@ bool test_link7(){
 		complex.add_edge_without_blockers(Vertex_handle(i),Vertex_handle(7));
 	}
 	complex.add_edge_without_blockers(Vertex_handle(6),Vertex_handle(7));
-	complex.add_blocker(Simplex_handle(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2)));
-	complex.add_blocker(Simplex_handle(Vertex_handle(3),Vertex_handle(4),Vertex_handle(5)));
+	complex.add_blocker(Simplex(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2)));
+	complex.add_blocker(Simplex(Vertex_handle(3),Vertex_handle(4),Vertex_handle(5)));
 
-	Simplex_handle alpha(Vertex_handle(3),Vertex_handle(4),Vertex_handle(5));
+	Simplex alpha(Vertex_handle(3),Vertex_handle(4),Vertex_handle(5));
 
 	Skeleton_blocker_link_complex<Complex> link_blocker_alpha;
 
@@ -672,32 +672,32 @@ bool test_link7(){
 
 template<typename SimplexHandle>
 void add_triangle_edges(int a,int b,int c,list<SimplexHandle>& simplices){
-	typedef SimplexHandle Simplex_handle;
+	typedef SimplexHandle Simplex;
 	typedef typename SimplexHandle::Vertex_handle Vertex_handle;
 
-	simplices.push_back(Simplex_handle(Vertex_handle(a),Vertex_handle(b) ));
-	simplices.push_back(Simplex_handle(Vertex_handle(b),Vertex_handle(c) ));
-	simplices.push_back(Simplex_handle(Vertex_handle(c),Vertex_handle(a) ));
+	simplices.push_back(Simplex(Vertex_handle(a),Vertex_handle(b) ));
+	simplices.push_back(Simplex(Vertex_handle(b),Vertex_handle(c) ));
+	simplices.push_back(Simplex(Vertex_handle(c),Vertex_handle(a) ));
 }
 
 template<typename SimplexHandle>
 void add_triangle(int a,int b,int c,list<SimplexHandle>& simplices){
-	typedef SimplexHandle Simplex_handle;
+	typedef SimplexHandle Simplex;
 	typedef typename SimplexHandle::Vertex_handle Vertex_handle;
-	simplices.push_back(Simplex_handle(Vertex_handle(a),Vertex_handle(b),Vertex_handle(c)));
+	simplices.push_back(Simplex(Vertex_handle(a),Vertex_handle(b),Vertex_handle(c)));
 }
 
 bool test_constructor(){
-	list <Simplex_handle> simplices;
+	list <Simplex> simplices;
 
-	simplices.push_back(Simplex_handle(Vertex_handle(0)));
-	simplices.push_back(Simplex_handle(Vertex_handle(1)));
-	simplices.push_back(Simplex_handle(Vertex_handle(2)));
-	simplices.push_back(Simplex_handle(Vertex_handle(3)));
-	simplices.push_back(Simplex_handle(Vertex_handle(4)));
-	simplices.push_back(Simplex_handle(Vertex_handle(5)));
+	simplices.push_back(Simplex(Vertex_handle(0)));
+	simplices.push_back(Simplex(Vertex_handle(1)));
+	simplices.push_back(Simplex(Vertex_handle(2)));
+	simplices.push_back(Simplex(Vertex_handle(3)));
+	simplices.push_back(Simplex(Vertex_handle(4)));
+	simplices.push_back(Simplex(Vertex_handle(5)));
 
-	simplices.push_back(Simplex_handle(Vertex_handle(3),Vertex_handle(5) ));
+	simplices.push_back(Simplex(Vertex_handle(3),Vertex_handle(5) ));
 
 	add_triangle_edges(0,1,5,simplices);
 	add_triangle_edges(1,2,3,simplices);
@@ -720,8 +720,8 @@ bool test_constructor(){
 }
 
 
-list<Simplex_handle> subfaces(Simplex_handle top_face){
-	list<Simplex_handle> res;
+list<Simplex> subfaces(Simplex top_face){
+	list<Simplex> res;
 	if(top_face.dimension()==-1) return res;
 	if(top_face.dimension()==0) {
 		res.push_back(top_face);
@@ -731,11 +731,11 @@ list<Simplex_handle> subfaces(Simplex_handle top_face){
 		Vertex_handle first_vertex = top_face.first_vertex();
 		top_face.remove_vertex(first_vertex);
 		res = subfaces(top_face);
-		list<Simplex_handle> copy = res;
+		list<Simplex> copy = res;
 		for(auto& simplex : copy){
 			simplex.add_vertex(first_vertex);
 		}
-		res.push_back(Simplex_handle(first_vertex));
+		res.push_back(Simplex(first_vertex));
 		res.splice(res.end(),copy);
 		return res;
 	}
@@ -743,11 +743,11 @@ list<Simplex_handle> subfaces(Simplex_handle top_face){
 
 
 bool test_constructor2(){
-	Simplex_handle simplex;
+	Simplex simplex;
 	for(int i =0 ; i < 5;++i)
 		simplex.add_vertex(static_cast<Vertex_handle>(i));
 
-	list <Simplex_handle> simplices(subfaces(simplex));
+	list <Simplex> simplices(subfaces(simplex));
 	simplices.remove(simplex);
 
 	Complex complex(simplices.begin(),simplices.end());
@@ -764,8 +764,8 @@ bool test_constructor2(){
 
 bool test_constructor3(){
 	typedef Vertex_handle Vh;
-	typedef Simplex_handle Sh;
-	std::vector<Simplex_handle> simplices;
+	typedef Simplex Sh;
+	std::vector<Simplex> simplices;
 	auto subf(subfaces(Sh(Vh(0),Vh(1),Vh(2))));
 	subf.pop_back(); //remove max face -> now a blocker 012
 	simplices.insert(simplices.begin(),subf.begin(),subf.end());
@@ -785,8 +785,8 @@ bool test_constructor3(){
 
 bool test_constructor4(){
 	typedef Vertex_handle Vh;
-	typedef Simplex_handle Sh;
-	std::vector<Simplex_handle> simplices;
+	typedef Simplex Sh;
+	std::vector<Simplex> simplices;
 	auto subf(subfaces(Sh(Vh(0),Vh(1),Vh(2),Vh(3))));
 	simplices.insert(simplices.begin(),subf.begin(),subf.end());
 
@@ -810,8 +810,8 @@ bool test_constructor4(){
 
 bool test_constructor5(){
 	typedef Vertex_handle Vh;
-	typedef Simplex_handle Sh;
-	std::vector<Simplex_handle> simplices;
+	typedef Simplex Sh;
+	std::vector<Simplex> simplices;
 	auto subf(subfaces(Sh(Vh(0),Vh(1),Vh(2))));
 	simplices.insert(simplices.begin(),subf.begin(),subf.end());
 
@@ -836,8 +836,8 @@ bool test_constructor5(){
 
 bool test_constructor6(){
 	typedef Vertex_handle Vh;
-	typedef Simplex_handle Sh;
-	std::vector<Simplex_handle> simplices;
+	typedef Simplex Sh;
+	std::vector<Simplex> simplices;
 	auto subf(subfaces(Sh(Vh(0),Vh(1),Vh(2),Vh(3))));
 	for(auto s:subf){
 		Sh s1(Vh(0),Vh(1),Vh(2),Vh(3));
@@ -860,8 +860,8 @@ bool test_constructor6(){
 
 bool test_constructor7(){
 	typedef Vertex_handle Vh;
-	typedef Simplex_handle Sh;
-	std::vector<Simplex_handle> simplices;
+	typedef Simplex Sh;
+	std::vector<Simplex> simplices;
 	simplices.push_back(Sh(Vh(0),Vh(1),Vh(2)));
 	simplices.push_back(Sh(Vh(1),Vh(2),Vh(3)));
 	simplices.push_back(Sh(Vh(3),Vh(0),Vh(2)));
@@ -882,8 +882,8 @@ bool test_constructor7(){
 
 bool test_constructor8(){
 	typedef Vertex_handle Vh;
-	typedef Simplex_handle Sh;
-	std::vector<Simplex_handle> simplices;
+	typedef Simplex Sh;
+	std::vector<Simplex> simplices;
 	simplices.push_back(Sh(Vh(0),Vh(1)));
 	simplices.push_back(Sh(Vh(2),Vh(1)));
 	simplices.push_back(Sh(Vh(0),Vh(2)));

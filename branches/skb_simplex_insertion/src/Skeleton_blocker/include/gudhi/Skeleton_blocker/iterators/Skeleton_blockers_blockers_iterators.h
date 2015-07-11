@@ -31,7 +31,7 @@ namespace skbl {
 /**
  * @brief Iterator through the blockers of a vertex.
   */
-// ReturnType = const Simplex_handle* or Simplex_handle*
+// ReturnType = const Simplex* or Simplex*
 // MapIteratorType = BlockerMapConstIterator or BlockerMapIterator
 template<typename MapIteratorType, typename ReturnType>
 class Blocker_iterator_internal : public boost::iterator_facade<
@@ -85,7 +85,7 @@ private:
 /**
  * @brief Iterator through the blockers of a vertex
  */
-// ReturnType = const Simplex_handle* or Simplex_handle*
+// ReturnType = const Simplex* or Simplex*
 // MapIteratorType = BlockerMapConstIterator or BlockerMapIterator
 template<typename MapIteratorType, typename ReturnType>
 class Blocker_iterator_around_vertex_internal : public boost::iterator_facade<
