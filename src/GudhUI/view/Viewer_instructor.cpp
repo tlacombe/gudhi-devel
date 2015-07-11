@@ -169,7 +169,7 @@ Viewer_instructor::set_color_edge(Edge_handle eh)	{
 }
 
 void
-Viewer_instructor::set_color_triangle(const Simplex_handle& triangle){
+Viewer_instructor::set_color_triangle(const Simplex& triangle){
 	viewer_->set_color(Color(view_params_.light_triangles,view_params_.light_triangles,view_params_.light_triangles));
 }
 

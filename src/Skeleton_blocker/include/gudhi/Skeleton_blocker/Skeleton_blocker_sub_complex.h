@@ -71,7 +71,7 @@ class Skeleton_blocker_sub_complex : public ComplexType {
 
   typedef typename ComplexType::Vertex_handle Vertex_handle;
   typedef typename ComplexType::Root_vertex_handle Root_vertex_handle;
-  typedef typename ComplexType::Simplex_handle Simplex_handle;
+  typedef typename ComplexType::Simplex Simplex;
   typedef typename ComplexType::Root_simplex_handle Root_simplex_handle;
 
  protected:
@@ -125,7 +125,7 @@ class Skeleton_blocker_sub_complex : public ComplexType {
   void add_blocker(const Root_simplex_handle& blocker_root) {
     auto blocker_sub = this->get_address(blocker_root);
     assert(blocker_sub);
-    this->add_blocker(new Simplex_handle(*blocker_sub));
+    this->add_blocker(new Simplex(*blocker_sub));
   }
 
  public:
@@ -134,7 +134,7 @@ class Skeleton_blocker_sub_complex : public ComplexType {
    * vertices of 'simplex'.
    */
   void make_restricted_complex(const ComplexType & parent_complex,
-                               const Simplex_handle& simplex) {
+                               const Simplex& simplex) {
     this->clear();
     // add vertices to the sub complex
     for (auto x : simplex) {
@@ -146,7 +146,7 @@ class Skeleton_blocker_sub_complex : public ComplexType {
     // add edges to the sub complex
     for (auto x : simplex) {
       // x_neigh is the neighbor of x intersected with vertices_simplex
-      Simplex_handle x_neigh;
+      Simplex x_neigh;
       parent_complex.add_neighbours(x, x_neigh, true);
       x_neigh.intersection(simplex);
       for (auto y : x_neigh) {
@@ -159,9 +159,9 @@ class Skeleton_blocker_sub_complex : public ComplexType {
       // check if it is the first time we encounter the blocker
       if (simplex.contains(*blocker)) {
         Root_simplex_handle blocker_root(parent_complex.get_id(*(blocker)));
-        Simplex_handle blocker_restr(
+        Simplex blocker_restr(
             *(this->get_simplex_address(blocker_root)));
-        this->add_blocker(new Simplex_handle(blocker_restr));
+        this->add_blocker(new Simplex(blocker_restr));
       }
     }
   }
@@ -189,7 +189,7 @@ class Skeleton_blocker_sub_complex : public ComplexType {
   //  * Allocates a simplex in L corresponding to the simplex s in K
   //  * with its local adresses and returns an AddressSimplex.
   //  */
-  // boost::optional<Simplex_handle> get_address(const Root_simplex_handle & s) const;
+  // boost::optional<Simplex> get_address(const Root_simplex_handle & s) const;
 
 // private:
   /**
@@ -221,7 +221,7 @@ bool proper_face_in_union(
   // we test that all vertices of 'addresses_sigma_in_link' but 'vertex_to_be_ignored'
   // are in link1 if it is the case we construct the corresponding simplex
   bool vertices_sigma_are_in_link = true;
-  typename ComplexType::Simplex_handle sigma_in_link;
+  typename ComplexType::Simplex sigma_in_link;
   for (int i = 0; i < addresses_sigma_in_link.size(); ++i) {
     if (i != vertex_to_be_ignored) {
       if (!addresses_sigma_in_link[i]) {

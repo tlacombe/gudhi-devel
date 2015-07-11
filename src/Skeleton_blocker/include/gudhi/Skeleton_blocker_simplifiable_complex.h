@@ -133,7 +133,7 @@ void Skeleton_blocker_complex<SkeletonBlockerDS>::remove_all_popable_blockers(Ve
 template<typename SkeletonBlockerDS>
 void Skeleton_blocker_complex<SkeletonBlockerDS>::remove_star(Vertex_handle v) {
   // we remove the blockers that are not consistent anymore
-  update_blockers_after_remove_star_of_vertex_or_edge(Simplex_handle(v));
+  update_blockers_after_remove_star_of_vertex_or_edge(Simplex(v));
   while (this->degree(v) > 0) {
     Vertex_handle w(* (adjacent_vertices(v.vertex, this->skeleton).first));
     this->remove_edge(v, w);
@@ -148,7 +148,7 @@ void Skeleton_blocker_complex<SkeletonBlockerDS>::remove_star(Vertex_handle v) {
  */
 template<typename SkeletonBlockerDS>
 void Skeleton_blocker_complex<SkeletonBlockerDS>::update_blockers_after_remove_star_of_vertex_or_edge(
-    const Simplex_handle& simplex_to_be_removed) {
+    const Simplex& simplex_to_be_removed) {
   std::list <Blocker_handle> blockers_to_update;
   if (simplex_to_be_removed.empty()) return;
 
@@ -159,7 +159,7 @@ void Skeleton_blocker_complex<SkeletonBlockerDS>::update_blockers_after_remove_s
   }
 
   for (auto blocker_to_update : blockers_to_update) {
-    Simplex_handle sub_blocker_to_be_added;
+    Simplex sub_blocker_to_be_added;
     bool sub_blocker_need_to_be_added =
         (blocker_to_update->dimension() - simplex_to_be_removed.dimension()) >= 2;
     if (sub_blocker_need_to_be_added) {
@@ -178,7 +178,7 @@ void Skeleton_blocker_complex<SkeletonBlockerDS>::update_blockers_after_remove_s
  */
 template<typename SkeletonBlockerDS>
 void Skeleton_blocker_complex<SkeletonBlockerDS>::remove_star(Vertex_handle a, Vertex_handle b) {
-  update_blockers_after_remove_star_of_vertex_or_edge(Simplex_handle(a, b));
+  update_blockers_after_remove_star_of_vertex_or_edge(Simplex(a, b));
   // we remove the edge
   this->remove_edge(a, b);
 }
@@ -195,7 +195,7 @@ void Skeleton_blocker_complex<SkeletonBlockerDS>::remove_star(Edge_handle e) {
  * Remove the star of the simplex 'sigma' which needs to belong to the complex
  */
 template<typename SkeletonBlockerDS>
-void Skeleton_blocker_complex<SkeletonBlockerDS>::remove_star(const Simplex_handle& sigma) {
+void Skeleton_blocker_complex<SkeletonBlockerDS>::remove_star(const Simplex& sigma) {
   assert(this->contains(sigma));
   if (sigma.dimension() == 0) {
     remove_star(sigma.first_vertex());
@@ -208,7 +208,7 @@ void Skeleton_blocker_complex<SkeletonBlockerDS>::remove_star(const Simplex_hand
 }
 
 template<typename SkeletonBlockerDS>
-void Skeleton_blocker_complex<SkeletonBlockerDS>::add_simplex(const Simplex_handle& sigma) {
+void Skeleton_blocker_complex<SkeletonBlockerDS>::add_simplex(const Simplex& sigma) {
   assert(!this->contains(sigma));
   assert(sigma.dimension() > 1);
 
@@ -226,7 +226,7 @@ void Skeleton_blocker_complex<SkeletonBlockerDS>::add_simplex(const Simplex_hand
 }
 
 template<typename SkeletonBlockerDS>
-void Skeleton_blocker_complex<SkeletonBlockerDS>::add_blockers_after_simplex_insertion(Simplex_handle sigma){
+void Skeleton_blocker_complex<SkeletonBlockerDS>::add_blockers_after_simplex_insertion(Simplex sigma){
   if(sigma.dimension() < 1) return;
   //todo for efficiency restricts the computation of the link to its vertices as it is all what we need here
   Skeleton_blocker_link_complex<Skeleton_blocker_complex<SkeletonBlockerDS>> 
@@ -243,7 +243,7 @@ void Skeleton_blocker_complex<SkeletonBlockerDS>::add_blockers_after_simplex_ins
  * remove all blockers that contains sigma
  */
 template<typename SkeletonBlockerDS>
-void Skeleton_blocker_complex<SkeletonBlockerDS>::remove_blocker_containing_simplex(const Simplex_handle& sigma) {
+void Skeleton_blocker_complex<SkeletonBlockerDS>::remove_blocker_containing_simplex(const Simplex& sigma) {
   std::vector <Blocker_handle> blockers_to_remove;
   for (auto blocker : this->blocker_range(sigma.first_vertex())) {
     if (blocker->contains(sigma))
@@ -257,7 +257,7 @@ void Skeleton_blocker_complex<SkeletonBlockerDS>::remove_blocker_containing_simp
  * remove all blockers that contains sigma
  */
 template<typename SkeletonBlockerDS>
-void Skeleton_blocker_complex<SkeletonBlockerDS>::remove_blocker_include_in_simplex(const Simplex_handle& sigma) {
+void Skeleton_blocker_complex<SkeletonBlockerDS>::remove_blocker_include_in_simplex(const Simplex& sigma) {
   std::vector <Blocker_handle> blockers_to_remove;
   for (auto blocker : this->blocker_range(sigma.first_vertex())) {
     if (sigma.contains(*blocker))
@@ -274,21 +274,21 @@ void Skeleton_blocker_complex<SkeletonBlockerDS>::remove_blocker_include_in_simp
  */
 template<typename SkeletonBlockerDS>
 void Skeleton_blocker_complex<SkeletonBlockerDS>::tip_blockers(Vertex_handle a, Vertex_handle b,
-                                                               std::vector<Simplex_handle> & buffer) const {
+                                                               std::vector<Simplex> & buffer) const {
   for (auto const & blocker : this->const_blocker_range(a)) {
-    Simplex_handle beta = (*blocker);
+    Simplex beta = (*blocker);
     beta.remove_vertex(a);
     buffer.push_back(beta);
   }
 
-  Simplex_handle n;
+  Simplex n;
   this->add_neighbours(b, n);
   this->remove_neighbours(a, n);
   n.remove_vertex(a);
 
 
   for (Vertex_handle y : n) {
-    Simplex_handle beta;
+    Simplex beta;
     beta.add_vertex(y);
     buffer.push_back(beta);
   }
@@ -356,7 +356,7 @@ Skeleton_blocker_complex<SkeletonBlockerDS>::contract_edge(Vertex_handle a, Vert
   if (!link_condition(a, b))
     delete_blockers_around_edge(a, b);
 
-  std::set<Simplex_handle> blockers_to_add;
+  std::set<Simplex> blockers_to_add;
 
   get_blockers_to_be_added_after_contraction(a, b, blockers_to_add);
 
@@ -378,7 +378,7 @@ Skeleton_blocker_complex<SkeletonBlockerDS>::contract_edge(Vertex_handle a, Vert
 template<typename SkeletonBlockerDS>
 void
 Skeleton_blocker_complex<SkeletonBlockerDS>::get_blockers_to_be_added_after_contraction(Vertex_handle a, Vertex_handle b, 
-    std::set<Simplex_handle>& blockers_to_add) {
+    std::set<Simplex>& blockers_to_add) {
   blockers_to_add.clear();
 
   typedef Skeleton_blocker_link_complex<Skeleton_blocker_complex<SkeletonBlockerDS> > LinkComplexType;
@@ -386,19 +386,19 @@ Skeleton_blocker_complex<SkeletonBlockerDS>::get_blockers_to_be_added_after_cont
   LinkComplexType link_a(*this, a);
   LinkComplexType link_b(*this, b);
 
-  std::vector<Simplex_handle> vector_alpha, vector_beta;
+  std::vector<Simplex> vector_alpha, vector_beta;
 
   tip_blockers(a, b, vector_alpha);
   tip_blockers(b, a, vector_beta);
 
   for (auto alpha = vector_alpha.begin(); alpha != vector_alpha.end(); ++alpha) {
     for (auto beta = vector_beta.begin(); beta != vector_beta.end(); ++beta) {
-      Simplex_handle sigma = *alpha;
+      Simplex sigma = *alpha;
       sigma.union_vertices(*beta);
       Root_simplex_handle sigma_id = this->get_id(sigma);
       if (this->contains(sigma) &&
           proper_faces_in_union<Skeleton_blocker_complex < SkeletonBlockerDS >> (sigma_id, link_a, link_b)) {
-        // Blocker_handle blocker = new Simplex_handle(sigma);
+        // Blocker_handle blocker = new Simplex(sigma);
         sigma.add_vertex(a);
         blockers_to_add.insert(sigma);
       }

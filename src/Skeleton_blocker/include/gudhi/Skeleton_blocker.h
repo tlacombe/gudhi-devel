@@ -128,7 +128,7 @@ of a simplicial complex.
   \code{.cpp}
 	typedef Skeleton_blocker_complex<Skeleton_blocker_simple_traits> Complex;
 	typedef Complex::Vertex_handle Vertex_handle;
-	typedef Complex::Simplex_handle Simplex;
+	typedef Complex::Simplex Simplex;
 
   	const int n = 15;
 
@@ -180,13 +180,13 @@ The Euler Characteristic is 1
 \subsection s Constructing a skeleton-blockers from a list of maximal faces or from a list of faces
 
   \code{.cpp}
-	std::vector<Simplex_handle> simplices;
+	std::vector<Simplex> simplices;
 
 	//add 4 triangles of a tetrahedron 0123
-	simplices.push_back(Simplex_handle(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2)));
-	simplices.push_back(Simplex_handle(Vertex_handle(1),Vertex_handle(2),Vertex_handle(3)));
-	simplices.push_back(Simplex_handle(Vertex_handle(3),Vertex_handle(0),Vertex_handle(2)));
-	simplices.push_back(Simplex_handle(Vertex_handle(3),Vertex_handle(0),Vertex_handle(1)));
+	simplices.push_back(Simplex(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2)));
+	simplices.push_back(Simplex(Vertex_handle(1),Vertex_handle(2),Vertex_handle(3)));
+	simplices.push_back(Simplex(Vertex_handle(3),Vertex_handle(0),Vertex_handle(2)));
+	simplices.push_back(Simplex(Vertex_handle(3),Vertex_handle(0),Vertex_handle(1)));
 
 	Complex complex;
 	//get complex from top faces
@@ -202,12 +202,12 @@ The Euler Characteristic is 1
 
 	//now build a complex from its full list of simplices
 	simplices.clear();
-	simplices.push_back(Simplex_handle(Vertex_handle(0)));
-	simplices.push_back(Simplex_handle(Vertex_handle(1)));
-	simplices.push_back(Simplex_handle(Vertex_handle(2)));
-	simplices.push_back(Simplex_handle(Vertex_handle(0),Vertex_handle(1)));
-	simplices.push_back(Simplex_handle(Vertex_handle(1),Vertex_handle(2)));
-	simplices.push_back(Simplex_handle(Vertex_handle(2),Vertex_handle(0)));
+	simplices.push_back(Simplex(Vertex_handle(0)));
+	simplices.push_back(Simplex(Vertex_handle(1)));
+	simplices.push_back(Simplex(Vertex_handle(2)));
+	simplices.push_back(Simplex(Vertex_handle(0),Vertex_handle(1)));
+	simplices.push_back(Simplex(Vertex_handle(1),Vertex_handle(2)));
+	simplices.push_back(Simplex(Vertex_handle(2),Vertex_handle(0)));
 	complex = Complex(simplices.begin(),simplices.end());
 
 	std::cout << "Simplices:"<<std::endl;
