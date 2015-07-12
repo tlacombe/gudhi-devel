@@ -207,35 +207,29 @@ void Skeleton_blocker_complex<SkeletonBlockerDS>::remove_star(const Simplex& sig
   }
 }
 
+
 template<typename SkeletonBlockerDS>
-void Skeleton_blocker_complex<SkeletonBlockerDS>::add_simplex(const Simplex& sigma) {
+void Skeleton_blocker_complex<SkeletonBlockerDS>::add_simplex(const Simplex& sigma, bool insert_edges_of_sigma) {
+  // to add a simplex s, all blockers included in s are first removed
+  // and then all simplex in the coboundary of s are added as blockers
   assert(!this->contains(sigma));
   assert(sigma.dimension() > 1);
+  assert(contains_vertices(sigma));
 
-  int num_vertex_to_add = 0;
-  for (auto v : sigma)
-    if (!contains_vertex(v)) ++num_vertex_to_add;
-  while (num_vertex_to_add--) add_vertex();
-
-  for (auto u_it = sigma.begin(); u_it != sigma.end(); ++u_it)
-    for (auto v_it = u_it; ++v_it != sigma.end(); /**/) 
-      add_edge_without_blockers(*u_it, *v_it);
+  if(insert_edges_of_sigma)
+    add_edge(sigma);
+  else 
+    assert(contains_edges(sigma));
   remove_blocker_include_in_simplex(sigma);
-
   add_blockers_after_simplex_insertion(sigma);
 }
 
 template<typename SkeletonBlockerDS>
 void Skeleton_blocker_complex<SkeletonBlockerDS>::add_blockers_after_simplex_insertion(Simplex sigma){
   if(sigma.dimension() < 1) return;
-  //todo for efficiency restricts the computation of the link to its vertices as it is all what we need here
-  Skeleton_blocker_link_complex<Skeleton_blocker_complex<SkeletonBlockerDS>> 
-    link_sigma(*this,sigma,false,true);
-  for(auto v : link_sigma.vertex_range()) {
-    auto v_in_current = this->convert_handle_from_another_complex(link_sigma,v);
-    sigma.add_vertex(v_in_current);
-    this->add_blocker(sigma);
-    sigma.remove_vertex(v_in_current);
+
+  for(auto s : coboundary_range(sigma)) {
+    this->add_blocker(s);
   }
 }
 
@@ -258,10 +252,13 @@ void Skeleton_blocker_complex<SkeletonBlockerDS>::remove_blocker_containing_simp
  */
 template<typename SkeletonBlockerDS>
 void Skeleton_blocker_complex<SkeletonBlockerDS>::remove_blocker_include_in_simplex(const Simplex& sigma) {
-  std::vector <Blocker_handle> blockers_to_remove;
-  for (auto blocker : this->blocker_range(sigma.first_vertex())) {
-    if (sigma.contains(*blocker))
-      blockers_to_remove.push_back(blocker);
+  //todo write efficiently by using only superior blockers
+  std::set <Blocker_handle> blockers_to_remove;
+  for(auto s : sigma){
+    for (auto blocker : this->blocker_range(s)) {
+      if (sigma.contains(*blocker))
+        blockers_to_remove.insert(blocker);
+    }
   }
   for (auto blocker_to_update : blockers_to_remove)
     this->delete_blocker(blocker_to_update);
