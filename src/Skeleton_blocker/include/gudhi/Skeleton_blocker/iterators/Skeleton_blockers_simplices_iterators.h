@@ -305,6 +305,103 @@ public boost::iterator_facade < Simplex_iterator<SkeletonBlockerComplex>
   }
 };
 
+
+/**
+ * Iterator through the maximal faces of the coboundary of a simplex.
+ 
+template<typename SkeletonBlockerComplex, typename Link>
+class Simplex_coboundary_iterator :
+public boost::iterator_facade < Simplex_coboundary_iterator<SkeletonBlockerComplex, Link>
+, typename SkeletonBlockerComplex::Simplex
+, boost::forward_traversal_tag
+, typename SkeletonBlockerComplex::Simplex
+> {
+  friend class boost::iterator_core_access;
+  typedef SkeletonBlockerComplex Complex;
+  typedef typename Complex::Vertex_handle Vertex_handle;
+  typedef typename Complex::Edge_handle Edge_handle;
+  typedef typename Complex::Simplex Simplex;
+  typedef typename Complex::Complex_vertex_iterator Complex_vertex_iterator;
+
+  // Link_vertex_handle == Complex_Vertex_handle but this renaming helps avoiding confusion
+  typedef typename Link::Vertex_handle Link_vertex_handle;
+
+ private:
+  const Complex* complex;
+  const Simplex& sigma;
+  std::shared_ptr<Link> link;
+  Complex_vertex_iterator current_vertex;
+  Complex_vertex_iterator link_vertex_end;
+
+ public:
+  Simplex_coboundary_iterator() : complex(0) {}
+
+  Simplex_coboundary_iterator(const Complex* complex_, const Simplex& sigma_) :
+      complex(complex_),
+      sigma(sigma_),
+      //need only vertices of the link hence the true flag
+      link(new Link(*complex_, v_, false, true)) {
+    auto link_vertex_range = link.vertex_range();
+    current_vertex = link_vertex_range.begin();
+    link_vertex_end = link_vertex_range.end();
+  }
+
+  Simplex_coboundary_iterator(const Simplex_around_vertex_iterator& other) :
+      complex(other.complex),
+      sigma(other.sigma),
+      link(other.link),
+      current_vertex(other.current_vertex),
+      link_vertex_end(other.link_vertex_end)
+  {
+  }
+
+  
+  // returns an iterator to the end
+  Simplex_coboundary_iterator(const Complex* complex_, Simplx sigma_, bool end) :
+      complex(complex_),
+      sigma(sigma_) {
+    // to represent an end iterator without having to build a useless link, we use
+    // the convection that link is not initialized.
+  }
+
+ private:
+
+  Vertex_handle parent_vertex(Link_vertex_handle link_vh) const {
+    return complex->convert_handle_from_another_complex(*link_v, link_vh);
+  }
+
+ public:
+  friend std::ostream& operator<<(std::ostream& stream, const Simplex_coboundary_iterator& sci) {
+    return stream;
+  }
+
+  // assume that iterator points to the same complex and comes from the same simplex
+  bool equal(const Simplex_around_vertex_iterator& other) const {
+    assert(complex == other.complex && sigma == other.sigma);
+    if(is_end()) return other.is_end();
+    if(other.is_end()) return is_end();
+    return *current_vertex = *(other.current_vertex);
+  }
+
+  void increment() {
+    ++current_vertex;
+  }
+
+  Simplex dereference() const {
+    Simplex res(sigma);
+    res.add_vertex(parent_vertex(*current_vertex));
+    return res;
+  }
+
+ private:
+
+  bool is_end() const {
+    return !link || current_vertex == link_vertex_end;
+  }
+};
+*/
+
+
 }  // namespace skbl
 
 }  // namespace Gudhi

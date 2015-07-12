@@ -57,7 +57,6 @@ class Skeleton_blocker_link_complex : public Skeleton_blocker_sub_complex<
 
   typedef typename ComplexType::Blocker_handle Blocker_handle;
 
-  typedef typename ComplexType::Simplex::Simplex_vertex_const_iterator Simplex_iterator;
   typedef typename ComplexType::Root_simplex_handle::Simplex_vertex_const_iterator Root_simplex_handle_iterator;
 
   explicit Skeleton_blocker_link_complex(bool only_superior_vertices = false)
@@ -166,11 +165,6 @@ class Skeleton_blocker_link_complex : public Skeleton_blocker_sub_complex<
   void compute_link_edges(const ComplexType & parent_complex,
                           const Simplex& alpha_parent_adress,
                           bool is_alpha_blocker = false) {
-    Simplex_iterator y_link, x_parent, y_parent;
-    // ----------------------------
-    // Compute edges in the link
-    // -------------------------
-
     if (this->num_vertices() <= 1)
       return;
 
