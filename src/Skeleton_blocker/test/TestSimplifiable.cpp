@@ -295,7 +295,7 @@ bool test_add_simplex3(){
 }
 
 bool test_add_simplex4(){
-	int n = 5;
+	int n = 6;
 	Complex complex(n);
 
 	// add all simplex 0..n without i
@@ -316,6 +316,7 @@ bool test_add_simplex4(){
 			if(!complex.contains_blocker(b))
 				return false;
 		}
+		TESTVALUE(complex.blockers_to_string());
 	}
 	Simplex s;
 	for(int k=0;k<n;k++)
@@ -396,7 +397,7 @@ bool test_remove_popable_blockers(){
 int main (int argc, char *argv[])
 {
 	Tests tests_simplifiable_complex;
-/*	tests_simplifiable_complex.add("Test contraction 1",test_contraction1);
+	tests_simplifiable_complex.add("Test contraction 1",test_contraction1);
 	tests_simplifiable_complex.add("Test contraction 2",test_contraction2);
 	tests_simplifiable_complex.add("Test Link condition 1",test_link_condition1);
 	tests_simplifiable_complex.add("Test remove popable blockers",test_remove_popable_blockers);
@@ -410,7 +411,7 @@ int main (int argc, char *argv[])
 	tests_simplifiable_complex.add("Test add edge",test_add_edge);
 	tests_simplifiable_complex.add("Test add simplex",test_add_simplex);
 	tests_simplifiable_complex.add("Test add simplex2",test_add_simplex2);
-	tests_simplifiable_complex.add("Test add simplex3",test_add_simplex3);*/
+	tests_simplifiable_complex.add("Test add simplex3",test_add_simplex3);
 	tests_simplifiable_complex.add("Test add simplex4",test_add_simplex4);
 
 	tests_simplifiable_complex.run();
