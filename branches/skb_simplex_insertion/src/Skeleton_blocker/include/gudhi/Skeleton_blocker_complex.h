@@ -103,9 +103,9 @@ class Skeleton_blocker_complex {
   typedef Simplex* Blocker_handle;
 
   typedef typename Root_simplex_handle::Simplex_vertex_const_iterator Root_simplex_iterator;
-  typedef typename Simplex::Simplex_vertex_const_iterator Simplex_iterator;
+  typedef typename Simplex::Simplex_vertex_const_iterator Simplices_iterator; 
 
- protected:
+protected:
   typedef typename boost::adjacency_list<boost::setS,  // edges
   boost::vecS,  // vertices
   boost::undirectedS, Graph_vertex, Graph_edge> Graph;
@@ -573,16 +573,6 @@ class Skeleton_blocker_complex {
         visitor->on_add_edge_without_blockers(a, b);
     }
     return *edge_handle;
-  }
-
-  /**
-   * @brief Adds all edges of a simplex to the simplicial complex without adding blockers.
-   */
-  void add_edge_without_blockers(const Simplex & sigma) {
-    Simplex_iterator i, j;
-    for (i = sigma.begin(); i != sigma.end(); ++i)
-      for (j = i, j++; j != sigma.end(); ++j)
-        add_edge_without_blockers(*i, *j);
   }
 
   /**
