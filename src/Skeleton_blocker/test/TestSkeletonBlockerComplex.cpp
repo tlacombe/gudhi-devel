@@ -358,6 +358,26 @@ bool test_iterator_simplices4(){
 }
 
 
+bool test_iterator_coboundary(){
+	Complex c(4);
+    build_complete(4,c);
+    c.remove_edge(Vertex_handle(0),Vertex_handle(2));
+	PRINT(c.to_string());    
+    Simplex s02(Vertex_handle(0),Vertex_handle(2));
+    int n = 0;
+    std::set<Simplex> expected;
+    expected.insert(Simplex(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2)));
+    expected.insert(Simplex(Vertex_handle(0),Vertex_handle(2),Vertex_handle(3)));
+    for(const auto & s : c.coboundary_range(s02)) {
+		PRINT(s);
+		if(expected.find(s)==expected.end()) 
+			return false;
+		++n;
+    }
+	return n==2;
+}
+
+
 
 
 
@@ -915,21 +935,6 @@ int main (int argc, char *argv[])
 	tests_complex.add("test_link6",test_link6);
 	tests_complex.add("test_link7",test_link7);
 
-	tests_complex.add("test iterator vertices 1",test_iterator_vertices1);
-	tests_complex.add("test iterator vertices 2",test_iterator_vertices2);
-	tests_complex.add("test iterator edges",test_iterator_edge);
-	tests_complex.add("test iterator edges 2",test_iterator_edge2);
-	tests_complex.add("test iterator edges 3",test_iterator_edge3);
-
-	tests_complex.add("test iterator simplices",test_iterator_simplices);
-	tests_complex.add("test iterator simplices2",test_iterator_simplices2);
-	tests_complex.add("test iterator simplices3",test_iterator_simplices3);
-	tests_complex.add("test iterator simplices4",test_iterator_simplices4);
-
-
-	tests_complex.add("test iterator blockers",test_iterator_blockers);
-	tests_complex.add("test_iterator_triangles",test_iterator_triangles);
-
 	tests_complex.add("test_constructor_list_simplices",test_constructor);
 	tests_complex.add("test_constructor_list_simplices2",test_constructor2);
 	tests_complex.add("test_constructor_list_simplices3",test_constructor3);
@@ -938,6 +943,20 @@ int main (int argc, char *argv[])
 	tests_complex.add("test_constructor_list_simplices6",test_constructor6);
 	tests_complex.add("test_constructor_list_simplices7",test_constructor7);
 	tests_complex.add("test_constructor_list_simplices8",test_constructor8);
+
+	tests_complex.add("test iterator vertices 1",test_iterator_vertices1);
+	tests_complex.add("test iterator vertices 2",test_iterator_vertices2);
+	tests_complex.add("test iterator edges",test_iterator_edge);
+	tests_complex.add("test iterator edges 2",test_iterator_edge2);
+	tests_complex.add("test iterator edges 3",test_iterator_edge3);
+	tests_complex.add("test iterator blockers",test_iterator_blockers);
+	tests_complex.add("test_iterator_triangles",test_iterator_triangles);
+	tests_complex.add("test iterator simplices",test_iterator_simplices);
+	tests_complex.add("test iterator simplices2",test_iterator_simplices2);
+	tests_complex.add("test iterator simplices3",test_iterator_simplices3);
+	tests_complex.add("test iterator simplices4",test_iterator_simplices4);
+	tests_complex.add("test iterator coboundary",test_iterator_coboundary);
+
 
 
 	if(tests_complex.run()){

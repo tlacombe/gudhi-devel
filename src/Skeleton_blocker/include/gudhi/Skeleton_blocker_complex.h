@@ -548,9 +548,22 @@ protected:
    * will contains a blocker 012).
    */
   Edge_handle add_edge(Vertex_handle a, Vertex_handle b) {    
+    //if the edge is already there we musnt go further
+    //as we may add blockers that should not be here
+    if(contains_edge(a,b)) 
+      return *((*this)[std::make_pair(a,b)]);
     auto res = add_edge_without_blockers(a,b);
     add_blockers_after_simplex_insertion(Simplex(a,b));
     return res;
+  }
+
+    /**
+   * @brief Adds all edges of s in the complex.
+   */
+  void add_edge(const Simplex& s) {
+    for(auto i = s.begin(); i != s.end(); ++i)
+      for(auto j = i; ++j != s.end(); /**/)
+        add_edge(*i,*j);
   }
 
   /**
@@ -575,6 +588,18 @@ protected:
     return *edge_handle;
   }
 
+
+  /**
+   * @brief Adds all edges of s in the complex without adding blockers.
+   */
+  void add_edge_without_blockers(Simplex s) {
+    for(auto i = s.begin(); i != s.end(); ++i){
+      for(auto j = i; ++j != s.end(); /**/)
+        add_edge_without_blockers(*i,*j);
+    }
+  }
+
+  
   /**
    * @brief Removes an edge from the simplicial complex and all its cofaces.
    * @details returns the former Edge_handle representing the edge
@@ -1086,10 +1111,11 @@ protected:
   /**
    * @brief add a simplex.
    * @details the simplex must have dimension greater than one (otherwise use add_vertex or add_edge_without_blockers).
-   * all its faces must have already been added.
-   * All vertices lower than the higher vertex of sigma must already be present in the complex.
+   * and all vertices lower than the higher vertex of sigma must already be in the complex.
+   * if some edges of sigma are not in the complex, then insert_edges_of_sigma flag must be 
+   * set to true.
    */
-  void add_simplex(const Simplex& sigma);
+  void add_simplex(const Simplex& sigma, bool insert_edges_of_sigma = false);
 
  private:
   void add_blockers_after_simplex_insertion(Simplex s);
@@ -1372,13 +1398,34 @@ protected:
                                                Complex_simplex_around_vertex_iterator(this, v, true));
   }
 
+
+
+  typedef Simplex_coboundary_iterator<Skeleton_blocker_complex, Link> Complex_simplex_coboundary_iterator;
+
+  /**
+   * @brief Range over the simplices of the coboundary of a simplex.
+   * Methods .begin() and .end() return a Complex_simplex_coboundary_iterator.
+   */
+  typedef boost::iterator_range < Complex_simplex_coboundary_iterator > Complex_coboundary_range;
+
+  /**
+   * @brief Returns a Complex_simplex_coboundary_iterator over the simplices of the coboundary of a simplex.
+   */
+  Complex_coboundary_range coboundary_range(const Simplex& s) const {
+    assert(contains(s));
+    return Complex_coboundary_range(
+      Complex_simplex_coboundary_iterator(this, s),
+      Complex_simplex_coboundary_iterator(this, s, true)
+    );
+  }
+
   // typedef Simplex_iterator<Skeleton_blocker_complex,Superior_link> Complex_simplex_iterator;
   typedef Simplex_iterator<Skeleton_blocker_complex> Complex_simplex_iterator;
 
   typedef boost::iterator_range < Complex_simplex_iterator > Complex_simplex_range;
 
   /**
-   * @brief Returns a Complex_star_simplex_range over all the simplices of the complex
+   * @brief Returns a Complex_simplex_range over all the simplices of the complex
    */
   Complex_simplex_range complex_simplex_range() const {
     Complex_simplex_iterator end(this, true);

@@ -308,7 +308,7 @@ public boost::iterator_facade < Simplex_iterator<SkeletonBlockerComplex>
 
 /**
  * Iterator through the maximal faces of the coboundary of a simplex.
- 
+ */ 
 template<typename SkeletonBlockerComplex, typename Link>
 class Simplex_coboundary_iterator :
 public boost::iterator_facade < Simplex_coboundary_iterator<SkeletonBlockerComplex, Link>
@@ -340,13 +340,13 @@ public boost::iterator_facade < Simplex_coboundary_iterator<SkeletonBlockerCompl
       complex(complex_),
       sigma(sigma_),
       //need only vertices of the link hence the true flag
-      link(new Link(*complex_, v_, false, true)) {
-    auto link_vertex_range = link.vertex_range();
+      link(new Link(*complex_, sigma_, false, true)) {
+    auto link_vertex_range = link->vertex_range();
     current_vertex = link_vertex_range.begin();
     link_vertex_end = link_vertex_range.end();
   }
 
-  Simplex_coboundary_iterator(const Simplex_around_vertex_iterator& other) :
+  Simplex_coboundary_iterator(const Simplex_coboundary_iterator& other) :
       complex(other.complex),
       sigma(other.sigma),
       link(other.link),
@@ -357,7 +357,7 @@ public boost::iterator_facade < Simplex_coboundary_iterator<SkeletonBlockerCompl
 
   
   // returns an iterator to the end
-  Simplex_coboundary_iterator(const Complex* complex_, Simplx sigma_, bool end) :
+  Simplex_coboundary_iterator(const Complex* complex_,const Simplex& sigma_, bool end) :
       complex(complex_),
       sigma(sigma_) {
     // to represent an end iterator without having to build a useless link, we use
@@ -367,20 +367,20 @@ public boost::iterator_facade < Simplex_coboundary_iterator<SkeletonBlockerCompl
  private:
 
   Vertex_handle parent_vertex(Link_vertex_handle link_vh) const {
-    return complex->convert_handle_from_another_complex(*link_v, link_vh);
+    return complex->convert_handle_from_another_complex(*link, link_vh);
   }
 
- public:
+public:
   friend std::ostream& operator<<(std::ostream& stream, const Simplex_coboundary_iterator& sci) {
     return stream;
   }
 
   // assume that iterator points to the same complex and comes from the same simplex
-  bool equal(const Simplex_around_vertex_iterator& other) const {
+  bool equal(const Simplex_coboundary_iterator& other) const {
     assert(complex == other.complex && sigma == other.sigma);
     if(is_end()) return other.is_end();
     if(other.is_end()) return is_end();
-    return *current_vertex = *(other.current_vertex);
+    return *current_vertex == *(other.current_vertex);
   }
 
   void increment() {
@@ -393,13 +393,13 @@ public boost::iterator_facade < Simplex_coboundary_iterator<SkeletonBlockerCompl
     return res;
   }
 
- private:
+private:
 
   bool is_end() const {
     return !link || current_vertex == link_vertex_end;
   }
 };
-*/
+
 
 
 }  // namespace skbl

@@ -294,6 +294,38 @@ bool test_add_simplex3(){
 	&& complex.contains_blocker(Simplex(Vertex_handle(0),Vertex_handle(1),Vertex_handle(2),Vertex_handle(4)));
 }
 
+bool test_add_simplex4(){
+	int n = 5;
+	Complex complex(n);
+
+	// add all simplex 0..n without i
+	for(int i=0;i<n;i++){
+		//only the last simplex insertion causes to have a n-dimensional blocker
+		//check that all blockers are n-1 dimensional
+		for(const auto& b : complex.const_blocker_range()) {
+			PRINT(*b);			
+			if(b->dimension() > n-2) 
+				return false;
+		}
+
+		Simplex s;
+		for(unsigned k=0u;k<n;k++)
+			s.add_vertex(Vertex_handle(k));
+		s.remove_vertex(Vertex_handle(i));
+		complex.add_simplex(s,true);
+		TESTMSG("add simplex",s);
+		PRINT(complex.to_string());
+		PRINT(complex.num_blockers());
+		auto l = complex.link(s);
+		PRINT(l.to_string());
+	}
+	Simplex s;
+	for(unsigned k=0u;k<n;k++)
+		s.add_vertex(Vertex_handle(k));
+	return complex.num_blockers()==1 && complex.contains_blocker(s);
+}
+
+
 bool test_add_edge(){
 	Complex complex(4);
 	for(unsigned i=0u;i<4;i++)
@@ -364,7 +396,7 @@ bool test_remove_popable_blockers(){
 int main (int argc, char *argv[])
 {
 	Tests tests_simplifiable_complex;
-	tests_simplifiable_complex.add("Test contraction 1",test_contraction1);
+/*	tests_simplifiable_complex.add("Test contraction 1",test_contraction1);
 	tests_simplifiable_complex.add("Test contraction 2",test_contraction2);
 	tests_simplifiable_complex.add("Test Link condition 1",test_link_condition1);
 	tests_simplifiable_complex.add("Test remove popable blockers",test_remove_popable_blockers);
@@ -375,10 +407,11 @@ int main (int argc, char *argv[])
 	tests_simplifiable_complex.add("Test collapse 2",test_collapse2);
 	tests_simplifiable_complex.add("Test collapse 3",test_collapse3);
 
+	tests_simplifiable_complex.add("Test add edge",test_add_edge);
 	tests_simplifiable_complex.add("Test add simplex",test_add_simplex);
 	tests_simplifiable_complex.add("Test add simplex2",test_add_simplex2);
-	tests_simplifiable_complex.add("Test add simplex3",test_add_simplex3);
-	tests_simplifiable_complex.add("Test add edge",test_add_edge);
+	tests_simplifiable_complex.add("Test add simplex3",test_add_simplex3);*/
+	tests_simplifiable_complex.add("Test add simplex4",test_add_simplex4);
 
 	tests_simplifiable_complex.run();
 
