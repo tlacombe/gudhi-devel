@@ -300,30 +300,30 @@ bool test_add_simplex4(){
 
 	// add all simplex 0..n without i
 	for(int i=0;i<n;i++){
-		//only the last simplex insertion causes to have a n-dimensional blocker
-		//check that all blockers are n-1 dimensional
-		for(const auto& b : complex.const_blocker_range()) {
-			PRINT(*b);			
-			if(b->dimension() > n-2) 
-				return false;
-		}
-
 		Simplex s;
-		for(unsigned k=0u;k<n;k++)
+		for(int k=0;k<n;k++)
 			s.add_vertex(Vertex_handle(k));
 		s.remove_vertex(Vertex_handle(i));
 		complex.add_simplex(s,true);
-		TESTMSG("add simplex",s);
-		PRINT(complex.to_string());
-		PRINT(complex.num_blockers());
-		auto l = complex.link(s);
-		PRINT(l.to_string());
+
+		//at step i there is only blocker 0..i
+		if(i<2 && complex.num_blockers()>0)
+			return false;
+		if(i>=2 && complex.num_blockers()!=1){
+			Simplex b;
+			for(int k=0;k<i;k++)
+				b.add_vertex(Vertex_handle(i));
+			if(!complex.contains_blocker(b))
+				return false;
+		}
 	}
 	Simplex s;
-	for(unsigned k=0u;k<n;k++)
+	for(int k=0;k<n;k++)
 		s.add_vertex(Vertex_handle(k));
 	return complex.num_blockers()==1 && complex.contains_blocker(s);
 }
+
+
 
 
 bool test_add_edge(){

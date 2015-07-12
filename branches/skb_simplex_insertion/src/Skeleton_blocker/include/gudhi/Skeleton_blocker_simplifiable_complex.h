@@ -253,6 +253,7 @@ void Skeleton_blocker_complex<SkeletonBlockerDS>::remove_blocker_containing_simp
 template<typename SkeletonBlockerDS>
 void Skeleton_blocker_complex<SkeletonBlockerDS>::remove_blocker_include_in_simplex(const Simplex& sigma) {
   //todo write efficiently by using only superior blockers
+  //eg for all s, check blockers whose vertices are all greater than s
   std::set <Blocker_handle> blockers_to_remove;
   for(auto s : sigma){
     for (auto blocker : this->blocker_range(s)) {
@@ -260,8 +261,16 @@ void Skeleton_blocker_complex<SkeletonBlockerDS>::remove_blocker_include_in_simp
         blockers_to_remove.insert(blocker);
     }
   }
-  for (auto blocker_to_update : blockers_to_remove)
+  for (auto blocker_to_update : blockers_to_remove){
+    auto s = *blocker_to_update;
     this->delete_blocker(blocker_to_update);
+    //now if there is a vertex v in the link of s 
+    //and v is not included in sigma then v.s is a blocker
+    //(all faces of v.s are there since v belongs to the link of s)
+    for(const auto& b : coboundary_range(s))
+      if(!sigma.contains(b)) 
+        this->add_blocker(b);
+  }
 }
 
 /**
