@@ -1570,6 +1570,7 @@ protected:
 template<typename Complex, typename SimplexHandleIterator>
 Complex make_complex_from_top_faces(SimplexHandleIterator simplex_begin, SimplexHandleIterator simplex_end, 
                                     bool is_flag_complex = false) {
+  //todo use add_simplex instead! should be more efficient and more elegant :)
   typedef typename Complex::Simplex Simplex;
   std::vector<Simplex> simplices;
   for (auto top_face = simplex_begin; top_face != simplex_end; ++top_face) {
