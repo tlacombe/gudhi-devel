@@ -100,6 +100,18 @@ class Simplex_tree {
    *
    * Must be a signed integer type. */
   typedef SimplexKey Simplex_key;
+
+  class Simplex_data {
+    public:
+      Filtration_value filtration() const { return filt_; }
+      void set_filtration(Filtration_value f) { filt_ = f; }
+      Simplex_key key() const { return key_; }
+      void set_key(Simplex_key f) { key_ = f; }
+    private:
+      Simplex_key key_;
+      Filtration_value filt_;
+  };
+
   /** \brief Type for the vertex handle.
    *
    * Must be a signed integer type. It admits a total order <. */
@@ -317,7 +329,7 @@ class Simplex_tree {
    *
    * The filtration must be initialized. */
   static Simplex_key key(Simplex_handle sh) {
-    return sh->second.key();
+    return simplex_data(sh).key();
   }
 
   /** \brief Returns the simplex associated to a key.
@@ -327,17 +339,35 @@ class Simplex_tree {
     return filtration_vect_[key];
   }
 
+  /** \brief Returns the data of a simplex.  */
+  static Simplex_data& simplex_data(Simplex_handle sh) {
+    return sh->second;
+  }
+ private:
+  static Simplex_data& simplex_data(Dit_value_t& s) {
+    return s.second;
+  }
+  static Simplex_data const& simplex_data(Dit_value_t const& s) {
+    return s.second;
+  }
+
+ public:
   /** \brief Returns the filtration value of a simplex.
    *
    * Called on the null_simplex, returns INFINITY. */
   static Filtration_value filtration(Simplex_handle sh) {
     if (sh != null_simplex()) {
-      return sh->second.filtration();
+      return filtration(*sh);
     } else {
       return INFINITY;
     }
   }
+ private:
+  static Filtration_value filtration(Dit_value_t const& s) {
+    return simplex_data(s).filtration();
+  }
 
+ public:
   /** \brief Returns an upper bound of the filtration values of the simplices. */
   Filtration_value filtration() const {
     return threshold_;
@@ -483,9 +513,9 @@ class Simplex_tree {
     res_insert = curr_sib->members_.emplace(*vi, Node(curr_sib, filtration));
     if (!res_insert.second) {
       // if already in the complex
-      if (res_insert.first->second.filtration() > filtration) {
+      if (simplex_data(res_insert.first).filtration() > filtration) {
         // if filtration value modified
-        res_insert.first->second.assign_filtration(filtration);
+        simplex_data(res_insert.first).set_filtration(filtration);
         return res_insert;
       }
       // if filtration value unchanged
@@ -534,7 +564,7 @@ class Simplex_tree {
   /** \brief Assign a value 'key' to the key of the simplex
    * represented by the Simplex_handle 'sh'. */
   void assign_key(Simplex_handle sh, Simplex_key key) {
-    sh->second.assign_key(key);
+    simplex_data(sh).set_key(key);
   }
 
  public:
@@ -858,7 +888,7 @@ class Simplex_tree {
                      siblings->members().end(),  // end
                      root_sh->second.children()->members().begin(),
                      root_sh->second.children()->members().end(),
-                     s_h->second.filtration());
+                     simplex_data(s_h).filtration());
         if (inter.size() != 0) {
           this->num_simplices_ += inter.size();
           Siblings * new_sib = new Siblings(siblings,  // oncles
@@ -886,7 +916,7 @@ class Simplex_tree {
       return;  // ----->>
     while (true) {
       if (begin1->first == begin2->first) {
-        Filtration_value filt = (std::max)({begin1->second.filtration(), begin2->second.filtration(), filtration_});
+        Filtration_value filt = (std::max)({simplex_data(begin1).filtration(), simplex_data(begin2).filtration(), filtration_});
         intersection.push_back(std::pair<Vertex_handle, Node>(begin1->first, Node(NULL, filt)));
         if (++begin1 == end1 || ++begin2 == end2)
           return;  // ----->>
