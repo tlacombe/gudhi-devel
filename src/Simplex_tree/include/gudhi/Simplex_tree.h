@@ -572,9 +572,8 @@ class Simplex_tree {
    * and edge. sh must point to a 1-dimensional simplex. This is an
    * optimized version of the boundary computation. */
   std::pair<Simplex_handle, Simplex_handle> endpoints(Simplex_handle sh) {
-    return std::pair<Simplex_handle, Simplex_handle>(
-                                                     root_.members_.find(sh->first),
-                                                     root_.members_.find(self_siblings(sh)->parent()));
+    assert(dimension(sh) == 1);
+    return { find_vertex(sh->first), find_vertex(self_siblings(sh)->parent()) };
   }
 
   /** Returns the Siblings containing a simplex.*/
@@ -636,10 +635,8 @@ class Simplex_tree {
   void initialize_filtration() {
     filtration_vect_.clear();
     filtration_vect_.reserve(num_simplices());
-    for (auto cpx_it = complex_simplex_range().begin();
-         cpx_it != complex_simplex_range().end(); ++cpx_it) {
-      filtration_vect_.push_back(*cpx_it);
-    }
+    for (Simplex_handle sh : complex_simplex_range())
+      filtration_vect_.push_back(sh);
 
     // the stable sort ensures the ordering heuristic
     std::stable_sort(filtration_vect_.begin(), filtration_vect_.end(),
@@ -917,7 +914,7 @@ class Simplex_tree {
     while (true) {
       if (begin1->first == begin2->first) {
         Filtration_value filt = (std::max)({simplex_data(begin1).filtration(), simplex_data(begin2).filtration(), filtration_});
-        intersection.push_back(std::pair<Vertex_handle, Node>(begin1->first, Node(NULL, filt)));
+        intersection.emplace_back(begin1->first, Node(NULL, filt));
         if (++begin1 == end1 || ++begin2 == end2)
           return;  // ----->>
       } else if (begin1->first < begin2->first) {
