@@ -464,7 +464,7 @@ class Simplex_tree {
   /** \brief Returns the Simplex_handle corresponding to the 0-simplex
    * representing the vertex with Vertex_handle v. */
   Simplex_handle find_vertex(Vertex_handle v) {
-    return root_.members_.begin() + v;
+    return root_.members_.begin() + v; // unsafe
   }
   //{ return root_.members_.find(v); }
 
@@ -504,23 +504,24 @@ class Simplex_tree {
     std::pair<Simplex_handle, bool> res_insert;
     typename RandomAccessVertexRange::iterator vi;
     for (vi = simplex.begin(); vi != simplex.end() - 1; ++vi) {
-      res_insert = curr_sib->members_.emplace(*vi, Node(curr_sib, filtration));
+      res_insert = curr_sib->members_.emplace(*vi, curr_sib);
+      if (res_insert.second)
+	simplex_data(res_insert.first).set_filtration(filtration);
       if (!(has_children(res_insert.first))) {
         res_insert.first->second.assign_children(new Siblings(curr_sib, *vi));
       }
       curr_sib = res_insert.first->second.children();
     }
-    res_insert = curr_sib->members_.emplace(*vi, Node(curr_sib, filtration));
-    if (!res_insert.second) {
-      // if already in the complex
-      if (simplex_data(res_insert.first).filtration() > filtration) {
-        // if filtration value modified
-        simplex_data(res_insert.first).set_filtration(filtration);
-        return res_insert;
-      }
+    res_insert = curr_sib->members_.emplace(*vi, curr_sib);
+    if (res_insert.second)
+      // not yet in the complex
+      simplex_data(res_insert.first).set_filtration(filtration);
+    else if (simplex_data(res_insert.first).filtration() > filtration)
+      // if filtration value modified
+      simplex_data(res_insert.first).set_filtration(filtration);
+    else
       // if filtration value unchanged
-      return std::pair<Simplex_handle, bool>(null_simplex(), false);
-    }
+      res_insert.first = null_simplex();
     // otherwise the insertion has succeeded
     return res_insert;
   }
