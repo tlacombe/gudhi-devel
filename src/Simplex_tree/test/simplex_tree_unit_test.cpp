@@ -7,7 +7,7 @@
 
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE "simplex_tree"
-#include <boost/test/unit_test.hpp>
+#include <boost/test/included/unit_test.hpp>
 
 #include "gudhi/graph_simplicial_complex.h"
 #include "gudhi/reader_utils.h"
@@ -627,7 +627,20 @@ BOOST_AUTO_TEST_CASE(NSimplexAndSubfaces_tree_insertion) {
      std::cout << "********************************************************************" << std::endl;
      typeST st2;
      st2.tree_from_off("test.off");
-     std::cout << st2;
+	 std::cout << st2;
    */
+
+   	std::cout << "********************************************************************" << std::endl;
+	// TEST LINK ALGORITHM
+	std::cout << "LINK ALGORITHM" << std::endl;
+	simplex.push_back(1);
+	std::cout << "Link of 1 :" << std::endl;
+	typeST::Link_simplex_range link1 = st.link_simplex_range(st.find(simplex));
+	for (auto simplex = link1.begin(); simplex != link1.end(); ++simplex) {
+		for (auto vertex = simplex->begin(); vertex != simplex->end(); ++vertex) {
+			std::cout << "(" << *vertex << ")";
+		}
+		std::cout << std::endl;
+	}
 
 }
