@@ -152,6 +152,8 @@ class Simplex_tree {
   typedef boost::iterator_range<Simplex_vertex_iterator> Simplex_vertex_range;
   /** \brief Range over the cofaces of a simplex. */
   typedef std::vector<Simplex_handle> Cofaces_simplex_range;
+  /** \brief Range over the link of a simplex. */
+  typedef std::vector<std::vector<Vertex_handle>> Link_simplex_range;
   /** \brief Iterator over the simplices of the boundary of a simplex.
    *
    * 'value_type' is Simplex_handle. */
@@ -692,6 +694,25 @@ class Simplex_tree {
     bool star = codimension == 0;
     rec_coface(copy, &root_, 1, cofaces, star, codimension + static_cast<int>(copy.size()));
     return cofaces;
+  }
+
+  Link_simplex_range link_simplex_range(Simplex_handle s)
+  {
+	  Simplex_vertex_range rg = simplex_vertex_range(s);
+	  Cofaces_simplex_range cofaces = star_simplex_range(s);
+	  Link_simplex_range link; 
+	  for (auto simplex = cofaces.begin(); simplex != cofaces.end(); ++simplex)
+	  {
+		  Simplex_vertex_range vr = simplex_vertex_range(*simplex);
+		  std::vector<Vertex_handle> vertices(vr.begin(),	vr.end());
+		  for (auto vertex = rg.begin(); vertex != rg.end(); ++vertex)
+		  {
+			  vertices.erase(std::remove(vertices.begin(), vertices.end(), *vertex), vertices.end());
+		  }
+		  if (!vertices.empty())
+			  link.push_back(vertices);
+	  }
+	  return link;
   }
 
  private:
