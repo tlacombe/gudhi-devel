@@ -631,3 +631,50 @@ BOOST_AUTO_TEST_CASE(NSimplexAndSubfaces_tree_insertion) {
    */
 
 }
+
+BOOST_AUTO_TEST_CASE(simplex_tree_edge_contraction) {
+  std::cout << "********************************************************************" << std::endl;
+  std::cout << "TEST EDGE CONTRACTION" << std::endl;
+  typeST st;
+
+  typeVectorVertex SimplexVector{2, 1, 0};
+  st.insert_simplex_and_subfaces(SimplexVector);
+
+  SimplexVector = {3, 0};
+  st.insert_simplex_and_subfaces(SimplexVector);
+
+  SimplexVector = {3, 4, 5};
+  st.insert_simplex_and_subfaces(SimplexVector);
+
+  SimplexVector = {0, 1, 6, 7};
+  st.insert_simplex_and_subfaces(SimplexVector);
+
+  /* Inserted simplex:        */
+  /*    1   6                 */
+  /*    o---o                 */
+  /*   /X\7/                  */
+  /*  o---o---o---o           */
+  /*  2   0   3\X/4           */
+  /*            o             */
+  /*            5             */
+
+  // FIXME
+  st.set_dimension(3);
+  std::cout << "********************************************************************" << std::endl;
+  // TEST Edge_contraction
+  typeST st_copy_2 = st, st_copy_3 = st, st_copy_4 = st;
+  st.edge_contraction(0, 3);
+  std::cout << "Printing a copy of st, with the edge (0, 3) contracted, 3 being contracted in 0" << std::endl;
+  st.print_tree();
+  st_copy_2.edge_contraction(1, 3);
+  std::cout << "Printing a copy of st, with the edge (1, 3) contracted, 3 being contracted in 1" << std::endl;
+  st_copy_2.print_tree();
+  st_copy_3.edge_contraction(3, 4);
+  std::cout << "Printing a copy of st, with the edge (3, 4) contracted, 4 being contracted in 3" << std::endl;
+  st_copy_3.print_tree();
+  st_copy_4.edge_contraction(1, 6);
+  std::cout << "Printing a copy of st, with the edge (1, 6) contracted, 6 being contracted in 1" << std::endl;
+  st_copy_4.print_tree();
+
+}
+

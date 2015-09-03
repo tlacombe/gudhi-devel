@@ -303,6 +303,36 @@ class Simplex_tree {
     }
     delete sib;
   }
+ public:
+  /** \brief Prints the simplex_tree hierarchically. 
+   * Since it prints the vertices recursively, one can watch its tree shape.
+   */
+  void print_tree() {
+    for (auto sh = root_.members().begin(); sh != root_.members().end(); ++sh) {
+      std::cout << sh->first << " ";
+      if (has_children(sh)) {
+        std::cout << "(";
+        rec_print(sh->second.children());
+        std::cout << ")";
+      }
+      std::cout << std::endl;
+    }
+  }
+
+
+  /** \brief Recursively prints the simplex_tree, using depth first search. */
+ private:
+  void rec_print(Siblings * sib) {
+    for (auto sh = sib->members().begin(); sh != sib->members().end(); ++sh) {
+      std::cout << " " << sh->first << " ";
+      if (has_children(sh)) {
+        std::cout << "(";
+        rec_print(sh->second.children());
+        std::cout << ")";
+      }
+    }
+  }
+
 
  public:
   /** \brief Returns the key associated to a simplex.
@@ -692,6 +722,72 @@ class Simplex_tree {
     bool star = codimension == 0;
     rec_coface(copy, &root_, 1, cofaces, star, codimension + static_cast<int>(copy.size()));
     return cofaces;
+  }
+
+ public:
+  /** \brief Contracts two vertices : the contracted vertex is erased from the three, and the remaining vertex receives all the links of the contracted one.
+        \param remaining The value of the vertex within the other is contracted
+        \param deleted The value of the vertex to be contracted
+   */
+  void edge_contraction(Vertex_handle remaining, Vertex_handle deleted) {
+    std::vector<Vertex_handle> accessRemaining, accessDeleted;
+    accessRemaining.push_back(remaining);
+    accessDeleted.push_back(deleted);
+    Simplex_handle shr = find(accessRemaining), shd = find(accessDeleted);
+    if (has_children(shd)) {
+      Siblings * sibDeleted, * sibRemaining; // We need the siblings
+      sibDeleted = shd->second.children();
+      sibRemaining = shr->second.children();
+      rec_insert(sibDeleted, sibRemaining, shd->first);
+    }
+    rec_delete(&root_, shd->first);
+  }
+ private:
+  /** \brief recursively insert the members of a Sibling into another, any time the replacedVertex appears into the target Sibling
+        \param sibInserted The sibling to be inserted
+        \param sibTarget The target sibling on which the other sibling is copied
+        \param replacedVertex The replacedVertex (Vertex_handle) needed to insert the sibling
+   */
+  void rec_insert(Siblings * sibInserted, Siblings * sibTarget, Vertex_handle replacedVertex) {
+    for (auto sh = sibTarget->members().begin(); sh != sibTarget->members().end(); ++sh) {
+      if (has_children(sh))
+        rec_insert(sibInserted, sh->second.children(), replacedVertex);
+      if (sh->first == replacedVertex)
+        insert_members(sibTarget, sibInserted);
+    }
+  }
+
+  /** \brief Copy a Sibling into another, which is possibly not empty
+        \param sibInserted The sibling to be copied
+        \param sibTarget The sibling on which we wan't to copy the other sibling
+   */
+  void insert_members(Siblings * sibTarget, Siblings * sibInserted) {
+    for (auto sh = sibInserted->members().begin(); sh != sibInserted->members().end(); ++sh) {
+      std::pair<Vertex_handle, Node> member(sh->first, Node(sibTarget, sh->second.filtration()));
+      if (has_children(sh)) {
+        std::vector<std::pair<Vertex_handle, Node >> v(sh->second.children()->members().begin(), sh->second.children()->members().end());
+        Siblings * newsib = new Siblings(sibTarget, sh->first);
+        for (auto it = v.begin(); it != v.end(); ++it)
+          newsib->members_.emplace(it->first, Node(sibTarget, it->second.filtration()));
+        insert_members(newsib, sh->second.children());
+        member.second.assign_children(newsib);
+
+      }
+      sibTarget->members_.emplace(member);
+    }
+  }
+
+  /** \brief Erase every occurencies of a vertex in a Sibling
+        \param sib The sibling on which we wan't to erase the elements
+        \param deletedVertex The value of the members we wan't to erase
+   */
+  void rec_delete(Siblings * sib, Vertex_handle deletedVertex) {
+    for (auto sh = sib->members().begin(); sh != sib->members().end(); ++sh) {
+      if (has_children(sh))
+        rec_delete(sh->second.children(), deletedVertex);
+      if (sh->first == deletedVertex)
+        sib->members_.erase(sh);
+    }
   }
 
  private:
