@@ -635,46 +635,80 @@ BOOST_AUTO_TEST_CASE(NSimplexAndSubfaces_tree_insertion) {
 BOOST_AUTO_TEST_CASE(simplex_tree_edge_contraction) {
   std::cout << "********************************************************************" << std::endl;
   std::cout << "TEST EDGE CONTRACTION" << std::endl;
+  typeVectorVertex SimplexVector;
+  
+  typeST st_original;
+  SimplexVector = {1, 2, 3};
+  st_original.insert_simplex_and_subfaces(SimplexVector, 0.5);
+
+  SimplexVector = {2, 3, 4, 5};
+  st_original.insert_simplex_and_subfaces(SimplexVector, 0.4);
+
+  SimplexVector = {1, 3, 6, 7};
+  st_original.insert_simplex_and_subfaces(SimplexVector, 0.3);
+
+  SimplexVector = {1, 3, 8};
+  st_original.insert_simplex_and_subfaces(SimplexVector, 0.2);
+  // FIXME
+  st_original.set_dimension(3);
+  st_original.set_filtration(0.5);
+
+  // FIXME : use copy constructor
   typeST st;
+  SimplexVector = {1, 2, 3};
+  st.insert_simplex_and_subfaces(SimplexVector, 0.5);
 
-  typeVectorVertex SimplexVector{2, 1, 0};
-  st.insert_simplex_and_subfaces(SimplexVector);
+  SimplexVector = {2, 3, 4, 5};
+  st.insert_simplex_and_subfaces(SimplexVector, 0.4);
 
-  SimplexVector = {3, 0};
-  st.insert_simplex_and_subfaces(SimplexVector);
+  SimplexVector = {1, 3, 6, 7};
+  st.insert_simplex_and_subfaces(SimplexVector, 0.3);
 
-  SimplexVector = {3, 4, 5};
-  st.insert_simplex_and_subfaces(SimplexVector);
-
-  SimplexVector = {0, 1, 6, 7};
-  st.insert_simplex_and_subfaces(SimplexVector);
-
-  /* Inserted simplex:        */
-  /*    1   6                 */
-  /*    o---o                 */
-  /*   /X\7/                  */
-  /*  o---o---o---o           */
-  /*  2   0   3\X/4           */
-  /*            o             */
-  /*            5             */
-
+  SimplexVector = {1, 3, 8};
+  st.insert_simplex_and_subfaces(SimplexVector, 0.2);
   // FIXME
   st.set_dimension(3);
-  std::cout << "********************************************************************" << std::endl;
-  // TEST Edge_contraction
-  typeST st_copy_2 = st, st_copy_3 = st, st_copy_4 = st;
-  st.edge_contraction(0, 3);
-  std::cout << "Printing a copy of st, with the edge (0, 3) contracted, 3 being contracted in 0" << std::endl;
-  st.print_tree();
-  st_copy_2.edge_contraction(1, 3);
-  std::cout << "Printing a copy of st, with the edge (1, 3) contracted, 3 being contracted in 1" << std::endl;
-  st_copy_2.print_tree();
-  st_copy_3.edge_contraction(3, 4);
-  std::cout << "Printing a copy of st, with the edge (3, 4) contracted, 4 being contracted in 3" << std::endl;
-  st_copy_3.print_tree();
-  st_copy_4.edge_contraction(1, 6);
-  std::cout << "Printing a copy of st, with the edge (1, 6) contracted, 6 being contracted in 1" << std::endl;
-  st_copy_4.print_tree();
+  st.set_filtration(0.5);
 
+  BOOST_CHECK(st.is_equal(st_original));
+  // Vertex 9 is out of simplex - edge_contraction shall have no effect to st
+  st.edge_contraction(1,9);
+  BOOST_CHECK(st.is_equal(st_original));
+  
+  // Vertex 0 is out of simplex - edge_contraction shall have no effect to st
+  st.edge_contraction(0,2);
+  BOOST_CHECK(st.is_equal(st_original));
+  // 3 > 1 - edge_contraction shall have no effect to st
+  st.edge_contraction(3,1);
+  BOOST_CHECK(st.is_equal(st_original));
+  
+  typeST st_expected;
+
+  SimplexVector = {1, 2, 4, 5};
+  st_expected.insert_simplex_and_subfaces(SimplexVector, 0.4);
+
+  SimplexVector = {1, 6, 7};
+  st_expected.insert_simplex_and_subfaces(SimplexVector, 0.3);
+
+  SimplexVector = {1, 8};
+  st_expected.insert_simplex_and_subfaces(SimplexVector, 0.2);
+  st_expected.set_filtration(0.5);
+
+  // Change filtration value for Simplex {1,2} accordingly to expected value
+  typeVectorVertex simplex_1_2 { 1, 2 };
+  Simplex_tree<>::Simplex_handle simplexFound = st_expected.find(simplex_1_2);
+  // Check Simplex {1,2} is found - required to change its filtration value
+  BOOST_CHECK(simplexFound != st_expected.null_simplex());
+  simplexFound->second.assign_filtration(0.5);
+  // FIXME
+  st_expected.set_dimension(3);
+  st_expected.set_filtration(0.5);
+
+  st.edge_contraction(1,3);
+
+  std::cout << "check st is different from st_original" << std::endl;
+  BOOST_CHECK(!st.is_equal(st_original));
+  std::cout << "check st is equal to st_expected" << std::endl;
+  BOOST_CHECK(st.is_equal(st_expected));
 }
 

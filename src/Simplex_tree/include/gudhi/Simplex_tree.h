@@ -297,12 +297,50 @@ class Simplex_tree {
   // Recursive deletion
   void rec_delete(Siblings * sib) {
     for (auto sh = sib->members().begin(); sh != sib->members().end(); ++sh) {
+      /*std::cout << "rec_delete {";
+      for (auto vertex : simplex_vertex_range(sh)) {
+        std::cout << vertex << " ";
+      }
+      std::cout << "}" << std::endl;*/
+
       if (has_children(sh)) {
         rec_delete(sh->second.children());
       }
     }
     delete sib;
   }
+  
+ public:
+  /** \brief Checks if two simplex trees are equal. */
+  // TODO: constify is required to make an operator==
+  bool is_equal(Simplex_tree& st2)
+  {
+    if ((null_vertex_ != st2.null_vertex_) ||
+        (threshold_ != st2.threshold_) ||
+        (dimension_ != st2.dimension_))
+      return false;
+    return rec_equal(&root_, &st2.root_);
+  }
+  
+  /** rec_equal: Checks recursively whether or not two simplex trees are equal, using depth first search. */
+ private:
+  bool rec_equal(Siblings* s1, Siblings* s2) {
+    if (s1->members().size() != s2->members().size())
+      return false;
+    for (auto sh1 = s1->members().begin(), sh2 = s2->members().begin();
+         (sh1 != s1->members().end() && sh2 != s2->members().end()); ++sh1, ++sh2) {
+      if (sh1->first != sh2->first || sh1->second.filtration() != sh2->second.filtration())
+        return false;
+      if (((!has_children(sh1)) && (has_children(sh2))) || ((has_children(sh1)) && (!has_children(sh2))))
+        return false;
+      // Recursivity on children only if both have children
+      else if (has_children(sh1) && has_children(sh2))
+        if (!rec_equal(sh1->second.children(), sh2->second.children()))
+          return false;
+    }
+    return true;
+  }
+
  public:
   /** \brief Prints the simplex_tree hierarchically. 
    * Since it prints the vertices recursively, one can watch its tree shape.
@@ -725,68 +763,111 @@ class Simplex_tree {
   }
 
  public:
-  /** \brief Contracts two vertices : the contracted vertex is erased from the three, and the remaining vertex receives all the links of the contracted one.
+  /** \brief Contracts two vertices : the contracted vertex is erased from the tree, and the remaining vertex receives
+        all the links of the contracted one.
         \param remaining The value of the vertex within the other is contracted
         \param deleted The value of the vertex to be contracted
+        \warning 1st predicate is remaining < deleted
+        \warning 2nd predicate is the edge {remaining, deleted} is in the complex
    */
   void edge_contraction(Vertex_handle remaining, Vertex_handle deleted) {
-    std::vector<Vertex_handle> accessRemaining, accessDeleted;
-    accessRemaining.push_back(remaining);
-    accessDeleted.push_back(deleted);
-    Simplex_handle shr = find(accessRemaining), shd = find(accessDeleted);
-    if (has_children(shd)) {
-      Siblings * sibDeleted, * sibRemaining; // We need the siblings
-      sibDeleted = shd->second.children();
-      sibRemaining = shr->second.children();
-      rec_insert(sibDeleted, sibRemaining, shd->first);
+    // 1st predicate is remaining < deleted
+    if (remaining >= deleted) {
+      std::cerr << "Simplex_tree::edge_contraction predicate is remaining < deleted" << std::endl;
+      return;
     }
-    rec_delete(&root_, shd->first);
+    std::vector<Vertex_handle> edge;
+    edge.push_back(remaining);
+    edge.push_back(deleted);
+    Simplex_handle edge_handle = find(edge);
+    // 2nd predicate is the edge {remaining, deleted} is in the complex
+    if (edge_handle == null_simplex()) {
+      std::cerr << "Simplex_tree::edge_contraction predicate is the edge {remaining, deleted} is in the complex" << std::endl;
+      return;
+    }
+    std::vector<Vertex_handle> position;
+    rec_edge_contraction(remaining, deleted, &root_, false);
   }
+  
  private:
-  /** \brief recursively insert the members of a Sibling into another, any time the replacedVertex appears into the target Sibling
-        \param sibInserted The sibling to be inserted
-        \param sibTarget The target sibling on which the other sibling is copied
-        \param replacedVertex The replacedVertex (Vertex_handle) needed to insert the sibling
-   */
-  void rec_insert(Siblings * sibInserted, Siblings * sibTarget, Vertex_handle replacedVertex) {
-    for (auto sh = sibTarget->members().begin(); sh != sibTarget->members().end(); ++sh) {
-      if (has_children(sh))
-        rec_insert(sibInserted, sh->second.children(), replacedVertex);
-      if (sh->first == replacedVertex)
-        insert_members(sibTarget, sibInserted);
-    }
-  }
-
-  /** \brief Copy a Sibling into another, which is possibly not empty
-        \param sibInserted The sibling to be copied
-        \param sibTarget The sibling on which we wan't to copy the other sibling
-   */
-  void insert_members(Siblings * sibTarget, Siblings * sibInserted) {
-    for (auto sh = sibInserted->members().begin(); sh != sibInserted->members().end(); ++sh) {
-      std::pair<Vertex_handle, Node> member(sh->first, Node(sibTarget, sh->second.filtration()));
-      if (has_children(sh)) {
-        std::vector<std::pair<Vertex_handle, Node >> v(sh->second.children()->members().begin(), sh->second.children()->members().end());
-        Siblings * newsib = new Siblings(sibTarget, sh->first);
-        for (auto it = v.begin(); it != v.end(); ++it)
-          newsib->members_.emplace(it->first, Node(sibTarget, it->second.filtration()));
-        insert_members(newsib, sh->second.children());
-        member.second.assign_children(newsib);
-
+  void rec_edge_contraction(Vertex_handle remaining, Vertex_handle deleted, Siblings * sib, bool remaining_found) {
+    // Loop on members to browse recursively the tree starting from the top (root_).
+    // No need to browse after deleted is reached.
+    Simplex_handle sh = sib->members().begin();
+    for (; (sh != sib->members().end()) && (sh->first < deleted); ++sh) {
+      if ((sh->first != deleted) && (has_children(sh))) {
+        rec_edge_contraction(remaining, deleted, sh->second.children(), (remaining_found || (sh->first == remaining)));
       }
-      sibTarget->members_.emplace(member);
+    }
+    // Merge and deletion while looping on members can be quite dangerous (segfault risk).
+    // This is the reason why it is at the end of the loop.
+    if (sh->first == deleted) {
+      if (has_children(sh)) {
+        // Subtree copy from the node to be deleted.
+        if (remaining_found) {
+          // Just merge the subtree from the node to be deleted.
+          rec_merge(sh->second.children(), sib);
+        } else {
+          // Just merge the subtree from the node to be deleted, union the remaining vertex.
+          rec_union_merge(remaining, deleted, sh->second.children());
+        }
+        // Subtree deletion from the node to be deleted.
+        rec_delete(sh->second.children());
+      }
+      sh = sib->members().erase(sh);
+    }
+  }
+  
+  /** \brief Merge recursively Siblings from the source into the destination.*/
+  void rec_merge(Siblings *sib_source, Siblings *sib_destination) {
+    // Merge all members from source to the destination
+    for (Simplex_handle sh_source = sib_source->members().begin(); sh_source != sib_source->members().end(); ++sh_source) {
+      // Vertex_handle to insert in destination members is the first vertex in the range of the source Simplex_handle
+      auto vertex = std::begin(simplex_vertex_range(sh_source));
+      
+      Node found_node = sib_destination->members().at(*vertex);
+      Filtration_value filt_source = filtration(sh_source);
+      if (found_node.children() != NULL) {
+        // vertex is already in destination, just need to update filtration value accordingly to insert_simplex
+        if (found_node.filtration() > filt_source) {
+          // modify filtration value
+          found_node.assign_filtration(filt_source);
+        }
+      } else {
+        // vertex is not in destination, just need to insert a new node with the vertex key
+        Node node_tbi(sib_destination, filt_source);
+        std::pair<Simplex_handle, bool> res_insert = sib_destination->members().emplace(*vertex, node_tbi);
+        // resets found_node
+        found_node = sib_destination->members().at(*vertex);
+        if (found_node.children() == NULL) {
+          std::cerr << "Simplex_tree::rec_merge issue emplaced but not found" << std::endl;
+          exit(-1);
+        }
+      }
+      // Recursive call on children - 
+      if (has_children(sh_source)) {
+        rec_merge(sh_source->second.children(), found_node.children());
+      }
     }
   }
 
-  /** \brief Erase every occurencies of a vertex in a Sibling
-        \param sib The sibling on which we wan't to erase the elements
-        \param deletedVertex The value of the members we wan't to erase
-   */
-  void rec_delete(Siblings * sib, Vertex_handle deletedVertex) {
-    for (auto sh = sib->members().begin(); sh != sib->members().end(); ++sh) {
-      if (has_children(sh))
-        rec_delete(sh->second.children(), deletedVertex);
-      if (sh->first == deletedVertex)
-        sib->members_.erase(sh);
+    /** \brief Inserts recursively simplices found from the source minus the deleted vertex and union the remaining one*/
+  void rec_union_merge(Vertex_handle remaining, Vertex_handle deleted, Siblings *sib_source) {
+    // Merge all members from source to the destination
+    for (Simplex_handle sh_source = sib_source->members().begin(); sh_source != sib_source->members().end(); ++sh_source) {
+      std::vector<Vertex_handle> dest_simplex;
+      for (auto vertex : simplex_vertex_range(sh_source)) {
+        // Insert all but the deleted
+        if (vertex != deleted) {
+          dest_simplex.push_back(vertex);
+        }
+      }
+      // Union the remaining
+      dest_simplex.push_back(remaining);
+      insert_simplex(dest_simplex, filtration(sh_source));
+      if (has_children(sh_source)) {
+        rec_union_merge(remaining, deleted, sh_source->second.children());
+      }
     }
   }
 
