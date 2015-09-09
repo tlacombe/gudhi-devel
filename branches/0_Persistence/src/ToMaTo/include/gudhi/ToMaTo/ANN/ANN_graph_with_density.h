@@ -52,7 +52,7 @@ class ANN_graph_with_density : public ANN_graph<Vertex> {
    *****************************************************************************************
    *  @brief      Constructs the tree structure.
    *
-   *  @usage      Default constructor
+   *  @details      Default constructor
    *  @note       num_points is computed again. 
    * 
    *  @return     None

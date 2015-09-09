@@ -76,7 +76,7 @@ class ANN_graph : public Graph< Vertex > {
    *****************************************************************************************
    *  @brief      Constructs the tree structure.
    *
-   *  @usage      Default constructor
+   *  @details    Default constructor
    * 
    *  @return     None
    ****************************************************************************************/
@@ -108,8 +108,6 @@ class ANN_graph : public Graph< Vertex > {
    *****************************************************************************************
    *  @brief      Returns the graph structure dimension
    *
-   *  @param      None.
-   *
    *  @return     Dimension of points.
    ****************************************************************************************/
   const int dimension() const {
@@ -132,9 +130,8 @@ class ANN_graph : public Graph< Vertex > {
    *****************************************************************************************
    *  @brief      Constructs the ANN kd tree structure
    *
-   *  @usage      Constructs an ANN kd tree structure from the vector of vertex.
+   *  @details    Constructs an ANN kd tree structure from the vector of vertex.
    * 
-   *  @param      None.
    *  @warning    The graph structure dimension must be set before
    *  @warning    Former ANN kd tree structure is deleted
    *
@@ -182,7 +179,7 @@ class ANN_graph : public Graph< Vertex > {
    *****************************************************************************************
    *  @brief         Get rips neighbors
    *
-   *  @usage         Sets a vector of neighbors points from a query point.
+   *  @details       Sets a vector of neighbors points from a query point.
    *  @note          Neighbors are found from rips. Rips parameter is set on ANN_graph constructor. 
    * 
    *  @param[in]     queryPoint Iterator on the point from which the function finds the neighbors.

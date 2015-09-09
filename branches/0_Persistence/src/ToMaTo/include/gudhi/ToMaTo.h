@@ -37,37 +37,35 @@ namespace ToMaTo {
 \section Introduction
 ToMaTo proposes a zero persistence computation, and a hard-clustering method.
 
-\section Definitions
-
-For instance, on a point of clouds:
-*\image html "2pointscloud.png" "2 clouds of points" width=20cm
-
-The density can be represented as follow:
-*\image html "2pointscloudwithdensity.png" "2 clouds of points and the coloured density" width=20cm
-
-The 0-persistence of the density is:
-*\image html "0-persistenceofthedensity.png" "0-persistence of the density" width=20cm
-
-The persistence threshold will be called \f$ \tau \f$.
-
-\section API
-
-\subsection Overview
-
-\subsection Visitor
-
 \section Example
-
  
 \subsection 0-persistence of the density on 2 clouds of points
- 
 
 \include density_then_0_pers.cpp
 
-\include density_then_0_pers.result
+This piece of code results 2 clusters.
+ 
+These 2 clusters (one in red and one in blue) can be seen with 
+<a href=http://meshlab.sourceforge.net/ target="_blank">meshlab</a> (or 
+<a href=http://meshlab.sourceforge.net/ target="_blank">GeomView</a>) in the file 2points_cluster.off:
+\image html "2pointscloudmeshlab.png" "2 points cloud clustered"
+If the point is not determined in any of the cluster, it will appeared in black colour (or its value is NaN in 
+2points_cluster.txt generated file).
+
+ 
+\section Definitions
+
+For instance, on a point of clouds:
+*\image html "2pointscloud.png" "2 clouds of points"
+
+The density can be represented as follow:
+*\image html "2pointscloudwithdensity.png" "2 clouds of points and the coloured density"
+
+The 0-persistence of the density is:
+*\image html "0-persistenceofthedensity.png" "0-persistence of the density"
 
 \section Acknowledgements
-The author wishes to thank Steve Oudot and Primoz Skraba for 
+The author wishes to thank Steve Oudot, Thomas Bonis and Primoz Skraba for 
 their collaboration to write the documentation. 
 
 \copyright GNU General Public License v3.                         

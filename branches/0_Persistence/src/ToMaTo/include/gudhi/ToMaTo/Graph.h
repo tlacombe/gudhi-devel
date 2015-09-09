@@ -70,10 +70,10 @@ class Graph {
    *****************************************************************************************
    *  @brief      Get neighbors
    *
-   *  @usage      Sets a vector of neighbors points from a query point
+   *  @details      Sets a vector of neighbors points from a query point
    * 
-   *  @param[in]     queryPoint Iterator on the point from which the function finds the neighbors.
-   *  @param[in,out] out        Vector of Iterator on neighbors points.
+   *  @param[in]     queryPoint Iterator on the point from which the function finds the neighbors
+   *  @param[in,out] out        Vector of Iterator on neighbors points
    *
    *  @return     None
    ****************************************************************************************/
@@ -95,9 +95,7 @@ class Graph {
    *****************************************************************************************
    *  @brief      Returns Sets the persistence threshold of the cluster data structure.
    *
-   *  @param      None.
-   *
-   *  @return     Persistence threshold of the cluster data structure.
+   *  @return     Persistence threshold of the cluster data structure
    ****************************************************************************************/
   const double persistence_threshold() const {
     return cluster_data_structure.tau;
