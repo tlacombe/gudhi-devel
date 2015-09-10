@@ -670,17 +670,17 @@ BOOST_AUTO_TEST_CASE(simplex_tree_edge_contraction) {
   st.set_dimension(3);
   st.set_filtration(0.5);
 
-  BOOST_CHECK(st.is_equal(st_original));
+  BOOST_CHECK(st == st_original);
   // Vertex 9 is out of simplex - edge_contraction shall have no effect to st
   st.edge_contraction(1,9);
-  BOOST_CHECK(st.is_equal(st_original));
+  BOOST_CHECK(st == st_original);
   
   // Vertex 0 is out of simplex - edge_contraction shall have no effect to st
   st.edge_contraction(0,2);
-  BOOST_CHECK(st.is_equal(st_original));
+  BOOST_CHECK(st == st_original);
   // 3 > 1 - edge_contraction shall have no effect to st
   st.edge_contraction(3,1);
-  BOOST_CHECK(st.is_equal(st_original));
+  BOOST_CHECK(st == st_original);
   
   typeST st_expected;
 
@@ -707,8 +707,8 @@ BOOST_AUTO_TEST_CASE(simplex_tree_edge_contraction) {
   st.edge_contraction(1,3);
 
   std::cout << "check st is different from st_original" << std::endl;
-  BOOST_CHECK(!st.is_equal(st_original));
+  BOOST_CHECK(st !=st_original);
   std::cout << "check st is equal to st_expected" << std::endl;
-  BOOST_CHECK(st.is_equal(st_expected));
+  BOOST_CHECK(st == st_expected);
 }
 
