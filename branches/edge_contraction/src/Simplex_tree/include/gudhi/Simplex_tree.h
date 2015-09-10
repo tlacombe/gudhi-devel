@@ -297,33 +297,30 @@ class Simplex_tree {
   // Recursive deletion
   void rec_delete(Siblings * sib) {
     for (auto sh = sib->members().begin(); sh != sib->members().end(); ++sh) {
-      /*std::cout << "rec_delete {";
-      for (auto vertex : simplex_vertex_range(sh)) {
-        std::cout << vertex << " ";
-      }
-      std::cout << "}" << std::endl;*/
-
       if (has_children(sh)) {
         rec_delete(sh->second.children());
       }
     }
     delete sib;
   }
-  
+
  public:
   /** \brief Checks if two simplex trees are equal. */
-  // TODO: constify is required to make an operator==
-  bool is_equal(Simplex_tree& st2)
-  {
+  bool operator==(Simplex_tree& st2) {
     if ((null_vertex_ != st2.null_vertex_) ||
         (threshold_ != st2.threshold_) ||
         (dimension_ != st2.dimension_))
       return false;
     return rec_equal(&root_, &st2.root_);
   }
-  
-  /** rec_equal: Checks recursively whether or not two simplex trees are equal, using depth first search. */
+
+  /** \brief Checks if two simplex trees are different. */
+  bool operator!=(Simplex_tree& st2) {
+    return (!(*this == st2));
+  }
+
  private:
+  /** rec_equal: Checks recursively whether or not two simplex trees are equal, using depth first search. */
   bool rec_equal(Siblings* s1, Siblings* s2) {
     if (s1->members().size() != s2->members().size())
       return false;
@@ -340,37 +337,6 @@ class Simplex_tree {
     }
     return true;
   }
-
- public:
-  /** \brief Prints the simplex_tree hierarchically. 
-   * Since it prints the vertices recursively, one can watch its tree shape.
-   */
-  void print_tree() {
-    for (auto sh = root_.members().begin(); sh != root_.members().end(); ++sh) {
-      std::cout << sh->first << " ";
-      if (has_children(sh)) {
-        std::cout << "(";
-        rec_print(sh->second.children());
-        std::cout << ")";
-      }
-      std::cout << std::endl;
-    }
-  }
-
-
-  /** \brief Recursively prints the simplex_tree, using depth first search. */
- private:
-  void rec_print(Siblings * sib) {
-    for (auto sh = sib->members().begin(); sh != sib->members().end(); ++sh) {
-      std::cout << " " << sh->first << " ";
-      if (has_children(sh)) {
-        std::cout << "(";
-        rec_print(sh->second.children());
-        std::cout << ")";
-      }
-    }
-  }
-
 
  public:
   /** \brief Returns the key associated to a simplex.
@@ -782,13 +748,14 @@ class Simplex_tree {
     Simplex_handle edge_handle = find(edge);
     // 2nd predicate is the edge {remaining, deleted} is in the complex
     if (edge_handle == null_simplex()) {
-      std::cerr << "Simplex_tree::edge_contraction predicate is the edge {remaining, deleted} is in the complex" << std::endl;
+      std::cerr << "Simplex_tree::edge_contraction predicate is the edge {remaining, deleted} is in the complex" <<
+          std::endl;
       return;
     }
     std::vector<Vertex_handle> position;
     rec_edge_contraction(remaining, deleted, &root_, false);
   }
-  
+
  private:
   void rec_edge_contraction(Vertex_handle remaining, Vertex_handle deleted, Siblings * sib, bool remaining_found) {
     // Loop on members to browse recursively the tree starting from the top (root_).
@@ -817,14 +784,15 @@ class Simplex_tree {
       sh = sib->members().erase(sh);
     }
   }
-  
+
   /** \brief Merge recursively Siblings from the source into the destination.*/
   void rec_merge(Siblings *sib_source, Siblings *sib_destination) {
     // Merge all members from source to the destination
-    for (Simplex_handle sh_source = sib_source->members().begin(); sh_source != sib_source->members().end(); ++sh_source) {
+    for (Simplex_handle sh_source = sib_source->members().begin();
+         sh_source != sib_source->members().end(); ++sh_source) {
       // Vertex_handle to insert in destination members is the first vertex in the range of the source Simplex_handle
       auto vertex = std::begin(simplex_vertex_range(sh_source));
-      
+
       Node found_node = sib_destination->members().at(*vertex);
       Filtration_value filt_source = filtration(sh_source);
       if (found_node.children() != NULL) {
@@ -844,17 +812,19 @@ class Simplex_tree {
           exit(-1);
         }
       }
-      // Recursive call on children - 
+      // Recursive call on children
       if (has_children(sh_source)) {
         rec_merge(sh_source->second.children(), found_node.children());
       }
     }
   }
 
-    /** \brief Inserts recursively simplices found from the source minus the deleted vertex and union the remaining one*/
+    /** \brief Inserts recursively simplices found from the source minus the deleted vertex and
+     * union the remaining one*/
   void rec_union_merge(Vertex_handle remaining, Vertex_handle deleted, Siblings *sib_source) {
     // Merge all members from source to the destination
-    for (Simplex_handle sh_source = sib_source->members().begin(); sh_source != sib_source->members().end(); ++sh_source) {
+    for (Simplex_handle sh_source = sib_source->members().begin();
+         sh_source != sib_source->members().end(); ++sh_source) {
       std::vector<Vertex_handle> dest_simplex;
       for (auto vertex : simplex_vertex_range(sh_source)) {
         // Insert all but the deleted
