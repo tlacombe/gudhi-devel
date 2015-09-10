@@ -12,16 +12,14 @@ endif()
 if(MSVC)
   SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4267 /wd4668 /wd4311 /wd4800 /wd4820 /wd4503 /wd4244 /wd4345 /wd4996 /wd4396 /wd4018")
 else()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -std=c++11 -Wall -Wpedantic -Wsign-compare")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -ggdb -O0")	
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif()
 
 set(Boost_USE_STATIC_LIBS        ON)
 set(Boost_USE_MULTITHREADED      ON)
 set(Boost_USE_STATIC_RUNTIME    OFF)
 
-find_package(Boost)
+find_package(GMP)
 find_package(GMP)
 if(GMP_FOUND)
   find_package(GMPXX)
@@ -48,8 +46,13 @@ else()
   add_subdirectory(example/Skeleton_blocker)                   
   add_subdirectory(example/Contraction)                   
   add_subdirectory(example/Hasse_complex)
-  add_subdirectory(example/Alpha_shapes)
   add_subdirectory(example/Bottleneck)
   add_subdirectory(example/ToMaTo)
+
+  # GudhUI
+  add_subdirectory(GudhUI)
+
+  # data points generator
+  add_subdirectory(data/points/generator)
 
 endif()  
