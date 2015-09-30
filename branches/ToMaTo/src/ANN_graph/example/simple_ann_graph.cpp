@@ -1,14 +1,13 @@
+#include <gudhi/ANN_graph.h>
+
 #include <iostream>
 #include <vector>
-
 #include <algorithm>
-
-#include <gudhi/ANN_graph.h>
 
 using namespace std;
 using namespace Gudhi::ANN_graph;
 
-//rename for brevity
+// rename for brevity
 typedef vector<ANN_point>::iterator Iterator;
 typedef ANN_graph<Iterator> ANN_ngbh_graph;
 
@@ -25,11 +24,11 @@ int main(int argc, char *argv[]) {
   point_cloud.push_back(ANN_point(point_coord, point_dimension));
   point_coord = {12, 20};
   point_cloud.push_back(ANN_point(point_coord, point_dimension));
-  
+
   // create distance structure
   double mu = 1e20;
   ANN_ngbh_graph ngbh_graph(point_cloud.begin(), point_cloud.end(), point_dimension, mu);
-  
+
   for (auto point_iterator = point_cloud.begin(); point_iterator < point_cloud.end(); point_iterator++) {
     vector<Iterator> vi;
     // get_neighbors inits a vector of iterator on neighbors points except the given point
@@ -43,10 +42,11 @@ int main(int argc, char *argv[]) {
   for (auto point_iterator = point_cloud.begin(); point_iterator < point_cloud.end(); point_iterator++) {
     // get_num_neighbors returns the number of neighbors including the given point
     cout << "Point [" << point_iterator->first_3_cordinates() << "] - has ";
-    cout << ngbh_graph.get_num_neighbors(point_iterator, radius_1) << " neighbors in a ball of radius " << radius_1 << endl;
+    cout << ngbh_graph.get_num_neighbors(point_iterator, radius_1) << " neighbors in a ball of radius " << radius_1;
+    cout << endl;
   }
   cout << endl;
-  
+
   int k = 3;
   for (auto point_iterator = point_cloud.begin(); point_iterator < point_cloud.end(); point_iterator++) {
     double* ndist = new double[k];
@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
     delete[] ndist;
   }
   cout << endl;
-  
+
   double radius_2 = 1.0;
   for (auto point_iterator = point_cloud.begin(); point_iterator < point_cloud.end(); point_iterator++) {
     double* ndist = new double[point_cloud.size()];
@@ -74,5 +74,4 @@ int main(int argc, char *argv[]) {
     delete[] ndist;
   }
   cout << endl;
-
 }
