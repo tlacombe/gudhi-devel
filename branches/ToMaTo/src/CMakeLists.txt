@@ -25,6 +25,8 @@ if(GMP_FOUND)
 endif()
 
 find_package(CGAL)
+# for ANN_graph module
+find_package(ANN)
 
 if(NOT Boost_FOUND)
   message(FATAL_ERROR "NOTICE: This demo requires Boost and will not be compiled.")
@@ -44,6 +46,7 @@ else()
   add_subdirectory(example/Contraction)                   
   add_subdirectory(example/Hasse_complex)
   add_subdirectory(example/Bottleneck)
+  add_subdirectory(example/ANN_graph)
 
   # GudhUI
   add_subdirectory(GudhUI)

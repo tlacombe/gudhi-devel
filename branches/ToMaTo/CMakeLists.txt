@@ -29,6 +29,8 @@ if(GMP_FOUND)
 endif()
 
 find_package(CGAL)
+# for ANN_graph module
+find_package(ANN)
 
 # Required programs for unitary tests purpose
 FIND_PROGRAM( GCOVR_PATH gcovr )
@@ -57,6 +59,7 @@ else()
   message(STATUS "boost library dirs:" ${Boost_LIBRARY_DIRS})
 
   include_directories(src/common/include/)
+  include_directories(src/ANN_graph/include/)
   include_directories(src/Bottleneck/include/)
   include_directories(src/Contraction/include/)
   include_directories(src/Hasse_complex/include/)
@@ -74,6 +77,8 @@ else()
   add_subdirectory(src/Hasse_complex/example)
   add_subdirectory(src/Bottleneck/example)
   add_subdirectory(src/Bottleneck/test)
+  add_subdirectory(src/ANN_graph/example)
+  add_subdirectory(src/ANN_graph/test)
 
   # GudhUI
   add_subdirectory(src/GudhUI)
