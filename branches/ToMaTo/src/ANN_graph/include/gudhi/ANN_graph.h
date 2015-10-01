@@ -147,7 +147,7 @@ class ANN_graph {
   // Cluster algorithm calls
   //----------------------------------
 
-  /** \brief get_neighbors is returning Iterator's neighbors in the graph.
+  /** \brief get_neighbors is returning Iterator's neighbors in the graph excluding the given Iterator.
    *  @param[in] Iterator Iterator on the point of the graph we want to find the neighbors.
    *  @param[out] std::vector<Iterator>& Vector is fed with neighbors Iterator. */
   void get_neighbors(Iterator q, std::vector<Iterator> &out) const {
@@ -177,7 +177,7 @@ class ANN_graph {
     delete[] neighb;
   }
 
-  /** \brief get_neighbors is returning Iterator's neighbors in the graph.
+  /** \brief get_neighbors is returning Iterator's neighbors in the graph including the given Iterator.
    *  @param[in] Iterator Iterator on the point of the graph we want to find the neighbors.
    *  @param[in] radius Radius in which the number of neighbors are found.
    *  @return num_neighbors Number of neighbors. */
@@ -186,7 +186,8 @@ class ANN_graph {
     return nb_neighb;
   }
 
-  /** \brief get_neighbors_dist instantiates an array of k-closest distance from an Iterator in the graph.
+  /** \brief get_neighbors_dist instantiates an array of k-closest distance from an Iterator in the graph including the
+   * given Iterator.
    *  @param[in] Iterator Iterator on the point of the graph we want to find the neighbors.
    *  @param[in] k Number of the closest neighbors to find the distance.
    *  @param[out] ndist Array of k-closest distance. */
@@ -198,7 +199,7 @@ class ANN_graph {
   }
 
   /** \brief get_neighbors_dist_r instantiates an array of k-distances within a given radius from an Iterator in the
-   * graph.
+   * graph including the given Iterator.
    *  @param[in] Iterator Iterator on the point of the graph we want to find the neighbors.
    *  @param[in] radius Radius of the closest neighbors to find the distance.
    *  @param[out] ndist Array of the closest distance within the radius. */
