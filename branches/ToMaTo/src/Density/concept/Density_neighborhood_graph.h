@@ -26,6 +26,12 @@
 #include <vector>
 #include <string>
 
+namespace Gudhi {
+
+namespace density {
+
+namespace concept {
+
 /** \brief Neighborhood graph concept for density computation function.*/
 template <class Iterator>
 class Density_neigborhood_graph {
@@ -63,5 +69,11 @@ class Density_neigborhood_graph {
   /** \brief Sets the function value of an Iterator*/
   set_func(Iterator in, double func);
 };
+
+}  // namespace concept
+
+}  // namespace density
+
+}  // namespace Gudhi
 
 #endif  // _DENSITY_NEIGHBORHOOD_GRAPH_H_

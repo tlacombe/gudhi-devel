@@ -37,7 +37,7 @@
 
 namespace Gudhi {
 
-namespace Cluster {
+namespace cluster {
 
 /**
  * \brief Cluster function class.
@@ -502,7 +502,7 @@ class Cluster {
   }
 };
 
-}  // namespace Cluster
+}  // namespace cluster
 
 }  // namespace Gudhi
 

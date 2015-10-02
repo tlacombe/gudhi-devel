@@ -33,7 +33,7 @@
 
 namespace Gudhi {
 
-namespace Cluster {
+namespace cluster {
 
 /**
  * \brief Cluster_interval is a basic data structure for holding birth and death times.
@@ -83,7 +83,7 @@ class Cluster_interval {
   }
 };
 
-}  // namespace Cluster
+}  // namespace cluster
 
 }  // namespace Gudhi
 

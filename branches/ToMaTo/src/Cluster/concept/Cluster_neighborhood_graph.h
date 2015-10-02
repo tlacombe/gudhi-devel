@@ -26,6 +26,12 @@
 #include <vector>
 #include <string>
 
+namespace Gudhi {
+
+namespace cluster {
+
+namespace concept {
+
 /** \brief Neighborhood graph concept for cluster computation function.*/
 template <class Iterator>
 class Cluster_neigborhood_graph {
@@ -57,5 +63,11 @@ class Cluster_neigborhood_graph {
   /** \brief Returns the function value of an Iterator*/
   double get_func(Iterator in) const;
 };
+
+}  // namespace concept
+
+}  // namespace cluster
+
+}  // namespace Gudhi
 
 #endif  // _CLUSTER_NEIGHBORHOOD_GRAPH_H

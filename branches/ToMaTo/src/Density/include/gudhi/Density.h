@@ -29,7 +29,7 @@
 
 namespace Gudhi {
 
-namespace Density {
+namespace density {
 
 /**
  * \brief Density function class.
@@ -136,7 +136,7 @@ class Density {
   }
 };
 
-}  // namespace Density
+}  // namespace density
 
 }  // namespace Gudhi
 
