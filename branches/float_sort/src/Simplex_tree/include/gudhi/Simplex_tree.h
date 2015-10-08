@@ -31,6 +31,7 @@
 #include <gudhi/reader_utils.h>
 #include <gudhi/graph_simplicial_complex.h>
 
+#include <boost/sort/sort.hpp>
 #include <boost/container/flat_map.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/graph/adjacency_list.hpp>
@@ -776,6 +777,12 @@ class Simplex_tree {
    *
    * Will be automatically called when calling filtration_simplex_range()
    * if the filtration has never been initialized yet. */
+  struct RSH {
+    long operator()(Simplex_handle sh, unsigned offset)const{
+      // FIXME: Don't assume that Filtration_value is double
+      return boost::sort::spreadsort::float_mem_cast<double,long>(sh->second.filtration()) >> offset;
+    }
+  };
   void initialize_filtration() {
     filtration_vect_.clear();
     filtration_vect_.reserve(num_simplices());
@@ -783,7 +790,8 @@ class Simplex_tree {
       filtration_vect_.push_back(sh);
 
     // the stable sort ensures the ordering heuristic
-    std::stable_sort(filtration_vect_.begin(), filtration_vect_.end(),
+    // std::stable_sort(filtration_vect_.begin(), filtration_vect_.end(), is_before_in_filtration(this));
+    boost::sort::spreadsort::float_sort(filtration_vect_.begin(), filtration_vect_.end(), RSH(),
                      is_before_in_filtration(this));
   }
 
