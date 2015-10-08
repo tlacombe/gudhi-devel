@@ -31,18 +31,21 @@
 #include <gudhi/reader_utils.h>
 #include <gudhi/graph_simplicial_complex.h>
 
-#include <boost/sort/sort.hpp>
+#include <boost/version.hpp>
+#if BOOST_VERSION >= 105800
+# include <boost/sort/sort.hpp>
+#endif
 #include <boost/container/flat_map.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/graph/adjacency_list.hpp>
 
+#include <cstdint>
 #include <algorithm>
 #include <utility>
 #include <vector>
 #include <functional>  // for greater<>
 
 namespace Gudhi {
-
 /** \defgroup simplex_tree Filtered Complexes
  *
  * A simplicial complex \f$\mathbf{K}\f$
@@ -761,6 +764,42 @@ class Simplex_tree {
     dimension_ = dimension;
   }
 
+ private:
+  // Extra template parameter because full specializations are not allowed in this context. Ideally this class would move out of Simplex_tree.
+  template<class,class=void>struct Sort_simplices_by_filtration {
+    template<class Iter>
+      void operator()(Iter a, Iter b, Simplex_tree* st) const {
+	// the stable sort ensures the ordering heuristic
+	std::stable_sort(a, b, is_before_in_filtration(st));
+      }
+  };
+#if BOOST_VERSION >= 105800
+  template<class Float, class Int> struct Right_shift_for_spreadsort {
+    long operator()(Simplex_handle sh, unsigned offset)const{
+      using namespace boost::sort::spreadsort;
+      return float_mem_cast<Float, Int>(sh->second.filtration()) >> offset;
+    }
+  };
+  template<class T>struct Sort_simplices_by_filtration<float,T> {
+    template<class Iter>
+      void operator()(Iter a, Iter b, Simplex_tree* st) const {
+	// So much faster than (stable_)sort that it is ok if it is not stable.
+	boost::sort::spreadsort::float_sort(a, b,
+	    Right_shift_for_spreadsort<float, std::int32_t>(),
+	    is_before_in_filtration(st));
+      }
+  };
+  template<class T>struct Sort_simplices_by_filtration<double,T> {
+    template<class Iter>
+      void operator()(Iter a, Iter b, Simplex_tree* st) const {
+	// So much faster than (stable_)sort that it is ok if it is not stable.
+	boost::sort::spreadsort::float_sort(a, b,
+	    Right_shift_for_spreadsort<double, std::int64_t>(),
+	    is_before_in_filtration(st));
+      }
+  };
+#endif
+
  public:
   /** \brief Initializes the filtrations, i.e. sort the
    * simplices according to their order in the filtration and initializes all Simplex_keys.
@@ -777,22 +816,14 @@ class Simplex_tree {
    *
    * Will be automatically called when calling filtration_simplex_range()
    * if the filtration has never been initialized yet. */
-  struct RSH {
-    long operator()(Simplex_handle sh, unsigned offset)const{
-      // FIXME: Don't assume that Filtration_value is double
-      return boost::sort::spreadsort::float_mem_cast<double,long>(sh->second.filtration()) >> offset;
-    }
-  };
   void initialize_filtration() {
     filtration_vect_.clear();
     filtration_vect_.reserve(num_simplices());
     for (Simplex_handle sh : complex_simplex_range())
       filtration_vect_.push_back(sh);
 
-    // the stable sort ensures the ordering heuristic
-    // std::stable_sort(filtration_vect_.begin(), filtration_vect_.end(), is_before_in_filtration(this));
-    boost::sort::spreadsort::float_sort(filtration_vect_.begin(), filtration_vect_.end(), RSH(),
-                     is_before_in_filtration(this));
+    Sort_simplices_by_filtration<Filtration_value>()(filtration_vect_.begin(),
+	filtration_vect_.end(), this);
   }
 
  private:
