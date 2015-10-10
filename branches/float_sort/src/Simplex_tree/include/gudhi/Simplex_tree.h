@@ -775,7 +775,7 @@ class Simplex_tree {
   };
 #if BOOST_VERSION >= 105800
   template<class Float, class Int> struct Right_shift_for_spreadsort {
-    long operator()(Simplex_handle sh, unsigned offset)const{
+    Int operator()(Simplex_handle sh, unsigned offset)const{
       using namespace boost::sort::spreadsort;
       return float_mem_cast<Float, Int>(sh->second.filtration()) >> offset;
     }
@@ -824,6 +824,7 @@ class Simplex_tree {
 
     Sort_simplices_by_filtration<Filtration_value>()(filtration_vect_.begin(),
 	filtration_vect_.end(), this);
+    assert(std::is_sorted(filtration_vect_.begin(),filtration_vect_.end(),is_before_in_filtration(this)));
   }
 
  private:
