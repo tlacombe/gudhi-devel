@@ -32,8 +32,8 @@
 
 using namespace std;
 using namespace Gudhi::ANN_graph;
-using namespace Gudhi::Cluster;
-using namespace Gudhi::Density;
+using namespace Gudhi::cluster;
+using namespace Gudhi::density;
 
 // rename for brevity
 typedef ANN_graph< vector< ANN_point >::iterator > ANN_ngbh_graph;

@@ -35,7 +35,7 @@
 
 using namespace std;
 using namespace Gudhi::ANN_graph;
-using namespace Gudhi::Cluster;
+using namespace Gudhi::cluster;
 
 //rename for brevity
 typedef vector<ANN_point>::iterator Iterator;

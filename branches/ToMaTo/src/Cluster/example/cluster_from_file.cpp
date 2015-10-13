@@ -32,7 +32,7 @@
 
 using namespace std;
 using namespace Gudhi::ANN_graph;
-using namespace Gudhi::Cluster;
+using namespace Gudhi::cluster;
 
 // rename for brevity
 typedef ANN_graph< vector< ANN_point >::iterator > ANN_ngbh_graph;

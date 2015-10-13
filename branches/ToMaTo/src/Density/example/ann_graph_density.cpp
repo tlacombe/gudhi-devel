@@ -7,7 +7,7 @@
 
 using namespace std;
 using namespace Gudhi::ANN_graph;
-using namespace Gudhi::Density;
+using namespace Gudhi::density;
 
 // rename for brevity
 typedef vector<ANN_point>::iterator Iterator;
