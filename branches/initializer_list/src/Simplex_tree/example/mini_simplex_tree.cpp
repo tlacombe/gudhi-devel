@@ -22,7 +22,6 @@
 
 #include <gudhi/Simplex_tree.h>
 #include <iostream>
-#include <initializer_list>
 
 using namespace Gudhi;
 
