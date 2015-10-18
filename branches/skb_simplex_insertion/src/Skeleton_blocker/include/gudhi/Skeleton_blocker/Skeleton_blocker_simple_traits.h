@@ -25,6 +25,7 @@
 #include <string>
 #include <sstream>
 #include "Skeleton_blocker_simplex.h"
+#include "gudhi/Skeleton_blocker/internal/Blockers_map_ds.h"
 
 namespace Gudhi {
 
@@ -172,6 +173,13 @@ struct Skeleton_blocker_simple_traits {
       return o;
     }
   };
+
+  /**
+   * Data structure  used for blockers
+   */
+  typedef Blockers_map_ds<Vertex_handle> BlockersDS;
+ // Blockers_map_ds<Skeleton_blocker_simple_traits> blockers_;
+
 };
 
 }  // namespace skbl

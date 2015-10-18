@@ -249,7 +249,7 @@ class Skeleton_blocker_link_complex : public Skeleton_blocker_sub_complex<
                   break;
               }
               if (is_new_blocker)
-                this->add_blocker(new Simplex(*sigma_link));
+                this->add_blocker(*sigma_link);
             }
           }
         }
