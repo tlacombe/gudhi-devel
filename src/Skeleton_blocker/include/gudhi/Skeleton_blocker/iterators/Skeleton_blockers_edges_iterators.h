@@ -22,6 +22,7 @@
 #ifndef GUDHI_SKELETON_BLOCKERS_ITERATORS_EDGES_H_
 #define GUDHI_SKELETON_BLOCKERS_ITERATORS_EDGES_H_
 
+#include <boost/graph/adjacency_list.hpp>
 #include "boost/iterator/iterator_facade.hpp"
 
 

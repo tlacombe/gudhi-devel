@@ -254,11 +254,11 @@ template<typename SkeletonBlockerDS>
 void Skeleton_blocker_complex<SkeletonBlockerDS>::remove_blocker_include_in_simplex(const Simplex& sigma) {
   //todo write efficiently by using only superior blockers
   //eg for all s, check blockers whose vertices are all greater than s
-  std::set <Blocker_handle> blockers_to_remove;
+  std::vector<Blocker_handle> blockers_to_remove;
   for(auto s : sigma){
     for (auto blocker : this->blocker_range(s)) {
-      if (sigma.contains(*blocker))
-        blockers_to_remove.insert(blocker);
+      if (s==blocker->first_vertex() && sigma.contains(*blocker))
+        blockers_to_remove.push_back(blocker);
     }
   }
   for (auto blocker_to_update : blockers_to_remove){

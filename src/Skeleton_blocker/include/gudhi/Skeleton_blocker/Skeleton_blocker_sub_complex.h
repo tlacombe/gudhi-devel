@@ -125,7 +125,7 @@ class Skeleton_blocker_sub_complex : public ComplexType {
   void add_blocker(const Root_simplex_handle& blocker_root) {
     auto blocker_sub = this->get_address(blocker_root);
     assert(blocker_sub);
-    this->add_blocker(new Simplex(*blocker_sub));
+    this->add_blocker(*blocker_sub);
   }
 
  public:
