@@ -31,6 +31,9 @@
 #include <boost/intrusive/set.hpp>
 #include <boost/pending/disjoint_sets.hpp>
 #include <boost/intrusive/list.hpp>
+#include <boost/container/static_vector.hpp>
+
+#include <tbb/pipeline.h>
 
 #include <map>
 #include <utility>
@@ -307,6 +310,13 @@ class Persistent_cohomology {
     coeff_field_.init(charac_min, charac_max);
   }
 
+  struct Bnd {
+    Simplex_handle sh;
+    Simplex_key k;
+    int dim;
+    // FIXME: 4 is too little, but I am only testing in 3D for now...
+    boost::container::static_vector<Simplex_handle, 4> bnd;
+  };
   /** \brief Compute the persistent homology of the filtered simplicial
    * complex.
    *
@@ -317,6 +327,48 @@ class Persistent_cohomology {
    * valid. Undefined behavior otherwise. */
   void compute_persistent_cohomology(Filtration_value min_interval_length = 0) {
     interval_length_policy.set_length(min_interval_length);
+
+    Simplex_key index = 0;
+    Simplex_key index_end = num_simplices_;
+    // MG: first try with individual simplices. Eventually it will most likely be better to work by batch. This way we can also filter out vertices early.
+    auto counter = tbb::make_filter<void, Simplex_key>(
+	tbb::filter::serial_in_order,
+	[&](tbb::flow_control& fc) {
+	  if (index < index_end)
+	    return index++;
+	  fc.stop();
+	  return cpx_->null_key();
+	});
+    // FIXME: TBB really prefers if we pass pointers here, otherwise it keeps allocating / deallocating and copies the object. A circular list of size the first argument of parallel_pipeline is a suitable allocator.
+    auto boundary = tbb::make_filter<Simplex_key, Bnd>(
+	tbb::filter::parallel,
+	[&](Simplex_key k) {
+	  Bnd ret;
+	  ret.k = k;
+	  ret.sh = cpx_->simplex(k);
+	  ret.dim = cpx_->dimension(ret.sh);
+	  if (ret.dim > 0)
+	    for (auto sh : cpx_->boundary_simplex_range(ret.sh))
+	      ret.bnd.push_back(sh);
+	  return ret;
+	});
+    auto process = tbb::make_filter<Bnd, void>(
+	tbb::filter::serial_in_order,
+	[&](Bnd const& b) {
+	  switch (b.dim) {
+	    case 0:
+	      break;
+	    case 1:
+	      update_cohomology_groups_edge(b);
+	      break;
+	    default:
+	      update_cohomology_groups(b);
+	      break;
+	  }
+	  
+	});
+    tbb::parallel_pipeline(10000, counter & boundary & process);
+#if 0
     // Compute all finite intervals
     for (auto sh : cpx_->filtration_simplex_range()) {
       int dim_simplex = cpx_->dimension(sh);
@@ -331,6 +383,7 @@ class Persistent_cohomology {
           break;
       }
     }
+#endif
     // Compute infinite intervals of dimension 0
     Simplex_key key;
     for (auto v_sh : cpx_->skeleton_simplex_range(0)) {  // for all 0-dimensional simplices
@@ -358,9 +411,11 @@ class Persistent_cohomology {
    *
    * The 0-homology is maintained with a simple Union-Find data structure, which
    * explains the existance of a specific function of edge insertions. */
-  void update_cohomology_groups_edge(Simplex_handle sigma) {
-    Simplex_handle u, v;
-    boost::tie(u, v) = cpx_->endpoints(sigma);
+  void update_cohomology_groups_edge(Bnd const& b) {
+    Simplex_handle sigma = b.sh;
+    assert(b.bnd.size() == 2);
+    Simplex_handle u = b.bnd[0];
+    Simplex_handle v = b.bnd[1];
 
     Simplex_key ku = dsets_.find_set(cpx_->key(u));
     Simplex_key kv = dsets_.find_set(cpx_->key(v));
@@ -428,8 +483,9 @@ class Persistent_cohomology {
    * Compute the annotation of the boundary of a simplex.
    */
   void annotation_of_the_boundary(
-      std::map<Simplex_key, Arith_element> & map_a_ds, Simplex_handle sigma,
-      int dim_sigma) {
+      std::map<Simplex_key, Arith_element> & map_a_ds, Bnd const& b) {
+    Simplex_handle sigma = b.sh;
+    int dim_sigma = b.dim;
     // traverses the boundary of sigma, keeps track of the annotation vectors,
     // with multiplicity, in a map.
     std::map<Column *, int> annotations_in_boundary;
@@ -439,7 +495,7 @@ class Persistent_cohomology {
     Simplex_key key;
     Column * curr_col;
 
-    for (auto sh : cpx_->boundary_simplex_range(sigma)) {
+    for (auto sh : b.bnd) {
       key = cpx_->key(sh);
       if (key != cpx_->null_key()) {  // A simplex with null_key is a killer, and have null annotation
         // Find its annotation vector
@@ -479,10 +535,12 @@ class Persistent_cohomology {
   /*
    * Update the cohomology groups under the insertion of a simplex.
    */
-  void update_cohomology_groups(Simplex_handle sigma, int dim_sigma) {
+  void update_cohomology_groups(Bnd const& b) {
+    Simplex_handle sigma = b.sh;
+    int dim_sigma = b.dim;
 // Compute the annotation of the boundary of sigma:
     std::map<Simplex_key, Arith_element> map_a_ds;
-    annotation_of_the_boundary(map_a_ds, sigma, dim_sigma);
+    annotation_of_the_boundary(map_a_ds, b);
 // Update the cohomology groups:
     if (map_a_ds.empty()) {  // sigma is a creator in all fields represented in coeff_field_
       if (dim_sigma < dim_max_) {
