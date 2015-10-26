@@ -314,8 +314,8 @@ class Persistent_cohomology {
     Simplex_handle sh;
     Simplex_key k;
     int dim;
-    // FIXME: 4 is too little, but I am only testing in 3D for now...
-    boost::container::static_vector<Simplex_handle, 4> bnd;
+    // 31 is completely arbitrary... If we recycled the blocks of Bnd, std::vector would probably be fine.
+    boost::container::static_vector<Simplex_handle, 31> bnd;
   };
   /** \brief Compute the persistent homology of the filtered simplicial
    * complex.
@@ -326,48 +326,55 @@ class Persistent_cohomology {
    * Assumes that the filtration provided by the simplicial complex is
    * valid. Undefined behavior otherwise. */
   void compute_persistent_cohomology(Filtration_value min_interval_length = 0) {
+    static const int parallelism = 8;
+    static const int block_size = 100;
+
     interval_length_policy.set_length(min_interval_length);
 
     Simplex_key index = 0;
     Simplex_key index_end = num_simplices_;
-    // MG: first try with individual simplices. Eventually it will most likely be better to work by batch. This way we can also filter out vertices early.
+    // The overhead is too large to handle simplices one by one.
     auto counter = tbb::make_filter<void, Simplex_key>(
 	tbb::filter::serial_in_order,
 	[&](tbb::flow_control& fc) {
-	  if (index < index_end)
-	    return index++;
+	  if (index < index_end) {
+	    Simplex_key ret = index;
+	    index+=block_size;
+	    return ret;
+	  }
 	  fc.stop();
 	  return cpx_->null_key();
 	});
-    // FIXME: TBB really prefers if we pass pointers here, otherwise it keeps allocating / deallocating and copies the object. A circular list of size the first argument of parallel_pipeline is a suitable allocator.
-    auto boundary = tbb::make_filter<Simplex_key, Bnd>(
+    // FIXME: TBB really prefers if we pass pointers here, otherwise it keeps allocating / deallocating and copies the object.
+    auto boundary = tbb::make_filter<Simplex_key, std::vector<Bnd>>(
 	tbb::filter::parallel,
 	[&](Simplex_key k) {
-	  Bnd ret;
-	  ret.k = k;
-	  ret.sh = cpx_->simplex(k);
-	  ret.dim = cpx_->dimension(ret.sh);
-	  if (ret.dim > 0)
-	    for (auto sh : cpx_->boundary_simplex_range(ret.sh))
-	      ret.bnd.push_back(sh);
-	  return ret;
-	});
-    auto process = tbb::make_filter<Bnd, void>(
-	tbb::filter::serial_in_order,
-	[&](Bnd const& b) {
-	  switch (b.dim) {
-	    case 0:
-	      break;
-	    case 1:
-	      update_cohomology_groups_edge(b);
-	      break;
-	    default:
-	      update_cohomology_groups(b);
-	      break;
+	  std::vector<Bnd> v; v.reserve(block_size);
+	  Simplex_key block_end = std::min (k + block_size, index_end);
+	  for (; k < block_end; ++k) {
+	    Simplex_handle sh = cpx_->simplex(k);
+	    int dim = cpx_->dimension(sh);
+	    if (dim == 0) continue;
+	    v.emplace_back();
+	    Bnd& b = v.back();
+	    b.k = k;
+	    b.sh = sh;
+	    b.dim = dim;
+	    for (auto bsh : cpx_->boundary_simplex_range(sh))
+	      b.bnd.push_back(bsh);
 	  }
-	  
+	  return v;
 	});
-    tbb::parallel_pipeline(10000, counter & boundary & process);
+    auto process = tbb::make_filter<std::vector<Bnd>, void>(
+	tbb::filter::serial_in_order,
+	[&](std::vector<Bnd> const& v) {
+	  for (Bnd const& b : v)
+	    if (b.dim == 1)
+	      update_cohomology_groups_edge(b);
+	    else
+	      update_cohomology_groups(b);
+	});
+    tbb::parallel_pipeline(parallelism, counter & boundary & process);
 #if 0
     // Compute all finite intervals
     for (auto sh : cpx_->filtration_simplex_range()) {
