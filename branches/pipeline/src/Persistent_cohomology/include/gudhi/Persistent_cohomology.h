@@ -326,8 +326,8 @@ class Persistent_cohomology {
    * Assumes that the filtration provided by the simplicial complex is
    * valid. Undefined behavior otherwise. */
   void compute_persistent_cohomology(Filtration_value min_interval_length = 0) {
-    static const int parallelism = 8;
-    static const int block_size = 100;
+    static const int parallelism = 16;
+    static const int block_size = 2048;
 
     interval_length_policy.set_length(min_interval_length);
 
