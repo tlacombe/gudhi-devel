@@ -27,6 +27,7 @@
 #include <gudhi/Persistent_cohomology.h>
 
 #include <boost/program_options.hpp>
+#include <tbb/task_scheduler_init.h>
 
 #include <string>
 #include <vector>
@@ -59,6 +60,8 @@ int main(int argc, char * argv[]) {
   typedef std::vector<double> Point_t;
   std::vector< Point_t > points;
   read_points(filepoints, points);
+
+  tbb::task_scheduler_init ts(4);
 
   // Compute the proximity graph of the points
   Graph_t prox_graph = compute_proximity_graph(points, threshold
