@@ -22,6 +22,7 @@
 
 #include <gudhi/Simplex_tree.h>
 #include <iostream>
+#include <initializer_list>
 
 using namespace Gudhi;
 
@@ -48,12 +49,15 @@ int main() {
   /*  o---o---o        */
   /*  2   0   3        */
 
-  st.insert_simplex_and_subfaces({0, 1, 2});
-  st.insert_simplex_and_subfaces({0, 3});
+  auto triangle012 = {0, 1, 2};
+  auto edge03 = {0, 3};
+  st.insert_simplex_and_subfaces(triangle012);
+  st.insert_simplex_and_subfaces(edge03);
   // FIXME: Remove this line
   st.set_dimension(2);
 
-  ST::Simplex_handle e = st.find({0, 2});
+  auto edge02 = {0, 2};
+  ST::Simplex_handle e = st.find(edge02);
   // We are not using filtrations so everything has value 0
   assert(st.filtration(e) == 0);
   for (ST::Simplex_handle t : st.cofaces_simplex_range(e, 1)) {
