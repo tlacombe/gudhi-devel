@@ -773,28 +773,59 @@ class Simplex_tree {
 	std::stable_sort(a, b, is_before_in_filtration(st));
       }
   };
+  // Boost.Sort string_sort is a bit faster than libstdc++ stable_sort, but not enough to be worth the trouble. float_sort is better, but does not handle the disambiguation between simplices with the same filtration value.
 #if BOOST_VERSION >= 105800
-  template<class Float, class Int> struct Right_shift_for_spreadsort {
-    Int operator()(Simplex_handle sh, unsigned offset)const{
-      using namespace boost::sort::spreadsort;
-      return float_mem_cast<Float, Int>(sh->second.filtration()) >> offset;
+  template<class UInt> struct Bracket_for_spreadsort {
+    Simplex_tree*st_;
+    Bracket_for_spreadsort(Simplex_tree*st):st_(st){}
+    unsigned char operator()(Simplex_handle sh, unsigned offset) const {
+      if (offset < sizeof(Filtration_value)) {
+	const int bit_shift = 8 * (sizeof(Filtration_value)-offset-1);
+	Filtration_value f = sh->second.filtration();
+	UInt key = boost::sort::spreadsort::float_mem_cast<Filtration_value, UInt>(f);
+	//unsigned char result = (key & ((UInt)0xff << bit_shift)) >> bit_shift;
+	unsigned char result = (key >> bit_shift) & 0xff;
+	if (f < 0) return 255-result;
+	if (offset == 0) return 128 + result;
+	return result;
+      }
+      offset -= sizeof(Filtration_value);
+      Simplex_vertex_range rg = st_->simplex_vertex_range(sh);
+      Simplex_vertex_iterator it = rg.begin();
+      while (offset >= sizeof(Vertex_handle)) {
+	if (it == rg.end()) return 0;
+	//assert(it!=rg.end());
+	++it;
+	offset -= sizeof(Vertex_handle);
+      }
+      const int bit_shift = 8 * (sizeof(Vertex_handle)-offset-1);
+      unsigned char result = (*it & ((unsigned)0xff << bit_shift)) >> bit_shift;
+      if (offset == 0) result ^= 128;
+      return result;
+    }
+  };
+  struct Getsize_for_spreadsort {
+    Simplex_tree*st_;
+    Getsize_for_spreadsort(Simplex_tree*st):st_(st){}
+    std::size_t operator()(Simplex_handle sh) const {
+      return sizeof(Filtration_value)+sizeof(Vertex_handle)*4;//(st_->dimension(sh)+1);
     }
   };
   template<class T>struct Sort_simplices_by_filtration<float,T> {
     template<class Iter>
       void operator()(Iter a, Iter b, Simplex_tree* st) const {
-	// So much faster than (stable_)sort that it is ok if it is not stable.
-	boost::sort::spreadsort::float_sort(a, b,
-	    Right_shift_for_spreadsort<float, std::int32_t>(),
+	boost::sort::spreadsort::string_sort(a, b,
+	    Bracket_for_spreadsort<std::uint32_t>(st),
+	    Getsize_for_spreadsort(st),
 	    is_before_in_filtration(st));
       }
   };
   template<class T>struct Sort_simplices_by_filtration<double,T> {
     template<class Iter>
       void operator()(Iter a, Iter b, Simplex_tree* st) const {
-	// So much faster than (stable_)sort that it is ok if it is not stable.
-	boost::sort::spreadsort::float_sort(a, b,
-	    Right_shift_for_spreadsort<double, std::int64_t>(),
+	boost::sort::spreadsort::string_sort(a, b,
+	    Bracket_for_spreadsort<std::uint64_t>(st),
+	    Getsize_for_spreadsort(st),
 	    is_before_in_filtration(st));
       }
   };
