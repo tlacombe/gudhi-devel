@@ -259,7 +259,7 @@ class Bitmap_cubical_complex : public T {
       return result;
     }
 
-    Filtration_simplex_iterator operator=(const Filtration_simplex_iterator& rhs) {
+    Filtration_simplex_iterator& operator=(const Filtration_simplex_iterator& rhs) {
       if (globalDbg) {
         std::cerr << "Filtration_simplex_iterator operator =\n";
       }
@@ -404,7 +404,7 @@ class Bitmap_cubical_complex : public T {
       }
     }
 
-    Skeleton_simplex_iterator() : b(NULL), dimension(0) { }
+    Skeleton_simplex_iterator() : b(NULL), position(0), dimension(0) { }
 
     Skeleton_simplex_iterator operator++() {
       if (globalDbg) {
@@ -427,12 +427,13 @@ class Bitmap_cubical_complex : public T {
       return result;
     }
 
-    Skeleton_simplex_iterator operator=(const Skeleton_simplex_iterator& rhs) {
+    Skeleton_simplex_iterator& operator=(const Skeleton_simplex_iterator& rhs) {
       if (globalDbg) {
         std::cerr << "Skeleton_simplex_iterator operator =\n";
       }
       this->b = rhs.b;
       this->position = rhs.position;
+      this->dimension = rhs.dimension;
     }
 
     bool operator==(const Skeleton_simplex_iterator& rhs)const {
@@ -531,8 +532,8 @@ class is_before_in_filtration {
   explicit is_before_in_filtration(Bitmap_cubical_complex<T> * CC)
       : CC_(CC) { }
 
-  bool operator()(const typename Bitmap_cubical_complex<T>::Simplex_handle sh1,
-                  const typename Bitmap_cubical_complex<T>::Simplex_handle sh2) const {
+  bool operator()(const typename Bitmap_cubical_complex<T>::Simplex_handle& sh1,
+                  const typename Bitmap_cubical_complex<T>::Simplex_handle& sh2) const {
     // Not using st_->filtration(sh1) because it uselessly tests for null_simplex.
     typename T::filtration_type fil1 = CC_->data[sh1];
     typename T::filtration_type fil2 = CC_->data[sh2];

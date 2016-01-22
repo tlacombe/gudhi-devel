@@ -32,6 +32,7 @@
 #include <algorithm>
 #include <iterator>
 #include <limits>
+#include <utility>  // for pair<>
 
 namespace Gudhi {
 
@@ -62,7 +63,8 @@ class Bitmap_cubical_complex_base {
   /**
    *Default constructor
    **/
-  Bitmap_cubical_complex_base() { }
+  Bitmap_cubical_complex_base() :
+  total_number_of_cells(0) { }
   /**
    * There are a few constructors of a Bitmap_cubical_complex_base class.
    * First one, that takes vector<unsigned>, creates an empty bitmap of a dimension equal
@@ -206,7 +208,7 @@ class Bitmap_cubical_complex_base {
       return result;
     }
 
-    Top_dimensional_cells_iterator operator=(const Top_dimensional_cells_iterator& rhs) {
+    Top_dimensional_cells_iterator& operator=(const Top_dimensional_cells_iterator& rhs) {
       this->counter = rhs.counter;
       this->b = rhs.b;
       return *this;
@@ -380,7 +382,7 @@ Bitmap_cubical_complex_base<T>::Bitmap_cubical_complex_base
 template <typename T>
 void Bitmap_cubical_complex_base<T>::read_perseus_style_file(const char* perseus_style_file) {
   bool dbg = false;
-  std::ifstream inFiltration, inIds;
+  std::ifstream inFiltration;
   inFiltration.open(perseus_style_file);
   unsigned dimensionOfData;
   inFiltration >> dimensionOfData;
@@ -394,7 +396,6 @@ void Bitmap_cubical_complex_base<T>::read_perseus_style_file(const char* perseus
   for (size_t i = 0; i != dimensionOfData; ++i) {
     unsigned size_in_this_dimension;
     inFiltration >> size_in_this_dimension;
-    size_in_this_dimension = size_in_this_dimension;
     sizes.push_back(size_in_this_dimension);
     if (dbg) {
       std::cerr << "size_in_this_dimension : " << size_in_this_dimension << std::endl;
@@ -432,7 +433,8 @@ Bitmap_cubical_complex_base<T>::Bitmap_cubical_complex_base(const char* perseus_
 
 template <typename T>
 Bitmap_cubical_complex_base<T>::Bitmap_cubical_complex_base(const std::vector<unsigned>& sizes,
-                                                            std::vector<bool> directions) {
+                                                            std::vector<bool> directions) :
+  total_number_of_cells(0) {
   // this constructor is here just for compatibility with a class that creates cubical complexes with periodic boundary
   // conditions. It ignores the last parameter of the function.
   this->set_up_containers(sizes);
@@ -441,14 +443,16 @@ Bitmap_cubical_complex_base<T>::Bitmap_cubical_complex_base(const std::vector<un
 template <typename T>
 Bitmap_cubical_complex_base<T>::Bitmap_cubical_complex_base(const std::vector<unsigned>& dimensions,
                                                             const std::vector<T>& top_dimensional_cells,
-                                                            std::vector<bool> directions) {
+                                                            std::vector<bool> directions) :
+  total_number_of_cells(0) {
   // this constructor is here just for compatibility with a class that creates cubical complexes with periodic
   // boundary conditions. It ignores the last parameter of the function.
   this->setup_bitmap_based_on_top_dimensional_cells_list(dimensions, top_dimensional_cells);
 }
 
 template <typename T>
-Bitmap_cubical_complex_base<T>::Bitmap_cubical_complex_base(const char* perseus_style_file) {
+Bitmap_cubical_complex_base<T>::Bitmap_cubical_complex_base(const char* perseus_style_file) :
+  total_number_of_cells(0) {
   this->read_perseus_style_file(perseus_style_file);
 }
 
@@ -596,4 +600,4 @@ bool compareFirstElementsOfTuples(const std::pair< std::pair< T, size_t >, char 
 
 }  // namespace Gudhi
 
-#endif  // BITMAP_CUBICAL_COMPLEX_H_
+#endif  // BITMAP_CUBICAL_COMPLEX_BASE_H_
