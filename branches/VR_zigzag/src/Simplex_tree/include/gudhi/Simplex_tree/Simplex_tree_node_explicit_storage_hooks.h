@@ -107,6 +107,20 @@ class Simplex_tree_node_explicit_storage_hooks
   }
 
   void * annotation() { return annotation_; }
+  
+  /** \brief Checks if two Nodes are equal. */
+  bool operator==(const Simplex_tree_node_explicit_storage_hooks& other_node) {
+    if ((children_ != other_node.children_) ||  // For children, just check the pointed value is the same or not
+        (filtration_ != other_node.filtration_) ||
+        (simplex_key_ != other_node.simplex_key_))
+      return false;
+    return true;
+  }
+
+  /** \brief Checks if two simplex trees are different. */
+  bool operator!=(const Simplex_tree_node_explicit_storage_hooks& other_node) {
+    return (!(*this == other_node));
+  }
 
 public: // private:
   Siblings * children_;
