@@ -601,7 +601,7 @@ class Simplex_tree {
       curr_sib = res_insert.first->second.children();
       if (res_insert.second) {
         // if NOT already in the complex
-        insert_vh_siblings(simplex[0], *vi, res_insert.first->second);
+        insert_vh_siblings(simplex.back(), *vi, res_insert.first->second);
       }
     }
     res_insert = curr_sib->members_.emplace(*vi, Node(curr_sib, filtration));
@@ -616,20 +616,33 @@ class Simplex_tree {
       return std::pair<Simplex_handle, bool>(null_simplex(), false);
     } else {
         // if NOT already in the complex
-        insert_vh_siblings(simplex[0], *vi, res_insert.first->second);      
+        insert_vh_siblings(simplex.back(), *vi, res_insert.first->second);      
     }
     // otherwise the insertion has succeeded
     return res_insert;
   }
 
+  /** \brief Resize vh_siblings_ if needed and insert the node into vh_siblings_ data structure.
+   * @param[in] vh_siblings_index Index of the vh_siblings_ data structure where the node needs to be inserted
+   * @param[in] node Node to be inserted
+   * i.e. : insert_simplex_and_subfaces({0,1,2}) fills the vh_siblings_ data structure as follows:
+   * vh_siblings_[0] = [Node{0}]
+   * vh_siblings_[1] = [Node{1};Node{0,1}]
+   * vh_siblings_[2] = [Node{0,1,2};Node{0,2};Node{1,2};Node{2}]
+   * \warning As vh_siblings_ is a std::vector<boost::intrusive::list<...>>, insert_vh_siblings will assert (Assertion
+   * `node_algorithms::inited(to_insert)' failed.) if a same node is inserted into 2 different
+   * boost::intrusive::list<...>
+   */
   void insert_vh_siblings(Vertex_handle vh_siblings_index, Vertex_handle vh, Node& node) {
-    // Needs to resize before inserting - vh_siblings_ is a vector of N intrusive_list of cofaces from 0 to N-1
-    size_t num_vertice = static_cast<size_t>(vh) + 1;
-    if (vh_siblings_.size() < num_vertice) {
-      vh_siblings_.resize(num_vertice);
+    // Only available for contiguous_vertices
+    if (Options::contiguous_vertices) {
+      // Needs to resize before inserting - vh_siblings_ is a vector of N intrusive_list of cofaces from 0 to N-1
+      size_t num_vertice = static_cast<size_t>(vh) + 1;
+      if (vh_siblings_.size() < num_vertice) {
+        vh_siblings_.resize(num_vertice);
+      }
+      vh_siblings_[vh_siblings_index].push_back(node);
     }
-        
-    vh_siblings_[vh_siblings_index].push_back(node);
   }
  public:
   /** \brief Insert a simplex, represented by a range of Vertex_handles, in the simplicial complex.
