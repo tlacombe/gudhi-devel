@@ -1,2 +1,0 @@
-Replace Dictionary with std::map (instead of boost::flat_map)
-  cannot instanciate "Dictionary_it(NULL)"
