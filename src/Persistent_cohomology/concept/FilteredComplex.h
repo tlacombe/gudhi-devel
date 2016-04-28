@@ -28,11 +28,11 @@
 struct FilteredComplex
 {
 /** Handle to specify a simplex. */
-  typedef unspecified      Simplex_handle;
+  typedef unspecified      Cell_handle;
 /** \brief Key associated to each simplex. 
   *
   * Must be a signed integer type. */
-  typedef unspecified      Simplex_key;
+  typedef unspecified      Cell_key;
 /** \brief Type for the value of the filtration function.
   *
   * Must be comparable with <. */
@@ -43,20 +43,20 @@ struct FilteredComplex
   * is model of IndexingTag. */
   typedef unspecified      Indexing_tag;
 
-/** Returns a Simplex_handle that is different from all simplex handles 
+/** Returns a Cell_handle that is different from all simplex handles 
   * of the simplices. */
-  Simplex_handle           null_simplex();
+  Cell_handle           null_cell();
 /** \brief Returns the number of simplices in the complex.
   *
   * Does not count the empty simplex. */
-  size_t                   num_simplices();
+  size_t                   num_cells();
 /** \brief Returns the dimension of a simplex. */
-  int                      dimension(Simplex_handle sh);
+  int                      dimension(Cell_handle sh);
 /** \brief Returns the filtration value of a simplex. 
   * 
   * If sh is null_simplex(), returns the maximal value of the
   * filtration function on the complex. */
-  Filtration_value         filtration(Simplex_handle sh);
+  Filtration_value         filtration(Cell_handle sh);
 
 /** \brief Returns a key that is different from the keys associated 
   * to the simplices. */
@@ -64,26 +64,26 @@ struct FilteredComplex
 /** \brief Returns the key associated to a simplex.
  *
  * This is never called on null_simplex(). */
-  Simplex_key              key      ( Simplex_handle sh );
+  Simplex_key              key      ( Cell_handle sh );
 /** \brief Returns the simplex that has index idx in the filtration.
  *
  * This is never called on null_key(). */
-  Simplex_handle           simplex  ( Simplex_key idx );
+  Cell_handle           cell  ( Simplex_key idx );
 /** \brief Assign a key to a simplex. */
-  void                     assign_key(Simplex_handle sh, Simplex_key key);
+  void                     assign_key(Cell_handle sh, Simplex_key key);
  
 /** \brief Iterator on the simplices belonging to the
   * boundary of a simplex.
   *
-  * <CODE>value_type</CODE> must be 'Simplex_handle'.
+  * <CODE>value_type</CODE> must be 'Cell_handle'.
   */
-typedef unspecified Boundary_simplex_iterator;
+typedef unspecified Boundary_cell_iterator;
 /** \brief Range giving access to the simplices in the boundary of 
   * a simplex.
   *
-  * .begin() and .end() return type Boundary_simplex_iterator.
+  * .begin() and .end() return type Boundary_cell_iterator.
   */
-typedef unspecified Boundary_simplex_range;
+typedef unspecified Boundary_cell_range;
 
 /** \brief Returns a range giving access to all simplices of the 
   * boundary of a simplex, i.e.
@@ -96,30 +96,30 @@ typedef unspecified Boundary_simplex_range;
   *
   * We note that the alternate sum of the simplices given by the iterator
   * gives the chains corresponding to the boundary of the simplex.*/
-Boundary_simplex_range boundary_simplex_range(Simplex_handle sh);
+Boundary_cell_range boundary_cell_range(Cell_handle sh);
 
 /** \brief Iterator over all simplices of the complex 
   * in the order of the indexing scheme.
   *
-  * 'value_type' must be 'Simplex_handle'.
+  * 'value_type' must be 'Cell_handle'.
   */
-typedef unspecified Filtration_simplex_iterator;
+typedef unspecified Filtration_cell_iterator;
 /** \brief Range over the simplices of the complex
   * in the order of the filtration.
   *
-  * .begin() and .end() return type Filtration_simplex_iterator.*/
-typedef unspecified Filtration_simplex_range;
+  * .begin() and .end() return type Filtration_cell_iterator.*/
+typedef unspecified Filtration_cell_range;
 /** \brief Returns a range over the simplices of the complex
   * in the order of the filtration.
   *
-  * .begin() and .end() return type Filtration_simplex_iterator.*/
-Filtration_simplex_range filtration_simplex_range();
+  * .begin() and .end() return type Filtration_cell_iterator.*/
+Filtration_cell_range filtration_cell_range();
 
 
 /* \brief Iterator over the simplices of the complex,
   * in an arbitrary order.
   *
-  * 'value_type' must be 'Simplex_handle'.*/
+  * 'value_type' must be 'Cell_handle'.*/
 //typedef unspecified Complex_simplex_iterator;
 //typedef unspecified Complex_simplex_range;
 
@@ -138,7 +138,7 @@ Filtration_simplex_range filtration_simplex_range();
 * @note OPTIONAL
 * @todo use an enum? Just a bool?
 */
-//int is_before_in_filtration(Simplex_handle s, Simplex_handle t);
+//int is_before_in_filtration(Cell_handle s, Cell_handle t);
 /*************************************************/
 
 };
