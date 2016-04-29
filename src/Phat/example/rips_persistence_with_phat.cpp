@@ -74,28 +74,44 @@ int main(int argc, char * argv[]) {
   st.insert_graph(prox_graph);
   // expand the graph until dimension dim_max
   st.expansion(dim_max);
+  
+  // Sort the simplices in the order of the filtration
+  st.initialize_filtration();
 
   std::cout << "The complex contains " << st.num_simplices() << " simplices \n";
   std::cout << "   and has dimension " << st.dimension() << " \n";
+  
+  
+   typename ST::Filtration_simplex_range range = st.filtration_simplex_range();
+    for ( typename ST::Filtration_simplex_iterator it = range.begin() ; it != range.end() ; ++it )
+    {
+		std::cerr << st.filtration(*it) << std::endl;
+		std::cerr << "Key  : " <<  st.key( *it ) << std::endl;
+   
+        //typename ST::Boundary_simplex_range boundary_range = st.boundary_simplex_range( *it );
+        //for ( typename ST::Boundary_simplex_iterator bd = boundary_range.begin() ; bd != boundary_range.end() ; ++bd )
+        //{
+        //    std::cerr << st.filtration( *bd ) <<std::endl;
+        //}               
+    }
+  
+  
 
-
+/*
 std::cerr << "Running the constructor \n";
 
- Compute_persistence_with_phat< Simplex_tree<Simplex_tree_options_fast_persistence> , double > phat(&st);
+ Compute_persistence_with_phat< ST , double > phat(&st);
 
 std::cerr << "Enterng \n";
 
     //phat::persistence_pairs pairs = phat.compute_persistence_pairs_dualized_chunk_reduction();
     //phat::persistence_pairs pairs = phat.compute_persistence_pairs_twist_reduction();
     phat::persistence_pairs pairs = phat.compute_persistence_pairs_standard_reduction();
-    
-    
-    std::cerr << "Persistence computed\n";
 
 
     std::pair< std::vector< std::vector<double> > , std::vector< std::vector< std::pair<double,double> > > > persistence = phat.get_the_intervals( pairs );
     writeBettiNumbersAndPersistenceIntervalsToFile<double>( filediag.c_str() , persistence );
-
+*/
   return 0;
 }
 
