@@ -46,9 +46,7 @@ int main( int argc , char** argv )
         return 1;
     }
 
-    Bitmap_cubical_complex< Bitmap_cubical_complex_base<double> > b( argv[1] );
-    
-	 
+    Bitmap_cubical_complex< Bitmap_cubical_complex_base<double> > b( argv[1] );	 
     Compute_persistence_with_phat< Bitmap_cubical_complex< Bitmap_cubical_complex_base<double> > , double > phat(&b);
 
 
@@ -65,10 +63,16 @@ int main( int argc , char** argv )
         out << positionOfBeginOfInterval << " " << positionOfEndOfInterval << std::endl;
     }
     out.close();
-    
 
     std::pair< std::vector< std::vector<double> > , std::vector< std::vector< std::pair<double,double> > > > persistence = phat.get_the_intervals( pairs );
-    writeBettiNumbersAndPersistenceIntervalsToFile( "phat_persistence" , persistence );
+    
+    //this is for Gudhi format of outputting intervals:
+    std::stringstream ss;
+    ss << argv[1] << "_persistence";
+    
+    std::cerr << "Filename : " << ss.str().c_str() << std::endl;
+    
+    write_intervas_to_file_Gudhi_format<double>( persistence , ss.str().c_str() , -1 );
 
     return 0;
 }

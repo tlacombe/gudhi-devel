@@ -2,9 +2,9 @@
  *    (Geometric Understanding in Higher Dimensions) is a generic C++ 
  *    library for computational topology.
  *
- *    Author(s):       Clément Maria
+ *    Author(s):       Pawel Dlotko, Clément Maria
  *
- *    Copyright (C) 2014  INRIA Sophia Antipolis-Méditerranée (France)
+ *    Copyright (C) 2014  INRIA Saclay, Sophia Antipolis-Méditerranée (France)
  *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -24,7 +24,6 @@
 #include <gudhi/graph_simplicial_complex.h>
 #include <gudhi/distance_functions.h>
 #include <gudhi/Simplex_tree.h>
-#include <gudhi/Persistent_cohomology.h>
 #include <gudhi/Compute_persistence_with_phat.h>
 
 #include <boost/program_options.hpp>
@@ -34,7 +33,7 @@
 #include <limits>  // infinity
 
 using namespace Gudhi;
-using namespace Gudhi::persistent_cohomology;
+using namespace std;
 
 typedef int Vertex_handle;
 typedef double Filtration_value;
@@ -88,8 +87,9 @@ int main(int argc, char * argv[]) {
     phat::persistence_pairs pairs = phat.compute_persistence_pairs_twist_reduction();
   //phat::persistence_pairs pairs = phat.compute_persistence_pairs_standard_reduction();
     std::pair< std::vector< std::vector<double> > , std::vector< std::vector< std::pair<double,double> > > > persistence = phat.get_the_intervals( pairs );
-    writeBettiNumbersAndPersistenceIntervalsToFile<double>( filediag.c_str() , persistence );
-  return 0;
+    
+   write_intervas_to_file_Gudhi_format<double>( persistence , filediag.c_str() , dim_max );
+   return 0;
 }
 
 

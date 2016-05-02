@@ -35,7 +35,11 @@ namespace Gudhi
 {
 
 
-//the only aim of this class is to have a ability to compute persistence with phat.
+/*
+ * A procedure that outputs a persistence to a files in a format alternative to a standard Gudhi format. It create separated files for Betti numbers, and separated files for persistence in each dimension. 
+ * The persistence intervals in each dimension are not sorted.  
+ * 
+*/
 template <typename K>
 void writeBettiNumbersAndPersistenceIntervalsToFile( const char* prefix , std::pair< std::vector<std::vector< K > > , std::vector< std::vector< std::pair<K,K> > > > resutsFromPhat )
 {
@@ -75,29 +79,69 @@ void writeBettiNumbersAndPersistenceIntervalsToFile( const char* prefix , std::p
 }//writeBettiNumbersAndPersistenceIntervalsToFile
 
 
+/*
+ * A class that create Phat boundary matrix based on Gudhi data structure and call one of four possible methods from Phat to compute ZZ/2 persisteince. 
+ * The template parameters are: 
+ * T, a Gudhi data strucutre with the filtered complex (it can be for instance a simplex tree Simplex_tree or Bitmap_cubical_complex
+ * The second parameter is a type of filtration (most typically double). 
+*/
 template <typename T , typename K>
 class Compute_persistence_with_phat
 {
 public:
+    /*
+     * The only constructor of a Compute_persistence_with_phat class. It takes as an input a pointer to a Gudhi data structure, and based on it, create a phat boundary matrix. 
+     * No computations of persistence are run by a constructor. To run persistence computations you need to choose one of four possibel methods to compute persistence in phat:
+     * (1) compute_persistence_pairs_dualized_chunk_reduction();
+     * (2) compute_persistence_pairs_twist_reduction();
+     * (3) compute_persistence_pairs_standard_reduction();
+     * (4) compute_persistence_pairs_spectral_sequence_reduction();
+    */
     Compute_persistence_with_phat( T* data_structure_ );
-    std::pair< std::vector< std::vector<K> > , std::vector< std::vector< std::pair<K,K> > > >  get_the_intervals( phat::persistence_pairs pairs );
     
     
-    //this constructor shoud be removed, since when for a class constructed with it we will call get_the_intervals, it will all crash. 
-    Compute_persistence_with_phat()
-    {
-		this->data_structure = 0;
-	}
-
+    /*
+     * A function that call Phat function compute_persistence_pairs_dualized_chunk_reduction.
+    */
     phat::persistence_pairs compute_persistence_pairs_dualized_chunk_reduction();
+    
+    /*
+     * A function that call Phat function compute_persistence_pairs_twist_reduction.
+    */
     phat::persistence_pairs compute_persistence_pairs_twist_reduction();
-    phat::persistence_pairs compute_persistence_pairs_standard_reduction();//for some reason, this do not always work.
+    
+    /*
+     * A function that call Phat function compute_persistence_pairs_standard_reduction.
+    */
+    phat::persistence_pairs compute_persistence_pairs_standard_reduction();
+    
+    /*
+     * A function that call Phat function compute_persistence_pairs_spectral_sequence_reduction.
+    */
     //phat::persistence_pairs compute_persistence_pairs_spectral_sequence_reduction();
 
+
+	/*
+	 * This function can be called only when the Phat boundary matrix is reduced by one of four possible Phat functions to compute persistence. Once the matrix is reduced, this function return 
+	 * Betti numbers (as a vector of birth times of infinite generators) and finite persistence intervls.
+	 * The data returned from this function is a pair. 
+	 * The first element of the pair is: std::vector< std::vector<K> >, this is a graded (by a dimension) vector of beginning of infinite persistence intervals.
+	 * The second element of the pair is: std::vector< std::vector< std::pair<K,K> > > >, this is a graded (by a dimension) vector of pairs<K,K>. Each such a pair is a beginning and end of a persistence interval.
+	*/
+    std::pair< std::vector< std::vector<K> > , std::vector< std::vector< std::pair<K,K> > > >  get_the_intervals( phat::persistence_pairs pairs );
+    
+	 /*
+	  * This function store a boundary matrix in a phat format to a given file. For some reason this format is not recognized by load_ascii procedure in Phat. Therefore one can store the matrix with this procedure
+	  * but will not be later able to read it with load_ascii. If you want to read it later, please use save_for_reading. 
+	 */
      void save_ascii( std::string filename )
      {
          this->boundary_matrix.save_ascii( filename );
      }
+     
+     /*
+	  * This function store a boundary matrix in a phat format to a given file. The matrix can be later read by load_ascii finction.
+	 */
      void save_for_reading( std::string filename )
      {
          std::ofstream out;
@@ -120,10 +164,18 @@ public:
          
          out.close();
      }
+     
+     /*
+	  * This function load a boundary matrix from a file and stores it as a boundary matrix in this data structure. 
+	 */
      void load_ascii( std::string filename )
      {
             this->boundary_matrix.load_ascii( filename );
      }
+     
+     /*
+	  * This function is used for a debugging purposes only. It write the boundary matrix on a screen.
+	 */
      void print_bd_matrix();
 
      
@@ -217,48 +269,6 @@ Compute_persistence_with_phat<T,K>::Compute_persistence_with_phat( T* data_struc
 		++position;
 	}
 	std::cout << "Done enumerating the simplices \n";
-    
-    
-      
-    
-    
-    /*
-    //due to interface of phom in Gudhi it seems that I have to fill-in the keys for all simplices here. They are sorting according to filtration, but keys are not filled in (for some reason).
-    //in the same time when doing the enumeration, we wills set up the dimensions.
-    typename T::Filtration_simplex_range range = this->data_structure->filtration_simplex_range();
-    size_t position = 0;
-    for ( typename T::Filtration_simplex_iterator it = range.begin() ; it != range.end() ; ++it )
-    {
-		//enumeration
-		this->data_structure->assign_key( *it , position );
-	
-		
-		//setting up the dimension:
-		this->boundary_matrix.set_dim( position, this->data_structure->dimension( *it ) );
-		
-		++position;
-	}
-	std::cout << "Done enumerating the simplices \n";
-    
-    
-      
-        
-    //now it is time to set up the boundary matrix. We could	
-    std::vector< phat::index > temp_col;
-    for ( typename T::Filtration_simplex_iterator it = range.begin() ; it != range.end() ; ++it )
-    {				
-        typename T::Boundary_simplex_range boundary_range = this->data_structure->boundary_simplex_range( *it );
-        for ( typename T::Boundary_simplex_iterator bd = boundary_range.begin() ; bd != boundary_range.end() ; ++bd )
-        {
-            temp_col.push_back( this->data_structure->key( *bd ) );
-        }     
-        //we do not know if the boundary elements are sorted according to filtration, that is why I am enforcing it here:
-        std::sort( temp_col.begin() , temp_col.end() );
-        this->boundary_matrix.set_col( this->data_structure->key( *it ) , temp_col );
-        temp_col.clear();            
-    }
-    std::cout << "Done creatig the boundary matrix \n";
-    */
 }
 
 template <typename T , typename K>
@@ -316,7 +326,7 @@ std::pair< std::vector< std::vector<K> > , std::vector< std::vector< std::pair<K
         }
     }
 
-    //sorting finite persistence pairs:
+    //sorting finite persistence pairs: 
     for ( size_t dim = 0 ; dim != finitePersistencePairs.size() ; ++dim )
     {
         std::sort( finitePersistencePairs[dim].begin() , finitePersistencePairs[dim].end() );
@@ -324,55 +334,72 @@ std::pair< std::vector< std::vector<K> > , std::vector< std::vector< std::pair<K
     return std::make_pair( birthTimesOfInfinitePersistnceClasses , finitePersistencePairs );
 }//Compute_persistence_with_phat
 
+
 /*
-std::vector< std::pair< std::vector< std::pair<size_t , size_t> > , std::vector< std::pair<size_t , size_t> > > > return_cubes_paired_in_peristence( phat::persistence_pairs pairs )
+ * This function takes as an input the output of a Compute_persistence_with_phat procedure and stores it to a file in a strandard Gudhi format.
+*/ 
+template <typename K>
+void write_intervas_to_file_Gudhi_format( std::pair< std::vector< std::vector<K> > , std::vector< std::vector< std::pair<K,K> > > > intervals , const char* filename , size_t dimension_cup = -1 )
 {
-	std::vector< std::pair< std::vector< std::pair<size_t , size_t> > , std::vector< std::pair<size_t , size_t> > > > result;
-	result.reserve( pairs.get_num_pairs() );
-	
-	for( phat::index idx = 0; idx < pairs.get_num_pairs(); idx++ )
+	std::	ofstream out;
+	out.open( filename );
+	//first goes the infinite intervals:
+	int number_of_infinite_intervas = 0;
+	size_t last_dimension_to_consider = intervals.first.size();
+	//we need this line, since if we stop creating compelx at some dimension, we will have a lot of holo simplices over there which will show up as infinite generators here. We do not want to display them.
+	if ( dimension_cup != -1 )last_dimension_to_consider = dimension_cup;
+	for ( size_t dim = 0  ; dim != last_dimension_to_consider ; ++dim )
 	{
-		size_t positionOfBeginOfInterval = pairs.get_pair( idx ).first;
-        size_t positionOfEndOfInterval = pairs.get_pair( idx ).second;
-        
-        std::vector<unsigned> counter1 = b->compute_counter_for_given_cell( positionOfBeginOfInterval );
-        std::vector<unsigned> counter2 = b->compute_counter_for_given_cell( positionOfEndOfInterval );
-        
-        std::vector< std::pair<size_t , size_t> > frist_cube;
-        frist_cube.reserve( counter1.size() );
-        for ( size_t i = 0 ; i != counter1.size() ; ++i )
-        {
-			if ( counter1[i]%2 == 1 )
-			{
-				first_cube.push_back( std::make_pair(counter1[i]%2 , counter1[i]%2+1) );
-			}
-			else
-			{
-				first_cube.push_back( std::make_pair(counter1[i]%2 , counter1[i]%2) );
-			}
+		number_of_infinite_intervas += intervals.first[dim].size();
+	}
+	std::vector< std::pair< K , size_t > > beginnings_of_infinite_intervals;
+	beginnings_of_infinite_intervals.reserve( number_of_infinite_intervas );
+	
+	for ( size_t dim = 0  ; dim != last_dimension_to_consider ; ++dim )
+	{
+		for ( size_t i = 0 ; i != intervals.first[dim].size() ; ++i )
+		{
+			beginnings_of_infinite_intervals.push_back( std::make_pair( intervals.first[dim][i] , dim ) );
 		}
-		
-		std::vector< std::pair<size_t , size_t> > second_cube;
-        second_cube.reserve( counter2.size() );
-        for ( size_t i = 0 ; i != counter2.size() ; ++i )
-        {
-			if ( counter2[i]%2 == 1 )
-			{
-				second_cube.push_back( std::make_pair(counter2[i]%2 , counter2[i]%2+1) );
-			}
-			else
-			{
-				second_cube.push_back( std::make_pair(counter2[i]%2 , counter2[i]%2) );
-			}
-		}
-		
-		result.push_back( std::make_pair( frist_cube , second_cube ) );
 	}
 	
+	//now we need to sort beginnings_of_infinite_intervals according to the first coordinate:
+	std::sort(beginnings_of_infinite_intervals.begin(), beginnings_of_infinite_intervals.end(), [](const std::pair<K , size_t>& lhs, const std::pair<K , size_t>& rhs) {return lhs.second > rhs.second; } );
 	
-	return result;
-}//return_cubes_paired_in_peristence
-*/
+	//and now we output the sorded pairs to a file:
+	for ( size_t i = 0 ; i != beginnings_of_infinite_intervals.size() ; ++i )
+	{
+		out << "2  " << beginnings_of_infinite_intervals[i].second << " " <<  beginnings_of_infinite_intervals[i].first << " inf" << std::endl; 
+	} 	
+	
+	
+	//now it is time to deal with the finite intervals. We do very similar trick as above for them.
+	int number_of_finite_intervas = 0;
+	for ( size_t dim = 0  ; dim != intervals.second.size() ; ++dim )
+	{
+		number_of_finite_intervas += intervals.second[dim].size();
+	}
+	std::vector< std::pair< std::pair<K,K> , size_t > > finite_intervals;
+	finite_intervals.reserve( number_of_finite_intervas );
+	
+	for ( size_t dim = 0  ; dim != intervals.second.size() ; ++dim )
+	{
+		for ( size_t i = 0 ; i != intervals.second[dim].size() ; ++i )
+		{
+			finite_intervals.push_back( std::make_pair( intervals.second[dim][i] , dim ) );
+		}
+	}
+	
+	//and now we need to sort the finite_intervals vector according to the length of intervals, i.e. according to finite_intervals[i].first.second - finite_intervals[i].first.first.
+	std::sort(finite_intervals.begin(), finite_intervals.end(), [](const std::pair<std::pair<K,K> , size_t>& lhs, const std::pair<std::pair<K,K> , size_t>& rhs) {return lhs.first.second - lhs.first.first > rhs.first.second - rhs.first.first; } );
 
+	//and now we should output them to a file:
+	for ( size_t i = 0 ; i != finite_intervals.size() ; ++i )
+	{
+		out << "2  " << finite_intervals[i].second << " " <<  finite_intervals[i].first.first << " " << finite_intervals[i].first.second << std::endl; 
+	}
+	
+	out.close();
+}
 
 }//namespace Gudhi
