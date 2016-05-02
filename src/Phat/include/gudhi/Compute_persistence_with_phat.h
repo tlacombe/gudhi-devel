@@ -184,73 +184,81 @@ phat::persistence_pairs Compute_persistence_with_phat<T,K>::compute_persistence_
 template <typename T , typename K>
 Compute_persistence_with_phat<T,K>::Compute_persistence_with_phat( T* data_structure_ ):data_structure( data_structure_ )
 {
-    bool dbg = true;
-    
-    if ( dbg )
-    {
-		std::cerr << "Number of simplices : " << this->data_structure->num_simplices() << std::endl;
-		getchar();
-	}
+    bool dbg = false;
+   
     this->boundary_matrix.set_num_cols( this->data_structure->num_simplices() );
-
-    //setting up the dimensions of cells:
-    for ( size_t i = 0 ; i != this->data_structure->num_simplices() ; ++i )
-    {
-		if ( dbg )std::cerr << "dimension of a simplex number : " << i << " " << this->data_structure->dimension( this->data_structure->simplex(i) ) << std::endl;
-        this->boundary_matrix.set_dim( i, this->data_structure->dimension( this->data_structure->simplex(i) ) );
-    }
     
-    std::cerr << "OUT \n:";
-
-
-    //now it is time to set up the boundary matrix:
-    int aa = 0;
     
+    //due to interface of phom in Gudhi it seems that I have to fill-in the keys for all simplices here. They are sorting according to filtration, but keys are not filled in (for some reason).
+    //in the same time when doing the enumeration, we wills set up the dimensions and setting up the boundary of cells.
     typename T::Filtration_simplex_range range = this->data_structure->filtration_simplex_range();
+    size_t position = 0;
     std::vector< phat::index > temp_col;
     for ( typename T::Filtration_simplex_iterator it = range.begin() ; it != range.end() ; ++it )
     {
-		if ( dbg )
-		{
-			std::cerr << " this->data_structure->key( *it )  : " <<  this->data_structure->key( *it )  << " and its boundary : " << std::endl;
-		}
+		//enumeration
+		this->data_structure->assign_key( *it , position );
+	
 		
-        typename T::Boundary_simplex_range boundary_range = this->data_structure->boundary_simplex_range( *it );
+		//setting up the dimension:
+		this->boundary_matrix.set_dim( position, this->data_structure->dimension( *it ) );
+		
+		//setting up the boundary of this cell:
+		typename T::Boundary_simplex_range boundary_range = this->data_structure->boundary_simplex_range( *it );
         for ( typename T::Boundary_simplex_iterator bd = boundary_range.begin() ; bd != boundary_range.end() ; ++bd )
         {
-			if ( dbg )
-			{
-				std::cerr << this->data_structure->key( *bd ) << std::endl;
-			}
             temp_col.push_back( this->data_structure->key( *bd ) );
-        }
-        getchar();
+        }     
         //we do not know if the boundary elements are sorted according to filtration, that is why I am enforcing it here:
         std::sort( temp_col.begin() , temp_col.end() );
         this->boundary_matrix.set_col( this->data_structure->key( *it ) , temp_col );
-        temp_col.clear();
-        
-        
-        
-        std::cerr << "aa : " << aa << std::endl;
-        ++aa;
-    }
+        temp_col.clear();         
+		
+		++position;
+	}
+	std::cout << "Done enumerating the simplices \n";
+    
+    
+      
+    
     
     /*
-    std::vector< phat::index > temp_col;
-    for ( size_t i = 0 ; i != this->data_structure->num_simplices() ; ++i )
+    //due to interface of phom in Gudhi it seems that I have to fill-in the keys for all simplices here. They are sorting according to filtration, but keys are not filled in (for some reason).
+    //in the same time when doing the enumeration, we wills set up the dimensions.
+    typename T::Filtration_simplex_range range = this->data_structure->filtration_simplex_range();
+    size_t position = 0;
+    for ( typename T::Filtration_simplex_iterator it = range.begin() ; it != range.end() ; ++it )
     {
-        typename T::Boundary_simplex_range boundary_range = this->data_structure->boundary_simplex_range( i );
+		//enumeration
+		this->data_structure->assign_key( *it , position );
+	
+		
+		//setting up the dimension:
+		this->boundary_matrix.set_dim( position, this->data_structure->dimension( *it ) );
+		
+		++position;
+	}
+	std::cout << "Done enumerating the simplices \n";
+    
+    
+      
+        
+    //now it is time to set up the boundary matrix. We could	
+    std::vector< phat::index > temp_col;
+    for ( typename T::Filtration_simplex_iterator it = range.begin() ; it != range.end() ; ++it )
+    {				
+        typename T::Boundary_simplex_range boundary_range = this->data_structure->boundary_simplex_range( *it );
         for ( typename T::Boundary_simplex_iterator bd = boundary_range.begin() ; bd != boundary_range.end() ; ++bd )
         {
             temp_col.push_back( this->data_structure->key( *bd ) );
-        }
+        }     
         //we do not know if the boundary elements are sorted according to filtration, that is why I am enforcing it here:
         std::sort( temp_col.begin() , temp_col.end() );
-        this->boundary_matrix.set_col( i , temp_col );
-        temp_col.clear();
+        this->boundary_matrix.set_col( this->data_structure->key( *it ) , temp_col );
+        temp_col.clear();            
     }
-	*/
+    std::cout << "Done creatig the boundary matrix \n";
+    */
 }
 
 template <typename T , typename K>
