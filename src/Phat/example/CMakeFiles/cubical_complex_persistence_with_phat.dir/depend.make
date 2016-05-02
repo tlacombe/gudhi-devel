@@ -9,6 +9,7 @@ src/Phat/example/CMakeFiles/cubical_complex_persistence_with_phat.dir/cubical_co
 src/Phat/example/CMakeFiles/cubical_complex_persistence_with_phat.dir/cubical_complex_persistence_with_phat.cpp.o: src/Phat/include/gudhi/Compute_persistence_with_phat.h
 src/Phat/example/CMakeFiles/cubical_complex_persistence_with_phat.dir/cubical_complex_persistence_with_phat.cpp.o: src/Phat/include/gudhi/phat/algorithms/chunk_reduction.h
 src/Phat/example/CMakeFiles/cubical_complex_persistence_with_phat.dir/cubical_complex_persistence_with_phat.cpp.o: src/Phat/include/gudhi/phat/algorithms/row_reduction.h
+src/Phat/example/CMakeFiles/cubical_complex_persistence_with_phat.dir/cubical_complex_persistence_with_phat.cpp.o: src/Phat/include/gudhi/phat/algorithms/spectral_sequence_reduction.h
 src/Phat/example/CMakeFiles/cubical_complex_persistence_with_phat.dir/cubical_complex_persistence_with_phat.cpp.o: src/Phat/include/gudhi/phat/algorithms/standard_reduction.h
 src/Phat/example/CMakeFiles/cubical_complex_persistence_with_phat.dir/cubical_complex_persistence_with_phat.cpp.o: src/Phat/include/gudhi/phat/algorithms/twist_reduction.h
 src/Phat/example/CMakeFiles/cubical_complex_persistence_with_phat.dir/cubical_complex_persistence_with_phat.cpp.o: src/Phat/include/gudhi/phat/boundary_matrix.h

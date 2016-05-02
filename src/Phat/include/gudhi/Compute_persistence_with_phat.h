@@ -29,6 +29,7 @@
 #include "phat/algorithms/chunk_reduction.h"
 #include "phat/algorithms/row_reduction.h"
 #include "phat/algorithms/twist_reduction.h"
+#include "phat/algorithms/spectral_sequence_reduction.h"
 
 
 namespace Gudhi
@@ -118,7 +119,7 @@ public:
     /*
      * A function that call Phat function compute_persistence_pairs_spectral_sequence_reduction.
     */
-    //phat::persistence_pairs compute_persistence_pairs_spectral_sequence_reduction();
+    phat::persistence_pairs compute_persistence_pairs_spectral_sequence_reduction();
 
 
 	/*
@@ -225,13 +226,13 @@ phat::persistence_pairs Compute_persistence_with_phat<T,K>::compute_persistence_
     return pairs;
 }
 
-//template <typename T , typename K>
-//phat::persistence_pairs Compute_persistence_with_phat<T,K>::compute_persistence_pairs_spectral_sequence_reduction()
-//{
-//    phat::persistence_pairs pairs;
-//    phat::compute_persistence_pairs< phat::spectral_sequence_reduction >( pairs, this->boundary_matrix );
-//    return pairs;
-//}
+template <typename T , typename K>
+phat::persistence_pairs Compute_persistence_with_phat<T,K>::compute_persistence_pairs_spectral_sequence_reduction()
+{
+    phat::persistence_pairs pairs;
+    phat::compute_persistence_pairs< phat::spectral_sequence_reduction  >( pairs, this->boundary_matrix );
+    return pairs;
+}
 
 template <typename T , typename K>
 Compute_persistence_with_phat<T,K>::Compute_persistence_with_phat( T* data_structure_ ):data_structure( data_structure_ )

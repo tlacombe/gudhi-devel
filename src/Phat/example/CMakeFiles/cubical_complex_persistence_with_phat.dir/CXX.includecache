@@ -91,6 +91,8 @@ phat/algorithms/row_reduction.h
 src/Phat/include/gudhi/phat/algorithms/row_reduction.h
 phat/algorithms/twist_reduction.h
 src/Phat/include/gudhi/phat/algorithms/twist_reduction.h
+phat/algorithms/spectral_sequence_reduction.h
+src/Phat/include/gudhi/phat/algorithms/spectral_sequence_reduction.h
 
 src/Phat/include/gudhi/phat/algorithms/chunk_reduction.h
 ../helpers/misc.h
@@ -99,6 +101,12 @@ src/Phat/include/gudhi/phat/helpers/misc.h
 src/Phat/include/gudhi/phat/boundary_matrix.h
 
 src/Phat/include/gudhi/phat/algorithms/row_reduction.h
+../helpers/misc.h
+src/Phat/include/gudhi/phat/helpers/misc.h
+../boundary_matrix.h
+src/Phat/include/gudhi/phat/boundary_matrix.h
+
+src/Phat/include/gudhi/phat/algorithms/spectral_sequence_reduction.h
 ../helpers/misc.h
 src/Phat/include/gudhi/phat/helpers/misc.h
 ../boundary_matrix.h
