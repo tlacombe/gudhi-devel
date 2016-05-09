@@ -122,27 +122,27 @@ public:
     phat::persistence_pairs compute_persistence_pairs_spectral_sequence_reduction();
 
 
-	/*
-	 * This function can be called only when the Phat boundary matrix is reduced by one of four possible Phat functions to compute persistence. Once the matrix is reduced, this function return 
-	 * Betti numbers (as a vector of birth times of infinite generators) and finite persistence intervls.
-	 * The data returned from this function is a pair. 
-	 * The first element of the pair is: std::vector< std::vector<K> >, this is a graded (by a dimension) vector of beginning of infinite persistence intervals.
-	 * The second element of the pair is: std::vector< std::vector< std::pair<K,K> > > >, this is a graded (by a dimension) vector of pairs<K,K>. Each such a pair is a beginning and end of a persistence interval.
-	*/
+/*
+ * This function can be called only when the Phat boundary matrix is reduced by one of four possible Phat functions to compute persistence. Once the matrix is reduced, this function return 
+ * Betti numbers (as a vector of birth times of infinite generators) and finite persistence intervls.
+ * The data returned from this function is a pair. 
+ * The first element of the pair is: std::vector< std::vector<K> >, this is a graded (by a dimension) vector of beginning of infinite persistence intervals.
+ * The second element of the pair is: std::vector< std::vector< std::pair<K,K> > > >, this is a graded (by a dimension) vector of pairs<K,K>. Each such a pair is a beginning and end of a persistence interval.
+*/
     std::pair< std::vector< std::vector<K> > , std::vector< std::vector< std::pair<K,K> > > >  get_the_intervals( phat::persistence_pairs pairs );
     
-	 /*
-	  * This function store a boundary matrix in a phat format to a given file. For some reason this format is not recognized by load_ascii procedure in Phat. Therefore one can store the matrix with this procedure
-	  * but will not be later able to read it with load_ascii. If you want to read it later, please use save_for_reading. 
-	 */
+ /*
+  * This function store a boundary matrix in a phat format to a given file. For some reason this format is not recognized by load_ascii procedure in Phat. Therefore one can store the matrix with this procedure
+  * but will not be later able to read it with load_ascii. If you want to read it later, please use save_for_reading. 
+ */
      void save_ascii( std::string filename )
      {
          this->boundary_matrix.save_ascii( filename );
      }
      
      /*
-	  * This function store a boundary matrix in a phat format to a given file. The matrix can be later read by load_ascii finction.
-	 */
+  * This function store a boundary matrix in a phat format to a given file. The matrix can be later read by load_ascii finction.
+ */
      void save_for_reading( std::string filename )
      {
          std::ofstream out;
@@ -152,31 +152,31 @@ public:
          for( phat::index col_idx = 0; col_idx < this->boundary_matrix.get_num_cols(); col_idx++ ) 
          {
              out  << (int)this->boundary_matrix.get_dim( col_idx ) << " ";
-			 
+ 
             std::vector< phat::index > temp_col;
             this->boundary_matrix.get_col( col_idx, temp_col );            
             for( phat::index idx = 0; idx < (phat::index)temp_col.size(); idx++ )
             {
                 out << temp_col[ idx ] << " ";
-			}
-			out << std::endl;
-		 }
+}
+out << std::endl;
+ }
     
          
          out.close();
      }
      
      /*
-	  * This function load a boundary matrix from a file and stores it as a boundary matrix in this data structure. 
-	 */
+  * This function load a boundary matrix from a file and stores it as a boundary matrix in this data structure. 
+ */
      void load_ascii( std::string filename )
      {
             this->boundary_matrix.load_ascii( filename );
      }
      
      /*
-	  * This function is used for a debugging purposes only. It write the boundary matrix on a screen.
-	 */
+  * This function is used for a debugging purposes only. It write the boundary matrix on a screen.
+ */
      void print_bd_matrix();
 
      
@@ -220,7 +220,7 @@ phat::persistence_pairs Compute_persistence_with_phat<T,K>::compute_persistence_
 
 template <typename T , typename K>
 phat::persistence_pairs Compute_persistence_with_phat<T,K>::compute_persistence_pairs_standard_reduction()
-{	
+{
     phat::persistence_pairs pairs;
     phat::compute_persistence_pairs< phat::standard_reduction >( pairs, this->boundary_matrix );
     return pairs;
@@ -237,7 +237,7 @@ phat::persistence_pairs Compute_persistence_with_phat<T,K>::compute_persistence_
 template <typename T , typename K>
 Compute_persistence_with_phat<T,K>::Compute_persistence_with_phat( T* data_structure_ ):data_structure( data_structure_ )
 {
-    bool dbg = false;
+    //bool dbg = false;
    
     this->boundary_matrix.set_num_cols( this->data_structure->num_simplices() );
     
@@ -249,15 +249,15 @@ Compute_persistence_with_phat<T,K>::Compute_persistence_with_phat( T* data_struc
     std::vector< phat::index > temp_col;
     for ( typename T::Filtration_simplex_iterator it = range.begin() ; it != range.end() ; ++it )
     {
-		//enumeration
-		this->data_structure->assign_key( *it , position );
-	
-		
-		//setting up the dimension:
-		this->boundary_matrix.set_dim( position, this->data_structure->dimension( *it ) );
-		
-		//setting up the boundary of this cell:
-		typename T::Boundary_simplex_range boundary_range = this->data_structure->boundary_simplex_range( *it );
+//enumeration
+this->data_structure->assign_key( *it , position );
+
+
+//setting up the dimension:
+this->boundary_matrix.set_dim( position, this->data_structure->dimension( *it ) );
+
+//setting up the boundary of this cell:
+typename T::Boundary_simplex_range boundary_range = this->data_structure->boundary_simplex_range( *it );
         for ( typename T::Boundary_simplex_iterator bd = boundary_range.begin() ; bd != boundary_range.end() ; ++bd )
         {
             temp_col.push_back( this->data_structure->key( *bd ) );
@@ -266,10 +266,9 @@ Compute_persistence_with_phat<T,K>::Compute_persistence_with_phat( T* data_struc
         std::sort( temp_col.begin() , temp_col.end() );
         this->boundary_matrix.set_col( this->data_structure->key( *it ) , temp_col );
         temp_col.clear();         
-		
-		++position;
-	}
-	std::cout << "Done enumerating the simplices \n";
+
+++position;
+}
 }
 
 template <typename T , typename K>
@@ -342,65 +341,65 @@ std::pair< std::vector< std::vector<K> > , std::vector< std::vector< std::pair<K
 template <typename K>
 void write_intervas_to_file_Gudhi_format( std::pair< std::vector< std::vector<K> > , std::vector< std::vector< std::pair<K,K> > > > intervals , const char* filename , size_t dimension_cup = -1 )
 {
-	std::	ofstream out;
-	out.open( filename );
-	//first goes the infinite intervals:
-	int number_of_infinite_intervas = 0;
-	size_t last_dimension_to_consider = intervals.first.size();
-	//we need this line, since if we stop creating compelx at some dimension, we will have a lot of holo simplices over there which will show up as infinite generators here. We do not want to display them.
-	if ( dimension_cup != -1 )last_dimension_to_consider = dimension_cup;
-	for ( size_t dim = 0  ; dim != last_dimension_to_consider ; ++dim )
-	{
-		number_of_infinite_intervas += intervals.first[dim].size();
-	}
-	std::vector< std::pair< K , size_t > > beginnings_of_infinite_intervals;
-	beginnings_of_infinite_intervals.reserve( number_of_infinite_intervas );
-	
-	for ( size_t dim = 0  ; dim != last_dimension_to_consider ; ++dim )
-	{
-		for ( size_t i = 0 ; i != intervals.first[dim].size() ; ++i )
-		{
-			beginnings_of_infinite_intervals.push_back( std::make_pair( intervals.first[dim][i] , dim ) );
-		}
-	}
-	
-	//now we need to sort beginnings_of_infinite_intervals according to the first coordinate:
-	std::sort(beginnings_of_infinite_intervals.begin(), beginnings_of_infinite_intervals.end(), [](const std::pair<K , size_t>& lhs, const std::pair<K , size_t>& rhs) {return lhs.second > rhs.second; } );
-	
-	//and now we output the sorded pairs to a file:
-	for ( size_t i = 0 ; i != beginnings_of_infinite_intervals.size() ; ++i )
-	{
-		out << "2  " << beginnings_of_infinite_intervals[i].second << " " <<  beginnings_of_infinite_intervals[i].first << " inf" << std::endl; 
-	} 	
-	
-	
-	//now it is time to deal with the finite intervals. We do very similar trick as above for them.
-	int number_of_finite_intervas = 0;
-	for ( size_t dim = 0  ; dim != intervals.second.size() ; ++dim )
-	{
-		number_of_finite_intervas += intervals.second[dim].size();
-	}
-	std::vector< std::pair< std::pair<K,K> , size_t > > finite_intervals;
-	finite_intervals.reserve( number_of_finite_intervas );
-	
-	for ( size_t dim = 0  ; dim != intervals.second.size() ; ++dim )
-	{
-		for ( size_t i = 0 ; i != intervals.second[dim].size() ; ++i )
-		{
-			finite_intervals.push_back( std::make_pair( intervals.second[dim][i] , dim ) );
-		}
-	}
-	
-	//and now we need to sort the finite_intervals vector according to the length of intervals, i.e. according to finite_intervals[i].first.second - finite_intervals[i].first.first.
-	std::sort(finite_intervals.begin(), finite_intervals.end(), [](const std::pair<std::pair<K,K> , size_t>& lhs, const std::pair<std::pair<K,K> , size_t>& rhs) {return lhs.first.second - lhs.first.first > rhs.first.second - rhs.first.first; } );
+std::ofstream out;
+out.open( filename );
+//first goes the infinite intervals:
+int number_of_infinite_intervas = 0;
+size_t last_dimension_to_consider = intervals.first.size();
+//we need this line, since if we stop creating compelx at some dimension, we will have a lot of holo simplices over there which will show up as infinite generators here. We do not want to display them.
+if ( dimension_cup != -1 )last_dimension_to_consider = dimension_cup;
+for ( size_t dim = 0  ; dim != last_dimension_to_consider ; ++dim )
+{
+number_of_infinite_intervas += intervals.first[dim].size();
+}
+std::vector< std::pair< K , size_t > > beginnings_of_infinite_intervals;
+beginnings_of_infinite_intervals.reserve( number_of_infinite_intervas );
 
-	//and now we should output them to a file:
-	for ( size_t i = 0 ; i != finite_intervals.size() ; ++i )
-	{
-		out << "2  " << finite_intervals[i].second << " " <<  finite_intervals[i].first.first << " " << finite_intervals[i].first.second << std::endl; 
-	}
-	
-	out.close();
+for ( size_t dim = 0  ; dim != last_dimension_to_consider ; ++dim )
+{
+for ( size_t i = 0 ; i != intervals.first[dim].size() ; ++i )
+{
+beginnings_of_infinite_intervals.push_back( std::make_pair( intervals.first[dim][i] , dim ) );
+}
+}
+
+//now we need to sort beginnings_of_infinite_intervals according to the first coordinate:
+std::sort(beginnings_of_infinite_intervals.begin(), beginnings_of_infinite_intervals.end(), [](const std::pair<K , size_t>& lhs, const std::pair<K , size_t>& rhs) {return lhs.second > rhs.second; } );
+
+//and now we output the sorded pairs to a file:
+for ( size_t i = 0 ; i != beginnings_of_infinite_intervals.size() ; ++i )
+{
+out << "2  " << beginnings_of_infinite_intervals[i].second << " " <<  beginnings_of_infinite_intervals[i].first << " inf" << std::endl; 
+} 
+
+
+//now it is time to deal with the finite intervals. We do very similar trick as above for them.
+int number_of_finite_intervas = 0;
+for ( size_t dim = 0  ; dim != intervals.second.size() ; ++dim )
+{
+number_of_finite_intervas += intervals.second[dim].size();
+}
+std::vector< std::pair< std::pair<K,K> , size_t > > finite_intervals;
+finite_intervals.reserve( number_of_finite_intervas );
+
+for ( size_t dim = 0  ; dim != intervals.second.size() ; ++dim )
+{
+for ( size_t i = 0 ; i != intervals.second[dim].size() ; ++i )
+{
+finite_intervals.push_back( std::make_pair( intervals.second[dim][i] , dim ) );
+}
+}
+
+//and now we need to sort the finite_intervals vector according to the length of intervals, i.e. according to finite_intervals[i].first.second - finite_intervals[i].first.first.
+std::sort(finite_intervals.begin(), finite_intervals.end(), [](const std::pair<std::pair<K,K> , size_t>& lhs, const std::pair<std::pair<K,K> , size_t>& rhs) {return lhs.first.second - lhs.first.first > rhs.first.second - rhs.first.first; } );
+
+//and now we should output them to a file:
+for ( size_t i = 0 ; i != finite_intervals.size() ; ++i )
+{
+out << "2  " << finite_intervals[i].second << " " <<  finite_intervals[i].first.first << " " << finite_intervals[i].first.second << std::endl; 
+}
+
+out.close();
 }
 
 }//namespace Gudhi

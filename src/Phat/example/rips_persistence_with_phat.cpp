@@ -88,6 +88,8 @@ int main(int argc, char * argv[]) {
   //phat::persistence_pairs pairs = phat.compute_persistence_pairs_standard_reduction();
     std::pair< std::vector< std::vector<double> > , std::vector< std::vector< std::pair<double,double> > > > persistence = phat.get_the_intervals( pairs );
     
+
+    
    write_intervas_to_file_Gudhi_format<double>( persistence , filediag.c_str() , dim_max );
    return 0;
 }

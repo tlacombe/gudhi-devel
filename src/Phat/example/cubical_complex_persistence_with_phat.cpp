@@ -46,24 +46,13 @@ int main( int argc , char** argv )
         return 1;
     }
 
-    Bitmap_cubical_complex< Bitmap_cubical_complex_base<double> > b( argv[1] );	 
+    Bitmap_cubical_complex< Bitmap_cubical_complex_base<double> > b( argv[1] ); 
     Compute_persistence_with_phat< Bitmap_cubical_complex< Bitmap_cubical_complex_base<double> > , double > phat(&b);
 
 
     //phat::persistence_pairs pairs = phat.compute_persistence_pairs_dualized_chunk_reduction();
     //phat::persistence_pairs pairs = phat.compute_persistence_pairs_twist_reduction();
     phat::persistence_pairs pairs = phat.compute_persistence_pairs_standard_reduction();
-
-	
-	ofstream out("pairs");
-    for( phat::index idx = 0; idx < pairs.get_num_pairs(); idx++ )
-	{
-        size_t positionOfBeginOfInterval = pairs.get_pair( idx ).first;
-        size_t positionOfEndOfInterval = pairs.get_pair( idx ).second;
-        out << positionOfBeginOfInterval << " " << positionOfEndOfInterval << std::endl;
-    }
-    out.close();
-
     std::pair< std::vector< std::vector<double> > , std::vector< std::vector< std::pair<double,double> > > > persistence = phat.get_the_intervals( pairs );
     
     //this is for Gudhi format of outputting intervals:

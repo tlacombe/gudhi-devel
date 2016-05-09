@@ -33,7 +33,8 @@ namespace phat {
             //const index num_stripes = (index) sqrt( (double)nr_columns );
             const index num_stripes = omp_get_max_threads();
 
-            index block_size = ( nr_columns % num_stripes == 0 ) ? nr_columns / num_stripes : block_size = nr_columns / num_stripes + 1;
+			//comment by PD in order to avoid warnings during compilation.
+            index block_size = ( nr_columns % num_stripes == 0 ) ? nr_columns / num_stripes : /*block_size =*/ nr_columns / num_stripes + 1;
             
             std::vector< std::vector< index > > unreduced_cols_cur_pass( num_stripes );
             std::vector< std::vector< index > > unreduced_cols_next_pass( num_stripes );
