@@ -45,7 +45,7 @@
 
 #---------------------------------------------------------- Very small cases for Debug mode --------------------------------------------------------------
 #generate_sphere_d												4		-		-		20		3		2		0.05		0.025 		Y		N			N			60  			1
-#generate_sphere_d												3		0.2		-		7000	3		2		0.05		0.025 		Y		N			N			60  			1
+#generate_sphere_d												3		10		-		70		3		2		0.05		0.025 		Y		N			N			60  			1
 #generate_sphere_d												3		-		-		1000 	3		2		0.05		0.025 		Y		N			N			60  			1
 #generate_sphere_d												3		-		-		10		4		3		0.05		0.025 		Y		N			N			60  			1
 #generate_sphere_d												3		-		-		70		5		4		0.05		0.025 		Y		N			N			60  			1
@@ -146,7 +146,7 @@
 #generate_torus_d     											Y		-		-		100000 	6		3		0.	 		0.19 		Y		N			N			600   			1
 #generate_plane													-		-		-		30000	3		2		0.005		0.005		Y		N			N			3000			1
 #generate_moment_curve											0		1		-		30000	6		1		0.005		0.005		Y		N			N			60  			1
-generate_klein_bottle_4D										4		3		-		300000 	4		2		0.05		0.05		Y		N			N			500   			1
+#generate_klein_bottle_4D										4		3		-		700 	4		2		0.05		0.05		Y		N			N			500   			20
 #generate_klein_bottle_variant_5D								4		3		-		30000	5		2		0.05		0.05		Y		N			N			600  			1
 #generate_klein_bottle_4D										8		5		-		5000	4		2		0.2			0.2			Y		N			N			60  			1	#Takes forever
 #data/sparsified/Flat_torus_195p_sparsified_0.05_from_200p.txt 	N		-		-		0  		4		2		-1 			0.2 		Y		N			N			600   			1
@@ -161,7 +161,7 @@ generate_klein_bottle_4D										4		3		-		300000 	4		2		0.05		0.05		Y		N			N			
 #generate_torus_d     											N		-		-		500  	4		2		0.05 		0.05 		Y		N			N			120				1
 #data/Alvarez_variete_k2_D8_900k_2x2.txt   						-       -       -       0       8       2       0.005  		0.005  		Y       N           N           120  			1
 #data/Alvarez_surface_deg3_k2_D8_902K.txt    					-       -       -       0       8       2       0.01  		0.01  		Y       N           N           120				1
-#data/Alvarez_surface_deg7_k2_D8_48K.txt      					-       -       -       0       8       2       0.02  		0.02  		Y       N           N           120				1
+data/Alvarez_surface_deg7_k2_D8_48K.txt      					-       -       -       0       8       2       0.02  		0.02  		Y       N           N           600				10
 #data/Alvarez_surface_deg8_k2_D8_41K.txt      					-       -       -       0       8       2       0.02  		0.02  		Y       N           N           120				1
 #data/Alvarez_surface_deg10_k2_D8_41K.txt      					-       -       -       0       8       2       0.02  		0.02  		Y       N           N           120				1
 #generate_torus_d     											N		-		-		200000 	6		3		0.05 		0.05 		Y		N			N			1200				1
@@ -213,6 +213,6 @@ generate_klein_bottle_4D										4		3		-		300000 	4		2		0.05		0.05		Y		N			N			
 # Weight
 #data/SO3_50000.txt  											-		-		-		0		9 		3 		0.1			0.05    	Y		N			N			500  			10
 #data/Alvarez_surface_deg7_k2_D8_48K.txt      					-       -       -       0       8       2       0.02  		0.01  		Y       N           N           120				10
-#generate_klein_bottle_4D										4		3		0		5000 	4		2		0.05		0.025		Y		N			N			120   			10
+#generate_klein_bottle_4D										4		3		0		5000 	4		2		0.05		0.025		Y		N			N			20000  			10
 #generate_torus_d     											Y		0		-		1000  	4		2		0.05 		0.025 		Y		N			N			120   			10
-#generate_sphere_d												3		1		-		1000	4		3		0.05		0.025		Y		N			N			120				10
+#generate_sphere_d												3		1		-		1000	4		3		0.05		0.025		Y		N			N			12000			10
