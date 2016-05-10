@@ -27,6 +27,8 @@
 
 #include <string>
 
+namespace Gudhi {
+
 class Clock {
  public:
   Clock() : end_called(false) {
@@ -66,8 +68,13 @@ class Clock {
   }
 
   double num_seconds() const {
-    if (!end_called) return -1;
-    return (endTime - startTime).total_milliseconds() / 1000.;
+    if (!end_called)
+    {
+      auto end = boost::posix_time::microsec_clock::local_time();
+      return (end - startTime).total_milliseconds() / 1000.;
+    }
+    else
+      return (endTime - startTime).total_milliseconds() / 1000.;
   }
 
  private:
@@ -75,5 +82,7 @@ class Clock {
   mutable bool end_called;
   std::string msg;
 };
+
+} // namespace Gudhi
 
 #endif  // CLOCK_H_
