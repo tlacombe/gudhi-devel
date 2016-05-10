@@ -31,15 +31,15 @@
 #include <cstddef>
 #include <vector>
 
-#ifdef CGAL_TC_ANN_IS_AVAILABLE
+#ifdef GUDHI_TC_ANN_IS_AVAILABLE
 # include <ANN/ANN.h>
 #endif
 
-#ifdef CGAL_TC_NANOFLANN_IS_AVAILABLE
+#ifdef GUDHI_TC_NANOFLANN_IS_AVAILABLE
 # include "nanoflann.hpp"
 #endif
 
-namespace CGAL {
+namespace Gudhi {
 namespace Tangential_complex_ {
 
 // TODO: more explicit class name
@@ -144,7 +144,7 @@ public:
       k,
       FT(0),
       true,
-      Distance_adapter<std::ptrdiff_t,Point*,Euclidean_distance<Traits_base> >(
+      CGAL::Distance_adapter<std::ptrdiff_t,Point*,CGAL::Euclidean_distance<Traits_base> >(
         (Point*)&(m_points[0])),
       sorted);
 
@@ -161,7 +161,7 @@ public:
       sp,
       FT(0),
       true,
-      Distance_adapter<std::ptrdiff_t,Point*,Euclidean_distance<Traits_base> >(
+      CGAL::Distance_adapter<std::ptrdiff_t, Point*, CGAL::Euclidean_distance<Traits_base> >(
         (Point*)&(m_points[0])) );
 
     return search;
@@ -176,7 +176,7 @@ protected:
 //*****************************************************************************
 //*****************************************************************************
 
-#ifdef CGAL_TC_NANOFLANN_IS_AVAILABLE
+#ifdef GUDHI_TC_NANOFLANN_IS_AVAILABLE
 
 // "dataset to kd-tree" adaptor class
 template <typename K, typename Point_container_>
@@ -335,13 +335,13 @@ protected:
   Kd_tree m_kd_tree;
 };
 
-#endif //CGAL_TC_NANOFLANN_IS_AVAILABLE
+#endif //GUDHI_TC_NANOFLANN_IS_AVAILABLE
 
 //*****************************************************************************
 //*****************************************************************************
 //*****************************************************************************
 
-#ifdef CGAL_TC_ANN_IS_AVAILABLE
+#ifdef GUDHI_TC_ANN_IS_AVAILABLE
 
 template <typename K, typename Point_container_>
 class Point_cloud_data_structure__ANN
@@ -393,9 +393,9 @@ protected:
   ANNkd_tree m_tree;
 };
 
-#endif // CGAL_TC_ANN_IS_AVAILABLE
+#endif // GUDHI_TC_ANN_IS_AVAILABLE
 
 } // namespace Tangential_complex_
-} //namespace CGAL
+} //namespace Gudhi
 
 #endif // POINT_CLOUD_H

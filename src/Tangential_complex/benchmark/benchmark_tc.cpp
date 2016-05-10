@@ -8,27 +8,28 @@
 
 #include <cstddef>
 
-//#define CGAL_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
+//#define GUDHI_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
 //#define TC_PROTECT_POINT_SET_DELTA  0.003
 //#define JUST_BENCHMARK_SPATIAL_SEARCH // CJTODO: test
 //#define CHECK_IF_ALL_SIMPLICES_ARE_IN_THE_AMBIENT_DELAUNAY
 //#define TC_INPUT_STRIDES 3 // only take one point every TC_INPUT_STRIDES points
-//#define TC_NO_EXPORT
+#define TC_NO_EXPORT
 //#define TC_EXPORT_TO_RIB
-//#define CGAL_TC_ALVAREZ_SURFACE_WINDOW 0.95 // 1.9 - 0.95
-//#define CGAL_TC_EXPORT_SPARSIFIED_POINT_SET
-//#define CGAL_TC_EXPORT_ALL_COORDS_IN_OFF
-//#define CGAL_TC_RECOMPUTE_TANGENT_SPACE_EVERYTIME
+//#define GUDHI_TC_ALVAREZ_SURFACE_WINDOW 0.95 // 1.9 - 0.95
+//#define GUDHI_TC_EXPORT_SPARSIFIED_POINT_SET
+//#define GUDHI_TC_EXPORT_ALL_COORDS_IN_OFF
+//#define GUDHI_TC_RECOMPUTE_TANGENT_SPACE_EVERYTIME
 
 const std::size_t ONLY_LOAD_THE_FIRST_N_POINTS = 1000000;
 
 #include <gudhi/Tangential_complex/RIB_exporter.h>
+#include <gudhi/Debug_utils.h>
+#include <gudhi/Clock.h>
+#include <gudhi/Tangential_complex.h>
 
 #include <CGAL/assertions_behaviour.h>
 #include <CGAL/Epick_d.h>
-#include <gudhi/Tangential_complex.h>
 #include <CGAL/Random.h>
-#include <CGAL/Mesh_3/Profiling_tools.h>
 
 #include "../test/testing_utilities.h" // CJTODO: won't work?
 
@@ -39,14 +40,14 @@ const std::size_t ONLY_LOAD_THE_FIRST_N_POINTS = 1000000;
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
-#include <math.h>
+#include <cmath>  // for std::sqrt
 
 #ifdef GUDHI_USE_TBB
 # include <tbb/task_scheduler_init.h>
 #endif
 #include "XML_exporter.h"
-#define CGAL_TC_EXPORT_PERFORMANCE_DATA
-#define CGAL_TC_SET_PERFORMANCE_DATA(value_name, value) \
+#define GUDHI_TC_EXPORT_PERFORMANCE_DATA
+#define GUDHI_TC_SET_PERFORMANCE_DATA(value_name, value) \
         XML_perf_data::set(value_name, value);
 
 const char * const BENCHMARK_SCRIPT_FILENAME = "benchmark_script.txt";
@@ -55,20 +56,20 @@ typedef CGAL::Epick_d<CGAL::Dynamic_dimension_tag>              Kernel;
 typedef Kernel::FT                                              FT;
 typedef Kernel::Point_d                                         Point;
 typedef Kernel::Vector_d                                        Vector;
-typedef CGAL::Tangential_complex<
+typedef Gudhi::Tangential_complex<
   Kernel, CGAL::Dynamic_dimension_tag,
   CGAL::Parallel_tag>                                           TC;
 
 
 #ifdef TC_PROTECT_POINT_SET_DELTA
-# include <CGAL/Tangential_complex/protected_sets.h> // CJTODO TEST
+# include <gudhi/Tangential_complex/protected_sets.h> // CJTODO TEST
 #endif
 
 #ifdef JUST_BENCHMARK_SPATIAL_SEARCH
 std::ofstream spatial_search_csv_file("benchmark_spatial_search.csv");
 #endif
 
-using namespace CGAL::Tangential_complex_;
+using namespace Gudhi::Tangential_complex_;
 
 class XML_perf_data
 {
@@ -205,7 +206,7 @@ bool export_to_off(
 
 #if 0
   Kernel k;
-  FT center_pt[] = { -0.5, -CGAL::sqrt(3.) / 2, -0.5, CGAL::sqrt(3.) / 2 };
+  FT center_pt[] = { -0.5, -std::sqrt(3.) / 2, -0.5, std::sqrt(3.) / 2 };
   FT proj_pt[] = { 0., 0., 0., 0.2 };
   S3_to_R3_stereographic_projection<Kernel>
     proj_functor(0.2, 
@@ -241,7 +242,7 @@ bool export_to_off(
     }
     else
     {
-/*#ifdef CGAL_ALPHA_TC
+/*#ifdef GUDHI_ALPHA_TC
       TC::Simplicial_complex complex;
       tc.export_TC(complex, false);
       tc.export_to_off(
@@ -313,7 +314,7 @@ void make_tc(std::vector<Point> &points,
   //===========================================================================
   // Init
   //===========================================================================
-  Wall_clock_timer t;
+  Gudhi::Clock t;
 
   // Get input_name_stripped
   std::string input_name_stripped(input_name);
@@ -329,9 +330,9 @@ void make_tc(std::vector<Point> &points,
 
   int ambient_dim = k.point_dimension_d_object()(*points.begin());
 
-  CGAL_TC_SET_PERFORMANCE_DATA("Num_points_in_input", points.size());
+  GUDHI_TC_SET_PERFORMANCE_DATA("Num_points_in_input", points.size());
 
-#ifdef CGAL_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
+#ifdef GUDHI_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
   std::vector<Point> points_not_sparse = points;
 #endif
 
@@ -345,7 +346,7 @@ void make_tc(std::vector<Point> &points,
     std::cerr << "Number of points before/after sparsification: "
       << num_points_before << " / " << points.size() << "\n";
 
-#ifdef CGAL_TC_EXPORT_SPARSIFIED_POINT_SET
+#ifdef GUDHI_TC_EXPORT_SPARSIFIED_POINT_SET
     std::ofstream ps_stream("output/sparsified_point_set.txt");
     export_point_set(k, points, ps_stream);
 #endif
@@ -353,7 +354,7 @@ void make_tc(std::vector<Point> &points,
 
 #ifdef TC_PROTECT_POINT_SET_DELTA
   // CJTODO TEST    
-# ifdef CGAL_TC_PROFILING
+# ifdef GUDHI_TC_PROFILING
   Wall_clock_timer t_protection;
 # endif
 
@@ -364,23 +365,24 @@ void make_tc(std::vector<Point> &points,
     points, points.size(), points2, dummy, TC_PROTECT_POINT_SET_DELTA, dummy2, false, true);
   points = points2;
 
-# ifdef CGAL_TC_PROFILING
-  std::cerr << "Point set protected in " << t_protection.elapsed()
+# ifdef GUDHI_TC_PROFILING
+  t_protection.end();
+  std::cerr << "Point set protected in " << t_protection.num_seconds()
     << " seconds.\n";
 # endif
 
   std::cerr << "Number of points after PROTECTION: " << points.size() << "\n";
 #endif
 
-  CGAL_TC_SET_PERFORMANCE_DATA("Sparsity", sparsity);
-  CGAL_TC_SET_PERFORMANCE_DATA("Max_perturb", max_perturb);
-  CGAL_TC_SET_PERFORMANCE_DATA("Num_points", points.size());
+  GUDHI_TC_SET_PERFORMANCE_DATA("Sparsity", sparsity);
+  GUDHI_TC_SET_PERFORMANCE_DATA("Max_perturb", max_perturb);
+  GUDHI_TC_SET_PERFORMANCE_DATA("Num_points", points.size());
 
   //===========================================================================
   // Compute Tangential Complex
   //===========================================================================
 
-#ifdef CGAL_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
+#ifdef GUDHI_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
   TC tc(points.begin(), points.end(), sparsity, intrinsic_dim,
     points_not_sparse.begin(), points_not_sparse.end(), max_perturb, k);
 #else
@@ -396,11 +398,14 @@ void make_tc(std::vector<Point> &points,
     tc.set_tangent_planes(tangent_spaces);
   }
 
-  double init_time = t.elapsed(); t.reset();
-
+  t.end();
+  double init_time = t.num_seconds();
+  
+  t.begin();
   tc.compute_tangential_complex();
-  double computation_time = t.elapsed(); t.reset();
-
+  t.end();
+  double computation_time = t.num_seconds();
+  
 #ifdef CHECK_IF_ALL_SIMPLICES_ARE_IN_THE_AMBIENT_DELAUNAY
   if (ambient_dim <= 4)
     tc.check_if_all_simplices_are_in_the_ambient_delaunay();
@@ -418,22 +423,23 @@ void make_tc(std::vector<Point> &points,
   std::set<std::set<std::size_t> > inconsistent_simplices;
   max_dim = tc.export_TC(complex, false, 2, &inconsistent_simplices);
 
-  t.reset();
-  double export_before_time = 
-    (export_to_off(tc, input_name_stripped, "_INITIAL_TC", true, 
-      &complex, &inconsistent_simplices) ? t.elapsed() : -1);
-  t.reset();
-  
+  t.begin();
+  bool ret = export_to_off(
+    tc, input_name_stripped, "_INITIAL_TC", true, 
+    &complex, &inconsistent_simplices);
+  t.end();
+  double export_before_time = (ret ? t.num_seconds() : -1);
+
   unsigned int num_perturb_steps = 0;
   double perturb_time = -1;
     double export_after_perturb_time = -1.;
-  CGAL::Fix_inconsistencies_status perturb_ret = CGAL::FIX_NOT_PERFORMED;
+  Gudhi::Fix_inconsistencies_status perturb_ret = Gudhi::FIX_NOT_PERFORMED;
   if (perturb)
   {
     //=========================================================================
     // Try to fix inconsistencies by perturbing points
     //=========================================================================
-    t.reset();
+    t.begin();
     std::size_t initial_num_inconsistent_local_tr;
     std::size_t best_num_inconsistent_local_tr;
     std::size_t final_num_inconsistent_local_tr;
@@ -441,13 +447,14 @@ void make_tc(std::vector<Point> &points,
       num_perturb_steps, initial_num_inconsistent_local_tr,
       best_num_inconsistent_local_tr, final_num_inconsistent_local_tr,
       time_limit_for_perturb);
-    perturb_time = t.elapsed(); t.reset();
+    t.end();
+    perturb_time = t.num_seconds();
 
-    CGAL_TC_SET_PERFORMANCE_DATA("Initial_num_inconsistent_local_tr", 
+    GUDHI_TC_SET_PERFORMANCE_DATA("Initial_num_inconsistent_local_tr", 
                                  initial_num_inconsistent_local_tr);
-    CGAL_TC_SET_PERFORMANCE_DATA("Best_num_inconsistent_local_tr", 
+    GUDHI_TC_SET_PERFORMANCE_DATA("Best_num_inconsistent_local_tr", 
                                  best_num_inconsistent_local_tr);
-    CGAL_TC_SET_PERFORMANCE_DATA("Final_num_inconsistent_local_tr", 
+    GUDHI_TC_SET_PERFORMANCE_DATA("Final_num_inconsistent_local_tr", 
                                  final_num_inconsistent_local_tr);
 
     //tc.check_correlation_between_inconsistencies_and_fatness();
@@ -470,12 +477,12 @@ void make_tc(std::vector<Point> &points,
     std::set<std::set<std::size_t> > inconsistent_simplices;
     max_dim = tc.export_TC(complex, false, 2, &inconsistent_simplices);
 
-    t.reset();
+    t.begin();
     bool exported = export_to_off(
       tc, input_name_stripped, "_AFTER_FIX", true, &complex, 
       &inconsistent_simplices);
-    double export_after_perturb_time = (exported ? t.elapsed() : -1);
-    t.reset();
+    t.end();
+    double export_after_perturb_time = (exported ? t.num_seconds() : -1);
 
     //std::string fn = "output/inc_stars/";
     //fn += input_name_stripped;
@@ -508,9 +515,9 @@ void make_tc(std::vector<Point> &points,
   }
   else
   {
-    CGAL_TC_SET_PERFORMANCE_DATA("Initial_num_inconsistent_local_tr", "N/A");
-    CGAL_TC_SET_PERFORMANCE_DATA("Best_num_inconsistent_local_tr", "N/A");
-    CGAL_TC_SET_PERFORMANCE_DATA("Final_num_inconsistent_local_tr", "N/A");
+    GUDHI_TC_SET_PERFORMANCE_DATA("Initial_num_inconsistent_local_tr", "N/A");
+    GUDHI_TC_SET_PERFORMANCE_DATA("Best_num_inconsistent_local_tr", "N/A");
+    GUDHI_TC_SET_PERFORMANCE_DATA("Final_num_inconsistent_local_tr", "N/A");
   }
 
   // CJTODO TEST
@@ -523,14 +530,15 @@ void make_tc(std::vector<Point> &points,
     //=========================================================================
     // Try to fix inconsistencies by adding higher-dimension simplices
     //=========================================================================
-    t.reset();
+    t.begin();
     // Try to solve the remaining inconstencies
-#ifdef CGAL_ALPHA_TC
+#ifdef GUDHI_ALPHA_TC
     tc.solve_inconsistencies_using_alpha_TC();
 #else
     tc.check_and_solve_inconsistencies_by_adding_higher_dim_simplices();
 #endif
-    fix2_time = t.elapsed(); t.reset();
+    t.end();
+    fix2_time = t.num_seconds();
 
     /*std::set<std::set<std::size_t> > not_delaunay_simplices;
     if (ambient_dim <= 4)
@@ -547,12 +555,12 @@ void make_tc(std::vector<Point> &points,
     std::set<std::set<std::size_t> > inconsistent_simplices;
     max_dim = tc.export_TC(complex, false, 2, &inconsistent_simplices);
 
-    t.reset();
+    t.begin();
     bool exported = export_to_off(
       tc, input_name_stripped, "_AFTER_FIX2", false, &complex, 
       &inconsistent_simplices);
-    double export_after_fix2_time = (exported ? t.elapsed() : -1);
-    t.reset();
+    t.end();
+    double export_after_fix2_time = (exported ? t.num_seconds() : -1);
   }
   else
   {
@@ -594,7 +602,7 @@ void make_tc(std::vector<Point> &points,
   std::set<std::set<std::size_t> > unconnected_stars_simplices;
   bool is_pure_pseudomanifold = complex.is_pure_pseudomanifold(
     intrinsic_dim, tc.number_of_vertices(), 
-#ifdef CGAL_TC_ALVAREZ_SURFACE_WINDOW
+#ifdef GUDHI_TC_ALVAREZ_SURFACE_WINDOW
     true, // allow borders
 #else
     false, // do NOT allow borders
@@ -612,18 +620,18 @@ void make_tc(std::vector<Point> &points,
   double export_after_collapse_time = -1.;
   if (collapse)
   {
-    t.reset();
+    t.begin();
     bool exported = export_to_off(
       tc, input_name_stripped, "_AFTER_COLLAPSE", false, &complex,
       &wrong_dim_simplices, &wrong_number_of_cofaces_simplices,
       &unconnected_stars_simplices);
+    t.end();
     std::cerr
       << " OFF colors:\n"
       << "   * Red: wrong dim simplices\n"
       << "   * Green: wrong number of cofaces simplices\n"
       << "   * Blue: not-connected stars\n";
-    double export_after_collapse_time = (exported ? t.elapsed() : -1.);
-    t.reset();
+    double export_after_collapse_time = (exported ? t.num_seconds() : -1.);
   }
 
   //===========================================================================
@@ -640,7 +648,7 @@ void make_tc(std::vector<Point> &points,
     << "  * Export to OFF (before perturb): " << export_before_time << "\n"
     << "  * Fix inconsistencies 1: " << perturb_time
     <<      " (" << num_perturb_steps << " steps) ==> "
-    <<      (perturb_ret == CGAL::TC_FIXED ? "FIXED" : "NOT fixed") << "\n"
+    <<      (perturb_ret == Gudhi::TC_FIXED ? "FIXED" : "NOT fixed") << "\n"
     << "  * Fix inconsistencies 2: " << fix2_time << "\n"
     << "  * Export to OFF (after perturb): " << export_after_perturb_time << "\n"
     << "  * Export to OFF (after fix2): "<< export_after_fix2_time << "\n"
@@ -651,22 +659,22 @@ void make_tc(std::vector<Point> &points,
   //===========================================================================
   // Export info
   //===========================================================================
-  CGAL_TC_SET_PERFORMANCE_DATA("Init_time", init_time);
-  CGAL_TC_SET_PERFORMANCE_DATA("Comput_time", computation_time);
-  CGAL_TC_SET_PERFORMANCE_DATA("Perturb_successful",
-                                (perturb_ret == CGAL::TC_FIXED ? 1 : 0));
-  CGAL_TC_SET_PERFORMANCE_DATA("Perturb_time", perturb_time);
-  CGAL_TC_SET_PERFORMANCE_DATA("Perturb_steps", num_perturb_steps);
-  CGAL_TC_SET_PERFORMANCE_DATA("Add_higher_dim_simpl_time", fix2_time);
-  CGAL_TC_SET_PERFORMANCE_DATA("Result_pure_pseudomanifold",
+  GUDHI_TC_SET_PERFORMANCE_DATA("Init_time", init_time);
+  GUDHI_TC_SET_PERFORMANCE_DATA("Comput_time", computation_time);
+  GUDHI_TC_SET_PERFORMANCE_DATA("Perturb_successful",
+                                (perturb_ret == Gudhi::TC_FIXED ? 1 : 0));
+  GUDHI_TC_SET_PERFORMANCE_DATA("Perturb_time", perturb_time);
+  GUDHI_TC_SET_PERFORMANCE_DATA("Perturb_steps", num_perturb_steps);
+  GUDHI_TC_SET_PERFORMANCE_DATA("Add_higher_dim_simpl_time", fix2_time);
+  GUDHI_TC_SET_PERFORMANCE_DATA("Result_pure_pseudomanifold",
                                 (is_pure_pseudomanifold ? 1 : 0));
-  CGAL_TC_SET_PERFORMANCE_DATA("Result_num_wrong_dim_simplices",
+  GUDHI_TC_SET_PERFORMANCE_DATA("Result_num_wrong_dim_simplices",
                                 num_wrong_dim_simplices);
-  CGAL_TC_SET_PERFORMANCE_DATA("Result_num_wrong_number_of_cofaces", 
+  GUDHI_TC_SET_PERFORMANCE_DATA("Result_num_wrong_number_of_cofaces", 
                                 num_wrong_number_of_cofaces);
-  CGAL_TC_SET_PERFORMANCE_DATA("Result_num_unconnected_stars", 
+  GUDHI_TC_SET_PERFORMANCE_DATA("Result_num_unconnected_stars", 
                                 num_unconnected_stars);
-  CGAL_TC_SET_PERFORMANCE_DATA("Info", "");
+  GUDHI_TC_SET_PERFORMANCE_DATA("Info", "");
 }
 
 int main()
@@ -682,7 +690,7 @@ int main()
 #endif
 
   unsigned int seed = static_cast<unsigned int>(time(NULL));
-  CGAL::default_random = CGAL::Random(seed);
+  CGAL::default_random = CGAL::Random(seed); // CJTODO: use set_default_random
   std::cerr << "Random seed = " << seed << "\n";
 
   std::ifstream script_file;
@@ -779,52 +787,52 @@ int main()
             input_stripped = input_stripped.substr(
               slash_index, input_stripped.find_last_of('.') - slash_index);
 
-            CGAL_TC_SET_PERFORMANCE_DATA("Input", input_stripped);
-            CGAL_TC_SET_PERFORMANCE_DATA("Param1", param1);
-            CGAL_TC_SET_PERFORMANCE_DATA("Param2", param2);
-            CGAL_TC_SET_PERFORMANCE_DATA("Param3", param3);
-            CGAL_TC_SET_PERFORMANCE_DATA("Ambient_dim", ambient_dim);
-            CGAL_TC_SET_PERFORMANCE_DATA("Intrinsic_dim", intrinsic_dim);
-#ifdef CGAL_TC_PERTURB_POSITION
-# ifdef CGAL_TC_PERTURB_POSITION_TANGENTIAL
-            CGAL_TC_SET_PERFORMANCE_DATA("Perturb_technique", "Tangential_translation");
+            GUDHI_TC_SET_PERFORMANCE_DATA("Input", input_stripped);
+            GUDHI_TC_SET_PERFORMANCE_DATA("Param1", param1);
+            GUDHI_TC_SET_PERFORMANCE_DATA("Param2", param2);
+            GUDHI_TC_SET_PERFORMANCE_DATA("Param3", param3);
+            GUDHI_TC_SET_PERFORMANCE_DATA("Ambient_dim", ambient_dim);
+            GUDHI_TC_SET_PERFORMANCE_DATA("Intrinsic_dim", intrinsic_dim);
+#ifdef GUDHI_TC_PERTURB_POSITION
+# ifdef GUDHI_TC_PERTURB_POSITION_TANGENTIAL
+            GUDHI_TC_SET_PERFORMANCE_DATA("Perturb_technique", "Tangential_translation");
 # else
-            CGAL_TC_SET_PERFORMANCE_DATA("Perturb_technique", "Ambient_translation");
+            GUDHI_TC_SET_PERFORMANCE_DATA("Perturb_technique", "Ambient_translation");
 # endif
-#elif defined(CGAL_TC_PERTURB_WEIGHT)
-            CGAL_TC_SET_PERFORMANCE_DATA("Perturb_technique", "Weight");
-#elif defined(CGAL_TC_PERTURB_TANGENT_SPACE)
-            CGAL_TC_SET_PERFORMANCE_DATA("Perturb_technique", "Tangent_space");
+#elif defined(GUDHI_TC_PERTURB_WEIGHT)
+            GUDHI_TC_SET_PERFORMANCE_DATA("Perturb_technique", "Weight");
+#elif defined(GUDHI_TC_PERTURB_TANGENT_SPACE)
+            GUDHI_TC_SET_PERFORMANCE_DATA("Perturb_technique", "Tangent_space");
 #else
-            CGAL_TC_SET_PERFORMANCE_DATA("Perturb_technique", "Undefined_value");
+            GUDHI_TC_SET_PERFORMANCE_DATA("Perturb_technique", "Undefined_value");
 #endif
-#ifdef CGAL_TC_PERTURB_THE_CENTER_VERTEX_ONLY
-            CGAL_TC_SET_PERFORMANCE_DATA("Perturb_which_points", "Center_vertex");
-#elif defined(CGAL_TC_PERTURB_THE_SIMPLEX_ONLY)
-            CGAL_TC_SET_PERFORMANCE_DATA("Perturb_which_points", "Simplex");
-#elif defined(CGAL_TC_PERTURB_THE_1_STAR)
-            CGAL_TC_SET_PERFORMANCE_DATA("Perturb_which_points", "1_star");
-#elif defined(CGAL_TC_PERTURB_N_CLOSEST_POINTS)
+#ifdef GUDHI_TC_PERTURB_THE_CENTER_VERTEX_ONLY
+            GUDHI_TC_SET_PERFORMANCE_DATA("Perturb_which_points", "Center_vertex");
+#elif defined(GUDHI_TC_PERTURB_THE_SIMPLEX_ONLY)
+            GUDHI_TC_SET_PERFORMANCE_DATA("Perturb_which_points", "Simplex");
+#elif defined(GUDHI_TC_PERTURB_THE_1_STAR)
+            GUDHI_TC_SET_PERFORMANCE_DATA("Perturb_which_points", "1_star");
+#elif defined(GUDHI_TC_PERTURB_N_CLOSEST_POINTS)
             std::stringstream sstr;
-            sstr << CGAL_TC_NUMBER_OF_PERTURBED_POINTS(intrinsic_dim) <<
+            sstr << GUDHI_TC_NUMBER_OF_PERTURBED_POINTS(intrinsic_dim) <<
               "_closest_points";
-            CGAL_TC_SET_PERFORMANCE_DATA("Perturb_which_points", sstr.str());
+            GUDHI_TC_SET_PERFORMANCE_DATA("Perturb_which_points", sstr.str());
 #else
-            CGAL_TC_SET_PERFORMANCE_DATA("Perturb_which_points", "Undefined_value");
+            GUDHI_TC_SET_PERFORMANCE_DATA("Perturb_which_points", "Undefined_value");
 #endif
 
 #ifdef GUDHI_USE_TBB
-            CGAL_TC_SET_PERFORMANCE_DATA(
+            GUDHI_TC_SET_PERFORMANCE_DATA(
               "Num_threads",
               (num_threads == -1 ? tbb::task_scheduler_init::default_num_threads() : num_threads));
 #else
-            CGAL_TC_SET_PERFORMANCE_DATA("Num_threads", "N/A");
+            GUDHI_TC_SET_PERFORMANCE_DATA("Num_threads", "N/A");
 #endif
 
             std::cerr << "\nTC #" << i << "...\n";
           
-#ifdef CGAL_TC_PROFILING
-            Wall_clock_timer t_gen;
+#ifdef GUDHI_TC_PROFILING
+            Gudhi::Clock t_gen;
 #endif
 
             std::vector<Point> points;
@@ -858,8 +866,10 @@ int main()
             }
             else if (input == "generate_3sphere_and_circle_d")
             {
-              CGAL_assertion(intrinsic_dim == 3);
-              CGAL_assertion(ambient_dim == 5);
+              GUDHI_CHECK(intrinsic_dim == 3, 
+                std::logic_error("Intrinsic dim should be 3"));
+              GUDHI_CHECK(ambient_dim == 5,
+                std::logic_error("Ambient dim should be 5"));
               points = generate_points_on_3sphere_and_circle<Kernel>(
                 num_points,
                 std::atof(param1.c_str()));
@@ -907,8 +917,9 @@ int main()
                 ONLY_LOAD_THE_FIRST_N_POINTS);
             }
 
-#ifdef CGAL_TC_PROFILING
-            std::cerr << "Point set generated/loaded in " << t_gen.elapsed()
+#ifdef GUDHI_TC_PROFILING
+            t_gen.end();
+            std::cerr << "Point set generated/loaded in " << t_gen.num_seconds()
                       << " seconds.\n";
 #endif
 

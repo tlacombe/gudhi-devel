@@ -23,7 +23,8 @@ if(CGAL_FOUND)
       include_directories (BEFORE "../../include")
 
       add_executable ( TangentialComplexBenchmark benchmark_tc.cpp )
-      target_link_libraries(TangentialComplexBenchmark ${Boost_SYSTEM_LIBRARY} ${CGAL_LIBRARY})
+      target_link_libraries(TangentialComplexBenchmark 
+		${Boost_DATE_TIME_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${CGAL_LIBRARY})
       if (TBB_FOUND)
         target_link_libraries(TangentialComplexBenchmark ${TBB_LIBRARIES})
       endif()

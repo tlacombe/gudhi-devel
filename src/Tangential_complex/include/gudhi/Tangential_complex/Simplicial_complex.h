@@ -22,11 +22,10 @@
 #ifndef SIMPLICIAL_COMPLEX_H
 #define SIMPLICIAL_COMPLEX_H
 
-#include <CGAL/Tangential_complex/config.h>
-#include <CGAL/Tangential_complex/utilities.h>
-#include "CGAL/Tangential_complex/console_color.h"
+#include <gudhi/Tangential_complex/config.h>
+#include <gudhi/Tangential_complex/utilities.h>
+#include "gudhi/Tangential_complex/console_color.h"
 
-#include <CGAL/basic.h>
 #include <CGAL/iterator.h>
 
 // For is_pure_pseudomanifold
@@ -39,7 +38,7 @@
 #include <string>
 #include <fstream>
 
-namespace CGAL {
+namespace Gudhi {
 namespace Tangential_complex_ {
 
 class Simplicial_complex
@@ -118,7 +117,7 @@ public:
     for (std::size_t i = 0 ; i < num_triangles ; ++i)
     {
       in >> dummy;
-      CGAL_assertion(dummy == 3);
+      GUDHI_CHECK(dummy == 3, std::logic_error("OFF: not a triangle."));
       std::set<std::size_t> tri;
       std::size_t idx;
       for (int j = 0 ; j < 3 ; ++j)
@@ -166,7 +165,7 @@ public:
   // without changing the topology
   void collapse(int max_simplex_dim, bool quiet = false)
   {
-#ifdef CGAL_TC_VERBOSE
+#ifdef GUDHI_TC_VERBOSE
     if (!quiet)
       std::cerr << "Collapsing... ";
 #endif
@@ -216,7 +215,8 @@ public:
           std::vector<Simplex> k_faces;
           const Simplex_iterator_list::value_type &it_Cf =
             *it_map_elt->second.begin();
-          CGAL_assertion(it_Cf->size() == max_simplex_dim + 1);
+          GUDHI_CHECK(it_Cf->size() == max_simplex_dim + 1,
+            std::logic_error("Wrong dimension"));
           // Get the k-faces composing the simplex
           combinations(*it_Cf, k + 1, std::back_inserter(k_faces));
           for (const auto &f2 : k_faces) // CJTODO C++1
@@ -236,7 +236,8 @@ public:
                   it_comb_in_map->second.begin(),
                   it_comb_in_map->second.end(),
                   it_Cf);
-                CGAL_assertion(it != it_comb_in_map->second.end());
+                GUDHI_CHECK(it != it_comb_in_map->second.end(),
+                  std::logic_error("Error: it == it_comb_in_map->second.end()"));
                 it_comb_in_map->second.erase(it);
               }
             }
@@ -252,7 +253,7 @@ public:
     if (k > 0)
       collapse(max_simplex_dim - 1, true);
 
-#ifdef CGAL_TC_VERBOSE
+#ifdef GUDHI_TC_VERBOSE
     if (!quiet)
       std::cerr << "done.\n";
 #endif
@@ -638,6 +639,6 @@ private:
 }; // /class Simplicial_complex
 
 } // namespace Tangential_complex_
-} //namespace CGAL
+} //namespace Gudhi
 
 #endif // SIMPLICIAL_COMPLEX_H

@@ -18,10 +18,9 @@
 //
 // Author(s)     : Clement Jamin
 
-#ifndef CGAL_TC_UTILITIES_H
-#define CGAL_TC_UTILITIES_H
+#ifndef GUDHI_TC_UTILITIES_H
+#define GUDHI_TC_UTILITIES_H
 
-#include <CGAL/basic.h>
 #include <CGAL/Dimension.h>
 #include <CGAL/Combination_enumerator.h>
 
@@ -31,11 +30,11 @@
 #include <set>
 #include <vector>
 #include <array>
-#include <atomic> // CJTODO: this is C++11 => use boost.Atomic (but it's too recent)
-                  // or tbb::atomic (works for doubles, but not officially)
+#include <atomic>
+#include <cmath>  // for std::sqrt
 
 
-namespace CGAL {
+namespace Gudhi {
 namespace Tangential_complex_ {
 
   // Provides copy constructors to std::atomic so that
@@ -125,7 +124,7 @@ namespace Tangential_complex_ {
                                          K const& k)
   {
     v = k.scaled_vector_d_object()(
-      v, typename K::FT(1)/CGAL::sqrt(k.squared_length_d_object()(v)));
+      v, typename K::FT(1)/std::sqrt(k.squared_length_d_object()(v)));
     return v;
   }
 
@@ -169,7 +168,7 @@ namespace Tangential_complex_ {
       : m_origin(origin), m_vectors(vectors)
     { }
     
-#ifdef CGAL_ALPHA_TC
+#ifdef GUDHI_ALPHA_TC
     // Thickening vectors...
 
     struct Thickening_vector
@@ -217,22 +216,22 @@ namespace Tangential_complex_ {
         FT alpha_i = k_scalar_pdct(it_v->vec, vec);
         if (alpha_i * MARGIN_RATIO > it_v->alpha_plus)
         {
-#ifdef CGAL_TC_VERY_VERBOSE
+#ifdef GUDHI_TC_VERY_VERBOSE
           std::cerr << "OLD alpha+ = " << it_v->alpha_plus << std::endl;
 #endif
           it_v->alpha_plus = alpha_i * MARGIN_RATIO;
-#ifdef CGAL_TC_VERY_VERBOSE
+#ifdef GUDHI_TC_VERY_VERBOSE
           std::cerr << "NEW alpha+ = " << it_v->alpha_plus << std::endl;
           std::cerr << "NOT MODIFIED alpha- = " << it_v->alpha_minus << std::endl;
 #endif
         }
         else if (alpha_i * MARGIN_RATIO < it_v->alpha_minus)
         {
-#ifdef CGAL_TC_VERY_VERBOSE
+#ifdef GUDHI_TC_VERY_VERBOSE
           std::cerr << "OLD alpha- = " << it_v->alpha_minus << std::endl;
 #endif
           it_v->alpha_minus = alpha_i * MARGIN_RATIO;
-#ifdef CGAL_TC_VERY_VERBOSE
+#ifdef GUDHI_TC_VERY_VERBOSE
           std::cerr << "NEW alpha- = " << it_v->alpha_minus << std::endl;
           std::cerr << "NOT MODIFIED alpha+ = " << it_v->alpha_plus << std::endl;
 #endif
@@ -290,7 +289,7 @@ namespace Tangential_complex_ {
   bool add_vector_to_orthonormal_basis(
     Basis<K> & basis, typename K::Vector_d const& v, K const& k, 
     typename K::FT sqlen_threshold = typename K::FT(1e-13)
-#ifdef CGAL_ALPHA_TC
+#ifdef GUDHI_ALPHA_TC
     , bool add_to_thickening_vectors = false
 #endif
     )
@@ -322,7 +321,7 @@ namespace Tangential_complex_ {
     bool add_it = (sqlen_new_v > sqlen_threshold);
     if (add_it)
     {
-      Vector new_v = scaled_vec(u, FT(1)/CGAL::sqrt(sqlen_new_v));
+      Vector new_v = scaled_vec(u, FT(1)/std::sqrt(sqlen_new_v));
 
       // If new_v is small, run the Gram-Schmidt once more to 
       // re-orthogonalize it
@@ -343,10 +342,10 @@ namespace Tangential_complex_ {
           new_v = diff_vec(new_v, new_v_proj);
         }
         sqlen_new_v = k.squared_length_d_object()(new_v);
-        new_v = scaled_vec(new_v, FT(1)/CGAL::sqrt(sqlen_new_v));
+        new_v = scaled_vec(new_v, FT(1)/std::sqrt(sqlen_new_v));
       }
 
-#ifdef CGAL_ALPHA_TC
+#ifdef GUDHI_ALPHA_TC
       if (add_to_thickening_vectors)
         basis.add_thickening_vector(new_v);
       else
@@ -394,14 +393,14 @@ namespace Tangential_complex_ {
         {
           Vector v;
           in >> v;
-          tsb.push_back(CGAL::Tangential_complex_::normalize_vector(v, k));
+          tsb.push_back(Gudhi::Tangential_complex_::normalize_vector(v, k));
         }
         *tangent_spaces++ = tsb;
       }
       ++i;
     }
 
-#ifdef CGAL_TC_VERBOSE
+#ifdef GUDHI_TC_VERBOSE
     std::cerr << "'" << filename << "' loaded." << std::endl;
 #endif
 
@@ -508,7 +507,8 @@ namespace Tangential_complex_ {
 
     Point operator()(Point const& p) const
     {
-      CGAL_assertion(m_k.point_dimension_d_object()(p) == 4);
+      GUDHI_CHECK(m_k.point_dimension_d_object()(p) == 4,
+        std::logic_error("Wrong dimension"));
 
       typedef K::FT         FT;
       typedef K::Point_d    Point;
@@ -522,7 +522,7 @@ namespace Tangential_complex_ {
 
       Point transl_p = transl(p, scaled_vec(pt_to_vec(m_center_of_sphere), FT(-1)));
       Vector v = pt_to_vec(transl_p);
-      v = scaled_vec(v, m_sphere_radius / CGAL::sqrt(sqlen(v)));
+      v = scaled_vec(v, m_sphere_radius / std::sqrt(sqlen(v)));
 
       return vec_to_pt(v);
     }
@@ -549,7 +549,8 @@ namespace Tangential_complex_ {
 
     Point operator()(Point const& p) const
     {
-      CGAL_assertion(m_k.point_dimension_d_object()(p) == 4);
+      GUDHI_CHECK(m_k.point_dimension_d_object()(p) == 4,
+        std::logic_error("Wrong dimension"));
 
       typedef K::FT         FT;
       typedef K::Point_d    Point;
@@ -627,6 +628,6 @@ namespace Tangential_complex_ {
   }
 
 } // namespace Tangential_complex_
-} //namespace CGAL
+} //namespace Gudhi
 
-#endif // CGAL_TC_UTILITIES_H
+#endif // GUDHI_TC_UTILITIES_H

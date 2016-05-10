@@ -23,16 +23,18 @@
 //
 //******************************************************************************
 
-#ifndef CGAL_TC_TEST_TEST_UTILITIES_H
-#define CGAL_TC_TEST_TEST_UTILITIES_H
+#ifndef GUDHI_TC_TEST_TEST_UTILITIES_H
+#define GUDHI_TC_TEST_TEST_UTILITIES_H
+
+#include <gudhi/Tangential_complex/Point_cloud.h>
+#include <gudhi/Tangential_complex/utilities.h>
+#include <gudhi/Clock.h>
 
 #include <CGAL/Random.h>
 #include <CGAL/point_generators_2.h>
 #include <CGAL/point_generators_3.h>
 #include <CGAL/point_generators_d.h>
 #include <CGAL/function_objects.h>
-#include <CGAL/Tangential_complex/Point_cloud.h>
-#include <CGAL/Tangential_complex/utilities.h>
 #include <CGAL/IO/Triangulation_off_ostream.h>
 #include <CGAL/iterator.h>
 
@@ -41,14 +43,14 @@
 
 // Actually, this is very slow because the "m_points_ds->insert"
 // cleans the tree, which is thus built at each query_ANN call
-#ifdef CGAL_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
+#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
 template <typename Kernel, typename Point_container>
 class Point_sparsifier
 {
 public:
   typedef typename Kernel::FT                         FT;
   typedef typename Point_container::value_type        Point;
-  typedef typename CGAL::Tangential_complex_::Point_cloud_data_structure<
+  typedef typename Gudhi::Tangential_complex_::Point_cloud_data_structure<
     Kernel, Point_container>                          Points_ds;
   typedef typename Points_ds::KNS_range               KNS_range;
 
@@ -153,15 +155,15 @@ sparsify_point_set(
   const Kernel &k, Point_container const& input_pts,
   typename Kernel::FT min_squared_dist)
 {
-  typedef typename CGAL::Tangential_complex_::Point_cloud_data_structure<
+  typedef typename Gudhi::Tangential_complex_::Point_cloud_data_structure<
     Kernel, Point_container>                    Points_ds;
   typedef typename Points_ds::INS_iterator      INS_iterator;
   typedef typename Points_ds::INS_range         INS_range;
 
   typename Kernel::Squared_distance_d sqdist = k.squared_distance_d_object();
 
-#ifdef CGAL_TC_PROFILING
-    Wall_clock_timer t;
+#ifdef GUDHI_TC_PROFILING
+    Gudhi::Clock t;
 #endif
 
   // Create the output container
@@ -206,9 +208,10 @@ sparsify_point_set(
     }
   }
 
-#ifdef CGAL_TC_PROFILING
-    std::cerr << "Point set sparsified in " << t.elapsed()
-              << " seconds." << std::endl;
+#ifdef GUDHI_TC_PROFILING
+  t.end();
+  std::cerr << "Point set sparsified in " << t.num_seconds()
+            << " seconds." << std::endl;
 #endif
 
   return output;
@@ -224,7 +227,7 @@ std::vector<typename Kernel::Point_d> generate_points_on_plane(
   CGAL::Random rng;
   std::vector<Point> points;
   points.reserve(num_points);
-#ifdef CGAL_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
+#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
   Point_sparsifier<Kernel, std::vector<Point> > sparsifier(points);
 #endif
   for (std::size_t i = 0 ; i < num_points ; )
@@ -237,7 +240,7 @@ std::vector<typename Kernel::Point_d> generate_points_on_plane(
         
     Point p = k.construct_point_d_object()(ambient_dim, pt.begin(), pt.end());
 
-#ifdef CGAL_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
+#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
     if (sparsifier.try_to_insert_point(p))
       ++i;
 #else
@@ -259,7 +262,7 @@ std::vector<typename Kernel::Point_d> generate_points_on_moment_curve(
   CGAL::Random rng;
   std::vector<Point> points;
   points.reserve(num_points);
-#ifdef CGAL_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
+#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
   Point_sparsifier<Kernel, std::vector<Point> > sparsifier(points);
 #endif
   for (std::size_t i = 0 ; i < num_points ; )
@@ -271,7 +274,7 @@ std::vector<typename Kernel::Point_d> generate_points_on_moment_curve(
       coords.push_back(std::pow(CGAL::to_double(x), p));
     Point p = k.construct_point_d_object()(
       dim, coords.begin(), coords.end());
-#ifdef CGAL_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
+#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
     if (sparsifier.try_to_insert_point(p))
       ++i;
 #else
@@ -303,7 +306,7 @@ std::vector<typename Kernel::Point_d> generate_points_on_torus_3D(
 
   std::vector<Point> points;
   points.reserve(num_points);
-#ifdef CGAL_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
+#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
   Point_sparsifier<Kernel, std::vector<Point> > sparsifier(points);
 #endif
   for (std::size_t i = 0 ; i < num_points ; )
@@ -326,7 +329,7 @@ std::vector<typename Kernel::Point_d> generate_points_on_torus_3D(
       (R + r * std::cos(u)) * std::cos(v),
       (R + r * std::cos(u)) * std::sin(v),
       r * std::sin(u));
-#ifdef CGAL_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
+#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
     if (sparsifier.try_to_insert_point(p))
       ++i;
 #else
@@ -406,7 +409,7 @@ std::vector<typename Kernel::Point_d> generate_points_on_torus_d(
   }
   else
   {
-#ifdef CGAL_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
+#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
     Point_sparsifier<Kernel, std::vector<Point> > sparsifier(points);
 #endif
     for (std::size_t i = 0 ; i < num_points ; )
@@ -428,7 +431,7 @@ std::vector<typename Kernel::Point_d> generate_points_on_torus_d(
       }
 
       Point p = k.construct_point_d_object()(pt.begin(), pt.end());
-#ifdef CGAL_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
+#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
       if (sparsifier.try_to_insert_point(p))
         ++i;
 #else
@@ -451,7 +454,7 @@ std::vector<typename Kernel::Point_d> generate_points_on_sphere_d(
   CGAL::Random_points_on_sphere_d<Point> generator(dim, radius);
   std::vector<Point> points;
   points.reserve(num_points);
-#ifdef CGAL_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
+#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
   Point_sparsifier<Kernel, std::vector<Point> > sparsifier(points);
 #endif
   for (std::size_t i = 0 ; i < num_points ; )
@@ -471,7 +474,7 @@ std::vector<typename Kernel::Point_d> generate_points_on_sphere_d(
         k.scaled_vector_d_object();
       p = k_vec_to_pt(k_scaled_vec(k_pt_to_vec(p), radius_noise_ratio));
     }
-#ifdef CGAL_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
+#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
     if (sparsifier.try_to_insert_point(p))
       ++i;
 #else
@@ -500,7 +503,7 @@ std::vector<typename Kernel::Point_d> generate_points_on_two_spheres_d(
   t[0] = distance_between_centers;
   Vector c1_to_c2(t.begin(), t.end());
 
-#ifdef CGAL_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
+#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
   Point_sparsifier<Kernel, std::vector<Point> > sparsifier(points);
 #endif
   for (std::size_t i = 0 ; i < num_points ; )
@@ -525,7 +528,7 @@ std::vector<typename Kernel::Point_d> generate_points_on_two_spheres_d(
       k.translated_point_d_object();
     Point p2 = k_transl(p, c1_to_c2);
 
-#ifdef CGAL_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
+#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
     if (sparsifier.try_to_insert_point(p))
       ++i;
     if (sparsifier.try_to_insert_point(p2))
@@ -558,7 +561,7 @@ std::vector<typename Kernel::Point_d> generate_points_on_3sphere_and_circle(
   typename Kernel::Compute_coordinate_d k_coord =
     k.compute_coordinate_d_object();
 
-#ifdef CGAL_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
+#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
   Point_sparsifier<Kernel, std::vector<Point> > sparsifier(points);
 #endif
   for (std::size_t i = 0 ; i < num_points ; )
@@ -574,7 +577,7 @@ std::vector<typename Kernel::Point_d> generate_points_on_3sphere_and_circle(
     pt[4] = std::sin(alpha);
     Point p(pt.begin(), pt.end());
 
-#ifdef CGAL_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
+#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
     if (sparsifier.try_to_insert_point(p))
       ++i;
     if (sparsifier.try_to_insert_point(p2))
@@ -603,7 +606,7 @@ std::vector<typename Kernel::Point_d> generate_points_on_klein_bottle_3D(
 
   std::vector<Point> points;
   points.reserve(num_points);
-#ifdef CGAL_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
+#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
   Point_sparsifier<Kernel, std::vector<Point> > sparsifier(points);
 #endif
   for (std::size_t i = 0 ; i < num_points ; )
@@ -626,7 +629,7 @@ std::vector<typename Kernel::Point_d> generate_points_on_klein_bottle_3D(
       (a + b*tmp)*cos(u),
       (a + b*tmp)*sin(u),
       b*(sin(u/2)*sin(v) + cos(u/2)*sin(2.*v)));
-#ifdef CGAL_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
+#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
     if (sparsifier.try_to_insert_point(p))
       ++i;
 #else
@@ -653,7 +656,7 @@ std::vector<typename Kernel::Point_d> generate_points_on_klein_bottle_4D(
 
   std::vector<Point> points;
   points.reserve(num_points);
-#ifdef CGAL_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
+#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
   Point_sparsifier<Kernel, std::vector<Point> > sparsifier(points);
 #endif
   for (std::size_t i = 0 ; i < num_points ; )
@@ -676,7 +679,7 @@ std::vector<typename Kernel::Point_d> generate_points_on_klein_bottle_4D(
         (a + b*cos(v))*sin(u) + (noise == 0. ? 0. : rng.get_double(0, noise)),
         b*sin(v)*cos(u/2)     + (noise == 0. ? 0. : rng.get_double(0, noise)),
         b*sin(v)*sin(u/2)     + (noise == 0. ? 0. : rng.get_double(0, noise)));
-#ifdef CGAL_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
+#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
     if (sparsifier.try_to_insert_point(p))
       ++i;
 #else
@@ -705,7 +708,7 @@ generate_points_on_klein_bottle_variant_5D(
 
   std::vector<Point> points;
   points.reserve(num_points);
-#ifdef CGAL_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
+#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
   Point_sparsifier<Kernel, std::vector<Point> > sparsifier(points);
 #endif
   for (std::size_t i = 0 ; i < num_points ; )
@@ -730,7 +733,7 @@ generate_points_on_klein_bottle_variant_5D(
     FT x5 = x1 + x2 + x3 + x4;
 
     Point p = construct_point(k, x1, x2, x3, x4, x5);
-#ifdef CGAL_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
+#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
     if (sparsifier.try_to_insert_point(p))
       ++i;
 #else
@@ -759,7 +762,7 @@ void benchmark_spatial_search(
   typedef std::vector<Point>                          Points;
   
   CGAL::Random random_generator;
-  Wall_clock_timer t;
+  Gudhi::Clock t;
 
   //****************************** CGAL ***************************************
   {
@@ -772,19 +775,21 @@ void benchmark_spatial_search(
   typedef Points_ds::INS_range                        INS_range;
   typedef Points_ds::INS_iterator                     INS_iterator;
   
-  t.reset();
+  t.begin();
   Points_ds points_ds(points);
-  double init_time = t.elapsed();
+  t.end();
+  double init_time = t.num_seconds();
   std::cout << "Init: " << init_time << std::endl;
-  t.reset();
   
+  t.begin();
   for (std::size_t i = 0 ; i < NUM_QUERIES ; ++i)
   {
     std::size_t pt_idx = random_generator.get_int(0, points.size() - 1);
     KNS_range kns_range = points_ds.query_ANN(
       points[pt_idx], NUM_NEIGHBORS, true);
   }
-  double queries_time = t.elapsed();
+  t.end();
+  double queries_time = t.num_seconds();
   std::cout << NUM_QUERIES << " queries among " 
     << points.size() << " points: " << queries_time << std::endl;
   csv_file << queries_time << ";";
@@ -793,16 +798,17 @@ void benchmark_spatial_search(
   {
   std::cout << "\n=== nanoflann ===\n";
   
-  typedef CGAL::Tangential_complex_::
+  typedef Gudhi::Tangential_complex_::
     Point_cloud_data_structure__nanoflann<Kernel, Points>  
                                              Points_ds;
   
-  t.reset();
+  t.begin();
   Points_ds points_ds(points, k);
-  double init_time = t.elapsed();
+  t.end();
+  double init_time = t.num_seconds();
   std::cout << "Init: " << init_time << std::endl;
-  t.reset();
   
+  t.begin();
   for (std::size_t i = 0 ; i < NUM_QUERIES ; ++i)
   {
     std::size_t pt_idx = random_generator.get_int(0, points.size() - 1);
@@ -811,7 +817,8 @@ void benchmark_spatial_search(
     points_ds.query_ANN(
       points[pt_idx], NUM_NEIGHBORS, neighbors_indices, neighbors_sq_distances);
   }
-  double queries_time = t.elapsed();
+  t.end();
+  double queries_time = t.num_seconds();
   std::cout << NUM_QUERIES << " queries among " 
     << points.size() << " points: " << queries_time << std::endl;
   csv_file << queries_time << ";";
@@ -821,16 +828,17 @@ void benchmark_spatial_search(
   {
   std::cout << "\n=== ANN ===\n";
   
-  typedef CGAL::Tangential_complex_::
+  typedef Gudhi::Tangential_complex_::
     Point_cloud_data_structure__ANN<Kernel, Points>  
                                              Points_ds;
   
-  t.reset();
+  t.begin();
   Points_ds points_ds(points, k);
-  double init_time = t.elapsed();
+  t.end();
+  double init_time = t.num_seconds();
   std::cout << "Init: " << init_time << std::endl;
-  t.reset();
   
+  t.begin();
   for (std::size_t i = 0 ; i < NUM_QUERIES ; ++i)
   {
     std::size_t pt_idx = random_generator.get_int(0, points.size() - 1);
@@ -839,10 +847,11 @@ void benchmark_spatial_search(
     points_ds.query_ANN(
       points[pt_idx], NUM_NEIGHBORS, neighbors_indices, neighbors_sq_distances);
   }
-  double queries_time = t.elapsed();
+  t.end();
+  double queries_time = t.num_seconds();
   std::cout << NUM_QUERIES << " queries among " 
     << points.size() << " points: " << queries_time << std::endl;
   csv_file << queries_time << "\n";
   }
 }
-#endif // CGAL_MESH_3_TEST_TEST_UTILITIES_H
+#endif // GUDHI_MESH_3_TEST_TEST_UTILITIES_H

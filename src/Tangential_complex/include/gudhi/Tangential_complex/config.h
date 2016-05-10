@@ -18,10 +18,10 @@
 //
 // Author(s)     : Clement Jamin
 
-#ifndef CGAL_TC_CONFIG_H
-#define CGAL_TC_CONFIG_H
+#ifndef GUDHI_TC_CONFIG_H
+#define GUDHI_TC_CONFIG_H
 
-#include <CGAL/config.h>
+//#include <CGAL/config.h>
 
 // Without TBB_USE_THREADING_TOOL Intel Inspector XE will report false
 // positives in Intel TBB
@@ -32,41 +32,42 @@
 
 //=========================== Alpha-TC or not? ================================
 
-//#define CGAL_ALPHA_TC
-  //#define CGAL_USE_A_FIXED_ALPHA
-  const double CGAL_TC_ALPHA_VALUE = 0.3;
+//#define GUDHI_ALPHA_TC
+  //#define GUDHI_USE_A_FIXED_ALPHA
+  const double GUDHI_TC_ALPHA_VALUE = 0.3;
 
 //========================= Debugging & profiling =============================
-#define CGAL_TC_PROFILING
-#define CGAL_TC_VERBOSE
-//#define CGAL_TC_VERY_VERBOSE
-//#define CGAL_TC_PERFORM_EXTRA_CHECKS
-//#define CGAL_TC_SHOW_DETAILED_STATS_FOR_INCONSISTENCIES
+#define GUDHI_TC_PROFILING
+#define GUDHI_TC_VERBOSE
+//#define GUDHI_TC_VERY_VERBOSE
+//#define GUDHI_TC_PERFORM_EXTRA_CHECKS
+//#define GUDHI_TC_SHOW_DETAILED_STATS_FOR_INCONSISTENCIES
 
 // Solving inconsistencies: only perturb the vertex, the simplex or more?
-#define CGAL_TC_PERTURB_THE_CENTER_VERTEX_ONLY // Best technique
-//#define CGAL_TC_PERTURB_THE_SIMPLEX_ONLY // Best technique ex-aequo
-//#define CGAL_TC_PERTURB_THE_1_STAR // BAD TECHNIQUE
-//#define CGAL_TC_PERTURB_N_CLOSEST_POINTS // perturb the CGAL_TC_NUMBER_OF_PERTURBED_POINTS closest points
+#define GUDHI_TC_PERTURB_THE_CENTER_VERTEX_ONLY // Best technique
+//#define GUDHI_TC_PERTURB_THE_SIMPLEX_ONLY // Best technique ex-aequo
+//#define GUDHI_TC_PERTURB_THE_1_STAR // BAD TECHNIQUE
+//#define GUDHI_TC_PERTURB_N_CLOSEST_POINTS // perturb the GUDHI_TC_NUMBER_OF_PERTURBED_POINTS closest points
 // Otherwise, perturb one random point of the simplex
 
-// Only used if CGAL_TC_PERTURB_N_CLOSEST_POINTS is defined
-#define CGAL_TC_NUMBER_OF_PERTURBED_POINTS(intr_dim) (1) // Good technique
-//#define CGAL_TC_NUMBER_OF_PERTURBED_POINTS(intr_dim) (intr_dim + 2) // Quite good technique
+// Only used if GUDHI_TC_PERTURB_N_CLOSEST_POINTS is defined
+#define GUDHI_TC_NUMBER_OF_PERTURBED_POINTS(intr_dim) (1) // Good technique
+//#define GUDHI_TC_NUMBER_OF_PERTURBED_POINTS(intr_dim) (intr_dim + 2) // Quite good technique
 
-#define CGAL_MESH_D_PROFILING
-#define CGAL_MESH_D_VERBOSE
+#define GUDHI_MESH_D_PROFILING
+#define GUDHI_MESH_D_VERBOSE
 
 //========================= Strategy ==========================================
-#define CGAL_TC_NANOFLANN_IS_AVAILABLE
-//#define CGAL_TC_ANN_IS_AVAILABLE
-//#define CGAL_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
-#define CGAL_TC_GLOBAL_REFRESH
-//#define CGAL_TC_PERTURB_POSITION
-//# define CGAL_TC_PERTURB_POSITION_TANGENTIAL // default
-//# define CGAL_TC_PERTURB_POSITION_GLOBAL
-#define CGAL_TC_PERTURB_WEIGHT
-//#define CGAL_TC_PERTURB_TANGENT_SPACE
+#define GUDHI_TC_NANOFLANN_IS_AVAILABLE
+//#define GUDHI_TC_ANN_IS_AVAILABLE
+//#define GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
+//#define GUDHI_TC_PERTURB_EACH_STAR_UNTIL_FIXED
+#define GUDHI_TC_GLOBAL_REFRESH
+#define GUDHI_TC_PERTURB_POSITION
+# define GUDHI_TC_PERTURB_POSITION_TANGENTIAL // default
+//# define GUDHI_TC_PERTURB_POSITION_GLOBAL
+//#define GUDHI_TC_PERTURB_WEIGHT
+//#define GUDHI_TC_PERTURB_TANGENT_SPACE
 
 //========================= Parameters ========================================
 
@@ -74,4 +75,4 @@
 const std::size_t BASE_VALUE_FOR_PCA = 5;
 const unsigned int BASE_VALUE_FOR_ALPHA_TC_NEIGHBORHOOD = 5;
 
-#endif // CGAL_TC_CONFIG_H
+#endif // GUDHI_TC_CONFIG_H

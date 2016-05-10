@@ -27,11 +27,10 @@
 #include <gudhi/Tangential_complex/utilities.h>
 #include <gudhi/Tangential_complex/Point_cloud.h>
 #include "gudhi/Tangential_complex/console_color.h"
+#include <gudhi/Clock.h>
 
-//#include <CGAL/tags.h>
 #include <CGAL/Dimension.h>
 #include <CGAL/function_objects.h>
-
 #include <CGAL/Epick_d.h>
 #include <CGAL/Regular_triangulation_euclidean_traits.h>
 #include <CGAL/Regular_triangulation.h>
@@ -40,9 +39,6 @@
 #include <CGAL/point_generators_d.h>
 #include <CGAL/QP_models.h>
 #include <CGAL/QP_functions.h>
-
-# include <CGAL/Mesh_3/Profiling_tools.h>
-
 #include <CGAL/IO/Triangulation_off_ostream.h> // CJTODO DEBUG?
 
 #include <Eigen/Core>
@@ -54,6 +50,7 @@
 #include <boost/range/counting_range.hpp>
 #include <boost/math/special_functions/factorials.hpp>
 
+#include <tuple>
 #include <vector>
 #include <set>
 #include <utility>
@@ -63,6 +60,7 @@
 #include <algorithm>
 #include <functional>
 #include <iterator>
+#include <cmath>  // for std::sqrt
 
 #ifdef GUDHI_USE_TBB
 # include <tbb/parallel_for.h>
@@ -76,18 +74,18 @@
 typedef CGAL::MP_Float ET;
 //#define CGAL_QP_NO_ASSERTIONS // CJTODO: NECESSARY? http://doc.cgal.org/latest/QP_solver/group__PkgQPSolverFunctions.html#ga1fefbd0436aca0e281f88e8e6cd8eb74
 
-//#define CGAL_TC_EXPORT_NORMALS // Only for 3D surfaces (k=2, d=3)
+//#define GUDHI_TC_EXPORT_NORMALS // Only for 3D surfaces (k=2, d=3)
 
 //static std::ofstream csv_stream("output/stats.csv"); // CJTODO DEBUG
 
 //CJTODO: debug
-//#define CGAL_TC_COMPUTE_TANGENT_PLANES_FOR_SPHERE_2
-//#define CGAL_TC_COMPUTE_TANGENT_PLANES_FOR_SPHERE_3
-//#define CGAL_TC_COMPUTE_TANGENT_PLANES_FOR_FLAT_TORUS_D
-//#define CGAL_TC_ADD_NOISE_TO_TANGENT_SPACE
-//#define CGAL_TC_BETTER_EXPORT_FOR_FLAT_TORUS
+//#define GUDHI_TC_COMPUTE_TANGENT_PLANES_FOR_SPHERE_2
+//#define GUDHI_TC_COMPUTE_TANGENT_PLANES_FOR_SPHERE_3
+//#define GUDHI_TC_COMPUTE_TANGENT_PLANES_FOR_FLAT_TORUS_D
+//#define GUDHI_TC_ADD_NOISE_TO_TANGENT_SPACE
+//#define GUDHI_TC_BETTER_EXPORT_FOR_FLAT_TORUS
 
-namespace CGAL {
+namespace Gudhi {
 
 using namespace Tangential_complex_;
 
@@ -112,34 +110,34 @@ template <
   typename Kernel_, // ambiant kernel
   typename DimensionTag, // intrinsic dimension
   typename Concurrency_tag = CGAL::Parallel_tag,
-#ifdef CGAL_ALPHA_TC
+#ifdef GUDHI_ALPHA_TC
   // For the alpha-TC, the dimension of the RT is variable
   // => we need to force 
-  typename Tr = Regular_triangulation
+  typename Tr = CGAL::Regular_triangulation
   <
-    Epick_d<CGAL::Dynamic_dimension_tag>,
-    Triangulation_data_structure
+    CGAL::Epick_d<CGAL::Dynamic_dimension_tag>,
+    CGAL::Triangulation_data_structure
     <
-      typename Regular_triangulation_euclidean_traits<
-        Epick_d<CGAL::Dynamic_dimension_tag> >::Dimension,
-      Triangulation_vertex<Regular_triangulation_euclidean_traits<
-        Epick_d<CGAL::Dynamic_dimension_tag> >, Vertex_data >,
-      Triangulation_full_cell<Regular_triangulation_euclidean_traits<
-        Epick_d<CGAL::Dynamic_dimension_tag> > >
+      typename CGAL::Regular_triangulation_euclidean_traits<
+        CGAL::Epick_d<CGAL::Dynamic_dimension_tag> >::Dimension,
+      CGAL::Triangulation_vertex<CGAL::Regular_triangulation_euclidean_traits<
+        CGAL::Epick_d<CGAL::Dynamic_dimension_tag> >, Vertex_data >,
+      CGAL::Triangulation_full_cell<CGAL::Regular_triangulation_euclidean_traits<
+        CGAL::Epick_d<CGAL::Dynamic_dimension_tag> > >
     >
   >
 #else
-  typename Tr = Regular_triangulation
+  typename Tr = CGAL::Regular_triangulation
   <
-    Epick_d<DimensionTag>,
-    Triangulation_data_structure
+    CGAL::Epick_d<DimensionTag>,
+    CGAL::Triangulation_data_structure
     <
-      typename Regular_triangulation_euclidean_traits<
-        Epick_d<DimensionTag> >::Dimension,
-      Triangulation_vertex<Regular_triangulation_euclidean_traits<
-        Epick_d<DimensionTag> >, Vertex_data >,
-      Triangulation_full_cell<Regular_triangulation_euclidean_traits<
-        Epick_d<DimensionTag> > >
+      typename CGAL::Regular_triangulation_euclidean_traits<
+      CGAL::Epick_d<DimensionTag> >::Dimension,
+      CGAL::Triangulation_vertex<CGAL::Regular_triangulation_euclidean_traits<
+      CGAL::Epick_d<DimensionTag> >, Vertex_data >,
+      CGAL::Triangulation_full_cell<CGAL::Regular_triangulation_euclidean_traits<
+      CGAL::Epick_d<DimensionTag> > >
     >
   >
 #endif
@@ -160,17 +158,17 @@ class Tangential_complex
   typedef typename Triangulation::Full_cell_handle    Tr_full_cell_handle;
   typedef typename Tr_traits::Vector_d                Tr_vector;
 
-#if defined(GUDHI_USE_TBB) && defined(CGAL_TC_GLOBAL_REFRESH)
+#if defined(GUDHI_USE_TBB) && defined(GUDHI_TC_GLOBAL_REFRESH)
   typedef tbb::mutex                                  Mutex_for_perturb;
   typedef Vector                                      Translation_for_perturb;
   typedef std::vector<Atomic_wrapper<FT> >            Weights;
- #ifdef CGAL_TC_PERTURB_WEIGHT
+ #ifdef GUDHI_TC_PERTURB_WEIGHT
   typedef std::vector<Atomic_wrapper<FT> >            Weights_memory;
  #endif
 #else
   typedef Vector                                      Translation_for_perturb;
   typedef std::vector<FT>                             Weights;
- #ifdef CGAL_TC_PERTURB_WEIGHT
+ #ifdef GUDHI_TC_PERTURB_WEIGHT
   typedef std::vector<FT>                             Weights_memory;
  #endif
 #endif
@@ -299,7 +297,7 @@ public:
   template <typename InputIterator>
   Tangential_complex(InputIterator first, InputIterator last,
                      double sparsity, int intrinsic_dimension,
-#ifdef CGAL_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
+#ifdef GUDHI_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
                      InputIterator first_for_tse, InputIterator last_for_tse,
 #endif
                      double max_perturb = 0.5*sparsity,
@@ -312,21 +310,21 @@ public:
     m_ambient_dim(k.point_dimension_d_object()(*first)),
     m_points(first, last),
     m_weights(m_points.size(), FT(0))
-#ifdef CGAL_TC_PERTURB_WEIGHT
+#ifdef GUDHI_TC_PERTURB_WEIGHT
     , m_weights_memory()
 #endif
-#if defined(GUDHI_USE_TBB) && defined(CGAL_TC_PERTURB_POSITION) \
-  && defined(CGAL_TC_GLOBAL_REFRESH)
+#if defined(GUDHI_USE_TBB) && defined(GUDHI_TC_PERTURB_POSITION) \
+  && defined(GUDHI_TC_GLOBAL_REFRESH)
     , m_p_perturb_mutexes(NULL)
 #endif
     , m_points_ds(m_points)
     , m_max_perturb(max_perturb)
     , m_are_tangent_spaces_computed(m_points.size(), false)
     , m_tangent_spaces(m_points.size(), Tangent_space_basis())
-#ifdef CGAL_TC_EXPORT_NORMALS
+#ifdef GUDHI_TC_EXPORT_NORMALS
     , m_orth_spaces(m_points.size(), Orthogonal_space_basis())
 #endif
-#ifdef CGAL_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
+#ifdef GUDHI_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
     , m_points_for_tse(first_for_tse, last_for_tse)
     , m_points_ds_for_tse(m_points_for_tse)
 #endif
@@ -338,8 +336,8 @@ public:
   /// Destructor
   ~Tangential_complex()
   {
-#if defined(GUDHI_USE_TBB) && defined(CGAL_TC_PERTURB_POSITION) \
- && defined(CGAL_TC_GLOBAL_REFRESH)
+#if defined(GUDHI_USE_TBB) && defined(GUDHI_TC_PERTURB_POSITION) \
+ && defined(GUDHI_TC_GLOBAL_REFRESH)
     delete [] m_p_perturb_mutexes;
 #endif
   }
@@ -366,30 +364,34 @@ public:
   void set_weights(const Weights& weights)
   {
     m_weights = weights;
-#ifdef CGAL_TC_PERTURB_WEIGHT
+#ifdef GUDHI_TC_PERTURB_WEIGHT
     m_weights_memory = weights;
 #endif
   }
 
   void set_tangent_planes(const TS_container& tangent_spaces
-#ifdef CGAL_TC_EXPORT_NORMALS
+#ifdef GUDHI_TC_EXPORT_NORMALS
                         , const OS_container& orthogonal_spaces
 #endif
                          )
   {
-#ifdef CGAL_TC_PERTURB_TANGENT_SPACE
-    std::cerr << "Cannot use CGAL_TC_PERTURB_TANGENT_SPACE and set "
+#ifdef GUDHI_TC_PERTURB_TANGENT_SPACE
+    std::cerr << "Cannot use GUDHI_TC_PERTURB_TANGENT_SPACE and set "
               << " tangent spaces manually at the same time\n";
     std::exit(EXIT_FAILURE);
 #endif
-#ifdef CGAL_TC_EXPORT_NORMALS
-    CGAL_assertion(m_points.size() == tangent_spaces.size()
-                   && m_points.size() == orthogonal_spaces.size());
+#ifdef GUDHI_TC_EXPORT_NORMALS
+    GUDHI_CHECK(
+      m_points.size() == tangent_spaces.size()
+        && m_points.size() == orthogonal_spaces.size(),
+      std::logic_error("Wrong sizes"));
 #else
-    CGAL_assertion(m_points.size() == tangent_spaces.size());
+    GUDHI_CHECK(
+      m_points.size() == tangent_spaces.size(),
+      std::logic_error("Wrong sizes"));
 #endif
     m_tangent_spaces = tangent_spaces;
-#ifdef CGAL_TC_EXPORT_NORMALS
+#ifdef GUDHI_TC_EXPORT_NORMALS
     m_orth_spaces = orthogonal_spaces;
 #endif
     for(std::size_t i=0; i<m_points.size(); ++i)
@@ -409,7 +411,7 @@ public:
     {
       std::size_t neighbor_point_idx = nn_it->first;
       FT sqdist = nn_it->second;
-      std::cerr << neighbor_point_idx << ":" << CGAL::sqrt(sqdist) << "\n";
+      std::cerr << neighbor_point_idx << ":" << std::sqrt(sqdist) << "\n";
     }
     }
     {
@@ -422,21 +424,21 @@ public:
     {
       std::size_t neighbor_point_idx = nn_it->first;
       FT sqdist = nn_it->second;
-      std::cerr << neighbor_point_idx << ":" << CGAL::sqrt(sqdist) << "\n";
+      std::cerr << neighbor_point_idx << ":" << std::sqrt(sqdist) << "\n";
     }
     }*/
 
-#ifdef CGAL_TC_PERFORM_EXTRA_CHECKS
-    std::cerr << red << "WARNING: CGAL_TC_PERFORM_EXTRA_CHECKS is defined. "
+#ifdef GUDHI_TC_PERFORM_EXTRA_CHECKS
+    std::cerr << red << "WARNING: GUDHI_TC_PERFORM_EXTRA_CHECKS is defined. "
       << "Computation might be slower than usual.\n" << white;
 #endif
-#ifdef CGAL_TC_ALVAREZ_SURFACE_WINDOW
-    std::cerr << red << "WARNING: CGAL_TC_ALVAREZ_SURFACE_WINDOW is defined ("
-      << CGAL_TC_ALVAREZ_SURFACE_WINDOW << ").\n" << white;
+#ifdef GUDHI_TC_ALVAREZ_SURFACE_WINDOW
+    std::cerr << red << "WARNING: GUDHI_TC_ALVAREZ_SURFACE_WINDOW is defined ("
+      << GUDHI_TC_ALVAREZ_SURFACE_WINDOW << ").\n" << white;
 #endif
 
-#if defined(CGAL_TC_PROFILING) && defined(GUDHI_USE_TBB)
-    Wall_clock_timer t;
+#if defined(GUDHI_TC_PROFILING) && defined(GUDHI_USE_TBB)
+    Gudhi::Clock t;
 #endif
 
     // We need to do that because we don't want the container to copy the
@@ -448,21 +450,21 @@ public:
 #ifdef GUDHI_USE_TBB
     //m_tr_mutexes.resize(m_points.size());
 #endif
-#ifdef CGAL_TC_PERTURB_POSITION
+#ifdef GUDHI_TC_PERTURB_POSITION
     m_translations.resize(m_points.size(),
                           m_k.construct_vector_d_object()(m_ambient_dim));
-# if defined(GUDHI_USE_TBB) && defined(CGAL_TC_GLOBAL_REFRESH)
+# if defined(GUDHI_USE_TBB) && defined(GUDHI_TC_GLOBAL_REFRESH)
     delete [] m_p_perturb_mutexes;
     m_p_perturb_mutexes = new Mutex_for_perturb[m_points.size()];
 # endif
 #endif
-#ifdef CGAL_TC_PERTURB_TANGENT_SPACE
+#ifdef GUDHI_TC_PERTURB_TANGENT_SPACE
     m_perturb_tangent_space.resize(m_points.size(), false);
 #endif
 
 #ifdef GUDHI_USE_TBB
     // Parallel
-    if (boost::is_convertible<Concurrency_tag, Parallel_tag>::value)
+    if (boost::is_convertible<Concurrency_tag, CGAL::Parallel_tag>::value)
     {
       tbb::parallel_for(tbb::blocked_range<size_t>(0, m_points.size()),
         Compute_tangent_triangulation(*this)
@@ -476,8 +478,9 @@ public:
         compute_tangent_triangulation(i);
     }
 
-#if defined(CGAL_TC_PROFILING) && defined(GUDHI_USE_TBB)
-    std::cerr << "Tangential complex computed in " << t.elapsed()
+#if defined(GUDHI_TC_PROFILING) && defined(GUDHI_USE_TBB)
+    t.end();
+    std::cerr << "Tangential complex computed in " << t.num_seconds()
               << " seconds.\n";
 #endif
   }
@@ -535,16 +538,16 @@ public:
 
   void refresh_tangential_complex()
   {
-#if defined(CGAL_TC_VERBOSE) || defined(CGAL_TC_PROFILING)
+#if defined(GUDHI_TC_VERBOSE) || defined(GUDHI_TC_PROFILING)
     std::cerr << yellow << "\nRefreshing TC... " << white;
 #endif
 
-#ifdef CGAL_TC_PROFILING
-    Wall_clock_timer t;
+#ifdef GUDHI_TC_PROFILING
+    Gudhi::Clock t;
 #endif
 #ifdef GUDHI_USE_TBB
     // Parallel
-    if (boost::is_convertible<Concurrency_tag, Parallel_tag>::value)
+    if (boost::is_convertible<Concurrency_tag, CGAL::Parallel_tag>::value)
     {
       tbb::parallel_for(tbb::blocked_range<size_t>(0, m_points.size()),
         Compute_tangent_triangulation(*this)
@@ -558,10 +561,11 @@ public:
         compute_tangent_triangulation(i);
     }
 
-#ifdef CGAL_TC_PROFILING
-    std::cerr << yellow << "done in " << t.elapsed()
+#ifdef GUDHI_TC_PROFILING
+    t.end();
+    std::cerr << yellow << "done in " << t.num_seconds()
       << " seconds.\n" << white;
-#elif defined(CGAL_TC_VERBOSE)
+#elif defined(GUDHI_TC_VERBOSE)
     std::cerr << yellow << "done.\n" << white;
 #endif
   }
@@ -571,12 +575,12 @@ public:
   void refresh_tangential_complex(
     Point_indices_range const& perturbed_points_indices)
   {
-#if defined(CGAL_TC_VERBOSE) || defined(CGAL_TC_PROFILING)
-    std::cerr << yellow << "\nRefreshing TC... " << white;
+#if defined(GUDHI_TC_VERBOSE) || defined(GUDHI_TC_PROFILING)
+    //std::cerr << yellow << "\nRefreshing TC... " << white; // CJTODO TEMP: uncomment
 #endif
 
-#ifdef CGAL_TC_PROFILING
-    Wall_clock_timer t;
+#ifdef GUDHI_TC_PROFILING
+    Gudhi::Clock t;
 #endif
 
     // ANN tree containing only the perturbed points
@@ -584,7 +588,7 @@ public:
 
 #ifdef GUDHI_USE_TBB
     // Parallel
-    if (boost::is_convertible<Concurrency_tag, Parallel_tag>::value)
+    if (boost::is_convertible<Concurrency_tag, CGAL::Parallel_tag>::value)
     {
       tbb::parallel_for(tbb::blocked_range<size_t>(0, m_points.size()),
         Refresh_tangent_triangulation(*this, updated_pts_ds)
@@ -598,11 +602,12 @@ public:
         refresh_tangent_triangulation(i, updated_pts_ds);
     }
 
-#ifdef CGAL_TC_PROFILING
-    std::cerr << yellow << "done in " << t.elapsed()
+#ifdef GUDHI_TC_PROFILING
+    t.end();
+    std::cerr << yellow << "done in " << t.num_seconds()
       << " seconds.\n" << white;
-#elif defined(CGAL_TC_VERBOSE)
-    std::cerr << yellow << "done.\n" << white;
+#elif defined(GUDHI_TC_VERBOSE)
+    //std::cerr << yellow << "done.\n" << white; // CJTODO TEMP: uncomment
 #endif
   }
 
@@ -617,40 +622,40 @@ public:
     if (time_limit == 0.)
       return TIME_LIMIT_REACHED;
 
-    Wall_clock_timer t;
+    Gudhi::Clock t;
 
-#ifdef CGAL_TC_SHOW_DETAILED_STATS_FOR_INCONSISTENCIES
-    CGAL::cpp11::tuple<std::size_t, std::size_t, std::size_t> stats_before =
+#ifdef GUDHI_TC_SHOW_DETAILED_STATS_FOR_INCONSISTENCIES
+    std::tuple<std::size_t, std::size_t, std::size_t> stats_before =
       number_of_inconsistent_simplices(false);
 
-    if (CGAL::cpp11::get<1>(stats_before) == 0)
+    if (std::get<1>(stats_before) == 0)
     {
-# ifdef CGAL_TC_VERBOSE
+# ifdef GUDHI_TC_VERBOSE
       std::cerr << "Nothing to fix.\n";
 # endif
       return TC_FIXED;
     }
-#endif // CGAL_TC_SHOW_DETAILED_STATS_FOR_INCONSISTENCIES
+#endif // GUDHI_TC_SHOW_DETAILED_STATS_FOR_INCONSISTENCIES
 
     bool done = false;
     best_num_inconsistent_stars = m_triangulations.size();
     num_steps = 0;
     while (!done)
     {
-#ifdef CGAL_TC_SHOW_DETAILED_STATS_FOR_INCONSISTENCIES
+#ifdef GUDHI_TC_SHOW_DETAILED_STATS_FOR_INCONSISTENCIES
       std::cerr
         << "\nBefore fix step:\n"
         << "  * Total number of simplices in stars (incl. duplicates): "
-        << CGAL::cpp11::get<0>(stats_before) << "\n"
+        << std::get<0>(stats_before) << "\n"
         << "  * Num inconsistent simplices in stars (incl. duplicates): "
-        << red << CGAL::cpp11::get<1>(stats_before) << white << " (" 
-        << 100. * CGAL::cpp11::get<1>(stats_before) / CGAL::cpp11::get<0>(stats_before) << "%)\n"
+        << red << std::get<1>(stats_before) << white << " (" 
+        << 100. * std::get<1>(stats_before) / std::get<0>(stats_before) << "%)\n"
         << "  * Number of stars containing inconsistent simplices: "
-        << red << CGAL::cpp11::get<2>(stats_before) << white << " ("
-        << 100. * CGAL::cpp11::get<2>(stats_before) / m_points.size() << "%)\n";
+        << red << std::get<2>(stats_before) << white << " ("
+        << 100. * std::get<2>(stats_before) / m_points.size() << "%)\n";
 #endif
 
-#if defined(CGAL_TC_VERBOSE) || defined(CGAL_TC_PROFILING)
+#if defined(GUDHI_TC_VERBOSE) || defined(GUDHI_TC_PROFILING)
       std::cerr << yellow 
         << "\nAttempt to fix inconsistencies using perturbations - step #"
         << num_steps + 1 << "... " << white;
@@ -659,13 +664,15 @@ public:
       std::size_t num_inconsistent_stars = 0;
       std::vector<std::size_t> updated_points;
 
-#ifdef CGAL_TC_PROFILING
-      Wall_clock_timer t_fix_step;
+#ifdef GUDHI_TC_PROFILING
+      Gudhi::Clock t_fix_step;
 #endif
 
       // Parallel
-#if defined(GUDHI_USE_TBB) && defined(CGAL_TC_GLOBAL_REFRESH)
-      if (boost::is_convertible<Concurrency_tag, Parallel_tag>::value)
+#if defined(GUDHI_USE_TBB) \
+ && defined(GUDHI_TC_GLOBAL_REFRESH) \
+ && !defined(GUDHI_TC_PERTURB_EACH_STAR_UNTIL_FIXED)
+      if (boost::is_convertible<Concurrency_tag, CGAL::Parallel_tag>::value)
       {
         tbb::combinable<std::size_t> num_inconsistencies;
         tbb::combinable<std::vector<std::size_t> > tls_updated_points;
@@ -691,15 +698,40 @@ public:
       {
         for (std::size_t i = 0 ; i < m_triangulations.size() ; ++i)
         {
+#ifdef GUDHI_TC_PERTURB_EACH_STAR_UNTIL_FIXED
+          std::vector<std::size_t> perturbed_points;
+          bool inconsistency_found =
+            try_to_solve_inconsistencies_in_a_local_triangulation(
+              i, std::back_inserter(perturbed_points));
+          num_inconsistent_stars += inconsistency_found;
+
+          for (int c = 0 ; inconsistency_found ; ++c)
+          {
+            refresh_tangential_complex(perturbed_points);
+            if (c > 100)
+            {
+              std::cerr << "FAILURE\n"; // CJTODO TEMP
+              break;
+            }
+            perturbed_points.clear();
+            inconsistency_found = 
+              try_to_solve_inconsistencies_in_a_local_triangulation(
+                i, std::back_inserter(perturbed_points));
+          }
+          //std::cerr << "SUCCESS\n"; // CJTODO TEMP
+#else
           num_inconsistent_stars +=
             try_to_solve_inconsistencies_in_a_local_triangulation(
               i, std::back_inserter(updated_points));
+#endif
         }
       }
 
-      double fix_step_time = t_fix_step.elapsed();
+#ifdef GUDHI_TC_PROFILING
+      t_fix_step.end();
+#endif
 
-#if defined(CGAL_TC_SHOW_DETAILED_STATS_FOR_INCONSISTENCIES) || defined(CGAL_TC_VERBOSE)
+#if defined(GUDHI_TC_SHOW_DETAILED_STATS_FOR_INCONSISTENCIES) || defined(GUDHI_TC_VERBOSE)
       std::cerr
         << "\nEncountered during fix:\n"
         << "  * Num stars containing inconsistent simplices: "
@@ -707,24 +739,24 @@ public:
         << " (" << 100. * num_inconsistent_stars / m_points.size() << "%)\n";
 #endif
 
-#ifdef CGAL_TC_PROFILING
-      std::cerr << yellow << "done in " << fix_step_time
+#ifdef GUDHI_TC_PROFILING
+      std::cerr << yellow << "done in " << t_fix_step.num_seconds()
         << " seconds.\n" << white;
-#elif defined(CGAL_TC_VERBOSE)
+#elif defined(GUDHI_TC_VERBOSE)
       std::cerr << yellow << "done.\n" << white;
 #endif
 
-#ifdef CGAL_TC_GLOBAL_REFRESH
+#if defined(GUDHI_TC_GLOBAL_REFRESH) && !defined(GUDHI_TC_PERTURB_EACH_STAR_UNTIL_FIXED)
       if (num_inconsistent_stars > 0)
         refresh_tangential_complex(updated_points);
 
-# ifdef CGAL_TC_PERFORM_EXTRA_CHECKS
+# ifdef GUDHI_TC_PERFORM_EXTRA_CHECKS
       // Confirm that all stars were actually refreshed
       std::size_t num_inc_1 = 
-        CGAL::cpp11::get<1>(number_of_inconsistent_simplices(false));
+        std::get<1>(number_of_inconsistent_simplices(false));
       refresh_tangential_complex();
       std::size_t num_inc_2 = 
-        CGAL::cpp11::get<1>(number_of_inconsistent_simplices(false));
+        std::get<1>(number_of_inconsistent_simplices(false));
       if (num_inc_1 != num_inc_2)
         std::cerr << red << "REFRESHMENT CHECK: FAILED. ("
           << num_inc_1 << " vs " << num_inc_2 << ")\n" << white;
@@ -733,20 +765,20 @@ public:
 # endif
 #endif
 
-#ifdef CGAL_TC_SHOW_DETAILED_STATS_FOR_INCONSISTENCIES
-      CGAL::cpp11::tuple<std::size_t, std::size_t, std::size_t> stats_after =
+#ifdef GUDHI_TC_SHOW_DETAILED_STATS_FOR_INCONSISTENCIES
+      std::tuple<std::size_t, std::size_t, std::size_t> stats_after =
         number_of_inconsistent_simplices(false);
 
       std::cerr
         << "\nAfter fix:\n"
         << "  * Total number of simplices in stars (incl. duplicates): "
-        << CGAL::cpp11::get<0>(stats_after) << "\n"
+        << std::get<0>(stats_after) << "\n"
         << "  * Num inconsistent simplices in stars (incl. duplicates): "
-        << red << CGAL::cpp11::get<1>(stats_after) << white << " (" 
-        << 100. * CGAL::cpp11::get<1>(stats_after) / CGAL::cpp11::get<0>(stats_after) << "%)\n"
+        << red << std::get<1>(stats_after) << white << " (" 
+        << 100. * std::get<1>(stats_after) / std::get<0>(stats_after) << "%)\n"
         << "  * Number of stars containing inconsistent simplices: "
-        << red << CGAL::cpp11::get<2>(stats_after) << white << " ("
-        << 100. * CGAL::cpp11::get<2>(stats_after) / m_points.size() << "%)\n";
+        << red << std::get<2>(stats_after) << white << " ("
+        << 100. * std::get<2>(stats_after) / m_points.size() << "%)\n";
 
       stats_before = stats_after;
 #endif
@@ -763,9 +795,9 @@ public:
       if (!done)
       {
         ++num_steps;
-        if (time_limit > 0. && t.elapsed() > time_limit)
+        if (time_limit > 0. && t.num_seconds() > time_limit)
         {
-#ifdef CGAL_TC_VERBOSE
+#ifdef GUDHI_TC_VERBOSE
           std::cerr << red << "Time limit reached.\n" << white;
 #endif
           return TIME_LIMIT_REACHED;
@@ -773,7 +805,7 @@ public:
       }
     }
 
-#ifdef CGAL_TC_VERBOSE
+#ifdef GUDHI_TC_VERBOSE
     std::cerr << green << "Fixed!\n" << white;
 #endif
     return TC_FIXED;
@@ -781,9 +813,9 @@ public:
 
   // Return a tuple
   // <num_simplices, num_inconsistent_simplices, num_inconsistent_stars>
-  CGAL::cpp11::tuple<std::size_t, std::size_t, std::size_t> 
+  std::tuple<std::size_t, std::size_t, std::size_t> 
   number_of_inconsistent_simplices(
-#ifdef CGAL_TC_VERBOSE
+#ifdef GUDHI_TC_VERBOSE
     bool verbose = true
 #else
     bool verbose = false
@@ -855,12 +887,12 @@ public:
     int check_lower_and_higher_dim_simplices = 2,
     std::set<Indexed_simplex > *p_inconsistent_simplices = NULL) const
   {
-#if defined(CGAL_TC_VERBOSE) || defined(CGAL_TC_PROFILING)
+#if defined(GUDHI_TC_VERBOSE) || defined(GUDHI_TC_PROFILING)
     std::cerr << yellow
       << "\nExporting the TC as a Simplicial_complex... " << white;
 #endif
-#ifdef CGAL_TC_PROFILING
-    Wall_clock_timer t;
+#ifdef GUDHI_TC_PROFILING
+    Gudhi::Clock t;
 #endif
 
     int max_dim = -1;
@@ -897,8 +929,8 @@ public:
         // Add the missing center vertex
         c.insert(idx);
 
-#ifdef CGAL_TC_ALVAREZ_SURFACE_WINDOW
-        if (is_one_of_the_coord_far_from_origin(c, CGAL_TC_ALVAREZ_SURFACE_WINDOW, 2))
+#ifdef GUDHI_TC_ALVAREZ_SURFACE_WINDOW
+        if (is_one_of_the_coord_far_from_origin(c, GUDHI_TC_ALVAREZ_SURFACE_WINDOW, 2))
           continue;
 #endif
 
@@ -914,10 +946,11 @@ public:
       }
     }
 
-#ifdef CGAL_TC_PROFILING
-    std::cerr << yellow << "done in " << t.elapsed()
+#ifdef GUDHI_TC_PROFILING
+    t.end();
+    std::cerr << yellow << "done in " << t.num_seconds()
       << " seconds.\n" << white;
-#elif defined(CGAL_TC_VERBOSE)
+#elif defined(GUDHI_TC_VERBOSE)
     std::cerr << yellow << "done.\n" << white;
 #endif
 
@@ -965,7 +998,7 @@ public:
   }
 
 
-#ifdef CGAL_ALPHA_TC
+#ifdef GUDHI_ALPHA_TC
 private:
   
   // Look in the star of point "i" for inconsistent simplices, compute
@@ -1112,11 +1145,11 @@ private:
 public:
   void solve_inconsistencies_using_alpha_TC()
   {
-#ifdef CGAL_TC_PROFILING
-    Wall_clock_timer t;
+#ifdef GUDHI_TC_PROFILING
+    Gudhi::Clock t;
 #endif
 
-#ifdef CGAL_TC_VERBOSE
+#ifdef GUDHI_TC_VERBOSE
     std::cerr << "Fixing inconsistencies using alpha TC...\n";
 #endif
 
@@ -1128,8 +1161,8 @@ public:
       std::greater<Simplex_and_alpha> > AATC_pq;
     typedef std::vector<AATC_pq> PQueues;
     
-#ifdef CGAL_TC_PROFILING
-    Wall_clock_timer t_pq;
+#ifdef GUDHI_TC_PROFILING
+    Gudhi::Clock t_pq;
 #endif
 
     // One queue per dimension, from intrinsic dim (index = 0) to 
@@ -1142,12 +1175,16 @@ public:
     for (std::size_t i = 0 ; i < m_points.size() ; ++i)
       num_inconsistent_simplices += fill_pqueues_for_alpha_tc(i, pqueues);
 
-#ifdef CGAL_TC_VERBOSE
+# ifdef GUDHI_TC_PROFILING
+    t_pq.end();
+#endif
+
+#ifdef GUDHI_TC_VERBOSE
     std::cerr
       << "Num inconsistent simplices found when filling the priority queues: "
       << num_inconsistent_simplices;
-# ifdef CGAL_TC_PROFILING
-    std::cerr << " (" << t_pq.elapsed() << " s)\n";
+# ifdef GUDHI_TC_PROFILING
+    std::cerr << " (" << t_pq.num_seconds() << " s)\n";
 # endif
     std::cerr << "\n";
 #endif
@@ -1159,8 +1196,8 @@ public:
     // While there's elements to treat in the queues
     for(;;)
     {
-#ifdef CGAL_TC_PROFILING
-      Wall_clock_timer t_one_fix;
+#ifdef GUDHI_TC_PROFILING
+      Gudhi::Clock t_one_fix;
 #endif
 
       // Pick the simplex with the lowest dimension and the lowest alpha
@@ -1211,17 +1248,18 @@ public:
       tangent_basis.update_alpha_values_of_thickening_vectors(
         saa.m_thickening_vector, m_k);
 
-#ifdef CGAL_TC_PROFILING
-      Wall_clock_timer t_recomputation;
+#ifdef GUDHI_TC_PROFILING
+      Gudhi::Clock t_recomputation;
 #endif
       // Recompute triangulation & star
       compute_tangent_triangulation(saa.m_center_point_index);
-#ifdef CGAL_TC_PROFILING
-      double recomp_timing = t_recomputation.elapsed();
+#ifdef GUDHI_TC_PROFILING
+      t_recomputation.end();
+      double recomp_timing = t_recomputation.num_seconds();
 #endif
 
 
-#ifdef CGAL_TC_PERFORM_EXTRA_CHECKS
+#ifdef GUDHI_TC_PERFORM_EXTRA_CHECKS
       if (!is_simplex_in_star(saa.m_center_point_index, saa.m_simplex))
       {
         std::cerr 
@@ -1232,8 +1270,8 @@ public:
         std::cerr << " not added in star #"
           << saa.m_center_point_index
           << " (basis dim = " << tangent_basis.dimension()
-# ifdef CGAL_TC_PROFILING
-          << " - " << t_one_fix.elapsed() << " s [recomputation = "
+# ifdef GUDHI_TC_PROFILING
+          << " - " << t_one_fix.num_seconds() << " s [recomputation = "
           << recomp_timing << " s]"
 # endif
           << ")\n";
@@ -1295,7 +1333,7 @@ public:
         for (std::size_t i = 0 ; i < m_points.size() ; ++i)
           num_inconsistent_simplices += fill_pqueues_for_alpha_tc(i, pqueues);
 
-#ifdef CGAL_TC_VERBOSE
+#ifdef GUDHI_TC_VERBOSE
         std::cerr
           << "Num inconsistent simplices found when filling the priority queues: "
           << num_inconsistent_simplices << "\n";
@@ -1311,8 +1349,8 @@ public:
         std::cerr << " added in star #" 
           << saa.m_center_point_index 
           << " (basis dim = " << tangent_basis.dimension()
-# ifdef CGAL_TC_PROFILING
-          << " - " << t_one_fix.elapsed() << " s [recomputation = "
+# ifdef GUDHI_TC_PROFILING
+          << " - " << t_one_fix.num_seconds() << " s [recomputation = "
           << recomp_timing << " s]"
 # endif
           << ")\n";
@@ -1325,12 +1363,13 @@ public:
       fill_pqueues_for_alpha_tc(saa.m_center_point_index, pqueues);
     }
 
-#ifdef CGAL_TC_PROFILING
-    std::cerr << "Tangential complex fixed in " << t.elapsed()
+#ifdef GUDHI_TC_PROFILING
+    t.end();
+    std::cerr << "Tangential complex fixed in " << t.num_seconds()
               << " seconds.\n";
 #endif
   }
-#endif // CGAL_ALPHA_TC
+#endif // GUDHI_ALPHA_TC
   
   template<typename ProjectionFunctor = CGAL::Identity<Point> >
   std::ostream &export_to_off(
@@ -1395,7 +1434,7 @@ public:
         p_simpl_to_color_in_green, p_simpl_to_color_in_blue);
     }
 
-#ifdef CGAL_TC_EXPORT_NORMALS
+#ifdef GUDHI_TC_EXPORT_NORMALS
     os << "N";
 #endif
 
@@ -1627,7 +1666,7 @@ public:
                    std::inserter(*incorrect_simplices,
                                  incorrect_simplices->begin()) );
 
-#ifdef CGAL_TC_VERBOSE
+#ifdef GUDHI_TC_VERBOSE
     std::cerr
       << (incorrect_simplices->empty() ? "OK " : "ERROR ")
       << "check_if_all_simplices_are_in_the_ambient_delaunay:\n"
@@ -1786,7 +1825,7 @@ private:
     {
       // Insert {(0, 0, 0...), m_weights[i]}
       proj_wp = local_tr_traits.construct_weighted_point_d_object()(
-        local_tr_traits.construct_point_d_object()(tangent_space_dim, ORIGIN),
+        local_tr_traits.construct_point_d_object()(tangent_space_dim, CGAL::ORIGIN),
         m_weights[i]);
     }
     else
@@ -1800,7 +1839,7 @@ private:
     if (verbose)
       std::cerr << "* Inserted point #" << i << "\n";
 
-#ifdef CGAL_TC_VERY_VERBOSE
+#ifdef GUDHI_TC_VERY_VERBOSE
     std::size_t num_attempts_to_insert_points = 1;
     std::size_t num_inserted_points = 1;
 #endif
@@ -1814,7 +1853,7 @@ private:
     // circumspheres of the star of "center_vertex"
     boost::optional<FT> squared_star_sphere_radius_plus_margin;
 
-#ifdef CGAL_ALPHA_TC  
+#ifdef GUDHI_ALPHA_TC  
     /*FT max_absolute_alpha = tsb.max_absolute_alpha();
     // "2*m_half_sparsity" because both points can be perturbed
     FT max_sqdist_to_tangent_space = (max_absolute_alpha == FT(0) ?
@@ -1831,7 +1870,7 @@ private:
       nn_it != ins_range.end() ;
       ++nn_it)
     {
-#ifdef CGAL_ALPHA_TC  
+#ifdef GUDHI_ALPHA_TC  
       ++number_of_attempts_to_insert_points;
       /*if (number_of_attempts_to_insert_points > MAX_NUM_INSERTED_POINTS)
       break;*/
@@ -1858,7 +1897,7 @@ private:
           neighbor_pt, neighbor_weight, tsb,
           local_tr_traits);
 
-#ifdef CGAL_ALPHA_TC
+#ifdef GUDHI_ALPHA_TC
         /*for (int i = 0 ; i < tsb.num_thickening_vectors() ; ++i)
         {
         FT c = coord(proj_pt, m_intrinsic_dim + i);
@@ -1875,7 +1914,7 @@ private:
 #endif
 
 
-#ifdef CGAL_TC_VERY_VERBOSE
+#ifdef GUDHI_TC_VERY_VERBOSE
         ++num_attempts_to_insert_points;
 #endif
 
@@ -1884,7 +1923,7 @@ private:
         //Tr_vertex_handle vh = triangulation.insert(proj_pt);
         if (vh != Tr_vertex_handle())
         {
-#ifdef CGAL_TC_VERY_VERBOSE
+#ifdef GUDHI_TC_VERY_VERBOSE
           ++num_inserted_points;
 #endif
           if (verbose)
@@ -1937,14 +1976,14 @@ private:
             // The value depends on whether we perturb weight or position
             if (squared_star_sphere_radius_plus_margin)
             {
-#ifdef CGAL_TC_PERTURB_WEIGHT
+#ifdef GUDHI_TC_PERTURB_WEIGHT
               // "4*m_sq_half_sparsity" because both points can be perturbed
               squared_star_sphere_radius_plus_margin =
                 *squared_star_sphere_radius_plus_margin + 4 * m_sq_half_sparsity;
 #else
               // "2*m_max_perturb" because both points can be perturbed
               squared_star_sphere_radius_plus_margin = CGAL::square(
-                CGAL::sqrt(*squared_star_sphere_radius_plus_margin)
+                std::sqrt(*squared_star_sphere_radius_plus_margin)
                 + 2 * m_max_perturb);
 #endif
               // Save it in `m_squared_star_spheres_radii_incl_margin`
@@ -2004,23 +2043,23 @@ private:
     const Point center_pt = compute_perturbed_point(i);
     Tangent_space_basis &tsb = m_tangent_spaces[i];
 
-#if defined(CGAL_TC_VERY_VERBOSE) && defined(CGAL_ALPHA_TC)
+#if defined(GUDHI_TC_VERY_VERBOSE) && defined(GUDHI_ALPHA_TC)
     std::cerr << "Base dimension, incl. thickening vectors: " 
       << tsb.dimension() << "\n";
 #endif
     // Estimate the tangent space
     if (!m_are_tangent_spaces_computed[i])
     {
-#ifdef CGAL_TC_EXPORT_NORMALS
+#ifdef GUDHI_TC_EXPORT_NORMALS
       tsb = compute_tangent_space(center_pt, i, true/*normalize*/, &m_orth_spaces[i]);
 #else
       tsb = compute_tangent_space(center_pt, i);
 #endif
     }
-#ifdef CGAL_TC_PERTURB_TANGENT_SPACE
+#ifdef GUDHI_TC_PERTURB_TANGENT_SPACE
     else if (m_perturb_tangent_space[i])
     {
-#ifdef CGAL_TC_EXPORT_NORMALS
+#ifdef GUDHI_TC_EXPORT_NORMALS
       tsb = compute_tangent_space(center_pt, i,
         true /*normalize_basis*/,
         &m_orth_spaces[i],
@@ -2034,10 +2073,10 @@ private:
       m_perturb_tangent_space[i] = false;
     }
 #endif
-#ifdef CGAL_TC_RECOMPUTE_TANGENT_SPACE_EVERYTIME
+#ifdef GUDHI_TC_RECOMPUTE_TANGENT_SPACE_EVERYTIME
     else
     {
-#ifdef CGAL_TC_EXPORT_NORMALS
+#ifdef GUDHI_TC_EXPORT_NORMALS
       tsb = compute_tangent_space(center_pt, i, true/*normalize*/, &m_orth_spaces[i]);
 #else
       tsb = compute_tangent_space(center_pt, i);
@@ -2045,8 +2084,8 @@ private:
     }
 #endif
 
-#if defined(CGAL_TC_PROFILING) && defined(CGAL_TC_VERY_VERBOSE)
-    Wall_clock_timer t;
+#if defined(GUDHI_TC_PROFILING) && defined(GUDHI_TC_VERY_VERBOSE)
+    Gudhi::Clock t;
 #endif
     int tangent_space_dim = tangent_basis_dim(i);
     Triangulation &local_tr =
@@ -2055,16 +2094,17 @@ private:
     m_triangulations[i].center_vertex() =
       compute_star(i, center_pt, tsb, local_tr, verbose);
 
-#if defined(CGAL_TC_PROFILING) && defined(CGAL_TC_VERY_VERBOSE)
-    std::cerr << "  - triangulation construction: " << t.elapsed() << " s.\n";
+#if defined(GUDHI_TC_PROFILING) && defined(GUDHI_TC_VERY_VERBOSE)
+    t.end();
+    std::cerr << "  - triangulation construction: " << t.num_seconds() << " s.\n";
     t.reset();
 #endif
 
-#ifdef CGAL_TC_VERY_VERBOSE
+#ifdef GUDHI_TC_VERY_VERBOSE
     std::cerr << "Inserted " << num_inserted_points << " points / " 
       << num_attempts_to_insert_points << " attemps to compute the star\n";
 #endif
-#ifdef CGAL_ALPHA_TC
+#ifdef GUDHI_ALPHA_TC
     if (tsb.num_thickening_vectors() == 0)
       update_star__no_thickening_vectors(i);
     else
@@ -2075,8 +2115,9 @@ private:
     update_star__no_thickening_vectors(i);
 #endif
 
-#if defined(CGAL_TC_PROFILING) && defined(CGAL_TC_VERY_VERBOSE)
-    std::cerr << "  - update_star: " << t.elapsed() << " s.\n";
+#if defined(GUDHI_TC_PROFILING) && defined(GUDHI_TC_VERY_VERBOSE)
+    t.end();
+    std::cerr << "  - update_star: " << t.num_seconds() << " s.\n";
 #endif
   }
 
@@ -2122,7 +2163,7 @@ private:
     //CGAL::export_triangulation_to_off(off_stream_tr, local_tr);
   }
 
-#ifdef CGAL_ALPHA_TC
+#ifdef GUDHI_ALPHA_TC
   void update_star__with_thickening_vector(std::size_t i)
   {
     //***************************************************
@@ -2137,7 +2178,7 @@ private:
     Tr_vertex_handle center_vertex = m_triangulations[i].center_vertex();
     Tangent_space_basis const& tsb = m_tangent_spaces[i];
 
-#ifdef CGAL_TC_PERFORM_EXTRA_CHECKS
+#ifdef GUDHI_TC_PERFORM_EXTRA_CHECKS
     if (triangulation_dim != tangent_basis_dim(i))
       std::cerr << "WARNING in update_star__with_thickening_vector: the "
                    "dimension of the local triangulation is different from "
@@ -2245,8 +2286,9 @@ next_face:
         Neighbor_vertices const& curr_neighbors = it_f->second;
 
         DT_face const& current_DT_face = it_f->first;
-        CGAL_assertion(static_cast<int>(current_DT_face.size())
-                       == current_dim);
+        GUDHI_CHECK(
+          static_cast<int>(current_DT_face.size()) == current_dim,
+          std::logic_error("Wrong dimension current_DT_face"));
 
         // P: list of current_DT_face points (including 'i')
         std::vector<Tr_point> P;
@@ -2311,7 +2353,7 @@ next_face:
       --current_dim;
     }
   }
-#endif //CGAL_ALPHA_TC
+#endif //GUDHI_ALPHA_TC
 
 
   Tangent_space_basis compute_tangent_space(
@@ -2319,12 +2361,12 @@ next_face:
     , const std::size_t i
     , bool normalize_basis = true
     , Orthogonal_space_basis *p_orth_space_basis = NULL
-#ifdef CGAL_TC_PERTURB_TANGENT_SPACE
+#ifdef GUDHI_TC_PERTURB_TANGENT_SPACE
     , bool perturb = false
 #endif
     )
   {
-#ifdef CGAL_TC_COMPUTE_TANGENT_PLANES_FOR_SPHERE_2
+#ifdef GUDHI_TC_COMPUTE_TANGENT_PLANES_FOR_SPHERE_2
 
     double tt[2] = {p[1], -p[0]};
     Vector t(2, &tt[0], &tt[2]);
@@ -2335,12 +2377,12 @@ next_face:
 
     Tangent_space_basis ts(i);
     ts.reserve(m_intrinsic_dim);
-    ts.push_back(scaled_vec(t, FT(1)/CGAL::sqrt(sqlen(t))));
+    ts.push_back(scaled_vec(t, FT(1)/std::sqrt(sqlen(t))));
     m_are_tangent_spaces_computed[i] = true;
 
     return ts;
 
-#elif defined(CGAL_TC_COMPUTE_TANGENT_PLANES_FOR_SPHERE_3)
+#elif defined(GUDHI_TC_COMPUTE_TANGENT_PLANES_FOR_SPHERE_3)
 
     double tt1[3] = {-p[1] - p[2], p[0], p[0]};
     double tt2[3] = {p[1] * tt1[2] - p[2] * tt1[1],
@@ -2355,14 +2397,14 @@ next_face:
 
     Tangent_space_basis ts(i);
     ts.reserve(m_intrinsic_dim);
-    ts.push_back(scaled_vec(t1, FT(1)/CGAL::sqrt(sqlen(t1))));
-    ts.push_back(scaled_vec(t2, FT(1)/CGAL::sqrt(sqlen(t2))));
+    ts.push_back(scaled_vec(t1, FT(1)/std::sqrt(sqlen(t1))));
+    ts.push_back(scaled_vec(t2, FT(1)/std::sqrt(sqlen(t2))));
 
     m_are_tangent_spaces_computed[i] = true;
 
     return ts;
 
-#elif defined(CGAL_TC_COMPUTE_TANGENT_PLANES_FOR_FLAT_TORUS_D)
+#elif defined(GUDHI_TC_COMPUTE_TANGENT_PLANES_FOR_FLAT_TORUS_D)
 
     Tangent_space_basis ts(i);
     ts.reserve(m_intrinsic_dim);
@@ -2402,7 +2444,7 @@ next_face:
     //typename K::Translated_point_d      transl =
     //  m_k.translated_point_d_object();
 
-#ifdef CGAL_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
+#ifdef GUDHI_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
     KNS_range kns_range = m_points_ds_for_tse.query_ANN(
       p, num_points_for_pca, false);
     const Points &points_for_pca = m_points_for_tse;
@@ -2423,11 +2465,11 @@ next_face:
         //const Point p = transl(
         //  points_for_pca[nn_it->first], m_translations[nn_it->first]);
         mat_points(j, i) = CGAL::to_double(coord(points_for_pca[nn_it->first], i));
-#ifdef CGAL_TC_ADD_NOISE_TO_TANGENT_SPACE
+#ifdef GUDHI_TC_ADD_NOISE_TO_TANGENT_SPACE
         mat_points(j, i) += m_random_generator.get_double(
             -0.5*m_max_perturb, 0.5*m_max_perturb);
 #endif
-#ifdef CGAL_TC_PERTURB_TANGENT_SPACE
+#ifdef GUDHI_TC_PERTURB_TANGENT_SPACE
         if (perturb)
           mat_points(j, i) += m_random_generator.get_double(
             -m_max_perturb, m_max_perturb);
@@ -2485,7 +2527,7 @@ next_face:
         }
       }
     }
-#if defined(CGAL_ALPHA_TC) && defined(CGAL_USE_A_FIXED_ALPHA)
+#if defined(GUDHI_ALPHA_TC) && defined(GUDHI_TC_USE_A_FIXED_ALPHA)
     // Add the orthogonal vectors as "thickening vectors"
     for (int j = m_ambient_dim - m_intrinsic_dim - 1 ;
           j >= 0 ;
@@ -2495,7 +2537,7 @@ next_face:
                             eig.eigenvectors().col(j).data(),
                             eig.eigenvectors().col(j).data() + m_ambient_dim);
       tsb.add_thickening_vector(
-        normalize_vector(v, m_k), -CGAL_TC_ALPHA_VALUE, CGAL_TC_ALPHA_VALUE);
+        normalize_vector(v, m_k), -GUDHI_TC_ALPHA_VALUE, GUDHI_TC_ALPHA_VALUE);
     }
 #endif
 
@@ -2561,7 +2603,7 @@ next_face:
     {
       const Point &p = m_points[*it_index];
       
-#ifdef CGAL_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
+#ifdef GUDHI_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
       KNS_range kns_range = m_points_ds_for_tse.query_ANN(
         p, num_points_for_pca, false);
       const Points &points_for_pca = m_points_for_tse;
@@ -2624,7 +2666,7 @@ next_face:
 
   Point compute_perturbed_point(std::size_t pt_idx) const
   {
-#ifdef CGAL_TC_PERTURB_POSITION
+#ifdef GUDHI_TC_PERTURB_POSITION
     return m_k.translated_point_d_object()(
       m_points[pt_idx], m_translations[pt_idx]);
 #else
@@ -2634,7 +2676,7 @@ next_face:
 
   void compute_perturbed_weighted_point(std::size_t pt_idx, Point &p, FT &w) const
   {
-#ifdef CGAL_TC_PERTURB_POSITION
+#ifdef GUDHI_TC_PERTURB_POSITION
     p = m_k.translated_point_d_object()(
       m_points[pt_idx], m_translations[pt_idx]);
 #else
@@ -2649,7 +2691,7 @@ next_face:
       m_k.construct_weighted_point_d_object();
 
     Weighted_point wp = k_constr_wp(
-#ifdef CGAL_TC_PERTURB_POSITION
+#ifdef GUDHI_TC_PERTURB_POSITION
       m_k.translated_point_d_object()(m_points[pt_idx], m_translations[pt_idx]),
 #else
       m_points[pt_idx],
@@ -2675,7 +2717,7 @@ next_face:
       global_point = k_transl(global_point,
                               k_scaled_vec(tsb[i], coord(p, i)));
 
-#ifdef CGAL_ALPHA_TC
+#ifdef GUDHI_ALPHA_TC
     Tangent_space_basis::Thickening_vectors const& tv = tsb.thickening_vectors();
     for (int i = 0 ; i < tv.size() ; ++i)
     {
@@ -2709,7 +2751,7 @@ next_face:
       coords.push_back(coord);
     }
         
-#ifdef CGAL_ALPHA_TC
+#ifdef GUDHI_ALPHA_TC
     Tangent_space_basis::Thickening_vectors const& tv = tsb.thickening_vectors();
     for (int i = 0 ; i < tv.size() ; ++i)
     {
@@ -2776,7 +2818,7 @@ next_face:
           p_proj[j] += c * coord(tsb[i], j);
     }
     
-#ifdef CGAL_ALPHA_TC
+#ifdef GUDHI_ALPHA_TC
     Tangent_space_basis::Thickening_vectors const& tv = tsb.thickening_vectors();
     for (int i = 0 ; i < tv.size() ; ++i)
     {
@@ -2889,15 +2931,15 @@ next_face:
         max_sq_length = sq_length;
     }
 
-    return volume / std::pow(CGAL::sqrt(max_sq_length), simplex_dim);
+    return volume / std::pow(std::sqrt(max_sq_length), simplex_dim);
   }
 
   // A simplex here is a list of point indices
   // CJTODO: improve it like the other "is_simplex_consistent" below
   bool is_simplex_consistent(Indexed_simplex const& simplex) const
   {
-#ifdef CGAL_TC_ALVAREZ_SURFACE_WINDOW
-    if (is_one_of_the_coord_far_from_origin(simplex, CGAL_TC_ALVAREZ_SURFACE_WINDOW, 2))
+#ifdef GUDHI_TC_ALVAREZ_SURFACE_WINDOW
+    if (is_one_of_the_coord_far_from_origin(simplex, GUDHI_TC_ALVAREZ_SURFACE_WINDOW, 2))
       return true;
 #endif
 
@@ -2941,8 +2983,8 @@ next_face:
     Indexed_simplex full_simplex = s;
     full_simplex.insert(center_point);
 
-#ifdef CGAL_TC_ALVAREZ_SURFACE_WINDOW
-    if (is_one_of_the_coord_far_from_origin(full_simplex, CGAL_TC_ALVAREZ_SURFACE_WINDOW, 2))
+#ifdef GUDHI_TC_ALVAREZ_SURFACE_WINDOW
+    if (is_one_of_the_coord_far_from_origin(full_simplex, GUDHI_TC_ALVAREZ_SURFACE_WINDOW, 2))
       return true;
 #endif
 
@@ -3063,26 +3105,26 @@ next_face:
   void perturb(std::size_t point_idx)
   {
     // Perturb the weight?
-#ifdef CGAL_TC_PERTURB_WEIGHT
+#ifdef GUDHI_TC_PERTURB_WEIGHT
     m_weights[point_idx] = m_random_generator.get_double(0., m_sq_half_sparsity);
     if(m_weights_memory.size() > 0) // external weights were initially set
       m_weights[point_idx] = m_weights[point_idx] + m_weights_memory[point_idx];
 #endif
 
-#ifdef CGAL_TC_PERTURB_TANGENT_SPACE
+#ifdef GUDHI_TC_PERTURB_TANGENT_SPACE
     m_perturb_tangent_space[point_idx] = true;
 #endif
 
     // Perturb the position?
-#ifdef CGAL_TC_PERTURB_POSITION
-# ifdef CGAL_TC_PERTURB_POSITION_GLOBAL
+#ifdef GUDHI_TC_PERTURB_POSITION
+# ifdef GUDHI_TC_PERTURB_POSITION_GLOBAL
     typename K::Point_to_vector_d k_pt_to_vec =
       m_k.point_to_vector_d_object();
     CGAL::Random_points_in_ball_d<Point>
       tr_point_in_ball_generator(
         m_ambient_dim, m_max_perturb);
     // Parallel
-#  if defined(GUDHI_USE_TBB) && defined(CGAL_TC_GLOBAL_REFRESH)
+#  if defined(GUDHI_USE_TBB) && defined(GUDHI_TC_GLOBAL_REFRESH)
     Vector transl = k_pt_to_vec(*tr_point_in_ball_generator++);
     m_p_perturb_mutexes[point_idx].lock();
     m_translations[point_idx] = transl;
@@ -3092,7 +3134,7 @@ next_face:
     m_translations[point_idx] = k_pt_to_vec(*tr_point_in_ball_generator++);
 #  endif
 
-# else // CGAL_TC_PERTURB_POSITION_TANGENTIAL
+# else // GUDHI_TC_PERTURB_POSITION_TANGENTIAL
     const Tr_traits &local_tr_traits =
       m_triangulations[point_idx].tr().geom_traits();
     typename Tr_traits::Compute_coordinate_d coord =
@@ -3122,7 +3164,7 @@ next_face:
       );
     }
     // Parallel
-#  if defined(GUDHI_USE_TBB) && defined(CGAL_TC_GLOBAL_REFRESH)
+#  if defined(GUDHI_USE_TBB) && defined(GUDHI_TC_GLOBAL_REFRESH)
     m_p_perturb_mutexes[point_idx].lock();
     m_translations[point_idx] = global_transl;
     m_p_perturb_mutexes[point_idx].unlock();
@@ -3131,8 +3173,8 @@ next_face:
     m_translations[point_idx] = global_transl;
 #  endif
 
-# endif // CGAL_TC_PERTURB_POSITION_TANGENTIAL
-#endif // CGAL_TC_PERTURB_POSITION
+# endif // GUDHI_TC_PERTURB_POSITION_TANGENTIAL
+#endif // GUDHI_TC_PERTURB_POSITION
   }
 
   // Return true if inconsistencies were found
@@ -3170,7 +3212,7 @@ next_face:
 //*****************************************************************************
 // STRATEGY 1: perturb all the points of the first inconsistent simplex
 //*****************************************************************************
-#ifdef CGAL_TC_PERTURB_THE_SIMPLEX_ONLY
+#ifdef GUDHI_TC_PERTURB_THE_SIMPLEX_ONLY
       // Inconsistent?
       if (!is_simplex_consistent(c))
       {
@@ -3183,7 +3225,7 @@ next_face:
           *perturbed_pts_indices++ = *it;
         }
 
-# if !defined(CGAL_TC_GLOBAL_REFRESH)
+# if !defined(GUDHI_TC_GLOBAL_REFRESH)
         refresh_tangential_complex();
 # endif
 
@@ -3194,23 +3236,17 @@ next_face:
 //*****************************************************************************
 // STRATEGY 2: perturb the center point only
 //*****************************************************************************
-#elif defined(CGAL_TC_PERTURB_THE_CENTER_VERTEX_ONLY)
+#elif defined(GUDHI_TC_PERTURB_THE_CENTER_VERTEX_ONLY)
       if (!is_simplex_consistent(c))
       {
         is_inconsistent = true;
 
         std::size_t idx = tr_index;
-        /*int k;
-        do
-        {
-          k = rand() % tr.current_dimension();
-        } while ((*it_c)->vertex(k) == center_vh);
-        std::size_t idx = (*it_c)->vertex(k)->data();*/
 
-        perturb(idx);
+        perturb(tr_index);
         *perturbed_pts_indices++ = idx;
 
-# if !defined(CGAL_TC_GLOBAL_REFRESH)
+# if !defined(GUDHI_TC_GLOBAL_REFRESH)
         refresh_tangential_complex();
 # endif
 
@@ -3221,7 +3257,7 @@ next_face:
 //*****************************************************************************
 // STRATEGY 3: perturb all the points of the 1-star
 //*****************************************************************************
-#elif defined(CGAL_TC_PERTURB_THE_1_STAR)
+#elif defined(GUDHI_TC_PERTURB_THE_1_STAR)
 
       // Inconsistent?
       if (!is_simplex_consistent(c))
@@ -3244,7 +3280,7 @@ next_face:
           *perturbed_pts_indices++ = *it;
         }
 
-# if !defined(CGAL_TC_GLOBAL_REFRESH)
+# if !defined(GUDHI_TC_GLOBAL_REFRESH)
         refresh_tangential_complex();
 # endif
 
@@ -3253,17 +3289,17 @@ next_face:
       }
 
 //*****************************************************************************
-// STRATEGY 4: perturb the k + 1 + CGAL_TC_NUMBER_OF_ADDITIONNAL_PERTURBED_POINTS
+// STRATEGY 4: perturb the k + 1 + GUDHI_TC_NUMBER_OF_ADDITIONNAL_PERTURBED_POINTS
 // closest points (to the power center of first the inconsistent cell)
 //*****************************************************************************
-#elif defined(CGAL_TC_PERTURB_N_CLOSEST_POINTS)
+#elif defined(GUDHI_TC_PERTURB_N_CLOSEST_POINTS)
 
       // Inconsistent?
       if (!is_simplex_consistent(c))
       {
         is_inconsistent = true;
 
-        // Get the k + 1 + CGAL_TC_NUMBER_OF_ADDITIONNAL_PERTURBED_POINTS
+        // Get the k + 1 + GUDHI_TC_NUMBER_OF_ADDITIONNAL_PERTURBED_POINTS
         // closest points
 
         std::vector<Tr_point> simplex_pts;
@@ -3292,7 +3328,7 @@ next_face:
 
         KNS_range kns_range = m_points_ds.query_ANN(
           global_center,
-          CGAL_TC_NUMBER_OF_PERTURBED_POINTS(m_intrinsic_dim));
+          GUDHI_TC_NUMBER_OF_PERTURBED_POINTS(m_intrinsic_dim));
         std::vector<std::size_t> neighbors;
         for (KNS_iterator nn_it = kns_range.begin() ;
              nn_it != kns_range.end() ;
@@ -3309,7 +3345,7 @@ next_face:
           *perturbed_pts_indices++ = *it;
         }
 
-# if !defined(CGAL_TC_GLOBAL_REFRESH)
+# if !defined(GUDHI_TC_GLOBAL_REFRESH)
         refresh_tangential_complex();
 # endif
 
@@ -3338,7 +3374,7 @@ next_face:
           *perturbed_pts_indices++ = *it_idx;
         }
 
-# if !defined(CGAL_TC_GLOBAL_REFRESH)
+# if !defined(GUDHI_TC_GLOBAL_REFRESH)
         refresh_tangential_complex();
 # endif
 
@@ -3346,7 +3382,7 @@ next_face:
         break;
       }
 
-#endif // CGAL_TC_PERTURB_THE_SIMPLEX_ONLY
+#endif // GUDHI_TC_PERTURB_THE_SIMPLEX_ONLY
     }
 
     return is_inconsistent;
@@ -3486,13 +3522,13 @@ next_face:
     typename K::Compute_coordinate_d coord =
       m_k.compute_coordinate_d_object();
 
-#ifdef CGAL_TC_EXPORT_ALL_COORDS_IN_OFF
+#ifdef GUDHI_TC_EXPORT_ALL_COORDS_IN_OFF
     int num_coords = m_ambient_dim;
 #else
     int num_coords = min(m_ambient_dim, 3);
 #endif
 
-#ifdef CGAL_TC_EXPORT_NORMALS
+#ifdef GUDHI_TC_EXPORT_NORMALS
     OS_container::const_iterator it_os = m_orth_spaces.begin();
 #endif
     typename Points::const_iterator it_p = m_points.begin();
@@ -3505,7 +3541,7 @@ next_face:
       for (int ii = 0 ; ii < N ; ++ii)
       {
         int j = 0;
-#ifdef CGAL_TC_BETTER_EXPORT_FOR_FLAT_TORUS
+#ifdef GUDHI_TC_BETTER_EXPORT_FOR_FLAT_TORUS
         // For flat torus
         os << (2 + 1 * CGAL::to_double(coord(p, 0))) * CGAL::to_double(coord(p, 2)) << " "
            << (2 + 1 * CGAL::to_double(coord(p, 0))) * CGAL::to_double(coord(p, 3)) << " "
@@ -3517,13 +3553,13 @@ next_face:
         if (j == 2)
           os << "0";
 
-#ifdef CGAL_TC_EXPORT_NORMALS
+#ifdef GUDHI_TC_EXPORT_NORMALS
         for (j = 0 ; j < num_coords ; ++j)
           os << " " << CGAL::to_double(coord(*it_os->begin(), j));
 #endif
         os << "\n";
       }
-#ifdef CGAL_TC_EXPORT_NORMALS
+#ifdef GUDHI_TC_EXPORT_NORMALS
       ++it_os;
 #endif
     }
@@ -3567,16 +3603,20 @@ next_face:
     std::size_t p_idx, std::size_t q_idx,
     const Indexed_simplex &inconsistent_simplex)
   {
-    CGAL_assertion_code(
+    GUDHI_CHECK_code(
       Indexed_simplex inc_s_minus_p = inconsistent_simplex;
       inc_s_minus_p.erase(p_idx);
       Indexed_simplex inc_s_minus_q = inconsistent_simplex;
       inc_s_minus_q.erase(q_idx);
     );
-    CGAL_assertion(std::find(m_stars[p_idx].begin(), m_stars[p_idx].end(),
-                             inc_s_minus_p) != m_stars[p_idx].end());
-    CGAL_assertion(std::find(m_stars[q_idx].begin(), m_stars[q_idx].end(),
-                             inc_s_minus_q) == m_stars[q_idx].end());
+    GUDHI_CHECK(
+      std::find(m_stars[p_idx].begin(), m_stars[p_idx].end(),
+                inc_s_minus_p) != m_stars[p_idx].end(),
+      std::logic_error("Simplex not found in star"));
+    GUDHI_CHECK(
+      std::find(m_stars[q_idx].begin(), m_stars[q_idx].end(),
+                inc_s_minus_q) == m_stars[q_idx].end(),
+      std::logic_error("Simplex not found in star"));
 
     typename K::Point_drop_weight_d k_drop_w =
       m_k.point_drop_weight_d_object();
@@ -3638,12 +3678,12 @@ next_face:
 
     FT circumsphere_sqradius_p = tr_point_weight(Cp);
     FT circumsphere_sqradius_q = tr_point_weight(Cq);
-#ifdef CGAL_TC_PERTURB_WEIGHT
+#ifdef GUDHI_TC_PERTURB_WEIGHT
     FT squared_circumsphere_radius_q_plus_margin =
       circumsphere_sqradius_q + 4*m_sq_half_sparsity;
 #else
     FT squared_circumsphere_radius_q_plus_margin = CGAL::square(
-      CGAL::sqrt(circumsphere_sqradius_q) + 2*m_max_perturb);
+      std::sqrt(circumsphere_sqradius_q) + 2*m_max_perturb);
 #endif
 
     Weighted_point global_Cp = k_constr_wp(
@@ -3692,8 +3732,8 @@ next_face:
           : side(simplex_pts_in_Tq.begin(), simplex_pts_in_Tq.end(), p));
       }*/
     }
-    CGAL_assertion_msg(!inside_pt_indices.empty(),
-      "There should be at least one vertex inside the sphere");
+    GUDHI_CHECK(!inside_pt_indices.empty(),
+      std::logic_error("There should be at least one vertex inside the sphere"));
 
     // CJTODO DEBUG
     /*if (inside_pt_indices.empty())
@@ -3781,7 +3821,7 @@ next_face:
         const Point &cp = k_drop_w(global_Cp);
         const Point &cq = k_drop_w(global_Cq);
 
-#ifdef CGAL_TC_PERTURB_WEIGHT
+#ifdef GUDHI_TC_PERTURB_WEIGHT
         const Weighted_point ti_w = compute_perturbed_weighted_point(idx);
         const Weighted_point p_w = compute_perturbed_weighted_point(p_idx);
         const Weighted_point cp_w0 = k_constr_wp(k_drop_w(global_Cp), FT(0));
@@ -4350,8 +4390,8 @@ next_face:
         if (is_infinite(c))
           continue;
         
-#ifdef CGAL_TC_ALVAREZ_SURFACE_WINDOW
-        if (is_one_of_the_coord_far_from_origin(c, CGAL_TC_ALVAREZ_SURFACE_WINDOW, 2))
+#ifdef GUDHI_TC_ALVAREZ_SURFACE_WINDOW
+        if (is_one_of_the_coord_far_from_origin(c, GUDHI_TC_ALVAREZ_SURFACE_WINDOW, 2))
           continue;
 #endif
 
@@ -4392,7 +4432,7 @@ next_face:
         ++num_inconsistent_stars;
     }
 
-#ifdef CGAL_TC_VERBOSE
+#ifdef GUDHI_TC_VERBOSE
     std::cerr
       << "\n==========================================================\n"
       << "Export from list of stars to OFF:\n"
@@ -4528,8 +4568,8 @@ public:
         if (is_infinite(*it_tri))
           continue;
         
-#ifdef CGAL_TC_ALVAREZ_SURFACE_WINDOW
-        if (is_one_of_the_coord_far_from_origin(*it_tri, CGAL_TC_ALVAREZ_SURFACE_WINDOW, 2))
+#ifdef GUDHI_TC_ALVAREZ_SURFACE_WINDOW
+        if (is_one_of_the_coord_far_from_origin(*it_tri, GUDHI_TC_ALVAREZ_SURFACE_WINDOW, 2))
           continue;
 #endif
 
@@ -4558,7 +4598,7 @@ public:
       }
     }
 
-#ifdef CGAL_TC_VERBOSE
+#ifdef GUDHI_TC_VERBOSE
     std::cerr
       << "\n==========================================================\n"
       << "Export from complex to OFF:\n"
@@ -4647,16 +4687,16 @@ private:
 
   Points                    m_points;
   Weights                   m_weights;
-#ifdef CGAL_TC_PERTURB_WEIGHT
+#ifdef GUDHI_TC_PERTURB_WEIGHT
   Weights_memory            m_weights_memory;
 #endif
-#ifdef CGAL_TC_PERTURB_POSITION
+#ifdef GUDHI_TC_PERTURB_POSITION
   Translations_for_perturb  m_translations;
-# if defined(GUDHI_USE_TBB) && defined(CGAL_TC_GLOBAL_REFRESH)
+# if defined(GUDHI_USE_TBB) && defined(GUDHI_TC_GLOBAL_REFRESH)
   Mutex_for_perturb        *m_p_perturb_mutexes;
 # endif
 #endif
-#ifdef CGAL_TC_PERTURB_TANGENT_SPACE
+#ifdef GUDHI_TC_PERTURB_TANGENT_SPACE
   std::vector<Atomic_wrapper<bool> > m_perturb_tangent_space;
 #endif
 
@@ -4664,7 +4704,7 @@ private:
   double                    m_max_perturb;
   std::vector<bool>         m_are_tangent_spaces_computed;
   TS_container              m_tangent_spaces;
-#ifdef CGAL_TC_EXPORT_NORMALS
+#ifdef GUDHI_TC_EXPORT_NORMALS
   OS_container              m_orth_spaces;
 #endif
   Tr_container              m_triangulations; // Contains the triangulations
@@ -4675,7 +4715,7 @@ private:
   //std::vector<Tr_mutex>     m_tr_mutexes;
 #endif
 
-#ifdef CGAL_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
+#ifdef GUDHI_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
   Points                    m_points_for_tse;
   Points_ds                 m_points_ds_for_tse;
 #endif
@@ -4684,6 +4724,6 @@ private:
 
 }; // /class Tangential_complex
 
-}  // end namespace CGAL
+}  // end namespace Gudhi
 
 #endif // TANGENTIAL_COMPLEX_H

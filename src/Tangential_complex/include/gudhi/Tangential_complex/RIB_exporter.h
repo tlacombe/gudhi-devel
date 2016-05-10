@@ -18,17 +18,15 @@
 //
 // Author(s)     : Clement Jamin
 
-#ifndef CGAL_TC_WRITE_RIB_FILE_H
-#define CGAL_TC_WRITE_RIB_FILE_H
+#ifndef GUDHI_TC_WRITE_RIB_FILE_H
+#define GUDHI_TC_WRITE_RIB_FILE_H
 
 #include "utilities.h"
-
-#include <CGAL/basic.h>
 
 #include <tuple>
 #include <string>
 
-namespace CGAL {
+namespace Gudhi {
 namespace Tangential_complex_ {
   
 template <typename PointRandomAccessRange, typename SimplexRange>
@@ -317,6 +315,6 @@ private:
 };
 
 } // namespace Tangential_complex_
-} //namespace CGAL
+} //namespace Gudhi
 
-#endif // CGAL_TC_WRITE_RIB_FILE_H
+#endif // GUDHI_TC_WRITE_RIB_FILE_H
