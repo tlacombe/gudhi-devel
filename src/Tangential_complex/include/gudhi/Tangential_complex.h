@@ -25,8 +25,8 @@
 #include <gudhi/Tangential_complex/config.h>
 #include <gudhi/Tangential_complex/Simplicial_complex.h>
 #include <gudhi/Tangential_complex/utilities.h>
-#include <gudhi/Tangential_complex/Point_cloud.h>
-#include "gudhi/Tangential_complex/console_color.h"
+#include <gudhi/Spatial_tree_data_structure.h>
+#include "gudhi/console_color.h"
 #include <gudhi/Clock.h>
 
 #include <CGAL/Dimension.h>
@@ -220,7 +220,7 @@ public:
                                                        
 private:                                               
                                                        
-  typedef Point_cloud_data_structure<K, Points>         Points_ds;
+  typedef Spatial_tree_data_structure<K, Points>        Points_ds;
   typedef typename Points_ds::KNS_range                 KNS_range;
   typedef typename Points_ds::KNS_iterator              KNS_iterator;
   typedef typename Points_ds::INS_range                 INS_range;

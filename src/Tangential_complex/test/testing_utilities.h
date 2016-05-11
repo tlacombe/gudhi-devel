@@ -26,7 +26,7 @@
 #ifndef GUDHI_TC_TEST_TEST_UTILITIES_H
 #define GUDHI_TC_TEST_TEST_UTILITIES_H
 
-#include <gudhi/Tangential_complex/Point_cloud.h>
+#include <gudhi/Spatial_tree_data_structure.h>
 #include <gudhi/Tangential_complex/utilities.h>
 #include <gudhi/Clock.h>
 
@@ -50,7 +50,7 @@ class Point_sparsifier
 public:
   typedef typename Kernel::FT                         FT;
   typedef typename Point_container::value_type        Point;
-  typedef typename Gudhi::Tangential_complex_::Point_cloud_data_structure<
+  typedef typename Gudhi::Spatial_tree_data_structure<
     Kernel, Point_container>                          Points_ds;
   typedef typename Points_ds::KNS_range               KNS_range;
 
@@ -155,7 +155,7 @@ sparsify_point_set(
   const Kernel &k, Point_container const& input_pts,
   typename Kernel::FT min_squared_dist)
 {
-  typedef typename Gudhi::Tangential_complex_::Point_cloud_data_structure<
+  typedef typename Gudhi::Spatial_tree_data_structure<
     Kernel, Point_container>                    Points_ds;
   typedef typename Points_ds::INS_iterator      INS_iterator;
   typedef typename Points_ds::INS_range         INS_range;
@@ -744,114 +744,4 @@ generate_points_on_klein_bottle_variant_5D(
   return points;
 }
 
-template <typename Kernel>
-void benchmark_spatial_search(
-  const std::vector<typename Kernel::Point_d> &points, const Kernel &k,
-  std::ostream & csv_file)
-{
-  std::cout << 
-    "****************************************\n"
-    "***** Benchmarking spatial search ******\n"
-    "****************************************\n\n";
-
-  const std::size_t NUM_QUERIES = 100000;
-  const std::size_t NUM_NEIGHBORS = 50;
-  
-  typedef Kernel::FT                                  FT;
-  typedef Kernel::Point_d                             Point;
-  typedef std::vector<Point>                          Points;
-  
-  CGAL::Random random_generator;
-  Gudhi::Clock t;
-
-  //****************************** CGAL ***************************************
-  {
-  std::cout << "\n=== CGAL ===\n";
-
-  typedef CGAL::Tangential_complex_::Point_cloud_data_structure<Kernel, Points>  
-                                                      Points_ds;
-  typedef Points_ds::KNS_range                        KNS_range;
-  typedef Points_ds::KNS_iterator                     KNS_iterator;
-  typedef Points_ds::INS_range                        INS_range;
-  typedef Points_ds::INS_iterator                     INS_iterator;
-  
-  t.begin();
-  Points_ds points_ds(points);
-  t.end();
-  double init_time = t.num_seconds();
-  std::cout << "Init: " << init_time << std::endl;
-  
-  t.begin();
-  for (std::size_t i = 0 ; i < NUM_QUERIES ; ++i)
-  {
-    std::size_t pt_idx = random_generator.get_int(0, points.size() - 1);
-    KNS_range kns_range = points_ds.query_ANN(
-      points[pt_idx], NUM_NEIGHBORS, true);
-  }
-  t.end();
-  double queries_time = t.num_seconds();
-  std::cout << NUM_QUERIES << " queries among " 
-    << points.size() << " points: " << queries_time << std::endl;
-  csv_file << queries_time << ";";
-  }
-  //**************************** nanoflann ************************************
-  {
-  std::cout << "\n=== nanoflann ===\n";
-  
-  typedef Gudhi::Tangential_complex_::
-    Point_cloud_data_structure__nanoflann<Kernel, Points>  
-                                             Points_ds;
-  
-  t.begin();
-  Points_ds points_ds(points, k);
-  t.end();
-  double init_time = t.num_seconds();
-  std::cout << "Init: " << init_time << std::endl;
-  
-  t.begin();
-  for (std::size_t i = 0 ; i < NUM_QUERIES ; ++i)
-  {
-    std::size_t pt_idx = random_generator.get_int(0, points.size() - 1);
-    std::size_t neighbors_indices[NUM_NEIGHBORS];
-    FT neighbors_sq_distances[NUM_NEIGHBORS];
-    points_ds.query_ANN(
-      points[pt_idx], NUM_NEIGHBORS, neighbors_indices, neighbors_sq_distances);
-  }
-  t.end();
-  double queries_time = t.num_seconds();
-  std::cout << NUM_QUERIES << " queries among " 
-    << points.size() << " points: " << queries_time << std::endl;
-  csv_file << queries_time << ";";
-  }
-
-  //******************************* ANN ***************************************
-  {
-  std::cout << "\n=== ANN ===\n";
-  
-  typedef Gudhi::Tangential_complex_::
-    Point_cloud_data_structure__ANN<Kernel, Points>  
-                                             Points_ds;
-  
-  t.begin();
-  Points_ds points_ds(points, k);
-  t.end();
-  double init_time = t.num_seconds();
-  std::cout << "Init: " << init_time << std::endl;
-  
-  t.begin();
-  for (std::size_t i = 0 ; i < NUM_QUERIES ; ++i)
-  {
-    std::size_t pt_idx = random_generator.get_int(0, points.size() - 1);
-    int neighbors_indices[NUM_NEIGHBORS];
-    double neighbors_sq_distances[NUM_NEIGHBORS];
-    points_ds.query_ANN(
-      points[pt_idx], NUM_NEIGHBORS, neighbors_indices, neighbors_sq_distances);
-  }
-  t.end();
-  double queries_time = t.num_seconds();
-  std::cout << NUM_QUERIES << " queries among " 
-    << points.size() << " points: " << queries_time << std::endl;
-  csv_file << queries_time << "\n";
-  }
-}
 #endif // GUDHI_MESH_3_TEST_TEST_UTILITIES_H
