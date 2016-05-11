@@ -56,7 +56,7 @@ public:
 
   std::string message() const
   {
-    return msg_;
+    return msg;
   }
   
   // Print current value to std::cout
