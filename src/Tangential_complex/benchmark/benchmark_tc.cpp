@@ -26,6 +26,7 @@ const std::size_t ONLY_LOAD_THE_FIRST_N_POINTS = 1000000;
 #include <gudhi/Debug_utils.h>
 #include <gudhi/Clock.h>
 #include <gudhi/Tangential_complex.h>
+#include <gudhi/sparsify_point_set.h>
 
 #include <CGAL/assertions_behaviour.h>
 #include <CGAL/Epick_d.h>
@@ -342,7 +343,10 @@ void make_tc(std::vector<Point> &points,
   if (sparsity > 0.)
   {
     std::size_t num_points_before = points.size();
-    points = sparsify_point_set(k, points, sparsity*sparsity);
+    std::vector<Point> sparsified_points;
+    Gudhi::sparsify_point_set(k, points, sparsity*sparsity, 
+      std::back_inserter(sparsified_points));
+    sparsified_points.swap(points);
     std::cerr << "Number of points before/after sparsification: "
       << num_points_before << " / " << points.size() << "\n";
 

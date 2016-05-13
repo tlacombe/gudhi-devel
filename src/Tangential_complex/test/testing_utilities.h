@@ -28,7 +28,6 @@
 
 #include <gudhi/Spatial_tree_data_structure.h>
 #include <gudhi/Tangential_complex/utilities.h>
-#include <gudhi/Clock.h>
 
 #include <CGAL/Random.h>
 #include <CGAL/point_generators_2.h>
@@ -147,74 +146,6 @@ typename Kernel::Point_d construct_point(
   typename Kernel::FT tab[6];
   tab[0] = x1; tab[1] = x2; tab[2] = x3; tab[3] = x4; tab[4] = x5; tab[5] = x6;
   return k.construct_point_d_object()(6, &tab[0], &tab[6]);
-}
-
-template <typename Kernel, typename Point_container>
-std::vector<typename Point_container::value_type>
-sparsify_point_set(
-  const Kernel &k, Point_container const& input_pts,
-  typename Kernel::FT min_squared_dist)
-{
-  typedef typename Gudhi::Spatial_tree_data_structure<
-    Kernel, Point_container>                    Points_ds;
-  typedef typename Points_ds::INS_iterator      INS_iterator;
-  typedef typename Points_ds::INS_range         INS_range;
-
-  typename Kernel::Squared_distance_d sqdist = k.squared_distance_d_object();
-
-#ifdef GUDHI_TC_PROFILING
-    Gudhi::Clock t;
-#endif
-
-  // Create the output container
-  std::vector<typename Point_container::value_type> output;
-
-  Points_ds points_ds(input_pts);
-
-  std::vector<bool> dropped_points(input_pts.size(), false);
-
-  // Parse the input points, and add them if they are not too close to
-  // the other points
-  std::size_t pt_idx = 0;
-  for (typename Point_container::const_iterator it_pt = input_pts.begin() ;
-       it_pt != input_pts.end();
-       ++it_pt, ++pt_idx)
-  {
-    if (dropped_points[pt_idx])
-      continue;
-
-    output.push_back(*it_pt);
-
-    INS_range ins_range = points_ds.query_incremental_ANN(*it_pt);
-
-    // If another point Q is closer that min_squared_dist, mark Q to be dropped
-    for (INS_iterator nn_it = ins_range.begin() ;
-        nn_it != ins_range.end() ;
-        ++nn_it)
-    {
-      std::size_t neighbor_point_idx = nn_it->first;
-      // If the neighbor is too close, we drop the neighbor
-      if (nn_it->second < min_squared_dist)
-      //if (nn_it->second < 0.2*((*it_pt)[0] + 1.)*0.5 + 0.00005)
-      //if (nn_it->second < ((*it_pt)[0] < 0 ? 0.2 : 0.00001))
-      {
-        // N.B.: If neighbor_point_idx < pt_idx, 
-        // dropped_points[neighbor_point_idx] is already true but adding a
-        // test doesn't make things faster, so why bother?
-        dropped_points[neighbor_point_idx] = true;
-      }
-      else
-        break;
-    }
-  }
-
-#ifdef GUDHI_TC_PROFILING
-  t.end();
-  std::cerr << "Point set sparsified in " << t.num_seconds()
-            << " seconds." << std::endl;
-#endif
-
-  return output;
 }
 
 template <typename Kernel>
