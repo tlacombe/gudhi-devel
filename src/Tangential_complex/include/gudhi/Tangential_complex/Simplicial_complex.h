@@ -33,7 +33,7 @@
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/connected_components.hpp>
-#include <boost/container/flat_map.hpp>
+#include <boost/container/flat_set.hpp>
 
 #include <algorithm>
 #include <string>
@@ -45,7 +45,7 @@ namespace Tangential_complex_ {
 class Simplicial_complex
 {
 public:
-  typedef std::set<std::size_t>                     Simplex;
+  typedef boost::container::flat_set<std::size_t>   Simplex;
   typedef std::set<Simplex>                         Simplex_set;
 
   // If perform_checks = true, the function:
@@ -53,7 +53,7 @@ public:
   // - will erase any lower-dim simplices that are faces of the new simplex
   // Returns true if the simplex was added
   bool add_simplex(
-    const std::set<std::size_t> &s, bool perform_checks = true)
+    const Simplex &s, bool perform_checks = true)
   {
     if (perform_checks)
     {
@@ -119,7 +119,7 @@ public:
     {
       in >> dummy;
       GUDHI_CHECK(dummy == 3, std::logic_error("OFF: not a triangle."));
-      std::set<std::size_t> tri;
+      Simplex tri;
       std::size_t idx;
       for (int j = 0 ; j < 3 ; ++j)
       {
@@ -299,7 +299,7 @@ public:
     std::size_t *p_num_wrong_dim_simplices = NULL, 
     std::size_t *p_num_wrong_number_of_cofaces = NULL) const
   {
-    typedef std::set<std::size_t>               K_1_face;
+    typedef Simplex                             K_1_face;
     typedef std::map<K_1_face, std::size_t>     Cofaces_map;
 
     std::size_t num_wrong_dim_simplices = 0;
@@ -384,7 +384,7 @@ public:
   template <int K>
   std::size_t num_K_simplices() const
   {
-    std::set<Simplex> k_simplices; 
+    Simplex_set k_simplices; 
 
     for (Complex::const_iterator it_simplex = m_complex.begin(),
       it_simplex_end = m_complex.end() ;

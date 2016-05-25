@@ -60,6 +60,8 @@ typedef Kernel::Vector_d                                        Vector;
 typedef Gudhi::Tangential_complex<
   Kernel, CGAL::Dynamic_dimension_tag,
   CGAL::Parallel_tag>                                           TC;
+typedef TC::Simplex                                             Simplex;
+typedef TC::Simplex_set                                         Simplex_set;
 
 
 #ifdef TC_PROTECT_POINT_SET_DELTA
@@ -197,9 +199,9 @@ bool export_to_off(
   std::string const& suffix,
   bool color_inconsistencies = false,
   typename TC::Simplicial_complex const* p_complex = NULL,
-  std::set<std::set<std::size_t> > const *p_simpl_to_color_in_red = NULL,
-  std::set<std::set<std::size_t> > const *p_simpl_to_color_in_green = NULL,
-  std::set<std::set<std::size_t> > const *p_simpl_to_color_in_blue = NULL)
+  Simplex_set const *p_simpl_to_color_in_red = NULL,
+  Simplex_set const *p_simpl_to_color_in_green = NULL,
+  Simplex_set const *p_simpl_to_color_in_blue = NULL)
 {
 #ifdef TC_NO_EXPORT
   return true;
@@ -277,23 +279,23 @@ void make_tc(std::vector<Point> &points,
 
   // CJTODO TEMP TEST
   //TC::Simplicial_complex compl;
-  //{std::size_t ss[] = {0, 1, 2}; compl.add_simplex(std::set<std::size_t>(ss, ss + 3)); }
-  //{std::size_t ss[] = {0, 2, 3}; compl.add_simplex(std::set<std::size_t>(ss, ss + 3)); }
-  //{std::size_t ss[] = {0, 3, 4}; compl.add_simplex(std::set<std::size_t>(ss, ss + 3)); }
-  //{std::size_t ss[] = {0, 4, 1}; compl.add_simplex(std::set<std::size_t>(ss, ss + 3)); }
-  //{std::size_t ss[] = {0, 5, 6}; compl.add_simplex(std::set<std::size_t>(ss, ss + 3)); }
+  //{std::size_t ss[] = {0, 1, 2}; compl.add_simplex(Simplex(ss, ss + 3)); }
+  //{std::size_t ss[] = {0, 2, 3}; compl.add_simplex(Simplex(ss, ss + 3)); }
+  //{std::size_t ss[] = {0, 3, 4}; compl.add_simplex(Simplex(ss, ss + 3)); }
+  //{std::size_t ss[] = {0, 4, 1}; compl.add_simplex(Simplex(ss, ss + 3)); }
+  //{std::size_t ss[] = {0, 5, 6}; compl.add_simplex(Simplex(ss, ss + 3)); }
   //compl.is_pure_pseudomanifold(2, 7, false, 10);
 
   //TC::Simplicial_complex compl;
-  //{std::size_t ss[] = {0, 1, 2, 5}; compl.add_simplex(std::set<std::size_t>(ss, ss + 4)); }
-  //{std::size_t ss[] = {0, 2, 3, 5}; compl.add_simplex(std::set<std::size_t>(ss, ss + 4)); }
-  //{std::size_t ss[] = {0, 3, 4, 5}; compl.add_simplex(std::set<std::size_t>(ss, ss + 4)); }
-  //{std::size_t ss[] = {0, 4, 1, 5}; compl.add_simplex(std::set<std::size_t>(ss, ss + 4)); }
-  //{std::size_t ss[] = {0, 1, 2, 6}; compl.add_simplex(std::set<std::size_t>(ss, ss + 4)); }
-  //{std::size_t ss[] = {0, 2, 3, 6}; compl.add_simplex(std::set<std::size_t>(ss, ss + 4)); }
-  //{std::size_t ss[] = {0, 3, 4, 6}; compl.add_simplex(std::set<std::size_t>(ss, ss + 4)); }
-  //{std::size_t ss[] = {0, 4, 1, 6}; compl.add_simplex(std::set<std::size_t>(ss, ss + 4)); }
-  //{std::size_t ss[] = {0, 4, 7, 8}; compl.add_simplex(std::set<std::size_t>(ss, ss + 4)); }
+  //{std::size_t ss[] = {0, 1, 2, 5}; compl.add_simplex(Simplex(ss, ss + 4)); }
+  //{std::size_t ss[] = {0, 2, 3, 5}; compl.add_simplex(Simplex(ss, ss + 4)); }
+  //{std::size_t ss[] = {0, 3, 4, 5}; compl.add_simplex(Simplex(ss, ss + 4)); }
+  //{std::size_t ss[] = {0, 4, 1, 5}; compl.add_simplex(Simplex(ss, ss + 4)); }
+  //{std::size_t ss[] = {0, 1, 2, 6}; compl.add_simplex(Simplex(ss, ss + 4)); }
+  //{std::size_t ss[] = {0, 2, 3, 6}; compl.add_simplex(Simplex(ss, ss + 4)); }
+  //{std::size_t ss[] = {0, 3, 4, 6}; compl.add_simplex(Simplex(ss, ss + 4)); }
+  //{std::size_t ss[] = {0, 4, 1, 6}; compl.add_simplex(Simplex(ss, ss + 4)); }
+  //{std::size_t ss[] = {0, 4, 7, 8}; compl.add_simplex(Simplex(ss, ss + 4)); }
   //compl.is_pure_pseudomanifold(3, 9, false, 10);
   // /CJTODO TEMP TEST
 
@@ -414,7 +416,7 @@ void make_tc(std::vector<Point> &points,
   // Create complex
   int max_dim = -1;
   TC::Simplicial_complex complex;
-  std::set<std::set<std::size_t> > inconsistent_simplices;
+  Simplex_set inconsistent_simplices;
   max_dim = tc.export_TC(complex, false, 2, &inconsistent_simplices);
 
   t.begin();
@@ -468,7 +470,7 @@ void make_tc(std::vector<Point> &points,
     //=========================================================================
 
     // Re-build the complex
-    std::set<std::set<std::size_t> > inconsistent_simplices;
+    Simplex_set inconsistent_simplices;
     max_dim = tc.export_TC(complex, false, 2, &inconsistent_simplices);
 
     t.begin();
@@ -530,7 +532,7 @@ void make_tc(std::vector<Point> &points,
     t.end();
     fix2_time = t.num_seconds();
 
-    /*std::set<std::set<std::size_t> > not_delaunay_simplices;
+    /*Simplex_set not_delaunay_simplices;
     if (ambient_dim <= 4)
     {
       tc.check_if_all_simplices_are_in_the_ambient_delaunay(
@@ -542,7 +544,7 @@ void make_tc(std::vector<Point> &points,
     //=========================================================================
 
     // Re-build the complex
-    std::set<std::set<std::size_t> > inconsistent_simplices;
+    Simplex_set inconsistent_simplices;
     max_dim = tc.export_TC(complex, false, 2, &inconsistent_simplices);
 
     t.begin();
@@ -554,7 +556,7 @@ void make_tc(std::vector<Point> &points,
   }
   else
   {
-    std::set<std::set<std::size_t> > inconsistent_simplices;
+    Simplex_set inconsistent_simplices;
     max_dim = tc.export_TC(complex, false, 2, &inconsistent_simplices);
   }
 
@@ -564,7 +566,7 @@ void make_tc(std::vector<Point> &points,
     complex.euler_characteristic(true);
 
   // CJTODO TEMP: Export to OFF with higher-dim simplices colored
-  /*std::set<std::set<std::size_t> > higher_dim_simplices;
+  /*Simplex_set higher_dim_simplices;
   complex.get_simplices_matching_test(
     Test_dim(intrinsic_dim + 1),
     std::inserter(higher_dim_simplices, higher_dim_simplices.begin()));
@@ -587,9 +589,9 @@ void make_tc(std::vector<Point> &points,
   std::size_t num_wrong_dim_simplices, 
               num_wrong_number_of_cofaces, 
               num_unconnected_stars;
-  std::set<std::set<std::size_t> > wrong_dim_simplices;
-  std::set<std::set<std::size_t> > wrong_number_of_cofaces_simplices;
-  std::set<std::set<std::size_t> > unconnected_stars_simplices;
+  Simplex_set wrong_dim_simplices;
+  Simplex_set wrong_number_of_cofaces_simplices;
+  Simplex_set unconnected_stars_simplices;
   bool is_pure_pseudomanifold = complex.is_pure_pseudomanifold(
     intrinsic_dim, tc.number_of_vertices(), 
 #ifdef GUDHI_TC_ALVAREZ_SURFACE_WINDOW

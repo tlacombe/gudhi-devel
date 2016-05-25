@@ -35,6 +35,7 @@
 #include <atomic>
 #include <cmath>  // for std::sqrt
 
+#include <boost/container/flat_set.hpp>
 
 namespace Gudhi {
 namespace Tangential_complex_ {
@@ -493,7 +494,8 @@ namespace Tangential_complex_ {
 
   // CJTODO: use CGAL::Combination_enumerator<int> (cf. Tangential_complex.h)
   // Compute all the k-combinations of elements
-  // Output_iterator::value_type must be std::set<std::size_t>
+  // Output_iterator::value_type must be 
+  // boost::container::flat_set<std::size_t>
   template <typename Elements_container, typename Output_iterator>
   void combinations(const Elements_container elements, int k,
                     Output_iterator combinations)
@@ -503,7 +505,7 @@ namespace Tangential_complex_ {
     std::fill(booleans.begin() + n - k, booleans.end(), true);
     do
     {
-      std::set<std::size_t> combination;
+      boost::container::flat_set<std::size_t> combination;
       typename Elements_container::const_iterator it_elt = elements.begin();
       for (std::size_t i = 0 ; i < n ; ++i, ++it_elt)
       {
