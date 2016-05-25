@@ -23,8 +23,6 @@
 #ifndef GUDHI_TC_CONFIG_H
 #define GUDHI_TC_CONFIG_H
 
-//#include <CGAL/config.h>
-
 // Without TBB_USE_THREADING_TOOL Intel Inspector XE will report false
 // positives in Intel TBB
 // (http://software.intel.com/en-us/articles/compiler-settings-for-threading-error-analysis-in-intel-inspector-xe/)
@@ -49,9 +47,6 @@
 // Only used if GUDHI_TC_PERTURB_N_CLOSEST_POINTS is defined
 #define GUDHI_TC_NUMBER_OF_PERTURBED_POINTS(intr_dim) (1) // Good technique
 //#define GUDHI_TC_NUMBER_OF_PERTURBED_POINTS(intr_dim) (intr_dim + 2) // Quite good technique
-
-#define GUDHI_MESH_D_PROFILING
-#define GUDHI_MESH_D_VERBOSE
 
 //========================= Strategy ==========================================
 //#define GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
