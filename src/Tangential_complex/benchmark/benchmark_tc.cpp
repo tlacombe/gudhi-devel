@@ -1,5 +1,3 @@
-//#undef GUDHI_USE_TBB // CJTODO TEMP
-
 // Without TBB_USE_THREADING_TOOL Intel Inspector XE will report false positives in Intel TBB
 // (http://software.intel.com/en-us/articles/compiler-settings-for-threading-error-analysis-in-intel-inspector-xe/)
 #ifdef _DEBUG
@@ -10,12 +8,10 @@
 
 //#define GUDHI_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
 //#define TC_PROTECT_POINT_SET_DELTA  0.003
-//#define JUST_BENCHMARK_SPATIAL_SEARCH // CJTODO: test
 //#define CHECK_IF_ALL_SIMPLICES_ARE_IN_THE_AMBIENT_DELAUNAY
 //#define TC_INPUT_STRIDES 3 // only take one point every TC_INPUT_STRIDES points
 #define TC_NO_EXPORT
 //#define TC_EXPORT_TO_RIB
-//#define GUDHI_TC_ALVAREZ_SURFACE_WINDOW 0.95 // 1.9 - 0.95
 //#define GUDHI_TC_EXPORT_SPARSIFIED_POINT_SET
 //#define GUDHI_TC_EXPORT_ALL_COORDS_IN_OFF
 //#define GUDHI_TC_RECOMPUTE_TANGENT_SPACE_EVERYTIME
@@ -66,10 +62,6 @@ typedef TC::Simplex_set                                         Simplex_set;
 
 #ifdef TC_PROTECT_POINT_SET_DELTA
 # include <gudhi/Tangential_complex/protected_sets.h> // CJTODO TEST
-#endif
-
-#ifdef JUST_BENCHMARK_SPATIAL_SEARCH
-std::ofstream spatial_search_csv_file("benchmark_spatial_search.csv");
 #endif
 
 using namespace Gudhi::Tangential_complex_;
@@ -276,33 +268,6 @@ void make_tc(std::vector<Point> &points,
     std::cerr << "Error: cannot sparsify point set with pre-computed normals.\n";
     return;
   }
-
-  // CJTODO TEMP TEST
-  //TC::Simplicial_complex compl;
-  //{std::size_t ss[] = {0, 1, 2}; compl.add_simplex(Simplex(ss, ss + 3)); }
-  //{std::size_t ss[] = {0, 2, 3}; compl.add_simplex(Simplex(ss, ss + 3)); }
-  //{std::size_t ss[] = {0, 3, 4}; compl.add_simplex(Simplex(ss, ss + 3)); }
-  //{std::size_t ss[] = {0, 4, 1}; compl.add_simplex(Simplex(ss, ss + 3)); }
-  //{std::size_t ss[] = {0, 5, 6}; compl.add_simplex(Simplex(ss, ss + 3)); }
-  //compl.is_pure_pseudomanifold(2, 7, false, 10);
-
-  //TC::Simplicial_complex compl;
-  //{std::size_t ss[] = {0, 1, 2, 5}; compl.add_simplex(Simplex(ss, ss + 4)); }
-  //{std::size_t ss[] = {0, 2, 3, 5}; compl.add_simplex(Simplex(ss, ss + 4)); }
-  //{std::size_t ss[] = {0, 3, 4, 5}; compl.add_simplex(Simplex(ss, ss + 4)); }
-  //{std::size_t ss[] = {0, 4, 1, 5}; compl.add_simplex(Simplex(ss, ss + 4)); }
-  //{std::size_t ss[] = {0, 1, 2, 6}; compl.add_simplex(Simplex(ss, ss + 4)); }
-  //{std::size_t ss[] = {0, 2, 3, 6}; compl.add_simplex(Simplex(ss, ss + 4)); }
-  //{std::size_t ss[] = {0, 3, 4, 6}; compl.add_simplex(Simplex(ss, ss + 4)); }
-  //{std::size_t ss[] = {0, 4, 1, 6}; compl.add_simplex(Simplex(ss, ss + 4)); }
-  //{std::size_t ss[] = {0, 4, 7, 8}; compl.add_simplex(Simplex(ss, ss + 4)); }
-  //compl.is_pure_pseudomanifold(3, 9, false, 10);
-  // /CJTODO TEMP TEST
-
-#ifdef JUST_BENCHMARK_SPATIAL_SEARCH
-  benchmark_spatial_search(points, k, spatial_search_csv_file);
-  return;
-#endif
 
   //===========================================================================
   // Init
@@ -594,11 +559,7 @@ void make_tc(std::vector<Point> &points,
   Simplex_set unconnected_stars_simplices;
   bool is_pure_pseudomanifold = complex.is_pure_pseudomanifold(
     intrinsic_dim, tc.number_of_vertices(), 
-#ifdef GUDHI_TC_ALVAREZ_SURFACE_WINDOW
-    true, // allow borders
-#else
     false, // do NOT allow borders
-#endif
     false, 1,
     &num_wrong_dim_simplices, &num_wrong_number_of_cofaces, 
     &num_unconnected_stars,

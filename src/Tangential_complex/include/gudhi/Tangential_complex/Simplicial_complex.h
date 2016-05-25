@@ -328,7 +328,7 @@ public:
         // Get the facets composing the simplex
         combinations(
           *it_simplex, simplex_dim, std::back_inserter(k_1_faces));
-        for (const auto &k_1_face : k_1_faces) // CJTODO C++1
+        for (const auto &k_1_face : k_1_faces)
         {
           ++cofaces_map[k_1_face];
         }

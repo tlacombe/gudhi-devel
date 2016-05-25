@@ -417,10 +417,6 @@ public:
     std::cerr << red << "WARNING: GUDHI_TC_PERFORM_EXTRA_CHECKS is defined. "
       << "Computation might be slower than usual.\n" << white;
 #endif
-#ifdef GUDHI_TC_ALVAREZ_SURFACE_WINDOW
-    std::cerr << red << "WARNING: GUDHI_TC_ALVAREZ_SURFACE_WINDOW is defined ("
-      << GUDHI_TC_ALVAREZ_SURFACE_WINDOW << ").\n" << white;
-#endif
 
 #if defined(GUDHI_TC_PROFILING) && defined(GUDHI_USE_TBB)
     Gudhi::Clock t;
@@ -888,11 +884,6 @@ public:
           max_dim = static_cast<int>(c.size());
         // Add the missing center vertex
         c.insert(idx);
-
-#ifdef GUDHI_TC_ALVAREZ_SURFACE_WINDOW
-        if (is_one_of_the_coord_far_from_origin(c, GUDHI_TC_ALVAREZ_SURFACE_WINDOW, 2))
-          continue;
-#endif
 
         // Try to insert the simplex
         bool added = 
@@ -2240,11 +2231,6 @@ private:
   // CJTODO: improve it like the other "is_simplex_consistent" below
   bool is_simplex_consistent(Simplex const& simplex) const
   {
-#ifdef GUDHI_TC_ALVAREZ_SURFACE_WINDOW
-    if (is_one_of_the_coord_far_from_origin(simplex, GUDHI_TC_ALVAREZ_SURFACE_WINDOW, 2))
-      return true;
-#endif
-
     // Check if the simplex is in the stars of all its vertices
     Simplex::const_iterator it_point_idx = simplex.begin();
     // For each point p of the simplex, we parse the incidents cells of p
@@ -2284,11 +2270,6 @@ private:
   {
     Simplex full_simplex = s;
     full_simplex.insert(center_point);
-
-#ifdef GUDHI_TC_ALVAREZ_SURFACE_WINDOW
-    if (is_one_of_the_coord_far_from_origin(full_simplex, GUDHI_TC_ALVAREZ_SURFACE_WINDOW, 2))
-      return true;
-#endif
 
     // Check if the simplex is in the stars of all its vertices
     Incident_simplex::const_iterator it_point_idx = s.begin();
@@ -3688,11 +3669,6 @@ private:
         // Don't export infinite cells
         if (is_infinite(c))
           continue;
-        
-#ifdef GUDHI_TC_ALVAREZ_SURFACE_WINDOW
-        if (is_one_of_the_coord_far_from_origin(c, GUDHI_TC_ALVAREZ_SURFACE_WINDOW, 2))
-          continue;
-#endif
 
         int color_simplex = it_simplex->second;
 
@@ -3866,11 +3842,6 @@ public:
         // Don't export infinite cells
         if (is_infinite(*it_tri))
           continue;
-        
-#ifdef GUDHI_TC_ALVAREZ_SURFACE_WINDOW
-        if (is_one_of_the_coord_far_from_origin(*it_tri, GUDHI_TC_ALVAREZ_SURFACE_WINDOW, 2))
-          continue;
-#endif
 
         os << 3 << " ";
         Simplex::const_iterator it_point_idx = it_tri->begin();
