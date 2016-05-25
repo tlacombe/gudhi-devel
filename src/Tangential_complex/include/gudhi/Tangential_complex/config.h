@@ -54,10 +54,7 @@
 #define GUDHI_MESH_D_VERBOSE
 
 //========================= Strategy ==========================================
-#define GUDHI_TC_NANOFLANN_IS_AVAILABLE
-//#define GUDHI_TC_ANN_IS_AVAILABLE
 //#define GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
-//#define GUDHI_TC_PERTURB_EACH_STAR_UNTIL_FIXED
 #define GUDHI_TC_GLOBAL_REFRESH
 #define GUDHI_TC_PERTURB_POSITION
 # define GUDHI_TC_PERTURB_POSITION_TANGENTIAL // default

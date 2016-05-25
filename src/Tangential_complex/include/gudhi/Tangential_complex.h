@@ -651,9 +651,7 @@ public:
 #endif
 
       // Parallel
-#if defined(GUDHI_USE_TBB) \
- && defined(GUDHI_TC_GLOBAL_REFRESH) \
- && !defined(GUDHI_TC_PERTURB_EACH_STAR_UNTIL_FIXED)
+#if defined(GUDHI_USE_TBB) && defined(GUDHI_TC_GLOBAL_REFRESH)
       if (boost::is_convertible<Concurrency_tag, CGAL::Parallel_tag>::value)
       {
         tbb::combinable<std::size_t> num_inconsistencies;
@@ -680,32 +678,9 @@ public:
       {
         for (std::size_t i = 0 ; i < m_triangulations.size() ; ++i)
         {
-#ifdef GUDHI_TC_PERTURB_EACH_STAR_UNTIL_FIXED
-          std::vector<std::size_t> perturbed_points;
-          bool inconsistency_found =
-            try_to_solve_inconsistencies_in_a_local_triangulation(
-              i, std::back_inserter(perturbed_points));
-          num_inconsistent_stars += inconsistency_found;
-
-          for (int c = 0 ; inconsistency_found ; ++c)
-          {
-            refresh_tangential_complex(perturbed_points);
-            if (c > 100)
-            {
-              std::cerr << "FAILURE\n"; // CJTODO TEMP
-              break;
-            }
-            perturbed_points.clear();
-            inconsistency_found = 
-              try_to_solve_inconsistencies_in_a_local_triangulation(
-                i, std::back_inserter(perturbed_points));
-          }
-          //std::cerr << "SUCCESS\n"; // CJTODO TEMP
-#else
           num_inconsistent_stars +=
             try_to_solve_inconsistencies_in_a_local_triangulation(
               i, std::back_inserter(updated_points));
-#endif
         }
       }
 
@@ -728,7 +703,7 @@ public:
       std::cerr << yellow << "done.\n" << white;
 #endif
 
-#if defined(GUDHI_TC_GLOBAL_REFRESH) && !defined(GUDHI_TC_PERTURB_EACH_STAR_UNTIL_FIXED)
+#if defined(GUDHI_TC_GLOBAL_REFRESH)
       if (num_inconsistent_stars > 0)
         refresh_tangential_complex(updated_points);
 
