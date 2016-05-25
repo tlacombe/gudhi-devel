@@ -7,7 +7,6 @@
 #include <cstddef>
 
 //#define GUDHI_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
-//#define TC_PROTECT_POINT_SET_DELTA  0.003
 //#define CHECK_IF_ALL_SIMPLICES_ARE_IN_THE_AMBIENT_DELAUNAY
 //#define TC_INPUT_STRIDES 3 // only take one point every TC_INPUT_STRIDES points
 #define TC_NO_EXPORT
@@ -58,11 +57,6 @@ typedef Gudhi::Tangential_complex<
   CGAL::Parallel_tag>                                           TC;
 typedef TC::Simplex                                             Simplex;
 typedef TC::Simplex_set                                         Simplex_set;
-
-
-#ifdef TC_PROTECT_POINT_SET_DELTA
-# include <gudhi/Tangential_complex/protected_sets.h> // CJTODO TEST
-#endif
 
 using namespace Gudhi::Tangential_complex_;
 
@@ -312,28 +306,6 @@ void make_tc(std::vector<Point> &points,
     export_point_set(k, points, ps_stream);
 #endif
   }
-
-#ifdef TC_PROTECT_POINT_SET_DELTA
-  // CJTODO TEST    
-# ifdef GUDHI_TC_PROFILING
-  Wall_clock_timer t_protection;
-# endif
-
-  std::vector<Point> points2;
-  std::vector<int> dummy;
-  std::vector<std::vector<int> > dummy2;
-  landmark_choice_protected_delaunay(
-    points, points.size(), points2, dummy, TC_PROTECT_POINT_SET_DELTA, dummy2, false, true);
-  points = points2;
-
-# ifdef GUDHI_TC_PROFILING
-  t_protection.end();
-  std::cerr << "Point set protected in " << t_protection.num_seconds()
-    << " seconds.\n";
-# endif
-
-  std::cerr << "Number of points after PROTECTION: " << points.size() << "\n";
-#endif
 
   GUDHI_TC_SET_PERFORMANCE_DATA("Sparsity", sparsity);
   GUDHI_TC_SET_PERFORMANCE_DATA("Max_perturb", max_perturb);
