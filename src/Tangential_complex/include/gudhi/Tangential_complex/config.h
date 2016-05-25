@@ -32,12 +32,6 @@
 # define TBB_USE_THREADING_TOOL
 #endif
 
-//=========================== Alpha-TC or not? ================================
-
-//#define GUDHI_ALPHA_TC
-  //#define GUDHI_USE_A_FIXED_ALPHA
-  const double GUDHI_TC_ALPHA_VALUE = 0.3;
-
 //========================= Debugging & profiling =============================
 #define GUDHI_TC_PROFILING
 #define GUDHI_TC_VERBOSE

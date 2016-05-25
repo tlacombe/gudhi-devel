@@ -243,15 +243,6 @@ bool export_to_off(
     }
     else
     {
-/*#ifdef GUDHI_ALPHA_TC
-      TC::Simplicial_complex complex;
-      tc.export_TC(complex, false);
-      tc.export_to_off(
-        complex, off_stream, 
-        p_simpl_to_color_in_red,
-        p_simpl_to_color_in_green, 
-        p_simpl_to_color_in_blue);
-#else*/
       tc.export_to_off(
         off_stream, color_inconsistencies, 
         p_simpl_to_color_in_red,
@@ -259,7 +250,6 @@ bool export_to_off(
         p_simpl_to_color_in_blue,
         NULL,
         proj_functor);
-//#endif
     }
     return true;
   }
@@ -536,11 +526,7 @@ void make_tc(std::vector<Point> &points,
     //=========================================================================
     t.begin();
     // Try to solve the remaining inconstencies
-#ifdef GUDHI_ALPHA_TC
-    tc.solve_inconsistencies_using_alpha_TC();
-#else
     tc.check_and_solve_inconsistencies_by_adding_higher_dim_simplices();
-#endif
     t.end();
     fix2_time = t.num_seconds();
 

@@ -169,117 +169,11 @@ namespace Tangential_complex_ {
     Basis(std::size_t origin, const std::vector<Vector>& vectors)
       : m_origin(origin), m_vectors(vectors)
     { }
-    
-#ifdef GUDHI_ALPHA_TC
-    // Thickening vectors...
-
-    struct Thickening_vector
-    {
-      Thickening_vector() 
-        : alpha_minus(FT(0)), alpha_plus(FT(0)) {}
-      Thickening_vector(Vector const& v, FT am, FT ap) 
-        : vec(v), alpha_minus(am), alpha_plus(ap) {}
-
-      Vector vec;
-      FT alpha_minus;
-      FT alpha_plus;
-    };
-    typedef std::vector<Thickening_vector> Thickening_vectors;
-
-    Thickening_vectors m_thickening_vectors;
-
-
-    std::size_t num_thickening_vectors() const 
-    {
-      return m_thickening_vectors.size();
-    }
-    Thickening_vectors const& thickening_vectors() const 
-    {
-      return m_thickening_vectors;
-    }
-    void add_thickening_vector(
-      Vector const& vec, FT alpha_minus = FT(0), FT alpha_plus = FT(0))
-    {
-      m_thickening_vectors.push_back(
-        Thickening_vector(vec, alpha_minus, alpha_plus));
-    }
-
-    void update_alpha_values_of_thickening_vectors(
-      Vector const& vec, Kernel const& k)
-    {
-      typename Kernel::Scalar_product_d k_scalar_pdct =
-        k.scalar_product_d_object();
-
-      for (Thickening_vectors::iterator it_v = m_thickening_vectors.begin(),
-                                        it_v_end = m_thickening_vectors.end() ;
-          it_v != it_v_end ; ++it_v)
-      {
-        const FT MARGIN_RATIO = 1.001; // CJTODO TEMP
-        FT alpha_i = k_scalar_pdct(it_v->vec, vec);
-        if (alpha_i * MARGIN_RATIO > it_v->alpha_plus)
-        {
-#ifdef GUDHI_TC_VERY_VERBOSE
-          std::cerr << "OLD alpha+ = " << it_v->alpha_plus << std::endl;
-#endif
-          it_v->alpha_plus = alpha_i * MARGIN_RATIO;
-#ifdef GUDHI_TC_VERY_VERBOSE
-          std::cerr << "NEW alpha+ = " << it_v->alpha_plus << std::endl;
-          std::cerr << "NOT MODIFIED alpha- = " << it_v->alpha_minus << std::endl;
-#endif
-        }
-        else if (alpha_i * MARGIN_RATIO < it_v->alpha_minus)
-        {
-#ifdef GUDHI_TC_VERY_VERBOSE
-          std::cerr << "OLD alpha- = " << it_v->alpha_minus << std::endl;
-#endif
-          it_v->alpha_minus = alpha_i * MARGIN_RATIO;
-#ifdef GUDHI_TC_VERY_VERBOSE
-          std::cerr << "NEW alpha- = " << it_v->alpha_minus << std::endl;
-          std::cerr << "NOT MODIFIED alpha+ = " << it_v->alpha_plus << std::endl;
-#endif
-        }
-      }
-    }
-
-    FT alpha_minus(std::size_t i) const
-    {
-      return m_thickening_vectors[i].alpha_minus;
-    }
-    FT alpha_plus(std::size_t i) const
-    {
-      return m_thickening_vectors[i].alpha_plus;
-    }
-    
-    // Returns 0 if no thickening vectors
-    FT max_absolute_alpha() const
-    {
-      FT max = FT(0);
-      
-      for (Thickening_vectors::const_iterator 
-             it_v = m_thickening_vectors.begin(),
-             it_v_end = m_thickening_vectors.end() ;
-           it_v != it_v_end ; 
-           ++it_v)
-      {
-        if (it_v->alpha_plus > max)
-          max = it_v->alpha_plus;
-        if (-it_v->alpha_minus > max)
-          max = -it_v->alpha_minus;
-      }
-
-      return max;
-    }
-
-    int dimension() const
-    {
-      return static_cast<int>(m_vectors.size() + m_thickening_vectors.size());
-    }
-#else
+  
     int dimension() const
     {
       return static_cast<int>(m_vectors.size());
     }
-#endif
   };
   
   // Using Gram-Schmidt
@@ -291,9 +185,6 @@ namespace Tangential_complex_ {
   bool add_vector_to_orthonormal_basis(
     Basis<K> & basis, typename K::Vector_d const& v, K const& k, 
     typename K::FT sqlen_threshold = typename K::FT(1e-13)
-#ifdef GUDHI_ALPHA_TC
-    , bool add_to_thickening_vectors = false
-#endif
     )
   {
     typedef Basis<K>                  Basis;
@@ -347,12 +238,7 @@ namespace Tangential_complex_ {
         new_v = scaled_vec(new_v, FT(1)/std::sqrt(sqlen_new_v));
       }
 
-#ifdef GUDHI_ALPHA_TC
-      if (add_to_thickening_vectors)
-        basis.add_thickening_vector(new_v);
-      else
-#endif
-        basis.push_back(new_v);
+      basis.push_back(new_v);
     }
     return add_it;
   }

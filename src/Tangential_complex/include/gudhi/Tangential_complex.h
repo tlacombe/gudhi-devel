@@ -110,23 +110,6 @@ template <
   typename Kernel_, // ambiant kernel
   typename DimensionTag, // intrinsic dimension
   typename Concurrency_tag = CGAL::Parallel_tag,
-#ifdef GUDHI_ALPHA_TC
-  // For the alpha-TC, the dimension of the RT is variable
-  // => we need to force 
-  typename Tr = CGAL::Regular_triangulation
-  <
-    CGAL::Epick_d<CGAL::Dynamic_dimension_tag>,
-    CGAL::Triangulation_data_structure
-    <
-      typename CGAL::Regular_triangulation_euclidean_traits<
-        CGAL::Epick_d<CGAL::Dynamic_dimension_tag> >::Dimension,
-      CGAL::Triangulation_vertex<CGAL::Regular_triangulation_euclidean_traits<
-        CGAL::Epick_d<CGAL::Dynamic_dimension_tag> >, Vertex_data >,
-      CGAL::Triangulation_full_cell<CGAL::Regular_triangulation_euclidean_traits<
-        CGAL::Epick_d<CGAL::Dynamic_dimension_tag> > >
-    >
-  >
-#else
   typename Tr = CGAL::Regular_triangulation
   <
     CGAL::Epick_d<DimensionTag>,
@@ -140,7 +123,6 @@ template <
       CGAL::Epick_d<DimensionTag> > >
     >
   >
-#endif
 >
 class Tangential_complex
 {
@@ -997,380 +979,6 @@ public:
     return inconsistencies_found;
   }
 
-
-#ifdef GUDHI_ALPHA_TC
-private:
-  
-  // Look in the star of point "i" for inconsistent simplices, compute
-  // an approximation of alpha for each one and push it into the priority
-  // queues.
-  // Returns the number of inconsistent simplices found
-  template <typename PQueues>
-  std::size_t fill_pqueues_for_alpha_tc(std::size_t i, PQueues &pqueues)
-  {
-    // Kernel/traits functors
-    typename K::Difference_of_points_d k_diff_points =
-      m_k.difference_of_points_d_object();
-    typename K::Squared_length_d k_sqlen =
-      m_k.squared_length_d_object();
-    typename Tr_traits::Construct_weighted_point_d constr_wp =
-      m_triangulations[0].tr().geom_traits().construct_weighted_point_d_object();
-
-    std::size_t num_inconsistent_simplices = 0;
-
-    // For each cell
-    Star::const_iterator it_inc_simplex = m_stars[i].begin();
-    Star::const_iterator it_inc_simplex_end = m_stars[i].end();
-    for ( ; it_inc_simplex != it_inc_simplex_end ; ++it_inc_simplex)
-    {
-      Incident_simplex const& s = *it_inc_simplex;
-
-      // Don't check infinite cells
-      if (is_infinite(s))
-        continue;
-
-      int simplex_dim = static_cast<int>(s.size());
-
-      // P: points whose star does not contain "s"
-      std::vector<std::size_t> P;
-      is_simplex_consistent(i, s, std::back_inserter(P), true);
-
-      if (!P.empty())
-      {
-        ++num_inconsistent_simplices;
-
-        Triangulation const& q_tr = m_triangulations[i].tr();
-        Indexed_simplex full_simplex = s;
-        full_simplex.insert(i);
-        for (std::vector<std::size_t>::const_iterator it_p = P.begin(),
-          it_p_end = P.end() ; it_p != it_p_end ; ++it_p)
-        {
-          // star(p) does not contain "s"
-          std::size_t p = *it_p;
-
-          boost::optional<Tr_bare_point> intersection;
-
-          // If we know the intersection between Tq and voronoi(s) is a point
-          // I.e. dim(Tq) + dim(V(full_simplex)) = D
-          //  <=> dim(Tq) = dim(full_simplex)
-          if (q_tr.current_dimension() == s.size())
-          {
-            // Compute the intersection between aff(Voronoi_cell(s)) and Tq
-            // Note that the computation in done in the sub-space defined by Tq
-            intersection = 
-              compute_aff_of_voronoi_face_and_tangent_subspace_intersection(
-                q_tr.current_dimension(),
-                project_points_and_compute_weights(
-                  full_simplex, m_tangent_spaces[i], q_tr.geom_traits()),
-                m_tangent_spaces[i],
-                q_tr.geom_traits());
-
-            // CJTODO: replace with an assertion?
-            if (!intersection)
-            {
-              std::cerr << "ERROR fill_pqueues_for_alpha_tc: "
-                "aff(Voronoi_cell(s)) and Tq do not intersect.\n";
-              continue;
-            }
-          }
-          else
-          {
-            std::cerr << "***************** Intersection is not a point ********************\n"; // CJTODO DEBUG
-            // Compute the intersection between Voronoi_cell(s) and Tq
-            // We need Q, i.e. the vertices which are common neighbors of all 
-            // vertices of full_simplex in the Delaunay triangulation, but we 
-            // don't have, so we use the 5^d nearest neighbors instead
-            int num_neighbors_for_Q_approx = std::pow(
-              BASE_VALUE_FOR_ALPHA_TC_NEIGHBORHOOD, m_intrinsic_dim);
-            const Point center_pt = compute_perturbed_point(p);
-            KNS_range ins_range = m_points_ds.query_ANN(
-              center_pt, num_neighbors_for_Q_approx);
-            
-            // CJTODO: optimize that, use a vector!
-            std::set<std::size_t> Q(
-              boost::make_counting_iterator(std::size_t(0)),
-              boost::make_counting_iterator(m_points.size()));
-            for (auto i : full_simplex)
-              Q.erase(i);
-
-            intersection =
-              compute_voronoi_face_and_tangent_subspace_intersection(
-              q_tr.current_dimension(),
-              project_points_and_compute_weights(
-              full_simplex, m_tangent_spaces[i], q_tr.geom_traits()),
-              project_points_and_compute_weights(
-                Q,
-                //boost::counting_range(std::size_t(0), m_points.size() - 1),
-                //boost::adaptors::transform(ins_range, First_of_pair()),
-                m_tangent_spaces[i], q_tr.geom_traits()),
-              m_tangent_spaces[i],
-              q_tr.geom_traits());
-
-            // CJTODO: replace with an assertion?
-            if (!intersection)
-            {
-              std::cerr << "ERROR fill_pqueues_for_alpha_tc: "
-                "Voronoi_cell(s) and Tq do not intersect.\n";
-              continue;
-            }
-          }
-
-          // The following computations are done in the Euclidian space
-          Point inters_global = unproject_point(
-            constr_wp(*intersection, 0), m_tangent_spaces[i], 
-            q_tr.geom_traits());
-          Vector thickening_v = k_diff_points(
-            inters_global, compute_perturbed_point(p));
-          FT squared_alpha = k_sqlen(thickening_v);
-
-          // We insert full_simplex \ p
-          Incident_simplex is = full_simplex;
-          is.erase(p);
-          pqueues[simplex_dim - m_intrinsic_dim].push(
-            Simplex_and_alpha(p, is, squared_alpha, thickening_v));
-
-          // CJTODO DEBUG
-          /*std::cerr 
-            << "Just inserted the simplex ";
-          std::copy(full_simplex.begin(), full_simplex.end(), 
-            std::ostream_iterator<std::size_t>(std::cerr, ", ")); 
-          std::cerr << "into pqueue (i = " << i << ")\n";*/
-        }
-      }
-    }
-
-    return num_inconsistent_simplices;
-  }
-
-public:
-  void solve_inconsistencies_using_alpha_TC()
-  {
-#ifdef GUDHI_TC_PROFILING
-    Gudhi::Clock t;
-#endif
-
-#ifdef GUDHI_TC_VERBOSE
-    std::cerr << "Fixing inconsistencies using alpha TC...\n";
-#endif
-
-    //-------------------------------------------------------------------------
-    // 1. Fill priority queues
-    //-------------------------------------------------------------------------
-    typedef std::priority_queue<Simplex_and_alpha,
-      std::vector<Simplex_and_alpha>,
-      std::greater<Simplex_and_alpha> > AATC_pq;
-    typedef std::vector<AATC_pq> PQueues;
-    
-#ifdef GUDHI_TC_PROFILING
-    Gudhi::Clock t_pq;
-#endif
-
-    // One queue per dimension, from intrinsic dim (index = 0) to 
-    // ambiant dim (index = ambiant - intrinsic dim)
-    PQueues pqueues;
-    pqueues.resize(m_ambient_dim - m_intrinsic_dim + 1);
-
-    std::size_t num_inconsistent_simplices = 0;
-    // For each triangulation
-    for (std::size_t i = 0 ; i < m_points.size() ; ++i)
-      num_inconsistent_simplices += fill_pqueues_for_alpha_tc(i, pqueues);
-
-# ifdef GUDHI_TC_PROFILING
-    t_pq.end();
-#endif
-
-#ifdef GUDHI_TC_VERBOSE
-    std::cerr
-      << "Num inconsistent simplices found when filling the priority queues: "
-      << num_inconsistent_simplices;
-# ifdef GUDHI_TC_PROFILING
-    std::cerr << " (" << t_pq.num_seconds() << " s)\n";
-# endif
-    std::cerr << "\n";
-#endif
-
-    //-------------------------------------------------------------------------
-    // 2. Thicken tangent spaces to solve inconsistencies
-    //-------------------------------------------------------------------------
-    
-    // While there's elements to treat in the queues
-    for(;;)
-    {
-#ifdef GUDHI_TC_PROFILING
-      Gudhi::Clock t_one_fix;
-#endif
-
-      // Pick the simplex with the lowest dimension and the lowest alpha
-      Simplex_and_alpha saa;
-      bool found_saa = false;
-      for (PQueues::iterator it_pq = pqueues.begin(), it_pq_end = pqueues.end();
-        !found_saa && it_pq != it_pq_end ; ++it_pq)
-      {
-        while (!found_saa && !it_pq->empty())
-        {
-          saa = it_pq->top();
-          it_pq->pop();
-
-          // Check if the simplex is still missing in the star
-          if (!is_simplex_in_star(saa.m_center_point_index, saa.m_simplex))
-            found_saa = true;
-        }
-      }
-
-      // If all the queues are empty, we're done!
-      if (!found_saa)
-        break;
-
-      Tangent_space_basis &tangent_basis = 
-        m_tangent_spaces[saa.m_center_point_index];
-
-      // If we're already in the ambiant dim, we just need to thicken the
-      // tangent subspace a bit more (see below)
-      if (tangent_basis.dimension() < m_ambient_dim)
-      {
-        // Otherwise, let's thicken the tangent space
-        bool vec_added = add_vector_to_orthonormal_basis(
-          tangent_basis,
-          saa.m_thickening_vector,
-          m_k,
-          FT(0), /* sqlen_threshold: default value */
-          true /* add_to_thickening_vectors */);
-
-        // CJTODO DEBUG
-        if (!vec_added)
-        {
-          std::cerr << "FYI: the thickening vector was not added "
-                       "to the basis since it was linearly dependent to it.\n";
-        }
-      }
-
-      // Update the alpha+/- values
-      tangent_basis.update_alpha_values_of_thickening_vectors(
-        saa.m_thickening_vector, m_k);
-
-#ifdef GUDHI_TC_PROFILING
-      Gudhi::Clock t_recomputation;
-#endif
-      // Recompute triangulation & star
-      compute_tangent_triangulation(saa.m_center_point_index);
-#ifdef GUDHI_TC_PROFILING
-      t_recomputation.end();
-      double recomp_timing = t_recomputation.num_seconds();
-#endif
-
-
-#ifdef GUDHI_TC_PERFORM_EXTRA_CHECKS
-      if (!is_simplex_in_star(saa.m_center_point_index, saa.m_simplex))
-      {
-        std::cerr 
-          << "FAILED in solve_inconsistencies_using_alpha_TC(): "
-          << "simplex " << saa.m_center_point_index << ", ";
-        std::copy(saa.m_simplex.begin(), saa.m_simplex.end(), 
-          std::ostream_iterator<std::size_t>(std::cerr, ", ")); 
-        std::cerr << " not added in star #"
-          << saa.m_center_point_index
-          << " (basis dim = " << tangent_basis.dimension()
-# ifdef GUDHI_TC_PROFILING
-          << " - " << t_one_fix.num_seconds() << " s [recomputation = "
-          << recomp_timing << " s]"
-# endif
-          << ")\n";
-
-        Indexed_simplex full_s = saa.m_simplex;
-        full_s.insert(saa.m_center_point_index);
-
-        // CJTODO DEBUG
-        bool is_this_simplex_somewhere = false;
-        for(auto ii : saa.m_simplex) // CJTODO C++11
-        {
-          Indexed_simplex z = full_s;
-          z.erase(ii);
-          if (is_simplex_in_star(ii, z))
-          {
-            is_this_simplex_somewhere = true;
-            std::cerr << "The simplex is in star #" << ii << "\n";
-            break;
-          }
-        }
-        if (!is_this_simplex_somewhere)
-          std::cerr << "WOW The simplex is NOWHERE!\n";
-
-        // CJTODO DEBUG
-        if (m_ambient_dim <= 3)
-        {
-          if (is_simplex_in_the_ambient_delaunay(full_s))
-            std::cerr << "The simplex is in the ambiant Delaunay.\n";
-          else
-            std::cerr << "The simplex is NOT in the ambiant Delaunay.\n";
-
-          std::cerr << "Checking simplices of the star #" 
-            << saa.m_center_point_index << "\n";
-          Star const& star = m_stars[saa.m_center_point_index];
-          for (Star::const_iterator is = star.begin(), is_end = star.end() ;
-            is != is_end ; ++is)
-          { 
-            if (is_simplex_in_the_ambient_delaunay(*is))
-              std::cerr << "The simplex is in the ambiant Delaunay.\n";
-            else
-            {
-              std::cerr << "The simplex is NOT in the ambiant Delaunay.\n";
-              for(auto ii : *is) // CJTODO C++11
-                perturb(ii);
-            }
-          }
-        }
-         
-        std::cerr << "Perturbing the points...\n";
-        perturb(saa.m_center_point_index);
-        for(auto ii : saa.m_simplex) // CJTODO C++11
-          perturb(ii);
-        refresh_tangential_complex();
-        pqueues.clear();
-        pqueues.resize(m_ambient_dim - m_intrinsic_dim + 1);
-        
-        std::size_t num_inconsistent_simplices = 0;
-        // For each triangulation
-        for (std::size_t i = 0 ; i < m_points.size() ; ++i)
-          num_inconsistent_simplices += fill_pqueues_for_alpha_tc(i, pqueues);
-
-#ifdef GUDHI_TC_VERBOSE
-        std::cerr
-          << "Num inconsistent simplices found when filling the priority queues: "
-          << num_inconsistent_simplices << "\n";
-#endif
-      }
-      // CJTODO DEBUG
-      else
-      {
-        std::cerr << "SUCCESS: "
-          << saa.m_center_point_index << ", ";
-        std::copy(saa.m_simplex.begin(), saa.m_simplex.end(), 
-          std::ostream_iterator<std::size_t>(std::cerr, ", ")); 
-        std::cerr << " added in star #" 
-          << saa.m_center_point_index 
-          << " (basis dim = " << tangent_basis.dimension()
-# ifdef GUDHI_TC_PROFILING
-          << " - " << t_one_fix.num_seconds() << " s [recomputation = "
-          << recomp_timing << " s]"
-# endif
-          << ")\n";
-        //check_if_all_simplices_are_in_the_ambient_delaunay();
-      }
-#endif
-      
-      // It's not a problem if entries are duplicated in the pqueues
-      // since there's a check when we pop elements
-      fill_pqueues_for_alpha_tc(saa.m_center_point_index, pqueues);
-    }
-
-#ifdef GUDHI_TC_PROFILING
-    t.end();
-    std::cerr << "Tangential complex fixed in " << t.num_seconds()
-              << " seconds.\n";
-#endif
-  }
-#endif // GUDHI_ALPHA_TC
-  
   template<typename ProjectionFunctor = CGAL::Identity<Point> >
   std::ostream &export_to_off(
     const Simplicial_complex &complex, std::ostream & os,
@@ -1853,29 +1461,11 @@ private:
     // circumspheres of the star of "center_vertex"
     boost::optional<FT> squared_star_sphere_radius_plus_margin;
 
-#ifdef GUDHI_ALPHA_TC  
-    /*FT max_absolute_alpha = tsb.max_absolute_alpha();
-    // "2*m_half_sparsity" because both points can be perturbed
-    FT max_sqdist_to_tangent_space = (max_absolute_alpha == FT(0) ?
-    FT(0) : CGAL::square(2*max_absolute_alpha + 2*m_half_sparsity));*/
-    std::size_t number_of_attempts_to_insert_points = 0;
-    const std::size_t MAX_NUM_INSERTED_POINTS =
-      tsb.num_thickening_vectors() > 0 ?
-      static_cast<std::size_t>(std::pow(BASE_VALUE_FOR_ALPHA_TC_NEIGHBORHOOD, /*tsb.dimension()*/m_intrinsic_dim))
-      : std::numeric_limits<std::size_t>::max();
-#endif
-
     // Insert points until we find a point which is outside "star sphere"
     for (INS_iterator nn_it = ins_range.begin() ;
       nn_it != ins_range.end() ;
       ++nn_it)
     {
-#ifdef GUDHI_ALPHA_TC  
-      ++number_of_attempts_to_insert_points;
-      /*if (number_of_attempts_to_insert_points > MAX_NUM_INSERTED_POINTS)
-      break;*/
-#endif
-
       std::size_t neighbor_point_idx = nn_it->first;
 
       // ith point = p, which is already inserted
@@ -1896,23 +1486,6 @@ private:
         Tr_point proj_pt = project_point_and_compute_weight(
           neighbor_pt, neighbor_weight, tsb,
           local_tr_traits);
-
-#ifdef GUDHI_ALPHA_TC
-        /*for (int i = 0 ; i < tsb.num_thickening_vectors() ; ++i)
-        {
-        FT c = coord(proj_pt, m_intrinsic_dim + i);
-        if (c > 2.5*tsb.alpha_plus(i) + 2*m_half_sparsity  //CJTODO: il faut 2*tsb.alpha_plus(i)
-        || c < 2.5*tsb.alpha_minus(i) - 2*m_half_sparsity) //CJTODO: il faut 2*tsb.alpha_minus(i)
-        {
-        goto end_of_insert_loop; // "continue" in n-2 for-loop
-        }
-
-        }*/
-        /*if (max_sqdist_to_tangent_space != FT(0)
-        && center_to_nbor_sqdist > max_sqdist_to_tangent_space)
-        break;*/
-#endif
-
 
 #ifdef GUDHI_TC_VERY_VERBOSE
         ++num_attempts_to_insert_points;
@@ -2043,10 +1616,6 @@ private:
     const Point center_pt = compute_perturbed_point(i);
     Tangent_space_basis &tsb = m_tangent_spaces[i];
 
-#if defined(GUDHI_TC_VERY_VERBOSE) && defined(GUDHI_ALPHA_TC)
-    std::cerr << "Base dimension, incl. thickening vectors: " 
-      << tsb.dimension() << "\n";
-#endif
     // Estimate the tangent space
     if (!m_are_tangent_spaces_computed[i])
     {
@@ -2104,16 +1673,8 @@ private:
     std::cerr << "Inserted " << num_inserted_points << " points / " 
       << num_attempts_to_insert_points << " attemps to compute the star\n";
 #endif
-#ifdef GUDHI_ALPHA_TC
-    if (tsb.num_thickening_vectors() == 0)
-      update_star__no_thickening_vectors(i);
-    else
-    {
-      update_star__with_thickening_vector(i);
-    }
-#else
+
     update_star__no_thickening_vectors(i);
-#endif
 
 #if defined(GUDHI_TC_PROFILING) && defined(GUDHI_TC_VERY_VERBOSE)
     t.end();
@@ -2162,199 +1723,6 @@ private:
     //std::ofstream off_stream_tr(sstr.str());
     //CGAL::export_triangulation_to_off(off_stream_tr, local_tr);
   }
-
-#ifdef GUDHI_ALPHA_TC
-  void update_star__with_thickening_vector(std::size_t i)
-  {
-    //***************************************************
-    // Parse the faces of the star and add the ones that are in the
-    // restriction to alpha-Tp
-    // Update the associated star (in m_stars)
-    //***************************************************
-    
-    Triangulation &local_tr = m_triangulations[i].tr();
-    int triangulation_dim = local_tr.current_dimension();
-    Tr_traits const& local_tr_traits = local_tr.geom_traits();
-    Tr_vertex_handle center_vertex = m_triangulations[i].center_vertex();
-    Tangent_space_basis const& tsb = m_tangent_spaces[i];
-
-#ifdef GUDHI_TC_PERFORM_EXTRA_CHECKS
-    if (triangulation_dim != tangent_basis_dim(i))
-      std::cerr << "WARNING in update_star__with_thickening_vector: the "
-                   "dimension of the local triangulation is different from "
-                   "the dimension of the tangent space.\n";
-#endif
-
-    Star &star = m_stars[i];
-    star.clear();
-    int cur_dim_plus_1 = triangulation_dim + 1;
-
-    std::vector<Tr_full_cell_handle> incident_cells;
-    local_tr.incident_full_cells(
-      center_vertex, std::back_inserter(incident_cells));
-
-    typedef std::set<Tr_vertex_handle> DT_face; // DT face without center vertex (i)
-    typedef std::set<Tr_vertex_handle> Neighbor_vertices;
-    typedef std::map<DT_face, Neighbor_vertices> DT_faces_and_neighbors;
-
-    // Maps that associate a m-face F and the points of its m+1-cofaces
-    // (except the points of F). Those points are called its "neighbors".
-    // N.B.: each m-face contains 'i', so 'i' is not stored in the faces
-    // N.B.2: faces_and_neighbors[0] => dim 1, faces_and_neighbors[1] => dim 2
-    std::vector<DT_faces_and_neighbors> faces_and_neighbors;
-    faces_and_neighbors.resize(triangulation_dim);
-
-    // Fill faces_and_neighbors
-    // Let's first take care of the maximal simplices (dim = triangulation_dim)
-    typename std::vector<Tr_full_cell_handle>::const_iterator it_c = incident_cells.begin();
-    typename std::vector<Tr_full_cell_handle>::const_iterator it_c_end = incident_cells.end();
-    // For each cell
-    for ( ; it_c != it_c_end ; ++it_c)
-    {
-      DT_face face;
-      for (int j = 0 ; j < cur_dim_plus_1 ; ++j)
-      {
-        Tr_vertex_handle vh = (*it_c)->vertex(j);
-        // Skip infinite simplices
-        if (vh == local_tr.infinite_vertex())
-          goto next_face;
-        if (vh->data() != i)
-          face.insert(vh);
-      }
-      // No co-faces => no neighbors
-      faces_and_neighbors[triangulation_dim-1][face] = Neighbor_vertices();
-next_face:
-      ;
-    }
-    // Then the D-m-faces...
-    int current_dim = triangulation_dim - 1;
-    while (current_dim > 0)
-    {
-      // Let's fill faces_and_neighbors[current_dim-1]
-      // (stores the current_dim-faces)
-      DT_faces_and_neighbors& cur_faces_and_nghb =
-        faces_and_neighbors[current_dim-1];
-
-      typedef DT_faces_and_neighbors::const_iterator FaN_it;
-      // Parse m+1-faces
-      for (FaN_it it_k_p1_face = faces_and_neighbors[current_dim].begin(),
-                  it_k_p1_face_end = faces_and_neighbors[current_dim].end() ;
-           it_k_p1_face != it_k_p1_face_end ; ++it_k_p1_face)
-      {
-        DT_face const& k_p1_face = it_k_p1_face->first;
-
-        // Add each m-face to cur_faces_and_nghb
-        std::size_t n = current_dim + 1; // Not +2 since 'i' is not stored
-        std::vector<bool> booleans(n, false);
-        std::fill(booleans.begin() + 1, booleans.end(), true);
-        do
-        {
-          DT_face k_face;
-          Tr_vertex_handle remaining_vertex;
-          DT_face::const_iterator it_v = k_p1_face.begin();
-          for (std::size_t i = 0 ; i < n ; ++i, ++it_v)
-          {
-            if (booleans[i])
-              k_face.insert(*it_v);
-            else
-              remaining_vertex = *it_v;
-          }
-
-          cur_faces_and_nghb[k_face].insert(remaining_vertex);
-
-        } while (std::next_permutation(booleans.begin(), booleans.end()));
-      }
-      --current_dim;
-    }
-
-    // For each face V of Voronoi_cell(P[i]) - dim 0 to dim D-1
-    // I.e. For each DT face F of the star - dim D to dim 1
-    // Test if V intersects the thickened tangent space
-    current_dim = triangulation_dim;
-    while (current_dim > 0)
-    {
-      // Remember: faces_and_neighbors[current_dim-1] stores
-      // the current_dim-faces
-      DT_faces_and_neighbors const& cur_faces_and_nghb =
-        faces_and_neighbors[current_dim-1];
-
-      for (DT_faces_and_neighbors::const_iterator
-             it_f = cur_faces_and_nghb.begin(),
-             it_f_end = cur_faces_and_nghb.end() ;
-           it_f != it_f_end ; ++it_f)
-      {
-        Neighbor_vertices const& curr_neighbors = it_f->second;
-
-        DT_face const& current_DT_face = it_f->first;
-        GUDHI_CHECK(
-          static_cast<int>(current_DT_face.size()) == current_dim,
-          std::logic_error("Wrong dimension current_DT_face"));
-
-        // P: list of current_DT_face points (including 'i')
-        std::vector<Tr_point> P;
-        P.reserve(current_DT_face.size() + 1);
-        for (DT_face::const_iterator it = current_DT_face.begin(),
-          it_end = current_DT_face.end() ; it != it_end ; ++it)
-        {
-          P.push_back((*it)->point());
-        }
-        P.push_back(center_vertex->point());
-        
-        // Q: vertices which are common neighbors of all vertices of P
-        std::vector<Tr_point> Q;
-        P.reserve(curr_neighbors.size());
-        for (Neighbor_vertices::const_iterator it = curr_neighbors.begin(),
-          it_end = curr_neighbors.end() ; it != it_end ; ++it)
-        {
-          Q.push_back((*it)->point());
-        }
-
-        bool does_intersect =
-          does_voronoi_face_and_tangent_subspace_intersect(
-            triangulation_dim,
-            P, 
-            Q, 
-            tsb, 
-            local_tr_traits);
-        if (does_intersect)
-        {
-          // Get the indices of the face's points
-          Incident_simplex face;
-          DT_face::const_iterator it_vh = current_DT_face.begin();
-          DT_face::const_iterator it_vh_end = current_DT_face.end();
-          for ( ; it_vh != it_vh_end ; ++it_vh)
-            face.insert((*it_vh)->data());
-
-          star.push_back(face);
-
-          // Clear all subfaces of current_DT_face from the maps
-          for (int dim = current_dim - 1 ; dim > 0 ; --dim)
-          {
-            std::size_t n = current_DT_face.size();
-            std::vector<bool> booleans(n, false);
-            std::fill(booleans.begin() + n - dim, booleans.end(), true);
-            do
-            {
-              DT_face dim_face;
-              DT_face::const_iterator it_v = current_DT_face.begin();
-              for (std::size_t i = 0 ; i < n ; ++i, ++it_v)
-              {
-                if (booleans[i])
-                  dim_face.insert(*it_v);
-              }
-
-              faces_and_neighbors[dim-1].erase(dim_face);
-
-            } while (std::next_permutation(booleans.begin(), booleans.end()));
-          }
-        }
-      }
-
-      --current_dim;
-    }
-  }
-#endif //GUDHI_ALPHA_TC
-
 
   Tangent_space_basis compute_tangent_space(
       const Point &p
@@ -2527,19 +1895,6 @@ next_face:
         }
       }
     }
-#if defined(GUDHI_ALPHA_TC) && defined(GUDHI_TC_USE_A_FIXED_ALPHA)
-    // Add the orthogonal vectors as "thickening vectors"
-    for (int j = m_ambient_dim - m_intrinsic_dim - 1 ;
-          j >= 0 ;
-          --j)
-    {
-      Vector v = constr_vec(m_ambient_dim,
-                            eig.eigenvectors().col(j).data(),
-                            eig.eigenvectors().col(j).data() + m_ambient_dim);
-      tsb.add_thickening_vector(
-        normalize_vector(v, m_k), -GUDHI_TC_ALPHA_VALUE, GUDHI_TC_ALPHA_VALUE);
-    }
-#endif
 
     m_are_tangent_spaces_computed[i] = true;
 
@@ -2717,15 +2072,6 @@ next_face:
       global_point = k_transl(global_point,
                               k_scaled_vec(tsb[i], coord(p, i)));
 
-#ifdef GUDHI_ALPHA_TC
-    Tangent_space_basis::Thickening_vectors const& tv = tsb.thickening_vectors();
-    for (int i = 0 ; i < tv.size() ; ++i)
-    {
-      global_point = k_transl(
-        global_point,
-        k_scaled_vec(tv[i].vec, coord(p, m_intrinsic_dim + i)));
-    }
-#endif
     return global_point;
   }
 
@@ -2750,15 +2096,7 @@ next_face:
       FT coord = scalar_pdct(v, tsb[i]);
       coords.push_back(coord);
     }
-        
-#ifdef GUDHI_ALPHA_TC
-    Tangent_space_basis::Thickening_vectors const& tv = tsb.thickening_vectors();
-    for (int i = 0 ; i < tv.size() ; ++i)
-    {
-      FT coord = scalar_pdct(v, tv[i].vec);
-      coords.push_back(coord);
-    }
-#endif
+
     return Tr_bare_point(static_cast<int>( // CJTODO: use construct_point_d (using which kernel???)
       coords.size()), coords.begin(), coords.end());
   }
@@ -2817,20 +2155,6 @@ next_face:
         for (int j = 0 ; j < point_dim ; ++j)
           p_proj[j] += c * coord(tsb[i], j);
     }
-    
-#ifdef GUDHI_ALPHA_TC
-    Tangent_space_basis::Thickening_vectors const& tv = tsb.thickening_vectors();
-    for (int i = 0 ; i < tv.size() ; ++i)
-    {
-      FT c = scalar_pdct(v, tv[i].vec);
-      coords.push_back(c);
-      
-      // p_proj += c * tv[i].vec
-      if (!same_dim)
-        for (int j = 0 ; j < point_dim ; ++j)
-          p_proj[j] += c * coord(tv[i].vec, j);
-    }
-#endif
 
     // Same dimension? Then the weight is 0
     FT sq_dist_to_proj_pt = 0;
