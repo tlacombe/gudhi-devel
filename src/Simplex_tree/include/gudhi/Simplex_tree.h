@@ -24,11 +24,8 @@
 #define SIMPLEX_TREE_H_
 
 #include <gudhi/Simplex_tree/Simplex_tree_node_explicit_storage.h>
-#include <gudhi/Simplex_tree/Simplex_tree_node_explicit_storage_hooks.h>
 #include <gudhi/Simplex_tree/Simplex_tree_siblings.h>
-#include <gudhi/Simplex_tree/Simplex_tree_siblings_zigzag.h>
 #include <gudhi/Simplex_tree/Simplex_tree_iterators.h>
-#include <gudhi/Simplex_tree/Simplex_tree_zigzag_classes.h>
 #include <gudhi/Simplex_tree/indexing_tag.h>
 
 #include <gudhi/reader_utils.h>
@@ -120,13 +117,14 @@ class Simplex_tree {
   typedef typename Options::Vertex_handle Vertex_handle;
 
   /* Type of node in the simplex tree. */
-  typedef Simplex_tree_node_explicit_storage_hooks<Simplex_tree> Node;
+  typedef Simplex_tree_node_explicit_storage<Simplex_tree> Node;
   /* Type of dictionary Vertex_handle -> Node for traversing the simplex tree. */
   // Note: this wastes space when Vertex_handle is 32 bits and Node is aligned on 64 bits. It would be better to use a
   // flat_set (with our own comparator) where we can control the layout of the struct (put Vertex_handle and
   // Simplex_key next to each other).
   typedef typename boost::container::flat_map<Vertex_handle, Node> Dictionary;
 
+  /* \brief Set of nodes sharing a same parent in the simplex tree. */
   /* \brief Set of nodes sharing a same parent in the simplex tree. */
   typedef Simplex_tree_siblings<Simplex_tree, Dictionary> Siblings;
 
@@ -1257,22 +1255,6 @@ class Simplex_tree {
   std::vector<Simplex_handle> filtration_vect_;
   /** \brief Upper bound on the dimension of the simplicial complex.*/
   int dimension_;
-
-
-  /* Vertex handle siblings data structure. For every vertex u in the complex,
-   * apart from the vertices (dim 0), maintains 
-   * the list of nodes with label u in vh_siblings_[u]. Used for cofaces location, and/or the local 
-   * expansion of the complex when adding the new edge {u,v} in order to find 
-   * siblings with both u and v. */
-  typedef boost::intrusive::list < Node
-                                 , boost::intrusive::base_hook< base_hook_st_node_lab >
-                                 , boost::intrusive::constant_time_size<false>
-                                 >                  Siblings_vector;
-  typedef std::vector< Siblings_vector >            Vh_siblings_ds;
-
-  Vh_siblings_ds                                    vh_siblings_;
-  std::vector< Zigzag_edge<Simplex_tree> > * zigzag_edge_filtration_; //maintain the list of edges
-  int                                               dim_max_; //bound on the dimension of the complex.
 };
 
 // Print a Simplex_tree in os.

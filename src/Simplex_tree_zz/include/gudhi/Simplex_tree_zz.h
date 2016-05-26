@@ -20,19 +20,19 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
- namespace Gudhi {
+#ifndef SIMPLEX_TREE_ZZ_H 
+#define SIMPLEX_TREE_ZZ_H 
+
+#include <gudhi/Simplex_tree.h>
+
+namespace Gudhi {
 
 // template<>
 class Simplex_tree_zz 
-: public Simplex_tree< zigzag_indexing_tag
-                     , double//FiltrationValue
-                     , int//SimplexKey
-                     , int//VertexHandle
-                     , true//ContiguousVertexHandles 
-                     >
+: public Simplex_tree< Simplex_tree_options_full_featured >
 {
 
 } //end Simplex_tree_zz
 } //namespace Gudhi
 
-#endif // SRC_SIMPLEX_TREE_ZZ_INCLUDE_GUDHI_SIMPLEX_TREE_ZZ_H_
+#endif // SIMPLEX_TREE_ZZ_H 
