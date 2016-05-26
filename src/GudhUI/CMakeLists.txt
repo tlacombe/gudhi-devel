@@ -1,13 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
 project(GudhUI)
 
-find_package(CGAL  COMPONENTS Qt4)
 find_package(Qt4)
 find_package(QGLViewer)
 find_package(OpenGL)
-message("CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS}")
-message("CMAKE_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG}")
-message("CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE}")
 
 if ( CGAL_FOUND AND QT4_FOUND AND OPENGL_FOUND AND QGLVIEWER_FOUND )
   set( QT_USE_QTXML    TRUE )
@@ -17,11 +13,8 @@ if ( CGAL_FOUND AND QT4_FOUND AND OPENGL_FOUND AND QGLVIEWER_FOUND )
   SET(Boost_USE_STATIC_LIBS ON)
   SET(Boost_USE_MULTITHREAD OFF)
 
-  INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
-  LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})
-  
   include(${QT_USE_FILE})
-  include(${CGAL_USE_FILE})
+
   include_directories (${QGLVIEWER_INCLUDE_DIR})
   include_directories(.)	
  
@@ -64,7 +57,12 @@ if ( CGAL_FOUND AND QT4_FOUND AND OPENGL_FOUND AND QGLVIEWER_FOUND )
 	
   target_link_libraries( GudhUI ${QT_LIBRARIES} ${QGLVIEWER_LIBRARIES} )
   target_link_libraries( GudhUI ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY} )	
+if (TBB_FOUND)
+  target_link_libraries( GudhUI ${TBB_RELEASE_LIBRARY})
+endif()
+
+###############################################################################
 
 else()
-  message(STATUS "NOTICE: This demo requires CGAL, the QGLViewer, OpenGL and Qt4, and will not be compiled.")
+  message(STATUS "NOTICE: GudhUI requires CGAL, the QGLViewer, OpenGL and Qt4, and will not be compiled.")
 endif()

@@ -20,24 +20,24 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GUDHI_EDGE_CONTRACTION_H_
-#define GUDHI_EDGE_CONTRACTION_H_
+#ifndef EDGE_CONTRACTION_H_
+#define EDGE_CONTRACTION_H_
 
 
-#include "gudhi/Skeleton_blocker_contractor.h"
-#include "gudhi/Contraction/policies/Edge_length_cost.h"
-#include "gudhi/Contraction/policies/First_vertex_placement.h"
-#include "gudhi/Contraction/policies/Valid_contraction_policy.h"
-#include "gudhi/Contraction/policies/Dummy_valid_contraction.h"
-#include "gudhi/Contraction/policies/Link_condition_valid_contraction.h"
-#include "gudhi/Utils.h"
+#include <gudhi/Skeleton_blocker_contractor.h>
+#include <gudhi/Contraction/policies/Edge_length_cost.h>
+#include <gudhi/Contraction/policies/First_vertex_placement.h>
+#include <gudhi/Contraction/policies/Valid_contraction_policy.h>
+#include <gudhi/Contraction/policies/Dummy_valid_contraction.h>
+#include <gudhi/Contraction/policies/Link_condition_valid_contraction.h>
+#include <gudhi/Debug_utils.h>
+
+namespace Gudhi {
+
+namespace contraction {
 
 
-namespace Gudhi{
-namespace contraction{
-
-
-/** \defgroup contr Contraction
+/** \defgroup contr Edge contraction
 
 \author David Salinas
 
@@ -46,7 +46,7 @@ namespace contraction{
 The purpose of this package is to offer a user-friendly interface for edge contraction simplification of huge simplicial complexes.
 It uses the \ref skbl data-structure whose size remains small  during simplification  
 of  most used geometrical complexes of topological data analysis such as the Rips or the Delaunay complexes. In practice, the 
-size of this data-structure is even uch lower than the total number of simplices.
+size of this data-structure is even much lower than the total number of simplices.
 
 The edge contraction operation consists in identifying two vertices of a simplicial complex. 
 A lot of algorithms have been developed in computer graphics that allows to reduce efficiently the size of 2-dimensional simplicial complexes
@@ -120,9 +120,9 @@ while ensuring its homotopy type is preserved during the contraction (edge are c
   \code{.cpp}
 #include <boost/timer/timer.hpp>
 #include <iostream>
-#include "gudhi/Edge_contraction.h"
-#include "gudhi/Skeleton_blocker.h"
-#include "gudhi/Off_reader.h"
+#include <gudhi/Edge_contraction.h>
+#include <gudhi/Skeleton_blocker.h>
+#include <gudhi/Off_reader.h>
 
 
 using namespace std;
@@ -158,7 +158,7 @@ void build_rips(ComplexType& complex, double offset){
 	for (auto p = vertices.begin(); p != vertices.end(); ++p)
 		for (auto q = p; ++q != vertices.end(); )
 			if (eucl_distance(complex.point(*p), complex.point(*q)) < 2 * offset)
-				complex.add_edge(*p,*q);
+				complex.add_edge_without_blockers(*p,*q);
 }
 
 int main (int argc, char *argv[])
@@ -194,7 +194,7 @@ int main (int argc, char *argv[])
 	contractor.contract_edges();
 
 	std::cout << "Counting final number of simplices \n";
-	unsigned num_simplices = std::distance(complex.simplex_range().begin(),complex.simplex_range().end());
+	unsigned num_simplices = std::distance(complex.star_simplex_range().begin(),complex.star_simplex_range().end());
 
 	std::cout << "Final complex has "<<
 			complex.num_vertices()<<" vertices, "<<
@@ -226,11 +226,10 @@ Time to simplify and enumerate simplices:
 
 
 \copyright GNU General Public License v3.                         
-\verbatim  Contact: David Salinas,     david.salinas@inria.fr \endverbatim
 */
-/** @} */  // end defgroup 
+/** @} */  // end defgroup
+}  // namespace contraction
 
-}
-}
+}  // namespace Gudhi
 
-#endif /* GUDHI_EDGE_CONTRACTION_H_ */
+#endif  // EDGE_CONTRACTION_H_
