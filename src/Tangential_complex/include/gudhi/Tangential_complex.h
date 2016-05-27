@@ -1611,16 +1611,6 @@ private:
       m_perturb_tangent_space[i] = false;
     }
 #endif
-#ifdef GUDHI_TC_RECOMPUTE_TANGENT_SPACE_EVERYTIME
-    else
-    {
-#ifdef GUDHI_TC_EXPORT_NORMALS
-      tsb = compute_tangent_space(center_pt, i, true/*normalize*/, &m_orth_spaces[i]);
-#else
-      tsb = compute_tangent_space(center_pt, i);
-#endif
-    }
-#endif
 
 #if defined(GUDHI_TC_PROFILING) && defined(GUDHI_TC_VERY_VERBOSE)
     Gudhi::Clock t;
