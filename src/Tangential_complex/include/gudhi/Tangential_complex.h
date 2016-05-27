@@ -39,7 +39,6 @@
 #include <CGAL/point_generators_d.h>
 #include <CGAL/QP_models.h>
 #include <CGAL/QP_functions.h>
-#include <CGAL/IO/Triangulation_off_ostream.h> // CJTODO DEBUG?
 
 #include <Eigen/Core>
 #include <Eigen/Eigen>
@@ -76,8 +75,6 @@ typedef CGAL::MP_Float ET;
 //#define CGAL_QP_NO_ASSERTIONS // CJTODO: NECESSARY? http://doc.cgal.org/latest/QP_solver/group__PkgQPSolverFunctions.html#ga1fefbd0436aca0e281f88e8e6cd8eb74
 
 //#define GUDHI_TC_EXPORT_NORMALS // Only for 3D surfaces (k=2, d=3)
-
-//static std::ofstream csv_stream("output/stats.csv"); // CJTODO DEBUG
 
 //CJTODO: debug
 //#define GUDHI_TC_COMPUTE_TANGENT_PLANES_FOR_SPHERE_2
@@ -385,34 +382,6 @@ public:
 
   void compute_tangential_complex()
   {
-    // CJTODO TEMP
-    /*{
-    INS_range ins_range = m_points_ds.query_incremental_ANN(
-      m_k.construct_point_d_object()(8, ORIGIN));
-    int c = 0;
-    for (INS_iterator nn_it = ins_range.begin() ;
-      nn_it != ins_range.end() && c < 10 ;
-      ++nn_it, ++c)
-    {
-      std::size_t neighbor_point_idx = nn_it->first;
-      FT sqdist = nn_it->second;
-      std::cerr << neighbor_point_idx << ":" << std::sqrt(sqdist) << "\n";
-    }
-    }
-    {
-    INS_range ins_range = m_points_ds.query_incremental_ANN(
-      m_points[234]);
-    int c = 0;
-    for (INS_iterator nn_it = ins_range.begin() ;
-      nn_it != ins_range.end() && c < 10 ;
-      ++nn_it, ++c)
-    {
-      std::size_t neighbor_point_idx = nn_it->first;
-      FT sqdist = nn_it->second;
-      std::cerr << neighbor_point_idx << ":" << std::sqrt(sqdist) << "\n";
-    }
-    }*/
-
 #ifdef GUDHI_TC_PERFORM_EXTRA_CHECKS
     std::cerr << red << "WARNING: GUDHI_TC_PERFORM_EXTRA_CHECKS is defined. "
       << "Computation might be slower than usual.\n" << white;
@@ -510,7 +479,7 @@ public:
     }
 
     // CJTODO: replace this by an actual estimation
-    for (FT v : sum_eigen_values) // CJTODO C++11
+    for (FT v : sum_eigen_values)
     {
       std::cout << v / m_points.size() << " ; ";
     }
@@ -557,7 +526,7 @@ public:
     Point_indices_range const& perturbed_points_indices)
   {
 #if defined(GUDHI_TC_VERBOSE) || defined(GUDHI_TC_PROFILING)
-    //std::cerr << yellow << "\nRefreshing TC... " << white; // CJTODO TEMP: uncomment
+    std::cerr << yellow << "\nRefreshing TC... " << white;
 #endif
 
 #ifdef GUDHI_TC_PROFILING
@@ -588,7 +557,7 @@ public:
     std::cerr << yellow << "done in " << t.num_seconds()
       << " seconds.\n" << white;
 #elif defined(GUDHI_TC_VERBOSE)
-    //std::cerr << yellow << "done.\n" << white; // CJTODO TEMP: uncomment
+    std::cerr << yellow << "done.\n" << white;
 #endif
   }
 
@@ -663,7 +632,7 @@ public:
         num_inconsistent_stars =
           num_inconsistencies.combine(std::plus<std::size_t>());
         updated_points = tls_updated_points.combine(
-          [](std::vector<std::size_t> const& x, std::vector<std::size_t> const& y) { // CJTODO: C++11
+          [](std::vector<std::size_t> const& x, std::vector<std::size_t> const& y) {
             std::vector<std::size_t> res;
             res.reserve(x.size() + y.size());
             res.insert(res.end(), x.begin(), x.end());
@@ -1343,7 +1312,7 @@ private:
     typename K::Construct_cartesian_const_iterator_d ccci =
       m_k.construct_cartesian_const_iterator_d_object();
     int c = 1;
-    for (auto it = ccci(p) ; it != ccci(p, 0) ; ++it, ++c) // CJTODO: C++11
+    for (auto it = ccci(p) ; it != ccci(p, 0) ; ++it, ++c)
     {
       if (*it > limit || *it < -limit)
         return true;
@@ -1672,15 +1641,6 @@ private:
       }
       star.push_back(incident_simplex);
     }
-
-    // CJTODO DEBUG
-    //std::cerr << "\nChecking topology and geometry..."
-    //          << (local_tr.is_valid(true) ? "OK.\n" : "Error.\n");
-    // DEBUG: output the local mesh into an OFF file
-    //std::stringstream sstr;
-    //sstr << "data/local_tri_" << i << ".off";
-    //std::ofstream off_stream_tr(sstr.str());
-    //CGAL::export_triangulation_to_off(off_stream_tr, local_tr);
   }
 
   Tangent_space_basis compute_tangent_space(
@@ -2037,7 +1997,8 @@ private:
   // Project the point in the tangent space
   // Resulting point coords are expressed in tsb's space
   Tr_bare_point project_point(const Point &p,
-                              const Tangent_space_basis &tsb) const
+                              const Tangent_space_basis &tsb,
+                              const Tr_traits &tr_traits) const
   {
     typename K::Scalar_product_d scalar_pdct =
       m_k.scalar_product_d_object();
@@ -2056,8 +2017,8 @@ private:
       coords.push_back(coord);
     }
 
-    return Tr_bare_point(static_cast<int>( // CJTODO: use construct_point_d (using which kernel???)
-      coords.size()), coords.begin(), coords.end());
+    return tr_traits.construct_point_d_object()(
+      static_cast<int>(coords.size()), coords.begin(), coords.end());
   }
 
   // Project the point in the tangent space
@@ -2172,8 +2133,10 @@ private:
     typename K::Difference_of_points_d diff_pts =
       m_k.difference_of_points_d_object();
     
+    auto const& tr_traits = m_triangulations[0].tr().geom_traits();
+
     typename Tr_traits::Difference_of_points_d tr_diff_pts =
-      m_triangulations[0].tr().geom_traits().difference_of_points_d_object();
+      tr_traits.difference_of_points_d_object();
 
     std::vector<std::size_t> s(simplex.begin(), simplex.end());
     std::size_t simplex_dim = s.size() - 1;
@@ -2193,8 +2156,8 @@ private:
     for (int j = 0 ; j < simplex_dim ; ++j)
     {
       Tr_vector v_j = tr_diff_pts(
-        project_point(compute_perturbed_point(s[j+1]), basis), 
-        project_point(compute_perturbed_point(s[0]), basis));
+        project_point(compute_perturbed_point(s[j+1]), basis, tr_traits),
+        project_point(compute_perturbed_point(s[0]), basis, tr_traits));
       for (int i = 0 ; i < simplex_dim ; ++i)
         m(j, i) = CGAL::to_double(coord(v_j, i));
     }
@@ -3006,68 +2969,6 @@ private:
     GUDHI_CHECK(!inside_pt_indices.empty(),
       std::logic_error("There should be at least one vertex inside the sphere"));
 
-    // CJTODO DEBUG
-    /*if (inside_pt_indices.empty())
-    {
-      //compute_tangent_triangulation(q_idx, true);
-      std::cerr << "Error: inside_pt_indices.empty()\n";
-      std::cerr << "Stars:\n";
-      for (auto s : m_stars[q_idx])
-      {
-        std::cerr << q_idx << " ";
-        std::copy(s.begin(), s.end(),
-          std::ostream_iterator<std::size_t>(std::cerr, " "));
-        std::cerr << "\n";
-      }
-      std::cerr << "\n";
-    }*/
-
-    // CJTODO DEBUG
-    // If co-intrinsic dimension = 1, let's compare normals
-    /*if (m_ambient_dim - m_intrinsic_dim == 1)
-    {
-      typename K::Scaled_vector_d k_scaled_vec =
-        m_k.scaled_vector_d_object();
-      typename K::Squared_length_d k_sqlen =
-        m_k.squared_length_d_object();
-      Vector pq = k_diff_pts(
-        compute_perturbed_point(q_idx), compute_perturbed_point(p_idx));
-      pq = k_scaled_vec(pq, FT(1)/sqrt(k_sqlen(pq)));
-      FT dot_product_1 = std::abs(
-          k_scalar_pdct(m_orth_spaces[p_idx][0], pq));
-      FT dot_product_2 = std::abs(
-          k_scalar_pdct(m_orth_spaces[q_idx][0], pq));
-      csv_stream << inside_pt_indices.size() << " ; ";
-      csv_stream << dot_product_1 << " ; " << dot_product_2;
-      csv_stream << "\n";
-    }*/
-    
-    // CJTODO DEBUG
-    if (inside_pt_indices.size() > 1)
-    {
-      std::cerr << "Warning: " << inside_pt_indices.size() << " insiders in "
-        << inconsistent_simplex.size() - 1 << " simplex\n";
-      
-      // If co-intrinsic dimension = 1, let's compare normals
-      /*if (m_ambient_dim - m_intrinsic_dim == 1)
-      {
-        std::cerr << "(dot product between normals = ";
-        Simplex::const_iterator it_v = 
-          inconsistent_simplex.begin();
-        std::size_t i1 = *it_v;
-        ++it_v;
-        for ( ; it_v != inconsistent_simplex.end() ; ++it_v)
-        {
-          FT dot_products_between_normals =
-            k_scalar_pdct(m_tangent_spaces[i1][0], m_tangent_spaces[*it_v][0]);
-          std::cerr << dot_products_between_normals << ", ";
-          //csv_stream << " ; " <<dot_products_between_normals;
-        }
-        std::cerr << "\n";
-        //csv_stream << "\n";
-      }*/
-    }
-
     //-------------------------------------------------------------------------
     //4. If there's more than one ti... or not
     //-------------------------------------------------------------------------
@@ -3130,10 +3031,6 @@ private:
     {
       insert_higher_dim_simplex_into_star(*it_point_idx, new_simplex);
     }
-    // CJTODO: call
-    // check_and_solve_inconsistencies_by_adding_higher_dim_simplices
-    // recursively? Not sure, since the star will be parsed again from
-    // the beginning
   }
 
   // Test and solve inconsistencies of a simplex.
@@ -3172,28 +3069,6 @@ private:
         inconsistencies_found = true;
         break;
       }
-      // CJTODO DEBUG
-      /*else if (m_ambient_dim - m_intrinsic_dim == 1)
-      {
-        typename K::Difference_of_points_d k_diff_pts =
-          m_k.difference_of_points_d_object();
-        typename K::Scaled_vector_d k_scaled_vec =
-          m_k.scaled_vector_d_object();
-        typename K::Squared_length_d k_sqlen =
-          m_k.squared_length_d_object();
-        typename K::Scalar_product_d k_scalar_pdct =
-          m_k.scalar_product_d_object();
-        Vector pq = k_diff_pts(
-          compute_perturbed_point(*it_point_idx), compute_perturbed_point(tr_index));
-        pq = k_scaled_vec(pq, FT(1)/sqrt(k_sqlen(pq)));
-        FT dot_product_1 = std::abs(
-            k_scalar_pdct(m_orth_spaces[tr_index][0], pq));
-        FT dot_product_2 = std::abs(
-            k_scalar_pdct(m_orth_spaces[*it_point_idx][0], pq));
-        csv_stream << "0 ; ";
-        csv_stream << dot_product_1 << " ; " << dot_product_2;
-        csv_stream << "\n";
-      }*/
     }
 
     return inconsistencies_found;
@@ -3670,13 +3545,6 @@ private:
           sstr_c << *it_point_idx << " ";
         }
 
-        // In order to have only one time each simplex, we only keep it
-        // if the lowest index is the index of the center vertex
-        // CJTODO: uncomment? but it only works if there's no inconsistencies
-        /*if (*c.begin() != (m_intrinsic_dim == 1 ? 2*idx : idx)
-            && color_simplex == -1)
-          continue;*/
-
         os << 3 << " " << sstr_c.str();
         if (color_inconsistencies || p_simpl_to_color_in_red
             || p_simpl_to_color_in_green || p_simpl_to_color_in_blue)
@@ -3869,73 +3737,6 @@ public:
 #endif
 
     return os;
-  }
-
-  // Return a pair<num_simplices, num_inconsistent_simplices>
-  void check_correlation_between_inconsistencies_and_fatness() const
-  {
-    std::ofstream csv_consistent("output/correlation_consistent.csv"); // CJTODO DEBUG
-    std::ofstream csv_inconsistent("output/correlation_inconsistent.csv"); // CJTODO DEBUG
-    if (m_intrinsic_dim < 3)
-    {
-      std::cerr
-        << "\n==========================================================\n"
-        << "check_correlation_between_inconsistencies_and_fatness():\n"
-        << "Intrinsic dimension should be >= 3.\n"
-        << "==========================================================\n\n";
-    }
-
-    std::size_t num_consistent_simplices = 0;
-    double sum_vol_edge_ratio_consistent = 0.;
-    std::size_t num_inconsistent_simplices = 0;
-    double sum_vol_edge_ratio_inconsistent = 0.;
-    // For each triangulation
-    for (std::size_t idx = 0 ; idx < m_points.size() ; ++idx)
-    {
-      // For each cell
-      Star::const_iterator it_inc_simplex = m_stars[idx].begin();
-      Star::const_iterator it_inc_simplex_end = m_stars[idx].end();
-      for ( ; it_inc_simplex != it_inc_simplex_end ; ++it_inc_simplex)
-      {
-        // Don't check infinite cells
-        if (is_infinite(*it_inc_simplex))
-          continue;
-
-        Simplex c = *it_inc_simplex;
-        c.insert(idx); // Add the missing index
-
-        double fatness = compute_simplex_fatness(c);
-        
-        if (!is_simplex_consistent(c))
-        {
-          ++num_inconsistent_simplices;
-          sum_vol_edge_ratio_inconsistent += fatness;
-          csv_inconsistent << fatness << "\n";
-        }
-        else
-        {
-          ++num_consistent_simplices;
-          sum_vol_edge_ratio_consistent += fatness;
-          csv_consistent << fatness << "\n";
-        }
-      }
-    }
-
-    double avg_vol_edge_ratio_inconsistent = 
-      sum_vol_edge_ratio_inconsistent / num_inconsistent_simplices;
-    double avg_vol_edge_ratio_consistent = 
-      sum_vol_edge_ratio_consistent / num_consistent_simplices;
-    
-    std::cerr
-      << "\n==========================================================\n"
-      << "check_correlation_between_inconsistencies_and_fatness()\n"
-      << "  * Avg. volume/longest_edge^d ratio of consistent simplices: " 
-      << avg_vol_edge_ratio_consistent 
-      << " (" << num_consistent_simplices << " simplices)\n"
-      << "  * Avg. volume/longest_edge^d ratio of inconsistent simplices: " 
-      << avg_vol_edge_ratio_inconsistent
-      << " (" << num_inconsistent_simplices << " simplices)\n"
-      << "==========================================================\n";
   }
 
 private:

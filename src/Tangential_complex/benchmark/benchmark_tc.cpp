@@ -321,10 +321,6 @@ void make_tc(std::vector<Point> &points,
   TC tc(points.begin(), points.end(), sparsity, intrinsic_dim, max_perturb, k);
 #endif
 
-  // CJTODO TEMP
-  tc.estimate_intrinsic_dimension();
-  //return;
-
   if (!tangent_spaces.empty())
   {
     tc.set_tangent_planes(tangent_spaces);
@@ -342,8 +338,6 @@ void make_tc(std::vector<Point> &points,
   if (ambient_dim <= 4)
     tc.check_if_all_simplices_are_in_the_ambient_delaunay();
 #endif
-
-  //tc.check_correlation_between_inconsistencies_and_fatness();
 
   //===========================================================================
   // Export to OFF
@@ -388,8 +382,6 @@ void make_tc(std::vector<Point> &points,
                                  best_num_inconsistent_local_tr);
     GUDHI_TC_SET_PERFORMANCE_DATA("Final_num_inconsistent_local_tr", 
                                  final_num_inconsistent_local_tr);
-
-    //tc.check_correlation_between_inconsistencies_and_fatness();
 
     // DEBUGGING: confirm that all stars were actually refreshed
     //std::cerr << yellow << "FINAL CHECK...\n" << white;
@@ -452,9 +444,6 @@ void make_tc(std::vector<Point> &points,
     GUDHI_TC_SET_PERFORMANCE_DATA("Final_num_inconsistent_local_tr", "N/A");
   }
 
-  // CJTODO TEST
-  //tc.check_and_solve_inconsistencies_by_filtering_simplices_out();
-
   double fix2_time = -1;
   double export_after_fix2_time = -1.;
   if (add_high_dim_simpl)
@@ -501,15 +490,6 @@ void make_tc(std::vector<Point> &points,
   if (intrinsic_dim == 2)
     complex.euler_characteristic(true);
 
-  // CJTODO TEMP: Export to OFF with higher-dim simplices colored
-  /*Simplex_set higher_dim_simplices;
-  complex.get_simplices_matching_test(
-    Test_dim(intrinsic_dim + 1),
-    std::inserter(higher_dim_simplices, higher_dim_simplices.begin()));
-  export_to_off(
-    tc, input_name_stripped, "_BEFORE_COLLAPSE", false, &complex, 
-    &inconsistent_simplices, &higher_dim_simplices);*/
-  
   //===========================================================================
   // Collapse
   //===========================================================================
@@ -687,17 +667,6 @@ int main()
           sstr >> time_limit_for_perturb;
           sstr >> num_iteration;
 
-          // CJTODO TEMP
-          for (int ii = 0 ; ii < 1 ; ++ii)
-          for (int jj = 0 ; jj < 1 ; ++jj)
-          {
-          std::cerr << red
-            << "******************************************************\n"
-            << "*** Sparsity = " << sparsity * (1 << ii) << "\n"
-            << "*** Max_perturb = " << max_perturb * (1 << jj) << "\n"
-            << "******************************************************\n"
-            << white;
-
           for (int j = 0 ; j < num_iteration ; ++j)
           {
             std::string input_stripped = input;
@@ -850,7 +819,7 @@ int main()
             if (!points.empty())
             {
 #if defined(TC_INPUT_STRIDES) && TC_INPUT_STRIDES > 1
-              auto p = points | boost::adaptors::strided(TC_INPUT_STRIDES); // CJTODO C++11 (auto)
+              auto p = points | boost::adaptors::strided(TC_INPUT_STRIDES);
               std::vector<Point> points(p.begin(), p.end());
               std::cerr << "****************************************\n"
                 << "WARNING: taking 1 point every " << TC_INPUT_STRIDES
@@ -859,7 +828,7 @@ int main()
 #endif
 
               make_tc(points, tangent_spaces, intrinsic_dim, 
-                sparsity * (1 << ii), max_perturb * (1 << jj), 
+                sparsity, max_perturb,
                 perturb == 'Y', add_high_dim_simpl == 'Y',  collapse == 'Y', 
                 time_limit_for_perturb, input.c_str());
 
@@ -873,7 +842,6 @@ int main()
 
             XML_perf_data::commit();
           }
-          } // CJTODO TEMP
         }
       }
       script_file.seekg(0);
