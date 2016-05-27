@@ -879,7 +879,7 @@ public:
 
   void check_and_solve_inconsistencies_by_adding_higher_dim_simplices()
   {
-    // CJTODO: parallel_for???
+    // parallel_for???
     for (std::size_t idx = 0 ; idx < m_triangulations.size() ; ++idx)
     {
       bool inconsistencies_found = false;
@@ -894,7 +894,6 @@ public:
               idx, *it_inc_simplex);
 
           // m_stars[idx] has been modified, let's start again
-          // CJTODO: optimize?
           if (inconsistencies_found)
             break;
         }
@@ -907,7 +906,6 @@ public:
   {
     bool inconsistencies_found = false;
 
-    // CJTODO: parallel_for???
     for (std::size_t idx = 0 ; idx < m_triangulations.size() ; ++idx)
     {
       if (filter_inconsistent_simplices_in_a_local_triangulation(idx))

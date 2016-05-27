@@ -26,7 +26,7 @@ const std::size_t ONLY_LOAD_THE_FIRST_N_POINTS = 1000000;
 #include <CGAL/Epick_d.h>
 #include <CGAL/Random.h>
 
-#include "../test/testing_utilities.h" // CJTODO: won't work?
+#include "../test/testing_utilities.h"
 
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/trim_all.hpp>
@@ -383,16 +383,6 @@ void make_tc(std::vector<Point> &points,
     GUDHI_TC_SET_PERFORMANCE_DATA("Final_num_inconsistent_local_tr", 
                                  final_num_inconsistent_local_tr);
 
-    // DEBUGGING: confirm that all stars were actually refreshed
-    //std::cerr << yellow << "FINAL CHECK...\n" << white;
-    //std::size_t num_inc = tc.number_of_inconsistent_simplices(true).second;
-    //tc.refresh_tangential_complex();
-    //if (CGAL::cpp11::get<1>(tc.number_of_inconsistent_simplices(true)) != num_inc)
-    //  std::cerr << red << "FINAL CHECK: FAILED.\n" << white;
-    //else
-    //  std::cerr << green << "FINAL CHECK: PASSED.\n" << white;
-
-
     //=========================================================================
     // Export to OFF
     //=========================================================================
@@ -589,7 +579,7 @@ int main()
 # ifdef _DEBUG
   int num_threads = 1;
 # else
-  int num_threads = 8;
+  int num_threads = tbb::task_scheduler_init::default_num_threads() - 2;
 # endif
 #endif
 
@@ -804,10 +794,22 @@ int main()
             }
             else
             {
-              load_points_from_file<Kernel, typename TC::Tangent_space_basis>(
-                input, std::back_inserter(points), 
-                std::back_inserter(tangent_spaces), 
-                ONLY_LOAD_THE_FIRST_N_POINTS);
+              // Contains tangent space basis
+              if (input.substr(input.size() - 3) == "pwt")
+              {
+                load_points_and_tangent_space_basis_from_file
+                  <Kernel, typename TC::Tangent_space_basis>(
+                  input, std::back_inserter(points),
+                  std::back_inserter(tangent_spaces),
+                  intrinsic_dim,
+                  ONLY_LOAD_THE_FIRST_N_POINTS);
+              }
+              else
+              {
+                load_points_from_file<Kernel>(
+                  input, std::back_inserter(points),
+                  ONLY_LOAD_THE_FIRST_N_POINTS);
+              }
             }
 
 #ifdef GUDHI_TC_PROFILING

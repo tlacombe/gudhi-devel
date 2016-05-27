@@ -194,7 +194,7 @@ public:
           std::vector<Simplex> k_faces;
           // Get the k-faces composing the simplex
           combinations(*it_simplex, k + 1, std::back_inserter(k_faces));
-          for (const auto &comb : k_faces) // CJTODO C++1
+          for (const auto &comb : k_faces)
             cofaces_map[comb].push_back(it_simplex);
         }
       }
@@ -220,7 +220,7 @@ public:
             std::logic_error("Wrong dimension"));
           // Get the k-faces composing the simplex
           combinations(*it_Cf, k + 1, std::back_inserter(k_faces));
-          for (const auto &f2 : k_faces) // CJTODO C++1
+          for (const auto &f2 : k_faces)
           {
             // Skip F
             if (f2 != it_map_elt->first)

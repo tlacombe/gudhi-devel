@@ -245,16 +245,13 @@ namespace Tangential_complex_ {
   }
 
   template<
-    typename Kernel, typename Tangent_space_basis,
-    typename OutputIteratorPoints, typename OutputIteratorTS>
+    typename Kernel, typename OutputIteratorPoints>
     bool load_points_from_file(
     const std::string &filename,
     OutputIteratorPoints points,
-    OutputIteratorTS tangent_spaces,
     std::size_t only_first_n_points = std::numeric_limits<std::size_t>::max())
   {
     typedef typename Kernel::Point_d    Point;
-    typedef typename Kernel::Vector_d   Vector;
 
     std::ifstream in(filename);
     if (!in.is_open())
@@ -262,9 +259,6 @@ namespace Tangential_complex_ {
       std::cerr << "Could not open '" << filename << "'" << std::endl;
       return false;
     }
-
-    bool contains_tangent_spaces =
-      (filename.substr(filename.size() - 3) == "pwt");
 
     Kernel k;
     Point p;
@@ -275,17 +269,6 @@ namespace Tangential_complex_ {
     while (i < only_first_n_points && in >> p)
     {
       *points++ = p;
-      if (contains_tangent_spaces)
-      {
-        Tangent_space_basis tsb(i);
-        for (int d = 0 ; d < 2 ; ++d) // CJTODO : pas toujours "2"
-        {
-          Vector v;
-          in >> v;
-          tsb.push_back(Gudhi::Tangential_complex_::normalize_vector(v, k));
-        }
-        *tangent_spaces++ = tsb;
-      }
       ++i;
     }
 
@@ -295,6 +278,54 @@ namespace Tangential_complex_ {
 
     return true;
   }
+
+  template<
+    typename Kernel, typename Tangent_space_basis,
+    typename OutputIteratorPoints, typename OutputIteratorTS>
+    bool load_points_and_tangent_space_basis_from_file(
+    const std::string &filename,
+    OutputIteratorPoints points,
+    OutputIteratorTS tangent_spaces,
+    int intrinsic_dim,
+    std::size_t only_first_n_points = std::numeric_limits<std::size_t>::max())
+  {
+      typedef typename Kernel::Point_d    Point;
+      typedef typename Kernel::Vector_d   Vector;
+
+      std::ifstream in(filename);
+      if (!in.is_open())
+      {
+        std::cerr << "Could not open '" << filename << "'" << std::endl;
+        return false;
+      }
+
+      Kernel k;
+      Point p;
+      int num_ppints;
+      in >> num_ppints;
+
+      std::size_t i = 0;
+      while (i < only_first_n_points && in >> p)
+      {
+        *points++ = p;
+
+        Tangent_space_basis tsb(i);
+        for (int d = 0 ; d < intrinsic_dim ; ++d)
+        {
+          Vector v;
+          in >> v;
+          tsb.push_back(Gudhi::Tangential_complex_::normalize_vector(v, k));
+        }
+        *tangent_spaces++ = tsb;
+        ++i;
+      }
+
+#ifdef GUDHI_TC_VERBOSE
+      std::cerr << "'" << filename << "' loaded." << std::endl;
+#endif
+
+      return true;
+    }
 
   // 1st line: number of points
   // Then one point per line
@@ -316,7 +347,7 @@ namespace Tangential_complex_ {
     // For each point p
     for ( ; it_p != it_p_end ; ++it_p)
     {
-      for (auto it = ccci(*it_p) ; it != ccci(*it_p, 0) ; ++it) // CJTODO: C++11
+      for (auto it = ccci(*it_p) ; it != ccci(*it_p, 0) ; ++it)
         os << CGAL::to_double(*it) << coord_separator;
 
       os << "\n";
@@ -373,7 +404,7 @@ namespace Tangential_complex_ {
     }
 
   private:
-    std::array<int, 3> m_selected_coords; // CJTODO C++11
+    std::array<int, 3> m_selected_coords;
     K const& m_k;
   };
 
@@ -492,7 +523,6 @@ namespace Tangential_complex_ {
     K const&                              m_k;
   };
 
-  // CJTODO: use CGAL::Combination_enumerator<int> (cf. Tangential_complex.h)
   // Compute all the k-combinations of elements
   // Output_iterator::value_type must be 
   // boost::container::flat_set<std::size_t>
