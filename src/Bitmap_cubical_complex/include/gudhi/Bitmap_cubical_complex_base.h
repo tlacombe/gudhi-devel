@@ -371,7 +371,10 @@ class Bitmap_cubical_complex_base {
      * and in function get_cell_data to get a filtration of a cell.
      */
     size_t operator*() {
-      return this->compute_index_in_bitmap();
+		//std::cerr << "this->compute_index_in_bitmap() : " << this->compute_index_in_bitmap() << std::endl;
+		//std::cerr << "this->b.data[ this->compute_index_in_bitmap() ] : " << this->b.data[ this->compute_index_in_bitmap() ] <<std::endl;
+		
+      return  this->compute_index_in_bitmap();
     }
 
     size_t compute_index_in_bitmap()const {
@@ -449,6 +452,9 @@ class Bitmap_cubical_complex_base {
   //****************************************************************************************************************//
   //****************************************************************************************************************//
   //****************************************************************************************************************//
+  
+  void store_in_perseus_format( const char* filename );
+  void store_in_dipha_format( const char* filename );
 
  protected:
   std::vector<unsigned> sizes;
@@ -811,6 +817,71 @@ bool compareFirstElementsOfTuples(const std::pair< std::pair< T, size_t >, char 
     return first.second < second.second;
   }
 }
+
+
+template <typename T>
+void Bitmap_cubical_complex_base<T>:: store_in_perseus_format( const char* filename )
+{
+	std::ofstream out;
+	out.open( filename );
+	//store the dimension
+	out << this->sizes.size() << std::endl;
+	//now store the sizes of the bitmap in vatious directions:
+	for ( size_t i = 0 ; i != this->sizes.size() ; ++i )
+	{
+		out << this->sizes[i] << std::endl;
+	}
+	//and now the filtration value on top dimensional cells stored in lexycographical order. 
+	for ( Top_dimensional_cells_iterator it = this->top_dimensional_cells_iterator_begin() ; it != this->top_dimensional_cells_iterator_end() ; ++it )
+	{
+		out << this->get_cell_data(*it) << std::endl;
+	}
+	out.close();
+}//store_in_perseus_format
+
+template <typename T>
+void Bitmap_cubical_complex_base<T>:: store_in_dipha_format( const char* filename )
+{
+	bool dbg = true;
+	
+	std::ofstream out;
+	out.open( filename , std::ios::binary );
+	//store dipha magic number 8067171840
+	size_t magic_numebr = 8067171840;
+	out.write( reinterpret_cast<const char *>(&magic_numebr) , sizeof(size_t) );
+	if ( dbg )std::cerr << "magic_numebr : " << magic_numebr << std::endl;
+	//store the file type
+	size_t file_type = 1;
+	out.write( reinterpret_cast<const char *>(&file_type) , sizeof(size_t) );
+	if ( dbg )std::cerr << "file_type : " << file_type << std::endl;
+	//total number of values
+	size_t total_number_of_values = 1;
+	for ( size_t i = 0 ; i != this->sizes.size() ; ++i )
+	{
+		total_number_of_values *= this->sizes[i];
+	}
+	out.write( reinterpret_cast<const char *>(&total_number_of_values) , sizeof(size_t) );
+	if ( dbg )std::cerr << "total_number_of_values : " << total_number_of_values << std::endl;
+	//dimension
+	size_t dimension = this->sizes.size();
+	out.put(dimension);
+	out.write( reinterpret_cast<const char *>(&dimension) , sizeof(size_t) );
+	if ( dbg )std::cerr << "dimension : " << dimension << std::endl;
+	
+	//lattice resolution
+	for ( size_t i = 0 ; i != this->sizes.size() ; ++i )
+	{
+		out.write( reinterpret_cast<const char *>(&this->sizes[i]) , sizeof(size_t) );
+		if ( dbg )std::cerr << "this->sizes[i] : " << this->sizes[i] << std::endl;
+	}
+	//and now the filtration value on top dimensional cells stored in lexycographical order. 
+	for ( Top_dimensional_cells_iterator it = this->top_dimensional_cells_iterator_begin() ; it != this->top_dimensional_cells_iterator_end() ; ++it )
+	{
+		out.write( reinterpret_cast<const char *>(&this->get_cell_data(*it)) , sizeof(double) );	
+		if ( dbg )std::cerr << "this->get_cell_data(*it)) : " << this->get_cell_data(*it) << std::endl;	
+	}
+	out.close();
+}//store_in_dipha_format
 
 }  // namespace Cubical_complex
 
