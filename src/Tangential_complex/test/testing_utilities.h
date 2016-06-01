@@ -40,56 +40,6 @@
 #include <fstream>
 #include <iterator>
 
-// Actually, this is very slow because the "m_points_ds->insert"
-// cleans the tree, which is thus built at each query_ANN call
-#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
-template <typename Kernel, typename Point_container>
-class Point_sparsifier
-{
-public:
-  typedef typename Kernel::FT                         FT;
-  typedef typename Point_container::value_type        Point;
-  typedef typename Gudhi::Spatial_tree_data_structure<
-    Kernel, Point_container>                          Points_ds;
-  typedef typename Points_ds::KNS_range               KNS_range;
-
-  // We can't instantiate m_points_ds right now since it requires that
-  // points is not empty (which be the case here)
-  Point_sparsifier(Point_container &points,
-                   FT sparsity = FT(0.05*0.05))
-    : m_points(points), m_sparsity(sparsity), m_points_ds(NULL)
-  {}
-
-  bool try_to_insert_point(const Point &p)
-  {
-    if (m_points_ds == NULL)
-    {
-      m_points.push_back(p);
-      m_points_ds = new Points_ds(m_points);
-      m_points_ds->insert(0);
-      return true;
-    }
-    else
-    {
-      KNS_range kns_range = m_points_ds->query_ANN(p, 1, false);
-      if (kns_range.begin()->second >= m_sparsity)
-      {
-        m_points.push_back(p);
-        m_points_ds->insert(m_points.size() - 1);
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-private:
-  Point_container     & m_points;
-  Points_ds           * m_points_ds;
-  FT                    m_sparsity;
-};
-#endif
-
 // construct_point: dim 2
 template <typename Kernel>
 typename Kernel::Point_d construct_point(
@@ -158,9 +108,6 @@ std::vector<typename Kernel::Point_d> generate_points_on_plane(
   CGAL::Random rng;
   std::vector<Point> points;
   points.reserve(num_points);
-#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
-  Point_sparsifier<Kernel, std::vector<Point> > sparsifier(points);
-#endif
   for (std::size_t i = 0 ; i < num_points ; )
   {
     std::vector<FT> pt(ambient_dim, FT(0));
@@ -170,14 +117,8 @@ std::vector<typename Kernel::Point_d> generate_points_on_plane(
       pt[j] = rng.get_double(-0.01, 0.01);*/
         
     Point p = k.construct_point_d_object()(ambient_dim, pt.begin(), pt.end());
-
-#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
-    if (sparsifier.try_to_insert_point(p))
-      ++i;
-#else
     points.push_back(p);
     ++i;
-#endif
   }
   return points;
 }
@@ -193,9 +134,6 @@ std::vector<typename Kernel::Point_d> generate_points_on_moment_curve(
   CGAL::Random rng;
   std::vector<Point> points;
   points.reserve(num_points);
-#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
-  Point_sparsifier<Kernel, std::vector<Point> > sparsifier(points);
-#endif
   for (std::size_t i = 0 ; i < num_points ; )
   {
     FT x = rng.get_double(min_x, max_x);
@@ -205,13 +143,8 @@ std::vector<typename Kernel::Point_d> generate_points_on_moment_curve(
       coords.push_back(std::pow(CGAL::to_double(x), p));
     Point p = k.construct_point_d_object()(
       dim, coords.begin(), coords.end());
-#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
-    if (sparsifier.try_to_insert_point(p))
-      ++i;
-#else
     points.push_back(p);
     ++i;
-#endif
   }
   return points;
 }
@@ -237,9 +170,6 @@ std::vector<typename Kernel::Point_d> generate_points_on_torus_3D(
 
   std::vector<Point> points;
   points.reserve(num_points);
-#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
-  Point_sparsifier<Kernel, std::vector<Point> > sparsifier(points);
-#endif
   for (std::size_t i = 0 ; i < num_points ; )
   {
     FT u, v;
@@ -260,13 +190,8 @@ std::vector<typename Kernel::Point_d> generate_points_on_torus_3D(
       (R + r * std::cos(u)) * std::cos(v),
       (R + r * std::cos(u)) * std::sin(v),
       r * std::sin(u));
-#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
-    if (sparsifier.try_to_insert_point(p))
-      ++i;
-#else
     points.push_back(p);
     ++i;
-#endif
     /*if (p_tangent_planes)
     {
       TC_basis tp(p);
@@ -340,9 +265,6 @@ std::vector<typename Kernel::Point_d> generate_points_on_torus_d(
   }
   else
   {
-#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
-    Point_sparsifier<Kernel, std::vector<Point> > sparsifier(points);
-#endif
     for (std::size_t i = 0 ; i < num_points ; )
     {
       double radius_noise_ratio = 1.;
@@ -362,13 +284,8 @@ std::vector<typename Kernel::Point_d> generate_points_on_torus_d(
       }
 
       Point p = k.construct_point_d_object()(pt.begin(), pt.end());
-#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
-      if (sparsifier.try_to_insert_point(p))
-        ++i;
-#else
       points.push_back(p);
       ++i;
-#endif
     }
   }
   return points;
@@ -385,9 +302,6 @@ std::vector<typename Kernel::Point_d> generate_points_on_sphere_d(
   CGAL::Random_points_on_sphere_d<Point> generator(dim, radius);
   std::vector<Point> points;
   points.reserve(num_points);
-#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
-  Point_sparsifier<Kernel, std::vector<Point> > sparsifier(points);
-#endif
   for (std::size_t i = 0 ; i < num_points ; )
   {
     Point p = *generator++;
@@ -405,13 +319,8 @@ std::vector<typename Kernel::Point_d> generate_points_on_sphere_d(
         k.scaled_vector_d_object();
       p = k_vec_to_pt(k_scaled_vec(k_pt_to_vec(p), radius_noise_ratio));
     }
-#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
-    if (sparsifier.try_to_insert_point(p))
-      ++i;
-#else
     points.push_back(p);
     ++i;
-#endif
   }
   return points;
 }
@@ -434,9 +343,6 @@ std::vector<typename Kernel::Point_d> generate_points_on_two_spheres_d(
   t[0] = distance_between_centers;
   Vector c1_to_c2(t.begin(), t.end());
 
-#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
-  Point_sparsifier<Kernel, std::vector<Point> > sparsifier(points);
-#endif
   for (std::size_t i = 0 ; i < num_points ; )
   {
     Point p = *generator++;
@@ -458,17 +364,9 @@ std::vector<typename Kernel::Point_d> generate_points_on_two_spheres_d(
     typename Kernel::Translated_point_d k_transl =
       k.translated_point_d_object();
     Point p2 = k_transl(p, c1_to_c2);
-
-#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
-    if (sparsifier.try_to_insert_point(p))
-      ++i;
-    if (sparsifier.try_to_insert_point(p2))
-      ++i;
-#else
     points.push_back(p);
     points.push_back(p2);
     i += 2;
-#endif
   }
   return points;
 }
@@ -491,10 +389,6 @@ std::vector<typename Kernel::Point_d> generate_points_on_3sphere_and_circle(
     k.translated_point_d_object();
   typename Kernel::Compute_coordinate_d k_coord =
     k.compute_coordinate_d_object();
-
-#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
-  Point_sparsifier<Kernel, std::vector<Point> > sparsifier(points);
-#endif
   for (std::size_t i = 0 ; i < num_points ; )
   {
     Point p_sphere = *generator++; // First 3 coords
@@ -507,16 +401,8 @@ std::vector<typename Kernel::Point_d> generate_points_on_3sphere_and_circle(
     pt[3] = std::cos(alpha);
     pt[4] = std::sin(alpha);
     Point p(pt.begin(), pt.end());
-
-#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
-    if (sparsifier.try_to_insert_point(p))
-      ++i;
-    if (sparsifier.try_to_insert_point(p2))
-      ++i;
-#else
     points.push_back(p);
     ++i;
-#endif
   }
   return points;
 }
@@ -537,9 +423,6 @@ std::vector<typename Kernel::Point_d> generate_points_on_klein_bottle_3D(
 
   std::vector<Point> points;
   points.reserve(num_points);
-#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
-  Point_sparsifier<Kernel, std::vector<Point> > sparsifier(points);
-#endif
   for (std::size_t i = 0 ; i < num_points ; )
   {
     FT u, v;
@@ -560,13 +443,8 @@ std::vector<typename Kernel::Point_d> generate_points_on_klein_bottle_3D(
       (a + b*tmp)*cos(u),
       (a + b*tmp)*sin(u),
       b*(sin(u/2)*sin(v) + cos(u/2)*sin(2.*v)));
-#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
-    if (sparsifier.try_to_insert_point(p))
-      ++i;
-#else
     points.push_back(p);
     ++i;
-#endif
   }
   return points;
 }
@@ -587,9 +465,6 @@ std::vector<typename Kernel::Point_d> generate_points_on_klein_bottle_4D(
 
   std::vector<Point> points;
   points.reserve(num_points);
-#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
-  Point_sparsifier<Kernel, std::vector<Point> > sparsifier(points);
-#endif
   for (std::size_t i = 0 ; i < num_points ; )
   {
     FT u, v;
@@ -610,13 +485,8 @@ std::vector<typename Kernel::Point_d> generate_points_on_klein_bottle_4D(
         (a + b*cos(v))*sin(u) + (noise == 0. ? 0. : rng.get_double(0, noise)),
         b*sin(v)*cos(u/2)     + (noise == 0. ? 0. : rng.get_double(0, noise)),
         b*sin(v)*sin(u/2)     + (noise == 0. ? 0. : rng.get_double(0, noise)));
-#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
-    if (sparsifier.try_to_insert_point(p))
-      ++i;
-#else
     points.push_back(p);
     ++i;
-#endif
   }
   return points;
 }
@@ -639,9 +509,6 @@ generate_points_on_klein_bottle_variant_5D(
 
   std::vector<Point> points;
   points.reserve(num_points);
-#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
-  Point_sparsifier<Kernel, std::vector<Point> > sparsifier(points);
-#endif
   for (std::size_t i = 0 ; i < num_points ; )
   {
     FT u, v;
@@ -664,13 +531,8 @@ generate_points_on_klein_bottle_variant_5D(
     FT x5 = x1 + x2 + x3 + x4;
 
     Point p = construct_point(k, x1, x2, x3, x4, x5);
-#ifdef GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
-    if (sparsifier.try_to_insert_point(p))
-      ++i;
-#else
     points.push_back(p);
     ++i;
-#endif
   }
   return points;
 }

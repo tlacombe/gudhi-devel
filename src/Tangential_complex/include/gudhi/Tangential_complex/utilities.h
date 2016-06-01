@@ -71,56 +71,6 @@ namespace Tangential_complex_ {
     }
   };
 
-  /*template <typename T>
-  struct Atomic_wrapper
-  {
-    std::atomic<T> _a;
-
-    Atomic_wrapper()
-      :_a()
-    {}
-
-    Atomic_wrapper(const std::atomic<T> &other)
-      :_a(other.load())
-    {}
-
-    Atomic_wrapper(const Atomic_wrapper &other)
-      :_a(other._a.load())
-    {}
-
-    Atomic_wrapper(const T &other)
-      :_a(other)
-    {}
-
-    Atomic_wrapper &operator=(const std::atomic<T> &other)
-    {
-      _a.store(other._a.load());
-      return *this;
-    }
-
-    Atomic_wrapper &operator=(const Atomic_wrapper &other)
-    {
-      _a.store(other._a.load());
-      return *this;
-    }
-
-    Atomic_wrapper &operator=(const T &other)
-    {
-      _a.store(other);
-      return *this;
-    }
-
-    operator T() const
-    {
-      return _a.load();
-    }
-
-    operator std::atomic<T>() const
-    {
-      return _a;
-    }
-  };*/
-
   // Modifies v in-place
   template <typename K>
   typename K::Vector_d& normalize_vector(typename K::Vector_d& v,
@@ -204,12 +154,6 @@ namespace Tangential_complex_ {
       Vector u_proj = scaled_vec(ej, scalar_pdct(u, ej) / scalar_pdct(ej, ej));
       u = diff_vec(u, u_proj);
     }
-    for (int j = 0 ; j < basis.num_thickening_vectors() ; ++j)
-    {
-      Vector const& ej = basis.thickening_vectors()[j].vec;
-      Vector u_proj = scaled_vec(ej, scalar_pdct(u, ej) / scalar_pdct(ej, ej));
-      u = diff_vec(u, u_proj);
-    }
     
     FT sqlen_new_v = k.squared_length_d_object()(u);
     bool add_it = (sqlen_new_v > sqlen_threshold);
@@ -224,13 +168,6 @@ namespace Tangential_complex_ {
         for (int j = 0 ; j < basis.size() ; ++j)
         {
           Vector const& ej = basis[j];
-          Vector new_v_proj = scaled_vec(
-            ej, scalar_pdct(new_v, ej) / scalar_pdct(ej, ej));
-          new_v = diff_vec(new_v, new_v_proj);
-        }
-        for (int j = 0 ; j < basis.num_thickening_vectors() ; ++j)
-        {
-          Vector const& ej = basis.thickening_vectors()[j].vec;
           Vector new_v_proj = scaled_vec(
             ej, scalar_pdct(new_v, ej) / scalar_pdct(ej, ej));
           new_v = diff_vec(new_v, new_v_proj);

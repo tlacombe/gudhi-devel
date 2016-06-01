@@ -49,7 +49,6 @@
 //#define GUDHI_TC_NUMBER_OF_PERTURBED_POINTS(intr_dim) (intr_dim + 2) // Quite good technique
 
 //========================= Strategy ==========================================
-//#define GUDHI_TC_USE_SLOW_BUT_ACCURATE_SPARSIFIER
 #define GUDHI_TC_GLOBAL_REFRESH
 #define GUDHI_TC_PERTURB_POSITION
 # define GUDHI_TC_PERTURB_POSITION_TANGENTIAL // default

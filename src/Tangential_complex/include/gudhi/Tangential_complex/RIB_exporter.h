@@ -23,7 +23,7 @@
 #ifndef GUDHI_TC_WRITE_RIB_FILE_H
 #define GUDHI_TC_WRITE_RIB_FILE_H
 
-#include "utilities.h"
+#include <gudhi/Tangential_complex/utilities.h>
 
 #include <tuple>
 #include <string>

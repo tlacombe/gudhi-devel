@@ -25,7 +25,8 @@
 
 #include <gudhi/Tangential_complex/config.h>
 #include <gudhi/Tangential_complex/utilities.h>
-#include "gudhi/console_color.h"
+#include <gudhi/Debug_utils.h>
+#include <gudhi/console_color.h>
 
 #include <CGAL/iterator.h>
 
