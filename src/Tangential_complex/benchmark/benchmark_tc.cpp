@@ -122,7 +122,6 @@ protected:
     subelements.push_back("Perturb_successful");
     subelements.push_back("Perturb_time");
     subelements.push_back("Perturb_steps");
-    subelements.push_back("Add_higher_dim_simpl_time");
     subelements.push_back("Result_pure_pseudomanifold");
     subelements.push_back("Result_num_wrong_dim_simplices");
     subelements.push_back("Result_num_wrong_number_of_cofaces");
@@ -434,46 +433,7 @@ void make_tc(std::vector<Point> &points,
     GUDHI_TC_SET_PERFORMANCE_DATA("Final_num_inconsistent_local_tr", "N/A");
   }
 
-  double fix2_time = -1;
-  double export_after_fix2_time = -1.;
-  if (add_high_dim_simpl)
-  {
-    //=========================================================================
-    // Try to fix inconsistencies by adding higher-dimension simplices
-    //=========================================================================
-    t.begin();
-    // Try to solve the remaining inconstencies
-    tc.check_and_solve_inconsistencies_by_adding_higher_dim_simplices();
-    t.end();
-    fix2_time = t.num_seconds();
-
-    /*Simplex_set not_delaunay_simplices;
-    if (ambient_dim <= 4)
-    {
-      tc.check_if_all_simplices_are_in_the_ambient_delaunay(
-        &complex, true, &not_delaunay_simplices);
-    }*/
-  
-    //=========================================================================
-    // Export to OFF
-    //=========================================================================
-
-    // Re-build the complex
-    Simplex_set inconsistent_simplices;
-    max_dim = tc.export_TC(complex, false, 2, &inconsistent_simplices);
-
-    t.begin();
-    bool exported = export_to_off(
-      tc, input_name_stripped, "_AFTER_FIX2", false, &complex, 
-      &inconsistent_simplices);
-    t.end();
-    double export_after_fix2_time = (exported ? t.num_seconds() : -1);
-  }
-  else
-  {
-    Simplex_set inconsistent_simplices;
-    max_dim = tc.export_TC(complex, false, 2, &inconsistent_simplices);
-  }
+  max_dim = tc.export_TC(complex, false, 2);
 
   complex.display_stats();
 
@@ -543,9 +503,7 @@ void make_tc(std::vector<Point> &points,
     << "  * Fix inconsistencies 1: " << perturb_time
     <<      " (" << num_perturb_steps << " steps) ==> "
     <<      (perturb_ret == Gudhi::TC_FIXED ? "FIXED" : "NOT fixed") << "\n"
-    << "  * Fix inconsistencies 2: " << fix2_time << "\n"
     << "  * Export to OFF (after perturb): " << export_after_perturb_time << "\n"
-    << "  * Export to OFF (after fix2): "<< export_after_fix2_time << "\n"
     << "  * Export to OFF (after collapse): "
     <<      export_after_collapse_time << "\n"
     << "================================================\n";
@@ -559,7 +517,6 @@ void make_tc(std::vector<Point> &points,
                                 (perturb_ret == Gudhi::TC_FIXED ? 1 : 0));
   GUDHI_TC_SET_PERFORMANCE_DATA("Perturb_time", perturb_time);
   GUDHI_TC_SET_PERFORMANCE_DATA("Perturb_steps", num_perturb_steps);
-  GUDHI_TC_SET_PERFORMANCE_DATA("Add_higher_dim_simpl_time", fix2_time);
   GUDHI_TC_SET_PERFORMANCE_DATA("Result_pure_pseudomanifold",
                                 (is_pure_pseudomanifold ? 1 : 0));
   GUDHI_TC_SET_PERFORMANCE_DATA("Result_num_wrong_dim_simplices",

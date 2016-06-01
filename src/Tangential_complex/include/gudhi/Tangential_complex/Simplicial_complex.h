@@ -63,7 +63,7 @@ public:
       bool check_higher_dim_simpl = true;
       for (Complex::iterator it_simplex = m_complex.begin(), 
                              it_simplex_end = m_complex.end() ;
-           it_simplex != it_simplex_end ; 
+           it_simplex != it_simplex_end ;
            ++it_simplex)
       {
         // Check if the simplex is not already in a higher dim simplex

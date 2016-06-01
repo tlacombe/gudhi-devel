@@ -23,6 +23,8 @@
 #ifndef GUDHI_TC_CONFIG_H
 #define GUDHI_TC_CONFIG_H
 
+#include <cstddef>
+
 // Without TBB_USE_THREADING_TOOL Intel Inspector XE will report false
 // positives in Intel TBB
 // (http://software.intel.com/en-us/articles/compiler-settings-for-threading-error-analysis-in-intel-inspector-xe/)
@@ -49,7 +51,6 @@
 //#define GUDHI_TC_NUMBER_OF_PERTURBED_POINTS(intr_dim) (intr_dim + 2) // Quite good technique
 
 //========================= Strategy ==========================================
-#define GUDHI_TC_GLOBAL_REFRESH
 #define GUDHI_TC_PERTURB_POSITION
 # define GUDHI_TC_PERTURB_POSITION_TANGENTIAL // default
 //# define GUDHI_TC_PERTURB_POSITION_GLOBAL

@@ -30,7 +30,7 @@
 #include <gudhi/Clock.h>
 
 #include <CGAL/Dimension.h>
-#include <CGAL/function_objects.h>
+#include <CGAL/function_objects.h> // for CGAL::Identity
 #include <CGAL/Epick_d.h>
 #include <CGAL/Regular_triangulation_euclidean_traits.h>
 #include <CGAL/Regular_triangulation.h>
@@ -105,12 +105,11 @@ template <
     CGAL::Epick_d<DimensionTag>,
     CGAL::Triangulation_data_structure
     <
-      typename CGAL::Regular_triangulation_euclidean_traits<
-      CGAL::Epick_d<DimensionTag> >::Dimension,
+      CGAL::Epick_d<DimensionTag>::Dimension,
       CGAL::Triangulation_vertex<CGAL::Regular_triangulation_euclidean_traits<
-      CGAL::Epick_d<DimensionTag> >, Vertex_data >,
+        CGAL::Epick_d<DimensionTag> >, Vertex_data >,
       CGAL::Triangulation_full_cell<CGAL::Regular_triangulation_euclidean_traits<
-      CGAL::Epick_d<DimensionTag> > >
+        CGAL::Epick_d<DimensionTag> > >
     >
   >
 >
@@ -130,7 +129,7 @@ class Tangential_complex
   typedef typename Triangulation::Full_cell_handle    Tr_full_cell_handle;
   typedef typename Tr_traits::Vector_d                Tr_vector;
 
-#if defined(GUDHI_USE_TBB) && defined(GUDHI_TC_GLOBAL_REFRESH)
+#if defined(GUDHI_USE_TBB)
   typedef tbb::mutex                                  Mutex_for_perturb;
   typedef Vector                                      Translation_for_perturb;
   typedef std::vector<Atomic_wrapper<FT> >            Weights;
@@ -260,8 +259,7 @@ public:
 #ifdef GUDHI_TC_PERTURB_WEIGHT
     , m_weights_memory()
 #endif
-#if defined(GUDHI_USE_TBB) && defined(GUDHI_TC_PERTURB_POSITION) \
-  && defined(GUDHI_TC_GLOBAL_REFRESH)
+#if defined(GUDHI_USE_TBB) && defined(GUDHI_TC_PERTURB_POSITION)
     , m_p_perturb_mutexes(NULL)
 #endif
     , m_points_ds(m_points)
@@ -283,8 +281,7 @@ public:
   /// Destructor
   ~Tangential_complex()
   {
-#if defined(GUDHI_USE_TBB) && defined(GUDHI_TC_PERTURB_POSITION) \
- && defined(GUDHI_TC_GLOBAL_REFRESH)
+#if defined(GUDHI_USE_TBB) && defined(GUDHI_TC_PERTURB_POSITION)
     delete [] m_p_perturb_mutexes;
 #endif
   }
@@ -368,7 +365,7 @@ public:
 #ifdef GUDHI_TC_PERTURB_POSITION
     m_translations.resize(m_points.size(),
                           m_k.construct_vector_d_object()(m_ambient_dim));
-# if defined(GUDHI_USE_TBB) && defined(GUDHI_TC_GLOBAL_REFRESH)
+# if defined(GUDHI_USE_TBB)
     delete [] m_p_perturb_mutexes;
     m_p_perturb_mutexes = new Mutex_for_perturb[m_points.size()];
 # endif
@@ -584,7 +581,7 @@ public:
 #endif
 
       // Parallel
-#if defined(GUDHI_USE_TBB) && defined(GUDHI_TC_GLOBAL_REFRESH)
+#if defined(GUDHI_USE_TBB)
       if (boost::is_convertible<Concurrency_tag, CGAL::Parallel_tag>::value)
       {
         tbb::combinable<std::size_t> num_inconsistencies;
@@ -636,11 +633,10 @@ public:
       std::cerr << yellow << "done.\n" << white;
 #endif
 
-#if defined(GUDHI_TC_GLOBAL_REFRESH)
       if (num_inconsistent_stars > 0)
         refresh_tangential_complex(updated_points);
 
-# ifdef GUDHI_TC_PERFORM_EXTRA_CHECKS
+#ifdef GUDHI_TC_PERFORM_EXTRA_CHECKS
       // Confirm that all stars were actually refreshed
       std::size_t num_inc_1 = 
         std::get<1>(number_of_inconsistent_simplices(false));
@@ -652,7 +648,6 @@ public:
           << num_inc_1 << " vs " << num_inc_2 << ")\n" << white;
       else
         std::cerr << green << "REFRESHMENT CHECK: PASSED.\n" << white;
-# endif
 #endif
 
 #ifdef GUDHI_TC_SHOW_DETAILED_STATS_FOR_INCONSISTENCIES
@@ -840,44 +835,6 @@ public:
 #endif
 
     return max_dim;
-  }
-
-  void check_and_solve_inconsistencies_by_adding_higher_dim_simplices()
-  {
-    // parallel_for???
-    for (std::size_t idx = 0 ; idx < m_triangulations.size() ; ++idx)
-    {
-      bool inconsistencies_found = false;
-      do
-      {
-        Star::const_iterator it_inc_simplex = m_stars[idx].begin();
-        Star::const_iterator it_inc_simplex_end = m_stars[idx].end();
-        for ( ; it_inc_simplex != it_inc_simplex_end ; ++it_inc_simplex)
-        {
-          inconsistencies_found =
-            check_and_solve_inconsistencies_by_adding_higher_dim_simplices(
-              idx, *it_inc_simplex);
-
-          // m_stars[idx] has been modified, let's start again
-          if (inconsistencies_found)
-            break;
-        }
-      } while (inconsistencies_found);
-    }
-  }
-
-  // Returns true if some inconsistencies were found
-  bool check_and_solve_inconsistencies_by_filtering_simplices_out()
-  {
-    bool inconsistencies_found = false;
-
-    for (std::size_t idx = 0 ; idx < m_triangulations.size() ; ++idx)
-    {
-      if (filter_inconsistent_simplices_in_a_local_triangulation(idx))
-        inconsistencies_found = true;
-    }
-
-    return inconsistencies_found;
   }
 
   template<typename ProjectionFunctor = CGAL::Identity<Point> >
@@ -1267,40 +1224,6 @@ private:
   bool is_infinite(Simplex const& s) const
   {
     return *s.rbegin() == std::numeric_limits<std::size_t>::max();
-  }
-  
-  bool is_one_of_the_coord_far_from_origin(
-    Point const& p, FT limit, int only_test_the_first_n_coords = -1) const
-  {
-    typename K::Construct_cartesian_const_iterator_d ccci =
-      m_k.construct_cartesian_const_iterator_d_object();
-    int c = 1;
-    for (auto it = ccci(p) ; it != ccci(p, 0) ; ++it, ++c)
-    {
-      if (*it > limit || *it < -limit)
-        return true;
-
-      if (only_test_the_first_n_coords > 0 && c == only_test_the_first_n_coords)
-        break;
-    }
-    return false;
-  }
-
-  bool is_one_of_the_coord_far_from_origin(
-    Simplex const& s, FT limit, int only_test_the_first_n_coords = -1) const
-  {
-    for (Simplex::const_iterator it_index = s.begin();
-      it_index != s.end() ; ++it_index)
-    {
-      // Infinite vertex? Much too far!
-      if (*it_index == std::numeric_limits<std::size_t>::max())
-        return true;
-
-      if (is_one_of_the_coord_far_from_origin(
-        compute_perturbed_point(*it_index), limit, only_test_the_first_n_coords))
-        return true;
-    }
-    return false;
   }
 
   // Output: "triangulation" is a Regular Triangulation containing at least the
@@ -2322,7 +2245,7 @@ private:
       tr_point_in_ball_generator(
         m_ambient_dim, m_max_perturb);
     // Parallel
-#  if defined(GUDHI_USE_TBB) && defined(GUDHI_TC_GLOBAL_REFRESH)
+#  if defined(GUDHI_USE_TBB)
     Vector transl = k_pt_to_vec(*tr_point_in_ball_generator++);
     m_p_perturb_mutexes[point_idx].lock();
     m_translations[point_idx] = transl;
@@ -2362,7 +2285,7 @@ private:
       );
     }
     // Parallel
-#  if defined(GUDHI_USE_TBB) && defined(GUDHI_TC_GLOBAL_REFRESH)
+#  if defined(GUDHI_USE_TBB)
     m_p_perturb_mutexes[point_idx].lock();
     m_translations[point_idx] = global_transl;
     m_p_perturb_mutexes[point_idx].unlock();
@@ -2382,10 +2305,6 @@ private:
     OutputIt perturbed_pts_indices = CGAL::Emptyset_iterator())
   {
     bool is_inconsistent = false;
-
-#ifdef GUDHI_USE_TBB
-    //Tr_mutex::scoped_lock lock(m_tr_mutexes[tr_index]);
-#endif
 
     Star const& star = m_stars[tr_index];
     Triangulation const& tr    = m_triangulations[tr_index].tr();
@@ -2423,10 +2342,6 @@ private:
           *perturbed_pts_indices++ = *it;
         }
 
-# if !defined(GUDHI_TC_GLOBAL_REFRESH)
-        refresh_tangential_complex();
-# endif
-
         // We will try the other cells next time
         break;
       }
@@ -2443,10 +2358,6 @@ private:
 
         perturb(tr_index);
         *perturbed_pts_indices++ = idx;
-
-# if !defined(GUDHI_TC_GLOBAL_REFRESH)
-        refresh_tangential_complex();
-# endif
 
         // We will try the other cells next time
         break;
@@ -2477,10 +2388,6 @@ private:
           perturb(*it);
           *perturbed_pts_indices++ = *it;
         }
-
-# if !defined(GUDHI_TC_GLOBAL_REFRESH)
-        refresh_tangential_complex();
-# endif
 
         // We will try the other cells next time
         break;
@@ -2543,10 +2450,6 @@ private:
           *perturbed_pts_indices++ = *it;
         }
 
-# if !defined(GUDHI_TC_GLOBAL_REFRESH)
-        refresh_tangential_complex();
-# endif
-
         // We will try the other cells next time
         break;
       }
@@ -2572,10 +2475,6 @@ private:
           *perturbed_pts_indices++ = *it_idx;
         }
 
-# if !defined(GUDHI_TC_GLOBAL_REFRESH)
-        refresh_tangential_complex();
-# endif
-
         // We will try the other cells next time
         break;
       }
@@ -2586,94 +2485,6 @@ private:
     return is_inconsistent;
   }
 
-
-  bool filter_inconsistent_simplices_in_a_local_triangulation(
-                                                          std::size_t tr_index)
-  {
-    bool is_inconsistent = false;
-
-    Star &star = m_stars[tr_index];
-    Triangulation const& tr    = m_triangulations[tr_index].tr();
-    Tr_vertex_handle center_vh = m_triangulations[tr_index].center_vertex();
-    const Tr_traits &local_tr_traits = tr.geom_traits();
-    int cur_dim = tr.current_dimension();
-
-    // For each incident simplex
-    Star::iterator it_inc_simplex = star.begin();
-    while (it_inc_simplex != star.end())
-    {
-      const Incident_simplex &incident_simplex = *it_inc_simplex;
-
-      // Don't check infinite cells
-      if (is_infinite(incident_simplex))
-      {
-        ++it_inc_simplex;
-        continue;
-      }
-
-      Simplex c = incident_simplex;
-      c.insert(tr_index); // Add the missing index
-
-      // Inconsistent?
-      if (!is_simplex_consistent(c))
-      {
-        is_inconsistent = true;
-
-        // Compute T, the space tangent to "c"
-        Tangent_space_basis tsb = compute_tangent_space(c);
-
-        std::size_t center_index = *(c.begin());
-        // Compute the star of "center_index" in the RT restricted to T
-        tsb.set_origin(center_index);
-        Triangulation tr(m_intrinsic_dim);
-        Tr_vertex_handle center_vh = compute_star(
-          center_index, compute_perturbed_point(center_index), tsb, tr);
-
-        // Get incident cells
-        std::vector<Tr_full_cell_handle> incident_cells;
-        tr.incident_full_cells(
-          center_vh, std::back_inserter(incident_cells));
-
-        // Check if "c" is among them
-        typename std::vector<Tr_full_cell_handle>::const_iterator it_c = incident_cells.begin();
-        typename std::vector<Tr_full_cell_handle>::const_iterator it_c_end = incident_cells.end();
-        bool found = false;
-        // For each cell
-        for (; !found && it_c != it_c_end ; ++it_c)
-        {
-          Incident_simplex incident_simplex;
-          for (int j = 0 ; j < tr.current_dimension() + 1 ; ++j)
-          {
-            std::size_t index = (*it_c)->vertex(j)->data();
-            incident_simplex.insert(index);
-          }
-          if (incident_simplex == c)
-            found = true;
-        }
-        // If the simplex is not in the new star, we remove it
-        if (!found)
-        {
-          if (it_inc_simplex != star.end() - 1)
-          {
-            *it_inc_simplex = star.back();
-            star.pop_back();
-          }
-          else
-          {
-            star.pop_back();
-            it_inc_simplex = star.end(); // end the loop
-          }
-        }
-        else
-          ++it_inc_simplex;
-      }
-      // Consistent
-      else
-        ++it_inc_simplex;
-    }
-
-    return is_inconsistent;
-  }
 
   // 1st line: number of points
   // Then one point per line
@@ -2764,276 +2575,6 @@ private:
 
     num_vertices = N*m_points.size();
     return os;
-  }
-
-  void insert_higher_dim_simplex_into_star(
-    std::size_t index,
-    const Simplex &simplex)
-  {
-    Incident_simplex incident_simplex = simplex;
-    incident_simplex.erase(index); // Remove the center index
-
-    Star &star = m_stars[index];
-
-    Simplex::const_iterator it_point_idx = simplex.begin();
-    Simplex::const_iterator it_point_idx_end = simplex.end();
-    for ( ; it_point_idx != it_point_idx_end ; ++it_point_idx)
-    {
-      // Skip center index
-      if (*it_point_idx == index)
-        continue;
-
-      // Temporarily remove this index
-      incident_simplex.erase(*it_point_idx);
-      // Erase incident_simplex from star
-      star.erase(std::remove(star.begin(), star.end(), incident_simplex),
-                 star.end());
-      incident_simplex.insert(*it_point_idx);
-    }
-
-    star.push_back(incident_simplex);
-  }
-
-  // Solves one inconsistency
-  // "inconsistent_simplex" must contain p_idx and q_idx
-  // "inconsistent_simplex" must be in star(p) but not in star(q)
-  void solve_inconsistency_by_adding_higher_dimensional_simplices(
-    std::size_t p_idx, std::size_t q_idx,
-    const Simplex &inconsistent_simplex)
-  {
-    GUDHI_CHECK_code(
-      Simplex inc_s_minus_p = inconsistent_simplex;
-      inc_s_minus_p.erase(p_idx);
-      Simplex inc_s_minus_q = inconsistent_simplex;
-      inc_s_minus_q.erase(q_idx);
-    );
-    GUDHI_CHECK(
-      std::find(m_stars[p_idx].begin(), m_stars[p_idx].end(),
-                inc_s_minus_p) != m_stars[p_idx].end(),
-      std::logic_error("Simplex not found in star"));
-    GUDHI_CHECK(
-      std::find(m_stars[q_idx].begin(), m_stars[q_idx].end(),
-                inc_s_minus_q) == m_stars[q_idx].end(),
-      std::logic_error("Simplex not found in star"));
-
-    typename K::Point_drop_weight_d k_drop_w =
-      m_k.point_drop_weight_d_object();
-    typename K::Translated_point_d k_transl =
-      m_k.translated_point_d_object();
-    typename K::Squared_distance_d k_sqdist =
-      m_k.squared_distance_d_object();
-    typename K::Difference_of_points_d k_diff_pts =
-      m_k.difference_of_points_d_object();
-    typename K::Scalar_product_d k_scalar_pdct =
-      m_k.scalar_product_d_object();
-    typename K::Construct_weighted_point_d k_constr_wp =
-      m_k.construct_weighted_point_d_object();
-    typename K::Power_distance_d k_power_dist =
-      m_k.power_distance_d_object();
-
-    const Tr_traits &q_tr_traits = m_triangulations[q_idx].tr().geom_traits();
-    typename Tr_traits::Power_center_d tr_power_center =
-      q_tr_traits.power_center_d_object();
-    typename Tr_traits::Point_weight_d tr_point_weight =
-      q_tr_traits.point_weight_d_object();
-
-    //-------------------------------------------------------------------------
-    //1. Compute power_center(p'q'r1'r2'..ri') in Tp => Cp
-    //2. Compute power_center(inconsistent_simplex projected in Tq)
-    // => gives Cq and radius Rq
-    // Rq is also the radius of the ambient sphere S whose center is Cq and
-    // which goes through all the ambient points of "inconsistent_simplex"
-    //------------------------------------------------------------------------
-    std::vector<Tr_point> simplex_pts_in_Tp, simplex_pts_in_Tq;
-    simplex_pts_in_Tp.reserve(inconsistent_simplex.size());
-    simplex_pts_in_Tq.reserve(inconsistent_simplex.size());
-
-    // No need to lock the mutex here since this will not be called while
-    // other threads are perturbing the positions
-    const Point pt_p = compute_perturbed_point(p_idx);
-
-    Simplex::const_iterator it_point_idx = inconsistent_simplex.begin();
-    Simplex::const_iterator it_point_idx_end = inconsistent_simplex.end();
-    // For each point of the simplex, we reproject it onto the tangent
-    // space. Could be optimized since it's already been computed before.
-    for ( ; it_point_idx != it_point_idx_end ; ++it_point_idx)
-    {
-      const Weighted_point wp = compute_perturbed_weighted_point(*it_point_idx);
-      // No need to lock the Mutex_for_perturb here since this will not be
-      // called while other threads are perturbing the positions
-      simplex_pts_in_Tp.push_back(project_point_and_compute_weight(
-        wp, m_tangent_spaces[p_idx], q_tr_traits));
-      simplex_pts_in_Tq.push_back(project_point_and_compute_weight(
-        wp, m_tangent_spaces[q_idx], q_tr_traits));
-    }
-
-    Tr_point Cp = tr_power_center(
-      simplex_pts_in_Tp.begin(), simplex_pts_in_Tp.end());
-    Tr_point Cq = tr_power_center(
-      simplex_pts_in_Tq.begin(), simplex_pts_in_Tq.end());
-
-    FT circumsphere_sqradius_p = tr_point_weight(Cp);
-    FT circumsphere_sqradius_q = tr_point_weight(Cq);
-#ifdef GUDHI_TC_PERTURB_WEIGHT
-    FT squared_circumsphere_radius_q_plus_margin =
-      circumsphere_sqradius_q + 4*m_sq_half_sparsity;
-#else
-    FT squared_circumsphere_radius_q_plus_margin = CGAL::square(
-      std::sqrt(circumsphere_sqradius_q) + 2*m_max_perturb);
-#endif
-
-    Weighted_point global_Cp = k_constr_wp(
-      unproject_point(Cp, m_tangent_spaces[p_idx], q_tr_traits),
-      circumsphere_sqradius_p);
-
-    Weighted_point global_Cq = k_constr_wp(
-      unproject_point(Cq, m_tangent_spaces[q_idx], q_tr_traits),
-      circumsphere_sqradius_q);
-
-    //-------------------------------------------------------------------------
-    //3. Find points t1, t2... (in ambient space) which are inside S
-    //-------------------------------------------------------------------------
-    std::vector<std::size_t> inside_pt_indices;
-    INS_range ins_range = m_points_ds.query_incremental_ANN(k_drop_w(global_Cq));
-    for (INS_iterator nn_it = ins_range.begin() ;
-         nn_it != ins_range.end() ;
-         ++nn_it)
-    {
-      FT neighbor_sqdist = nn_it->second;
-
-      // When we're sure we got all the potential points, break
-      if (neighbor_sqdist > squared_circumsphere_radius_q_plus_margin)
-        break;
-
-      std::size_t neighbor_point_idx = nn_it->first;
-      FT point_to_Cq_power_sqdist = k_power_dist(
-        global_Cq, compute_perturbed_weighted_point(neighbor_point_idx));
-      // If the point is ACTUALLY "inside" S
-      if (point_to_Cq_power_sqdist <= FT(0)
-        && inconsistent_simplex.find(neighbor_point_idx) ==
-           inconsistent_simplex.end())
-      {
-        inside_pt_indices.push_back(neighbor_point_idx);
-      }
-      // CJTODO: use this instead of point_to_Cq_power_sqdist?
-      /*{
-        typename Tr_traits::Power_test_d side = q_tr_traits.power_test_d_object();
-        typename Tr_traits::Orientation_d orient = q_tr_traits.orientation_d_object();
-        Orientation o = orient(simplex_pts_in_Tq.begin(), simplex_pts_in_Tq.end());
-        auto p = project_point_and_compute_weight(
-          compute_perturbed_weighted_point(neighbor_point_idx),
-          m_tangent_spaces[q_idx], q_tr_traits);
-        auto sid = (o == NEGATIVE ?
-          side(simplex_pts_in_Tq.rbegin(), simplex_pts_in_Tq.rend(), p)
-          : side(simplex_pts_in_Tq.begin(), simplex_pts_in_Tq.end(), p));
-      }*/
-    }
-    GUDHI_CHECK(!inside_pt_indices.empty(),
-      std::logic_error("There should be at least one vertex inside the sphere"));
-
-    //-------------------------------------------------------------------------
-    //4. If there's more than one ti... or not
-    //-------------------------------------------------------------------------
-    std::size_t inside_point_idx;
-    if (inside_pt_indices.size() > 1)
-    {
-      //-----------------------------------------------------------------------
-      //5. For each ti, compute the sphere that goes through
-      //   p, q, r1, r2..., ri and ti whose center is on (cp, cq)
-      //   We're looking for a point on (Cp, Cq) at equal distance from p and
-      //   ti.
-      //   The center of the sphere is then: Cp + a(Cq - Cp)
-      //   where a = (sqdist(Cp,ti) - sqdist(Cp,p)) / (2*(Cq-Cp).(ti-p))
-      //6. Keep point ti such as dist(cp, ci) is the smallest
-      //-----------------------------------------------------------------------
-
-      FT min_a = std::numeric_limits<FT>::max();
-      for (std::size_t i = 0 ; i < inside_pt_indices.size() ; ++i)
-      {
-        std::size_t idx = inside_pt_indices[i];
-        const Point ti = compute_perturbed_point(idx);
-        const Point &cp = k_drop_w(global_Cp);
-        const Point &cq = k_drop_w(global_Cq);
-
-#ifdef GUDHI_TC_PERTURB_WEIGHT
-        const Weighted_point ti_w = compute_perturbed_weighted_point(idx);
-        const Weighted_point p_w = compute_perturbed_weighted_point(p_idx);
-        const Weighted_point cp_w0 = k_constr_wp(k_drop_w(global_Cp), FT(0));
-        const Weighted_point wp_w0 = k_constr_wp(k_drop_w(global_Cq), FT(0));
-        FT a =
-          (k_power_dist(cp_w0, ti_w) - k_power_dist(cp_w0, p_w)) /
-          (FT(2)*k_scalar_pdct(k_diff_pts(cq, cp), k_diff_pts(ti, pt_p)));
-#else
-        FT a =
-          (k_sqdist(cp, ti) - k_sqdist(cp, pt_p)) /
-          (FT(2)*k_scalar_pdct(k_diff_pts(cq, cp), k_diff_pts(ti, pt_p)));
-#endif
-
-        if (a < min_a)
-        {
-          min_a = a;
-          inside_point_idx = idx;
-        }
-      }
-    }
-    else
-    {
-      inside_point_idx = *inside_pt_indices.begin();
-    }
-
-    //-------------------------------------------------------------------------
-    //7. Create a k+1-simplex (inconsistent_simplex, ti)
-    //-------------------------------------------------------------------------
-    Simplex new_simplex = inconsistent_simplex;
-    new_simplex.insert(inside_point_idx);
-
-    it_point_idx = new_simplex.begin();
-    it_point_idx_end = new_simplex.end();
-    for ( ; it_point_idx != it_point_idx_end ; ++it_point_idx)
-    {
-      insert_higher_dim_simplex_into_star(*it_point_idx, new_simplex);
-    }
-  }
-
-  // Test and solve inconsistencies of a simplex.
-  // Returns true if some inconsistencies were found.
-  // Precondition: incident_simplex is in the star of m_points[tr_index]
-  bool check_and_solve_inconsistencies_by_adding_higher_dim_simplices(
-    std::size_t tr_index, const Incident_simplex &incident_simplex)
-  {
-    bool inconsistencies_found = false;
-
-    // Don't check infinite simplices
-    if (is_infinite(incident_simplex))
-      return false;
-
-    Simplex simplex = incident_simplex;
-    simplex.insert(tr_index);
-
-    // Check if the simplex is in the stars of all its vertices
-    Incident_simplex::const_iterator it_point_idx = incident_simplex.begin();
-    // For each point p of the simplex, we parse the incidents cells of p
-    // and we check if "simplex" is among them
-    for ( ; it_point_idx != incident_simplex.end() ; ++it_point_idx)
-    {
-      std::size_t point_idx = *it_point_idx;
-
-      Star const& star = m_stars[point_idx];
-
-      // What we're looking for is "simplex" \ point_idx
-      Incident_simplex is_to_find = simplex;
-      is_to_find.erase(point_idx);
-
-      if (std::find(star.begin(), star.end(), is_to_find) == star.end())
-      {
-        solve_inconsistency_by_adding_higher_dimensional_simplices(
-          tr_index, *it_point_idx, simplex);
-        inconsistencies_found = true;
-        break;
-      }
-    }
-
-    return inconsistencies_found;
   }
 
   std::ostream &export_simplices_to_off(
@@ -3388,7 +2929,7 @@ private:
 #endif
 #ifdef GUDHI_TC_PERTURB_POSITION
   Translations_for_perturb  m_translations;
-# if defined(GUDHI_USE_TBB) && defined(GUDHI_TC_GLOBAL_REFRESH)
+# if defined(GUDHI_USE_TBB)
   Mutex_for_perturb        *m_p_perturb_mutexes;
 # endif
 #endif
