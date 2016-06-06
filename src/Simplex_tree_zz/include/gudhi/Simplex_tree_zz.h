@@ -32,6 +32,8 @@ class Simplex_tree_zz
 : public Simplex_tree< Simplex_tree_options_full_featured >
 {
 
+    
+
 } //end Simplex_tree_zz
 } //namespace Gudhi
 

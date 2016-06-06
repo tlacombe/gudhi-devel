@@ -39,5 +39,7 @@ struct SimplexTreeOptions {
   static const bool store_filtration;
   /// If true, the list of vertices present in the complex must always be 0, ..., num_vertices-1, without any hole.
   static constexpr bool contiguous_vertices;
+  /// If true, each simplex stores boost::intrusive::member_hooks<> that are compatible with boost intrusive set, multiset or rbtree, used for fast cofaces locations
+  static const bool store_hooks;
 };
 

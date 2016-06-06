@@ -28,9 +28,20 @@
 #include <gudhi/Simplex_tree/Simplex_tree_iterators.h>
 #include <gudhi/Simplex_tree/indexing_tag.h>
 
+#include <boost/intrusive/set.hpp>
+
+// #include <gudhi/Simplex_tree_zz/Simplex_tree_node_explicit_storage_hooks.h>
+// #include <gudhi/Simplex_tree_zz/Simplex_tree_siblings_zigzag.h>
+// #include <gudhi/Simplex_tree_zz/Simplex_tree_zigzag_classes.h>
+
 #include <gudhi/reader_utils.h>
 #include <gudhi/graph_simplicial_complex.h>
 #include <gudhi/Debug_utils.h>
+
+#include <boost/fusion/container/map.hpp>
+#include <boost/fusion/include/map.hpp>
+#include <boost/fusion/container/map/map_fwd.hpp>
+#include <boost/fusion/include/map_fwd.hpp>
 
 #include <boost/container/flat_map.hpp>
 #include <boost/iterator/transform_iterator.hpp>
@@ -118,15 +129,20 @@ class Simplex_tree {
 
   /* Type of node in the simplex tree. */
   typedef Simplex_tree_node_explicit_storage<Simplex_tree> Node;
+
   /* Type of dictionary Vertex_handle -> Node for traversing the simplex tree. */
   // Note: this wastes space when Vertex_handle is 32 bits and Node is aligned on 64 bits. It would be better to use a
   // flat_set (with our own comparator) where we can control the layout of the struct (put Vertex_handle and
   // Simplex_key next to each other).
   typedef typename boost::container::flat_map<Vertex_handle, Node> Dictionary;
+  /* Need a fast deletion operation for zigzag persistence.*/
+  // typedef boost::containe::map<Vertex_handle, Node> Dictionary;
 
   /* \brief Set of nodes sharing a same parent in the simplex tree. */
-  /* \brief Set of nodes sharing a same parent in the simplex tree. */
   typedef Simplex_tree_siblings<Simplex_tree, Dictionary> Siblings;
+  // typedef Simplex_tree_siblings_zigzag<Simplex_tree, Dictionary> Siblings; //to do is this necessary?
+
+
 
   struct Key_simplex_base_real {
     Key_simplex_base_real() : key_(-1) {}
@@ -157,6 +173,29 @@ class Simplex_tree {
   };
   typedef typename std::conditional<Options::store_filtration, Filtration_simplex_base_real,
     Filtration_simplex_base_dummy>::type Filtration_simplex_base;
+
+/* Stores members hooks in Node class in order to maintain them
+ * in a map for fast coface location.
+ */
+  struct Hooks_simplex_base_cofaces {
+
+  public:
+    mutable boost::intrusive::set_member_hook<> coface_hook_;
+  };
+  typedef boost::intrusive::member_hook< Hooks_simplex_base_cofaces
+                    , boost::intrusive::set_member_hook<>
+                    , &Hooks_simplex_base_cofaces::coface_hook_ > Hooks_option;
+  typedef boost::intrusive::set< Node, Hooks_simplex_base_cofaces > Coface_set;
+
+  struct Hooks_simplex_base_dummy {};
+
+  typedef typename std::conditional< Options::store_hooks
+                                   , Hooks_simplex_base_cofaces
+                                   , Hooks_simplex_base_dummy >::type 
+                                                            Hooks_simplex_base;
+
+
+
 
  public:
   /** \brief Handle type to a simplex contained in the simplicial complex represented
@@ -1306,6 +1345,7 @@ struct Simplex_tree_options_full_featured {
   static const bool store_key = true;
   static const bool store_filtration = true;
   static const bool contiguous_vertices = false;
+  static const bool store_hooks = false;
 };
 
 /** Model of SimplexTreeOptions, faster than
@@ -1319,6 +1359,20 @@ struct Simplex_tree_options_fast_persistence {
   static const bool store_key = true;
   static const bool store_filtration = true;
   static const bool contiguous_vertices = true;
+  static const bool store_hooks = false;
+};
+
+/** Model of SimplexTreeOptions, with a zigzag_indexing_tag.
+    Note the unsafe `contiguous_vertices` option. */
+struct Simplex_tree_options_zigzag_persistence {
+  typedef zigzag_indexing_tag Indexing_tag;
+  typedef int Vertex_handle;
+  typedef float Filtration_value;
+  typedef int Simplex_key;
+  static const bool store_key = true;
+  static const bool store_filtration = true;
+  static const bool contiguous_vertices = true;
+  static const bool store_hooks = true;
 };
 
 /** @} */  // end defgroup simplex_tree
