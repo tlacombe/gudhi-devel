@@ -52,11 +52,11 @@ class Flagzigzagfiltration_simplex_iterator
 
     Flagzigzagfiltration_simplex_iterator(FlagZigzagFilteredComplex * cpx)
     {
-      are_we_done = false;
-      cpx_ = cpx;
+      are_we_done    = false;
+      cpx_           = cpx;
       counter_insert = 0;
       partial_zzfil_ = std::vector< Simplex_handle >(); //TODO?
-      edge_it_ = cpx->zigzag_edge_filtration_->begin();
+      edge_it_       = cpx->zigzag_edge_filtration_->begin();
       if(edge_it_ == cpx->zigzag_edge_filtration_->end()) 
       { cpx_ = NULL; return; } //end() iterator
 
@@ -84,9 +84,9 @@ class Flagzigzagfiltration_simplex_iterator
 
     bool equal(Flagzigzagfiltration_simplex_iterator const& other) const {
       if(cpx_ == NULL) { return (other.cpx_ == NULL); }      
-      return ( cpx_ == other.cpx_ && 
+      return ( cpx_     == other.cpx_     && 
                edge_it_ == other.edge_it_ &&
-               sh_it_ == other.sh_it_ );
+               sh_it_   == other.sh_it_ );
     }
 
     Simplex_handle & dereference() const {
@@ -98,26 +98,30 @@ class Flagzigzagfiltration_simplex_iterator
       ++sh_it_;
       if(sh_it_ == partial_zzfil_.end())
       {
-        if(!arrow_direction_) //we have reached the end of a sequence of backward arrows, 
-                              //we remove them from the complex
-        { //each simplex considered is maximal in the simplex tree due to filtration order
+        //check if we have reached the end of a sequence of backward arrows, 
+        //associated to the removal of an edge. If so, we remove effectively 
+        //the simplices from the complex.
+        if(!arrow_direction_) 
+        { //each simplex is maximal in the simplex tree due to filtration order
           for( auto sh_it = partial_zzfil_.begin();
                sh_it != partial_zzfil_.end(); ++sh_it) 
           { 
             (*sh_it)->second.unlink_hooks();
-            cpx_->remove_maximal_simplex(*sh_it); 
-          } //modify the complex
+            cpx_->remove_maximal_simplex(*sh_it); //modify the complex 
+          } 
         }
         partial_zzfil_.clear();
-
-        if(edge_it_ == cpx_->zigzag_edge_filtration_->end()) //if all edges have been considered
+        //if all edges have been considered:
+        if(edge_it_ == cpx_->zigzag_edge_filtration_->end()) 
         { 
-          if(are_we_done) { cpx_ = NULL; return; } //set iterator to end() position 
+          if(are_we_done) 
+          { cpx_ = NULL; return; } //set iterator to end() position 
           else //no edge left, but there may be simplices remaining in the complex, like vertices. 
           {
             std::cout << "hello \n";
             are_we_done = true;
-            cpx_->zz_lazy_empty_complex(partial_zzfil_); //fills up zz_partial with the remaining simplices in complex
+            //fills up zz_partial with the remaining simplices in complex
+            cpx_->zz_lazy_empty_complex(partial_zzfil_); 
             arrow_direction_ = false; //only backward arrows now
 
             sort( partial_zzfil_.begin(), partial_zzfil_.end()
@@ -128,7 +132,6 @@ class Flagzigzagfiltration_simplex_iterator
             sh_it_ = partial_zzfil_.begin();
 
             std::cout << "size of partial_zz = " << partial_zzfil_.size() << std::endl;
-
             return;
           }
         }
@@ -136,14 +139,15 @@ class Flagzigzagfiltration_simplex_iterator
         if( edge_it_->type() ) //forward arrow
         { //modify the complex
           cpx_->zz_add_edge( edge_it_->u(), edge_it_->v(), edge_it_->fil()
-                           , cpx_->dim_max_, partial_zzfil_);
+                           , cpx_->dim_max_, partial_zzfil_ );
           arrow_direction_ = true; //the arrow is forward
 
-          for(auto & sh : partial_zzfil_) { sh->second.assign_key(counter_insert); ++counter_insert; }
+          for(auto & sh : partial_zzfil_) //set key values
+          { sh->second.assign_key(counter_insert); ++counter_insert; }
         }
         else { //backward arrow
           cpx_->zz_lazy_remove_edge( edge_it_->u(), edge_it_->v()
-                                   , partial_zzfil_ );
+                                   , partial_zzfil_ ); //does not modify cpx
           arrow_direction_ = false; //the arrow is backward
  
           sort( partial_zzfil_.begin(), partial_zzfil_.end()
@@ -151,8 +155,8 @@ class Flagzigzagfiltration_simplex_iterator
                   return sh1->second.key() > sh2->second.key();
               });
         }
-
-        sh_it_ = partial_zzfil_.begin(); //partial_zzfil_ contains at least the new edge
+       //partial_zzfil_ contains at least the new edge
+        sh_it_ = partial_zzfil_.begin(); 
         ++edge_it_;
       }
     }
@@ -170,7 +174,7 @@ class Flagzigzagfiltration_simplex_iterator
   //true if the simplices in partial_zzfil_ are insertions, and false if deletions
   bool                                             arrow_direction_;
   //counts the total number of insertions in the zigzag
-  int counter_insert;
+  int                                              counter_insert;
   //true iff we are finishing emptying the complex
-  bool are_we_done;
+  bool                                             are_we_done;
 };
