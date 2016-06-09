@@ -129,13 +129,10 @@ endif()
   add_subdirectory(src/Alpha_complex/test)
 
   #current branch zigzag 
-  add_subdirectory(src/Simplex_tree_zz/include/)
-  add_subdirectory(src/Zigzag_persistence/include/)
+  # add_subdirectory(src/Zigzag_persistence/include/)
 
-  add_subdirectory(src/Simplex_tree_zz/example/)
-  add_subdirectory(src/Simplex_tree_zz/test/)
-  add_subdirectory(src/Zigzag_persistence/example/)
-  add_subdirectory(src/Zigzag_persistence/test/)
+  # add_subdirectory(src/Zigzag_persistence/example/)
+  # add_subdirectory(src/Zigzag_persistence/test/)
   # end zigzag branch
   
   # data points generator

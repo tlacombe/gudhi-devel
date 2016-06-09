@@ -28,11 +28,12 @@
 #include <gudhi/Simplex_tree/Simplex_tree_iterators.h>
 #include <gudhi/Simplex_tree/indexing_tag.h>
 
-#include <boost/intrusive/set.hpp>
+#include <boost/intrusive/list.hpp>
+#include <boost/iterator/filter_iterator.hpp>
 
 // #include <gudhi/Simplex_tree_zz/Simplex_tree_node_explicit_storage_hooks.h>
 // #include <gudhi/Simplex_tree_zz/Simplex_tree_siblings_zigzag.h>
-// #include <gudhi/Simplex_tree_zz/Simplex_tree_zigzag_classes.h>
+#include <gudhi/Simplex_tree/Simplex_tree_zigzag_classes.h>
 
 #include <gudhi/reader_utils.h>
 #include <gudhi/graph_simplicial_complex.h>
@@ -174,28 +175,48 @@ class Simplex_tree {
   typedef typename std::conditional<Options::store_filtration, Filtration_simplex_base_real,
     Filtration_simplex_base_dummy>::type Filtration_simplex_base;
 
-/* Stores members hooks in Node class in order to maintain them
+/* 
+ * Stores members hooks in Node class in order to maintain them
  * in a map for fast coface location.
  */
+
+  typedef boost::intrusive::list_member_hook< //allows .unlink()
+              boost::intrusive::link_mode< boost::intrusive::auto_unlink > 
+                                            >                    Member_hook_t;
+  struct Hooks_simplex_base_dummy {
+  };
   struct Hooks_simplex_base_cofaces {
+    Hooks_simplex_base_cofaces() {}
+    //the copy constructor, inherited by the Node class, exchanges hooks, 
+    //and make the ones of this invalid.
+    //this is used when stored in a map like DS, using copies when 
+    //performing insertions and rebalancing of the rbtree
+    Hooks_simplex_base_cofaces(const Hooks_simplex_base_cofaces & other)
+    { list_max_vertex_hook_.swap_nodes(other.list_max_vertex_hook_); }
+
+    void unlink_hooks() { list_max_vertex_hook_.unlink(); }
 
   public:
-    mutable boost::intrusive::set_member_hook<> coface_hook_;
+    mutable Member_hook_t          list_max_vertex_hook_;
   };
-  typedef boost::intrusive::member_hook< Hooks_simplex_base_cofaces
-                    , boost::intrusive::set_member_hook<>
-                    , &Hooks_simplex_base_cofaces::coface_hook_ > Hooks_option;
-  typedef boost::intrusive::set< Node, Hooks_simplex_base_cofaces > Coface_set;
 
-  struct Hooks_simplex_base_dummy {};
+  typedef boost::intrusive::member_hook< 
+            Hooks_simplex_base_cofaces
+          , Member_hook_t
+          , &Hooks_simplex_base_cofaces::list_max_vertex_hook_ > 
+                                                            List_member_hook_t;
 
-  typedef typename std::conditional< Options::store_hooks
+  typedef boost::intrusive::list< Hooks_simplex_base_cofaces
+                                , List_member_hook_t 
+                                , boost::intrusive::constant_time_size<false> 
+                                >                              List_max_vertex;
+
+  typedef typename std::conditional< Options::link_simplices_through_max_vertex
                                    , Hooks_simplex_base_cofaces
                                    , Hooks_simplex_base_dummy >::type 
                                                             Hooks_simplex_base;
 
-
-
+  // struct Annotation_simplex_base_real {}                                                            
 
  public:
   /** \brief Handle type to a simplex contained in the simplicial complex represented
@@ -1283,6 +1304,542 @@ class Simplex_tree {
     }
   }
 
+
+/***********************************************/
+/********* Zigzag flag complex methods *********/
+/***********************************************/
+/* 
+ * These methods are dedicated to a stream-like construction of zigzag filtrations 
+ * based on flag complexes. The complexes represented are always flag complexes. 
+ * Consequently, the full zigzag filtration is encoded in the sequence of insertions 
+ * and deletions of edges. 
+ *
+ * The major difference with the standard simplex_insertion(...) method of the 
+ * Simplex_tree is that we maintain in parallel a data structure for locating 
+ * cofaces and removing easily an edge (and its cofaces) from the complex.
+ *
+ * Vertex_handle must be contigue (or at least not widely spread...)
+ * Must know an upper bound on the Vertex_handle to assign the coface table 
+ */
+public:
+/** Type of edges for representing implicetely the flag zigzag filtration.*/
+  typedef Zigzag_edge< Simplex_tree >                                Edge_type;
+/** Forward iterator on the simplices (insertion and deletion) of the zigzag 
+  * filtration.
+  *
+  * 'value_type' is Simplex_handle.
+  */ 
+  typedef Flagzigzagfiltration_simplex_iterator< Simplex_tree > 
+                                             Zigzagfiltration_simplex_iterator;
+/** Range for the flag zigzag filtration.*/
+  typedef boost::iterator_range< Zigzagfiltration_simplex_iterator > 
+                                                Zigzagfiltration_simplex_range;
+ 
+
+
+
+
+//////////////////////to remove
+private:
+  /* Returns true iff the node in the simplex tree pointed by
+   * sh has children. For technical reasons, implemented with a Node and a 
+   * Vertex_handle as inputs, instead of a Simplex_handle. */
+  bool has_children(Node & node, Vertex_handle u) const {
+    return (node.children()->parent() == u);
+  }
+  Siblings * self_siblings(Node & node, Vertex_handle u) {
+    if(node.children()->parent() == u) { return node.children()->oncles(); } 
+    else                               { return node.children(); }
+  }
+ /* Returns the dimension of a simplex.
+  * For technical reasons, implemented with a Node and a 
+  * Vertex_handle  as inputs, instead of a Simplex_handle. */
+  int dimension(Node & node, Vertex_handle u) {
+    Siblings * curr_sib = self_siblings(node, u);
+    int dim = 0;
+    while (curr_sib != NULL) {
+      ++dim;
+      curr_sib = curr_sib->oncles();
+    }
+    return dim - 1;
+  }
+////////////////////////////////////////
+
+
+
+public:
+  /* Vertex handle siblings data structure. For every vertex u in the complex,
+   * apart from the vertices (dim 0), maintains 
+   * the list of nodes with label u in vh_siblings_[u]. Used for cofaces location, and/or the local 
+   * expansion of the complex when adding the new edge {u,v} in order to find 
+   * siblings with both u and v. */
+  // typedef boost::intrusive::list < Node
+  //                                , boost::intrusive::base_hook< base_hook_st_node_lab >
+  //                                , boost::intrusive::constant_time_size<false>
+  //                                >                                  Siblings_vector;
+
+  // typedef boost::intrusive::list < Node
+  //   , boost::intrusive::member_hook< Node, member_hook_st_node_lab, &Node::hook_ >
+  //   , boost::intrusive::constant_time_size<false>
+  //   >                                    Siblings_vector;
+
+   /*at index u, list of Siblings containing a node with label u.*/
+  typedef std::set< Siblings * >                               Siblings_vector;
+  typedef std::vector< Siblings_vector >                        Vh_siblings_ds;
+  Vh_siblings_ds                                                  vh_siblings_;
+//maintain the list of edges
+  std::vector< Edge_type >                    * zigzag_edge_filtration_; 
+//bound on the dimension of the complex.
+  int                                                          dim_max_; 
+
+ /*
+  * A ZigzagEdge type must contain operations:
+  * Vertex_handle u() return the endpoint with smaller label,
+  * Vertex_handle v() return the endpoint with bigger label,
+  * Filtration_value fil() return the filtration value in the zigzag filtration,
+  * bool type() return true if the edge is inserted, false if it is removed.
+  *
+  * Must be Zigzag_edge.
+  */
+  template<class ZigzagEdge>
+  Zigzagfiltration_simplex_range 
+  zigzagfiltration_simplex_range( int num_vertices //total number of vertices
+                                , std::vector< ZigzagEdge > & zz_edge_fil
+                                , int dim_max)
+  { //initialize the cofaces data structure, vertices must be labeled from 0 to num_vertices-1
+    vh_siblings_.clear(); //vh_siblings_.assign(num_vertices, Siblings_vector()); 
+    vh_siblings_.resize(num_vertices);
+    for(auto & ref : vh_siblings_) { ref = Siblings_vector(); }
+    zigzag_edge_filtration_ = &zz_edge_fil;
+    dim_max_ = dim_max;
+    return Zigzagfiltration_simplex_range( Zigzagfiltration_simplex_iterator(this)
+                                         , Zigzagfiltration_simplex_iterator() );
+  }
+
+  Zigzagfiltration_simplex_range 
+  zigzagfiltration_simplex_range()
+  { 
+    return Zigzagfiltration_simplex_range( Zigzagfiltration_simplex_iterator()
+                                         , Zigzagfiltration_simplex_iterator() );
+  }
+
+
+
+public:
+
+ /* 
+  * Add an edge in the complex, its two vertices (if missing) 
+  * and all the missing 
+  * simplices of its star, defined to maintain the property 
+  * of the complex to be a flag complex.
+  *
+  * In term of edges in the graph, inserting edge u,v only affects N^+(u), 
+  * even if u and v where missing.
+  *
+  * For a new node with label v, we first do a local expansion for 
+  * computing the 
+  * children of this new node, and then a standard expansion for its children. 
+  * Nodes with label v (and their subtrees) already in the tree 
+  * do not get affected.
+  *
+  * Nodes with label u get affected only if a Node with label v is in their 
+  * siblings set. 
+  * We then try to insert "ponctually" v all over the subtree rooted 
+  * at Node(u). Each 
+  * insertion of a Node with v label induces a local expansion at this 
+  * Node (as explained above)
+  * and a sequence of "ponctual" insertion of Node(v) in the subtree 
+  * rooted at sibling nodes 
+  * of the new node, on its left.
+  *
+  * @param[in] u,v              Vertex_handle representing the new edge
+  * @param[in] zz_filtration    Must be empty. Represents at the end the 
+  *                             successive simplex insertions agreeing 
+  *                             with the 
+  *                             zigzag filtration order.
+  */
+  void zz_add_edge( Vertex_handle                   u 
+                  , Vertex_handle                   v
+                  , Filtration_value                fil
+                  , int                             dim_max
+                  , std::vector< Simplex_handle > & zz_filtration ) 
+  {
+    if(v < u) { std::swap(u,v); } //so as u < v
+
+    static std::vector< std::pair<Siblings *, Vertex_handle> > 
+                                                             zz_filtration_tmp;
+    //check whether u, v and u,v are in the tree, insert them if necessary
+    auto res_ins = root_.members().emplace(v,Node(&root_,fil));
+    if(res_ins.second) { zz_filtration_tmp.emplace_back(&root_, v); }
+
+    res_ins = root_.members().emplace(u,Node(&root_,fil)); 
+    if(res_ins.second) { zz_filtration_tmp.emplace_back(&root_, u); }
+
+    Simplex_handle sh_u = res_ins.first; //iterator still valid
+    if( !has_children(sh_u) ) 
+    { sh_u->second.assign_children( new Siblings(&root_, u) ); }
+    //check whether the edge {u,v} is already in the complex
+    if( sh_u->second.children()->members().find(v) != 
+        sh_u->second.children()->members().end() ) 
+    { std::cout << "Edge already in complex \n"; return; } 
+
+    //expand the subtree rooted at new node with label v
+    zz_punctual_expansion( v                        //insert v in sib
+                         , sh_u->second.children()  //sib
+                         , fil      //fil value of edge {u,v} in zz filtration
+                         , dim_max - 1          //dim_max - dim edges (1)
+                         // , u 
+                         , zz_filtration_tmp );
+    //for all siblings containing u (except root), check if it also contains v
+    for( auto sib_u : vh_siblings_[u] )
+    { 
+      // Siblings * self_sib = self_siblings(node_u, u);
+      auto sh_v = sib_u->members().find(v); 
+      if(sh_v != sib_u->members().end()) //contains v
+      {
+        int curr_dim = dimension(sh_v);
+        if(curr_dim < dim_max) 
+        {
+          auto sh_u = sib_u->members().find(u);
+          if(!has_children(sh_u->second, u)) { sh_u->second.assign_children(new Siblings(sib_u, u)); } 
+          zz_punctual_expansion( v
+                               , sh_u->second.children()
+                               , fil
+                               , dim_max - curr_dim -1 //dim_max - current dim );
+                               // , u_d.first 
+                               , zz_filtration_tmp ); //u on top         
+        }
+      }
+    }
+//the complex is not modified anymore,
+// hence the iterators are not invalidated from now on.
+//convert zz_filtration_tmp into sequence of Simplex_handle
+    for(auto sib_v : zz_filtration_tmp) {
+      //todo remove
+      if(sib_v.first->members().find(sib_v.second) == sib_v.first->members().end()) 
+      { std::cout << "Error here \n"; }
+      ////////
+      zz_filtration.push_back(sib_v.first->members().find(sib_v.second));
+    }
+    //sort zz_filtration in filtration order, is_before... is a total ordering
+    std::sort( zz_filtration.begin()
+             , zz_filtration.end(),   is_before_in_filtration(this));
+    zz_filtration_tmp.clear();
+ }
+
+private:
+/* Insert a Node with label v in the set of siblings sib. sib does not contain 
+ * v a priori. As a consequence, the new node with v label has a subtree computed 
+ * via zz_local_expansion. All Node (with label x) in sib with a smaller label 
+ * may in turn need a local_expansion by v iff Nˆ+(x) contains v.
+ */
+  void zz_punctual_expansion( Vertex_handle    v
+                            , Siblings *       sib
+                            , Filtration_value fil
+                            , int              k //k == dim_max - dimension simplices in sib
+                            , std::vector< std::pair<Siblings *, Vertex_handle> > & zz_filtration_tmp )
+  {
+    // std::cout << "zz_punctual_expansion \n";
+// std::cout << "A1 \n";
+    auto res_ins_v = sib->members().emplace(v,Node(sib,fil)); 
+// std::cout << "A2 \n";
+    if(!res_ins_v.second) 
+    { std::cout << "Node v already here in zz_punctual_expansion... \n"; 
+      return; } //TODO rm
+// std::cout << "A3 " << v << "  " << vh_siblings_.size() << " \n";    
+    vh_siblings_[v].insert(sib);
+// std::cout << "A4 \n";    
+    zz_filtration_tmp.emplace_back(sib, v);
+
+// std::cout << "A \n";
+    if(k == 0) { return; }
+// std::cout << "B \n";
+    //create the subtree of new Node(v)
+    zz_local_expansion( res_ins_v.first
+                      , sib
+                      , fil
+                      , k 
+                      , zz_filtration_tmp ); 
+
+// std::cout << "C \n";
+    //punctual expansion in nodes on the left of v
+    for( auto sh = sib->members().begin(); sh != res_ins_v.first; ++sh )
+    { //if v belongs to N^+(x), punctual expansion
+      Simplex_handle root_sh = find_vertex(sh->first);
+      if( has_children(root_sh) && 
+          root_sh->second.children()->members().find(v) != root_sh->second.children()->members().end() ) 
+      {
+        if(!has_children(sh)) { sh->second.assign_children(new Siblings(sib, sh->first)); } 
+        zz_punctual_expansion( v
+                             , sh->second.children()
+                             , fil
+                             , k-1
+                             , zz_filtration_tmp );
+      }
+    }
+
+// std::cout << "D \n";
+    // std::cout << "done zz_punctual_expansion \n";
+  }
+
+/* After the insertion of edge {u,v}, expansion of a subtree rooted at v, where the 
+ * Node with label v has just been inserted. sh has no children here. No need to 
+ * add things in the cofaces of u,v. */
+  void zz_local_expansion( Simplex_handle   sh_v     //Node with label v which has just been inserted
+                         , Siblings       * curr_sib //Siblings containing the node
+                         , Filtration_value fil_uv   //Filtration value of the edge uv in the zz filtration
+                         , int              k        //Stopping condition for recursion based on dimension maximal
+                         // , Vertex_handle    u        //on top of the current tree
+                         , std::vector< std::pair<Siblings *, Vertex_handle > > & zz_filtration_tmp ) //<-depth first insertion
+  {
+    // std::cout << "zz_local_expansion \n";
+    //if (dimension_ > k) { dimension_ = k; }    // TODO
+    if (k == 0)           { return; }             
+
+    Simplex_handle next_it = sh_v;    ++next_it; 
+    static std::vector< std::pair<Vertex_handle, Node> > inter;  // static, not thread-safe.
+    Simplex_handle root_sh_v = find_vertex(sh_v->first);
+    if(!has_children(root_sh_v)) { return; } 
+
+    zz_intersection( inter
+                   , next_it
+                   , curr_sib->members().end()
+                   , root_sh_v->second.children()->members().begin()
+                   , root_sh_v->second.children()->members().end()
+                   , fil_uv );
+    
+    if(!inter.empty()) 
+    {
+      // this->num_simplices_ += inter.size();
+      Siblings * new_sib = new Siblings(curr_sib, sh_v->first, inter);
+
+      //link in cofaces and vh ds
+      for( auto new_sh = new_sib->members().begin(); 
+           new_sh != new_sib->members().end(); ++new_sh )
+      { 
+        // new_sh->second.assign_children(new_sib); //done in siblings.h
+        vh_siblings_[new_sh->first].insert(new_sib); //new in vh ds
+        zz_filtration_tmp.emplace_back(new_sib, new_sh->first);
+      }
+      sh_v->second.assign_children(new_sib);
+      inter.clear();
+
+      zz_siblings_expansion(new_sib, fil_uv, k-1, zz_filtration_tmp ); //recursive standard expansion for the rest of the subtree
+    }
+    else { sh_v->second.assign_children(curr_sib); inter.clear(); }
+  }
+
+
+  //TODO boost::container::ordered_unique_range_t in the creation of a Siblings
+  // we also need to insert all nodes in the cofaces ds and the siblings_uv.
+  // copy constructor? what about the hooks then?
+
+  /* Global expansion of a subtree in the simplex tree.
+   *
+   * The filtration value is absolute and defined by "Filtration_value fil". 
+   * The new Node are also connected appropriately in the cofaces and siblings_uv
+   * data structures.
+   */
+  void zz_siblings_expansion( Siblings       * siblings  // must contain elements
+                            , Filtration_value fil
+                            , int              k  //==max_dim expansion - dimension curr siblings 
+                            // , Vertex_handle    u  //top of the current tree
+                            , std::vector< std::pair<Siblings *, Vertex_handle> > & zz_filtration_tmp )
+  {
+    // if (dimension_ > k) { dimension_ = k; } //TODO  
+    if (k == 0)            { return; }            
+
+    Dictionary_it next = ++(siblings->members().begin());
+
+    static std::vector< std::pair<Vertex_handle, Node> > inter;  // static, not thread-safe.
+    for( Dictionary_it s_h = siblings->members().begin();
+         next != siblings->members().end(); ++s_h, ++next) 
+    {
+      Simplex_handle root_sh = find_vertex(s_h->first);
+      if( has_children(root_sh) )
+      {
+        zz_intersection( inter                      // output intersection
+                       , next                       // begin
+                       , siblings->members().end()  // end
+                       , root_sh->second.children()->members().begin()
+                       , root_sh->second.children()->members().end()
+                       , fil   );
+
+        if ( !inter.empty() ) 
+        {
+          // this->num_simplices_ += inter.size();
+          Siblings * new_sib = new Siblings( siblings    // oncles
+                                           , s_h->first  // parent
+                                           , inter);     // boost::container::ordered_unique_range_t
+
+          for( auto new_sh = new_sib->members().begin(); 
+               new_sh != new_sib->members().end(); ++new_sh )
+          { 
+            new_sh->second.assign_children(new_sib);
+            vh_siblings_[new_sh->first].insert(new_sib); //new in vh ds
+            zz_filtration_tmp.emplace_back(new_sib, new_sh->first);
+          }
+
+          inter.clear();
+          s_h->second.assign_children(new_sib);
+          zz_siblings_expansion(new_sib, fil, k - 1, zz_filtration_tmp);
+        }
+        else { s_h->second.assign_children(siblings); inter.clear();}  // ensure the children property
+      }
+    }
+  }
+  /* \brief Intersects Dictionary 1 [begin1;end1) with Dictionary 2 [begin2,end2)
+   * and assigns Filtration_value fil to the Nodes. */
+  void zz_intersection( std::vector<std::pair<Vertex_handle, Node> > & intersection
+                      , Dictionary_it                                  begin1
+                      , Dictionary_it                                  end1
+                      , Dictionary_it                                  begin2
+                      , Dictionary_it                                  end2
+                      , Filtration_value                               fil ) 
+  {
+    if (begin1 == end1 || begin2 == end2) { return; } 
+    while (true) 
+    {
+      if (begin1->first < begin2->first) 
+      { ++begin1; if(begin1 == end1) { return; } }
+      else 
+      {
+        if (begin1->first > begin2->first) 
+        { ++begin2; if(begin2 == end2) { return; } }
+        else // begin1->first == begin2->first
+        {
+          intersection.emplace_back( begin1->first, Node( NULL, fil ) ); //TODO NULL ? or self siblings?
+          ++begin1; ++begin2;
+          if (begin1 == end1 || begin2 == end2) { return; }
+        }
+      }
+    }
+  }
+
+//TODO description -> adapted for lazy_remove_edge
+  bool reverse_reverse_lexicographic_order(Simplex_handle sh1, Simplex_handle sh2) {
+    Simplex_vertex_range rg1 = simplex_vertex_range(sh1);
+    Simplex_vertex_range rg2 = simplex_vertex_range(sh2);
+    Simplex_vertex_iterator it1 = rg1.begin();
+    Simplex_vertex_iterator it2 = rg2.begin();
+    while (it1 != rg1.end() && it2 != rg2.end()) {
+      if (*it1 == *it2) { ++it1; ++it2; } 
+      else { return *it1 < *it2; }//they are different
+    }
+    return !((it1 != rg1.end()) && (it2 == rg2.end()));//is negated afterward
+  }
+
+  /* StrictWeakOrdering, for the simplices, defined by the filtration.
+   *
+   * It corresponds to the partial order
+   * induced by the filtration values, with ties resolved using reverse lexicographic order.
+   * Reverse lexicographic order has the property to always consider the subsimplex of a simplex
+   * to be smaller. The filtration function must be monotonic. */
+  struct is_after_in_filtration 
+  {
+    explicit is_after_in_filtration(Simplex_tree * st)
+        : st_(st) {}
+
+    bool operator()(const Simplex_handle sh1, const Simplex_handle sh2) const {
+      //no consideration of filtration value when removing
+      return !(st_->reverse_reverse_lexicographic_order(sh1, sh2));  // is sh1 a proper subface of sh2
+    }
+
+    Simplex_tree * st_;
+  };
+
+/* Given a simplex handle in a simplex tree cpx_, traverse the tree upwards 
+ * to find vertex u_. Does not test sh itself. Used for filter_iterator when 
+ * traversing vh_siblings_.
+ */
+ template<class SimplexTree>
+ class does_simplex_contain_vertex {
+    typedef typename SimplexTree::Vertex_handle Vertex_handle;
+    typedef typename SimplexTree::Simplex_handle Simplex_handle;
+
+  public:
+    does_simplex_contain_vertex() : cpx_(NULL), u_(-1), v_(-1) {}
+
+    does_simplex_contain_vertex(SimplexTree* cpx, Vertex_handle u, Vertex_handle v) 
+    : cpx_(cpx), u_(u), v_(v) {}
+
+//node must contain v_ as label
+    bool operator()(typename SimplexTree::Siblings *curr_sib) {
+      // auto curr_sib = cpx_->self_siblings(node,v_);
+      while(curr_sib->oncles() != NULL) {
+        if(curr_sib->parent() == u_) {return true;}
+        curr_sib = curr_sib->oncles();
+      }
+      return false;
+    }
+  private:
+    SimplexTree *cpx_;
+    Vertex_handle u_;
+    Vertex_handle v_;
+  };
+
+
+//TODO heuristic for ordering the removal by most recent insertion?
+public:
+  /* Computes, in a filtration order, all simplices that ought to be removed 
+  * if the edge {u,v} were to disappear (puts them in zz_filtration). 
+  * This method does NOT modify the simplex tree. */
+  void zz_lazy_remove_edge( Vertex_handle u
+                          , Vertex_handle v
+                          , std::vector< Simplex_handle > & zz_filtration ) 
+  {
+    // std::cout << "lazy rm edge \n";
+
+    if(v < u) { std::swap(u,v); } //so as u < v
+    typedef does_simplex_contain_vertex< Simplex_tree >     cof_predicate;
+    typedef boost::filter_iterator< cof_predicate
+                                  , typename Siblings_vector::iterator > Edge_coface_iterator;
+    cof_predicate cof_pred(this,u,v);
+    Edge_coface_iterator beg_it = Edge_coface_iterator( cof_pred
+                                                      , vh_siblings_[v].begin()
+                                                      , vh_siblings_[v].end() );
+    Edge_coface_iterator end_it = Edge_coface_iterator( cof_pred
+                                                      , vh_siblings_[v].end()
+                                                      , vh_siblings_[v].end() );    
+    for(auto sib_it = beg_it; sib_it != end_it; ++sib_it) //all siblings that contain a coface of {u,v} with v as max vertex.
+    {
+      auto sh_v = (*sib_it)->members().find(v); 
+      if(has_children(sh_v))
+      { zz_lazy_remove_edge_depth_first_traversal(sh_v->second.children(), zz_filtration); }
+      zz_filtration.push_back(sh_v);
+    }
+
+    std::sort(zz_filtration.begin(), zz_filtration.end(), is_after_in_filtration(this));
+  }
+
+  void zz_lazy_empty_complex(std::vector< Simplex_handle > & zz_filtration)
+  {
+    for(auto sh : complex_simplex_range()) { zz_filtration.push_back(sh); }
+    std::sort(zz_filtration.begin(), zz_filtration.end(), is_after_in_filtration(this));
+  }
+
+
+private:
+  /* Reads recursively the tree in a depth first fashion. Non terminal recursion.*/
+  void zz_lazy_remove_edge_depth_first_traversal( Siblings * sib
+                                                , std::vector< Simplex_handle > & zz_filtration )
+  {
+    for(auto sh = sib->members().begin(); sh != sib->members().end(); ++sh)
+    {
+      if(has_children(sh)) 
+      { zz_lazy_remove_edge_depth_first_traversal(sh->second.children(), zz_filtration); }
+      zz_filtration.push_back(sh);
+    }
+  }
+
+
+/***********************************************/
+/****************** End ************************/
+/***********************************************/
+
+
+
+
  private:
   Vertex_handle null_vertex_;
   /** \brief Upper bound on the filtration values of the simplices.*/
@@ -1345,7 +1902,7 @@ struct Simplex_tree_options_full_featured {
   static const bool store_key = true;
   static const bool store_filtration = true;
   static const bool contiguous_vertices = false;
-  static const bool store_hooks = false;
+  static const bool link_simplices_through_max_vertex = false;
 };
 
 /** Model of SimplexTreeOptions, faster than
@@ -1359,7 +1916,7 @@ struct Simplex_tree_options_fast_persistence {
   static const bool store_key = true;
   static const bool store_filtration = true;
   static const bool contiguous_vertices = true;
-  static const bool store_hooks = false;
+  static const bool link_simplices_through_max_vertex = false;
 };
 
 /** Model of SimplexTreeOptions, with a zigzag_indexing_tag.
@@ -1372,7 +1929,7 @@ struct Simplex_tree_options_zigzag_persistence {
   static const bool store_key = true;
   static const bool store_filtration = true;
   static const bool contiguous_vertices = true;
-  static const bool store_hooks = true;
+  static const bool link_simplices_through_max_vertex = true;
 };
 
 /** @} */  // end defgroup simplex_tree

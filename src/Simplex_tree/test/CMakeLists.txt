@@ -10,18 +10,18 @@ if (GPROF_PATH)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
 endif()
 
-add_executable ( SimplexTreeUT simplex_tree_unit_test.cpp )
-target_link_libraries(SimplexTreeUT ${Boost_SYSTEM_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
-if (TBB_FOUND)
-  target_link_libraries(SimplexTreeUT ${TBB_RELEASE_LIBRARY})
-endif()
+# add_executable ( SimplexTreeUT simplex_tree_unit_test.cpp )
+# target_link_libraries(SimplexTreeUT ${Boost_SYSTEM_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+# if (TBB_FOUND)
+#   target_link_libraries(SimplexTreeUT ${TBB_RELEASE_LIBRARY})
+# endif()
 
-# Do not forget to copy test files in current binary dir
-file(COPY "simplex_tree_for_unit_test.txt" DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+# # Do not forget to copy test files in current binary dir
+# file(COPY "simplex_tree_for_unit_test.txt" DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 
-# Unitary tests
-add_test(NAME SimplexTreeUT
-  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/SimplexTreeUT 
-    # XML format for Jenkins xUnit plugin 
-    --log_format=XML --log_sink=${CMAKE_SOURCE_DIR}/SimplexTreeUT.xml --log_level=test_suite --report_level=no)
+# # Unitary tests
+# add_test(NAME SimplexTreeUT
+#   COMMAND ${CMAKE_CURRENT_BINARY_DIR}/SimplexTreeUT 
+#     # XML format for Jenkins xUnit plugin 
+#     --log_format=XML --log_sink=${CMAKE_SOURCE_DIR}/SimplexTreeUT.xml --log_level=test_suite --report_level=no)
 
