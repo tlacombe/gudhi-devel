@@ -95,6 +95,9 @@ class Flagzigzagfiltration_simplex_iterator
 
     void increment() 
     {
+
+      // std::cout << "Enter increment().\n";
+
       ++sh_it_;
       if(sh_it_ == partial_zzfil_.end())
       {
@@ -118,7 +121,6 @@ class Flagzigzagfiltration_simplex_iterator
           { cpx_ = NULL; return; } //set iterator to end() position 
           else //no edge left, but there may be simplices remaining in the complex, like vertices. 
           {
-            std::cout << "hello \n";
             are_we_done = true;
             //fills up zz_partial with the remaining simplices in complex
             cpx_->zz_lazy_empty_complex(partial_zzfil_); 
@@ -130,8 +132,6 @@ class Flagzigzagfiltration_simplex_iterator
                 });
 
             sh_it_ = partial_zzfil_.begin();
-
-            std::cout << "size of partial_zz = " << partial_zzfil_.size() << std::endl;
             return;
           }
         }
