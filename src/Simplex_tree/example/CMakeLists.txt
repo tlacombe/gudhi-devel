@@ -20,6 +20,9 @@ project(GUDHISimplexTreeFromFile)
 add_executable ( mini_zigzag_simplex_tree mini_zigzag_simplex_tree.cpp )
 add_test(mini_zigzag_simplex_tree ${CMAKE_CURRENT_BINARY_DIR}/mini_zigzag_simplex_tree)
 
+add_executable ( oscillating_Rips_zigzag_simplex_tree oscillating_Rips_zigzag_simplex_tree.cpp )
+add_test(oscillating_Rips_zigzag_simplex_tree ${CMAKE_CURRENT_BINARY_DIR}/oscillating_Rips_zigzag_simplex_tree)
+
 # An example with Simplex-tree using CGAL alpha_shapes_3
 # if(GMP_FOUND AND CGAL_FOUND)
 #   add_executable ( simplex_tree_from_alpha_shapes_3 simplex_tree_from_alpha_shapes_3.cpp )
