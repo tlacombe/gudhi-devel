@@ -59,6 +59,28 @@ struct Simplex_tree_node_explicit_storage : SimplexTree::Filtration_simplex_base
   , SimplexTree::Hooks_simplex_base(other)
   , children_(other.children_) {}
 
+  // BOOST_COPYABLE_AND_MOVABLE(Simplex_tree_node_explicit_storage)
+
+  // Simplex_tree_node_explicit_storage(
+  //   BOOST_RV_REF(Simplex_tree_node_explicit_storage) other)
+  // : SimplexTree::Hooks_simplex_base(
+  //                   BOOST_MOVE_BASE(SimplexTree::Hooks_simplex_base, other)) 
+  // {}
+
+
+//move operations
+  // Simplex_tree_node_explicit_storage(
+  //   Simplex_tree_node_explicit_storage&& other) 
+  // : SimplexTree::Filtration_simplex_base(std::move(other)) 
+  // , SimplexTree::Key_simplex_base(std::move(other)) 
+  // , SimplexTree::Hooks_simplex_base(std::move(other))
+  // , children_(other.children_) {}
+
+  // Simplex_tree_node_explicit_storage& operator=(    Simplex_tree_node_explicit_storage&& other)
+  // {
+  //   return static_cast<Simplex_tree_node_explicit_storage&>(
+  //     SimplexTree::Hooks_simplex_base::operator=(std::move(other)));
+  // }
   /*
    * Assign children to the node
    */

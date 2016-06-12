@@ -95,21 +95,33 @@ class Flagzigzagfiltration_simplex_iterator
 
     void increment() 
     {
-
       // std::cout << "Enter increment().\n";
-
       ++sh_it_;
       if(sh_it_ == partial_zzfil_.end())
       {
+        // std::cout << "AB \n";
+
         //check if we have reached the end of a sequence of backward arrows, 
         //associated to the removal of an edge. If so, we remove effectively 
         //the simplices from the complex.
         if(!arrow_direction_) 
         { //each simplex is maximal in the simplex tree due to filtration order
+          
+          //reorder partial_zzfil_ so as iterators do not get invalidated when suppressing Simplex_handles.
+
+        sort( partial_zzfil_.begin(), partial_zzfil_.end()
+            , [](Simplex_handle sh1, Simplex_handle sh2)->bool {
+              //we want the rightmost elements of the flat_maps to be removed first, so as the Simplex_handle on the left, that may also be in partial_zzfil_, do not get invalidated.
+                if(sh1->first != sh2->first) {return sh1->first > sh2->first;}
+                return sh1->second.key() > sh2->second.key();
+            });
+
+
           for( auto sh_it = partial_zzfil_.begin();
                sh_it != partial_zzfil_.end(); ++sh_it) 
           { 
             (*sh_it)->second.unlink_hooks();
+            (*sh_it)->second.assign_key(-21);
             cpx_->remove_maximal_simplex(*sh_it); //modify the complex 
           } 
         }
@@ -138,6 +150,9 @@ class Flagzigzagfiltration_simplex_iterator
 
         if( edge_it_->type() ) //forward arrow
         { //modify the complex
+
+          // std::cout << "CD \n";
+          
           cpx_->zz_add_edge( edge_it_->u(), edge_it_->v(), edge_it_->fil()
                            , cpx_->dim_max_, partial_zzfil_ );
           arrow_direction_ = true; //the arrow is forward

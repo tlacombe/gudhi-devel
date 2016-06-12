@@ -25,11 +25,15 @@
 
 #include <cmath>  // for std::sqrt
 
-/* Compute the Euclidean distance between two Points given
+/* Compute the squared Euclidean distance between two Points given
  * by a range of coordinates. The points are assumed to have 
- * the same dimension. */
+ * the same dimension. 
+ *
+ * This methods allows for faster comparisons of distances, without 
+ * computing the costly and sometimes unecessary square root.
+ */
 template< typename Point >
-double euclidean_distance(Point &p1, Point &p2) {
+double euclidean_distance_squared(Point &p1, Point &p2) {
   double dist = 0.;
   auto it1 = p1.begin();
   auto it2 = p2.begin();
@@ -37,7 +41,15 @@ double euclidean_distance(Point &p1, Point &p2) {
     double tmp = *it1 - *it2;
     dist += tmp*tmp;
   }
-  return std::sqrt(dist);
+  return dist;
+}
+
+/* Compute the Euclidean distance between two Points given
+ * by a range of coordinates. The points are assumed to have 
+ * the same dimension. */
+template< typename Point >
+double euclidean_distance(Point &p1, Point &p2) {
+  return std::sqrt(euclidean_distance_squared(p1,p2));
 }
 
 #endif  // DISTANCE_FUNCTIONS_H_

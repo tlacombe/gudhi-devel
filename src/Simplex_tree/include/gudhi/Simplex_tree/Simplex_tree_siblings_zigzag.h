@@ -71,8 +71,9 @@ class Simplex_tree_siblings_zigzag {
   /* \brief Constructor with initialized set of members.
    *
    * 'members' must be sorted and unique.*/
-  Simplex_tree_siblings_zigzag(Simplex_tree_siblings_zigzag * oncles, Vertex_handle parent,
-                        const std::vector<std::pair<Vertex_handle, Node> > & members)
+  Simplex_tree_siblings_zigzag( Simplex_tree_siblings_zigzag * oncles
+                              , Vertex_handle parent
+                              , const std::vector<std::pair<Vertex_handle, Node> > & members)
   : oncles_(oncles),
     parent_(parent)
     // members_(boost::container::ordered_unique_range, members.begin(),

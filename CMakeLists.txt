@@ -101,6 +101,7 @@ endif()
     add_definitions(-DDEBUG_TRACES)
   endif()
 
+
   include_directories(src/common/include/)
   include_directories(src/Alpha_complex/include/)
   include_directories(src/Bitmap_cubical_complex/include/)
@@ -111,6 +112,8 @@ endif()
   include_directories(src/Simplex_tree/include/)
   include_directories(src/Skeleton_blocker/include/)
   include_directories(src/Witness_complex/include/)
+
+  include_directories(src/Point_geometry/include/)
 
   # add_subdirectory(src/common/example)
   # add_subdirectory(src/common/test)
@@ -130,7 +133,6 @@ endif()
 
   #current branch zigzag 
   # add_subdirectory(src/Zigzag_persistence/include/)
-
   # add_subdirectory(src/Zigzag_persistence/example/)
   # add_subdirectory(src/Zigzag_persistence/test/)
   # end zigzag branch
