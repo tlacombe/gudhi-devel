@@ -1,4 +1,4 @@
-#include <iostream>
+// #include <iostream>
 
 /** Represents an edge for zigzag filtrations for flag complexes. 
   * The edge must have two endpoints, encoded by Vertex_handles, a filtration 
@@ -31,9 +31,8 @@ private:
   bool                                       type_;
 };
 
-/** Iterator over a flag zigzag filtration implicitely represented by a list of 
-  * Zigzag_edges. 
-  *
+/** Iterator over a flag zigzag filtration implicitely 
+  * represented by a list of Zigzag_edges. 
   */
 template< class FlagZigzagFilteredComplex >
 class Flagzigzagfiltration_simplex_iterator 
@@ -59,16 +58,11 @@ class Flagzigzagfiltration_simplex_iterator
       edge_it_       = cpx->zigzag_edge_filtration_->begin();
       if(edge_it_ == cpx->zigzag_edge_filtration_->end()) 
       { cpx_ = NULL; return; } //end() iterator
-
-      // std::cout << edge_it_->type() << " " << edge_it_->fil() << " " << edge_it_->u() << " " << edge_it_->v() << std::endl;  
-
       //add the first edge
       arrow_direction_ = edge_it_->type();
-      if(!arrow_direction_) 
-      {std::cerr << "Remove an edge from an empty complex.\n"; }
-      //modify the complex
-      cpx_->zz_add_edge( edge_it_->u(), edge_it_->v(), edge_it_->fil()
-                       , cpx_->dim_max_, partial_zzfil_);
+
+      cpx_->flag_zigzag_add_edge( edge_it_->u(), edge_it_->v(), edge_it_->fil()
+                                , cpx_->dim_max_, partial_zzfil_);
 
       sh_it_ = partial_zzfil_.begin();
       ++edge_it_;
@@ -95,12 +89,9 @@ class Flagzigzagfiltration_simplex_iterator
 
     void increment() 
     {
-      // std::cout << "Enter increment().\n";
       ++sh_it_;
       if(sh_it_ == partial_zzfil_.end())
       {
-        // std::cout << "AB \n";
-
         //check if we have reached the end of a sequence of backward arrows, 
         //associated to the removal of an edge. If so, we remove effectively 
         //the simplices from the complex.
@@ -108,14 +99,12 @@ class Flagzigzagfiltration_simplex_iterator
         { //each simplex is maximal in the simplex tree due to filtration order
           
           //reorder partial_zzfil_ so as iterators do not get invalidated when suppressing Simplex_handles.
-
-        sort( partial_zzfil_.begin(), partial_zzfil_.end()
-            , [](Simplex_handle sh1, Simplex_handle sh2)->bool {
-              //we want the rightmost elements of the flat_maps to be removed first, so as the Simplex_handle on the left, that may also be in partial_zzfil_, do not get invalidated.
-                if(sh1->first != sh2->first) {return sh1->first > sh2->first;}
-                return sh1->second.key() > sh2->second.key();
-            });
-
+          sort( partial_zzfil_.begin(), partial_zzfil_.end()
+              , [](Simplex_handle sh1, Simplex_handle sh2)->bool {
+                //we want the rightmost elements of the flat_maps to be removed first, so as the Simplex_handle on the left, that may also be in partial_zzfil_, do not get invalidated.
+                  if(sh1->first != sh2->first) {return sh1->first > sh2->first;}
+                  return sh1->second.key() > sh2->second.key();
+              });
 
           for( auto sh_it = partial_zzfil_.begin();
                sh_it != partial_zzfil_.end(); ++sh_it) 
@@ -135,7 +124,7 @@ class Flagzigzagfiltration_simplex_iterator
           {
             are_we_done = true;
             //fills up zz_partial with the remaining simplices in complex
-            cpx_->zz_lazy_empty_complex(partial_zzfil_); 
+            cpx_->flag_zigzag_lazy_empty_complex(partial_zzfil_); 
             arrow_direction_ = false; //only backward arrows now
 
             sort( partial_zzfil_.begin(), partial_zzfil_.end()
@@ -150,18 +139,16 @@ class Flagzigzagfiltration_simplex_iterator
 
         if( edge_it_->type() ) //forward arrow
         { //modify the complex
-
-          // std::cout << "CD \n";
-          
-          cpx_->zz_add_edge( edge_it_->u(), edge_it_->v(), edge_it_->fil()
-                           , cpx_->dim_max_, partial_zzfil_ );
+          cpx_->flag_zigzag_add_edge( edge_it_->u(), edge_it_->v()
+                                    , edge_it_->fil()
+                                    , cpx_->dim_max_, partial_zzfil_ );
           arrow_direction_ = true; //the arrow is forward
 
           for(auto & sh : partial_zzfil_) //set key values
           { sh->second.assign_key(counter_insert); ++counter_insert; }
         }
         else { //backward arrow
-          cpx_->zz_lazy_remove_edge( edge_it_->u(), edge_it_->v()
+          cpx_->flag_zigzag_lazy_remove_edge( edge_it_->u(), edge_it_->v()
                                    , partial_zzfil_ ); //does not modify cpx
           arrow_direction_ = false; //the arrow is backward
  
@@ -176,8 +163,8 @@ class Flagzigzagfiltration_simplex_iterator
       }
     }
 
-
-  FlagZigzagFilteredComplex                      * cpx_; //complex getting manipulated
+//complex getting manipulated
+  FlagZigzagFilteredComplex                      * cpx_; 
   //part of the zz filtration constructed by the last edge insertion. When reaching
   //the end of it, clear it, insert a new edge via the edge_it_++ and compute a new 
   //bunch of simplices of the zz filtration.

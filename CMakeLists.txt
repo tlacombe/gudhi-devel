@@ -115,6 +115,8 @@ endif()
 
   include_directories(src/Point_geometry/include/)
 
+  include_directories(src/Zigzag_persistence/include/)
+
   # add_subdirectory(src/common/example)
   # add_subdirectory(src/common/test)
   # add_subdirectory(src/Simplex_tree/test)
@@ -130,6 +132,8 @@ endif()
   # add_subdirectory(src/Bitmap_cubical_complex/example)
   # add_subdirectory(src/Alpha_complex/example)
   # add_subdirectory(src/Alpha_complex/test)
+
+  add_subdirectory(src/Zigzag_persistence/example)
 
   #current branch zigzag 
   # add_subdirectory(src/Zigzag_persistence/include/)

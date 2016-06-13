@@ -39,7 +39,7 @@ namespace Gudhi {
  * It stores explicitely its own filtration value and its own Simplex_key.
  */
 template<class SimplexTree>
-struct Simplex_tree_node_explicit_storage : SimplexTree::Filtration_simplex_base, SimplexTree::Key_simplex_base, SimplexTree::Hooks_simplex_base {
+struct Simplex_tree_node_explicit_storage : SimplexTree::Filtration_simplex_base, SimplexTree::Key_simplex_base, SimplexTree::Hooks_simplex_base, SimplexTree::Annotation_simplex_base {
   typedef typename SimplexTree::Siblings Siblings;
   typedef typename SimplexTree::Filtration_value Filtration_value;
   typedef typename SimplexTree::Simplex_key Simplex_key;
@@ -57,6 +57,7 @@ struct Simplex_tree_node_explicit_storage : SimplexTree::Filtration_simplex_base
   : SimplexTree::Filtration_simplex_base(other) 
   , SimplexTree::Key_simplex_base(other) 
   , SimplexTree::Hooks_simplex_base(other)
+  , SimplexTree::Annotation_simplex_base(other)
   , children_(other.children_) {}
 
   // BOOST_COPYABLE_AND_MOVABLE(Simplex_tree_node_explicit_storage)
