@@ -15,3 +15,6 @@ target_link_libraries(Bitmap_cubical_complex_periodic_boundary_conditions ${Boos
 add_test(Bitmap_cubical_complex_periodic_2d_torus ${CMAKE_CURRENT_BINARY_DIR}/Bitmap_cubical_complex_periodic_boundary_conditions ${CMAKE_SOURCE_DIR}/data/bitmap/2d_torus.txt)
 add_test(Bitmap_cubical_complex_periodic_3d_torus ${CMAKE_CURRENT_BINARY_DIR}/Bitmap_cubical_complex_periodic_boundary_conditions ${CMAKE_SOURCE_DIR}/data/bitmap/3d_torus.txt)
 
+add_executable ( topological_inference topological_inference.cpp )
+target_link_libraries(topological_inference ${Boost_SYSTEM_LIBRARY})
+

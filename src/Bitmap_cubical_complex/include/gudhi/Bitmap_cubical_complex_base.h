@@ -130,7 +130,7 @@ class Bitmap_cubical_complex_base {
    * not smaller than the value of a filtration of its boundary and not greater than the value of its coboundary.
    **/
   inline T& get_cell_data(size_t cell);
-
+  
 
   /**
    * Typical input used to construct a baseBitmap class is a filtration given at the top dimensional cells.
@@ -446,6 +446,19 @@ class Bitmap_cubical_complex_base {
 
   inline size_t number_cells()const {
     return this->total_number_of_cells;
+  }
+  
+  /*
+   * Function to compute the total number of maximal cubes. 
+  */
+  size_t number_of_maximal_cubes()
+  {
+	  size_t result = 1;
+	  for ( size_t i = 0 ; i != this->sizes.size() ; ++i )
+	  {
+		  result *= this->sizes[i];
+	  }
+	  return result;
   }
 
   //****************************************************************************************************************//
@@ -882,6 +895,8 @@ void Bitmap_cubical_complex_base<T>:: store_in_dipha_format( const char* filenam
 	}
 	out.close();
 }//store_in_dipha_format
+
+
 
 }  // namespace Cubical_complex
 
