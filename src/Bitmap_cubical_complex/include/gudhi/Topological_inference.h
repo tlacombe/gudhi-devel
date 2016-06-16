@@ -116,6 +116,8 @@ protected:
 	F& f;
 };
 
+
+
 template <typename T , typename K , typename F>
 Topological_inference<T,K,F>::Topological_inference( const std::vector< std::pair<K , K> >& coorfinates_of_grid_ , const std::vector< unsigned >& resolution_of_a_grid_ , F& f ):T(resolution_of_a_grid_), f(f)
 {
@@ -188,7 +190,9 @@ Topological_inference<T,K,F>::Topological_inference( const std::vector< std::pai
 	}
 	if ( dbg )std::cout << "Done with assigning values. Now will impose lower star filtration \n";
 	this->impose_lower_star_filtration();
+	this->initialize_simplex_associated_to_key();
 }
+
 
 template <typename T , typename K , typename F>
 void Topological_inference<T,K,F>::write_to_file_Perseus_format( const char* filename )

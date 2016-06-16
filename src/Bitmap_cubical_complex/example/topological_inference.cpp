@@ -49,9 +49,10 @@ int main(int argc, char** argv) {
   
   std::vector< std::vector<double> > point_cloud_;
   
-  //point_cloud_ = read_points_from_file<double>( "circle" );
+  //point_cloud_ = read_points_from_file<double>( "circle1" );
   
   point_cloud_ = read_points_from_file<double>( "2000_random_points_on_3D_Torus.csv" );
+  
   /*
   std::vector<double> point1;
   point1.push_back( 0 );
@@ -67,6 +68,7 @@ int main(int argc, char** argv) {
   point_cloud_.push_back( point3 );
   */
   
+  
   Distance_to_closest_point f( point_cloud_ );
   
   typedef Gudhi::Cubical_complex::Bitmap_cubical_complex_base<double> Bitmap_cubical_complex_base;
@@ -74,9 +76,9 @@ int main(int argc, char** argv) {
   typedef Gudhi::Cubical_complex::Topological_inference< Bitmap_cubical_complex , double , Distance_to_closest_point > topological_inference;
   
   typedef Gudhi::persistent_cohomology::Field_Zp Field_Zp;
-  typedef Gudhi::persistent_cohomology::Persistent_cohomology<Bitmap_cubical_complex, Field_Zp> Persistent_cohomology;
+  typedef Gudhi::persistent_cohomology::Persistent_cohomology<topological_inference, Field_Zp> Persistent_cohomology;
 
-
+ 
   std::vector< std::pair< double, double > > coorfinates_of_grid;
   coorfinates_of_grid.push_back( std::make_pair(-4.0,4.0) );
   coorfinates_of_grid.push_back( std::make_pair(-4.0,4.0) );
@@ -85,14 +87,15 @@ int main(int argc, char** argv) {
   resolution_of_a_grid[0] = 100;
   resolution_of_a_grid[1] = 100;
   resolution_of_a_grid[2] = 50;
+  
 
 /*
   std::vector< std::pair< double, double > > coorfinates_of_grid;
-  coorfinates_of_grid.push_back( std::make_pair(0,5.0) );
-  coorfinates_of_grid.push_back( std::make_pair(0.0,5.0) );  
+  coorfinates_of_grid.push_back( std::make_pair(-2,2) );
+  coorfinates_of_grid.push_back( std::make_pair(-2,2) );  
   std::vector< unsigned > resolution_of_a_grid(2);
-  resolution_of_a_grid[0] = 10;
-  resolution_of_a_grid[1] = 10;
+  resolution_of_a_grid[0] = 1;
+  resolution_of_a_grid[1] = 2;
 */
   
   
@@ -102,6 +105,7 @@ int main(int argc, char** argv) {
   
    
   topological_inference b( coorfinates_of_grid , resolution_of_a_grid , f );
+\
   
   b.write_to_file_Perseus_format("perse");
 

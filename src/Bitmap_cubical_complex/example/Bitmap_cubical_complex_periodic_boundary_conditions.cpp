@@ -51,8 +51,8 @@ int main(int argc, char** argv) {
 
   typedef Gudhi::Cubical_complex::Bitmap_cubical_complex_periodic_boundary_conditions_base<double> Bitmap_base;
   typedef Gudhi::Cubical_complex::Bitmap_cubical_complex< Bitmap_base > Bitmap_cubical_complex;
-
   Bitmap_cubical_complex b(argv[1]);
+
 
   typedef Gudhi::persistent_cohomology::Field_Zp Field_Zp;
   typedef Gudhi::persistent_cohomology::Persistent_cohomology<Bitmap_cubical_complex, Field_Zp> Persistent_cohomology;

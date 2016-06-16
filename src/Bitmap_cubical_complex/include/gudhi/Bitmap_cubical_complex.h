@@ -79,7 +79,10 @@ class Bitmap_cubical_complex : public T {
    * Constructor form a Perseus-style file.
    **/
   Bitmap_cubical_complex(const char* perseus_style_file) :
-      T(perseus_style_file), key_associated_to_simplex(this->total_number_of_cells + 1) {
+      T(perseus_style_file), key_associated_to_simplex(this->total_number_of_cells + 1) 
+  {
+	bool dbg = false;
+	if ( dbg )std::cerr << "Running Bitmap_cubical_complex(const char* perseus_style_file) constructor \n";  
     if (globalDbg) {
       std::cerr << "Bitmap_cubical_complex( const char* perseus_style_file )\n";
     }

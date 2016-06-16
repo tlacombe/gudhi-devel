@@ -49,7 +49,7 @@ int main(int argc, char * argv[]) {
   Filtration_value min_persistence;
 
   program_options(argc, argv, simplex_tree_file, output_file, p, min_persistence);
-
+	
   std::cout << "Simplex_tree from file=" << simplex_tree_file.c_str() << " - output_file=" << output_file.c_str()
       << std::endl;
   std::cout << "     - p=" << p << " - min_persistence=" << min_persistence << std::endl;

@@ -162,7 +162,8 @@ class Bitmap_cubical_complex_base {
    **/
   template <typename K>
   friend std::ostream& operator<<(std::ostream & os, const Bitmap_cubical_complex_base<K>& b);
-
+  
+  
   /**
    * Function that put the input data to bins. By putting data to bins we mean rounding them to a sequence of values
    * equally distributed in the range of data.
@@ -563,12 +564,17 @@ std::pair< T, T > Bitmap_cubical_complex_base<T>::min_max_filtration() {
   return min_max;
 }
 
+
 template <typename K>
 std::ostream& operator<<(std::ostream & out, const Bitmap_cubical_complex_base<K>& b) {
-  for (typename Bitmap_cubical_complex_base<K>::all_cells_const_iterator
-       it = b.all_cells_const_begin(); it != b.all_cells_const_end(); ++it) {
-    out << *it << " ";
-  }
+  //for (typename Bitmap_cubical_complex_base<K>::all_cells_const_iterator
+  //     it = b.all_cells_const_begin(); it != b.all_cells_const_end(); ++it) {
+  //  out << *it << " ";
+  //}
+  for ( size_t i = 0 ; i != b.data.size() ; ++i )
+  {
+	  out << b.data[i] << " ";
+  } 
   return out;
 }
 
@@ -615,6 +621,9 @@ Bitmap_cubical_complex_base<T>::Bitmap_cubical_complex_base
 template <typename T>
 void Bitmap_cubical_complex_base<T>::read_perseus_style_file(const char* perseus_style_file) {
   bool dbg = false;
+  
+  if ( dbg ){std::cerr << "Running read_perseus_style_file \n";}
+  
   std::ifstream inFiltration;
   inFiltration.open(perseus_style_file);
   unsigned dimensionOfData;

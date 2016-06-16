@@ -178,20 +178,21 @@ Bitmap_cubical_complex_periodic_boundary_conditions_base<T>::Bitmap_cubical_comp
 
   while (!inFiltration.eof()) {
     double filtrationLevel;
-    inFiltration >> filtrationLevel;
+    inFiltration >> filtrationLevel;    
     if (inFiltration.eof())break;
 
     if (dbg) {
-      std::cerr << "Cell of an index : "
-          << it.compute_index_in_bitmap()
-          << " and dimension: "
-          << this->get_dimension_of_a_cell(it.compute_index_in_bitmap())
-          << " get the value : " << filtrationLevel << std::endl;
+      std::cerr << "Cell of an index : " << it.compute_index_in_bitmap() << " and dimension: "
+      << this->get_dimension_of_a_cell(it.compute_index_in_bitmap()) << " get the value : " << filtrationLevel << std::endl;
     }
     this->get_cell_data(*it) = filtrationLevel;
     ++it;
   }
   inFiltration.close();
+  if ( dbg )
+  {
+	  std::cerr << "Now imposing lower star filtration \n";
+  }
   this->impose_lower_star_filtration();
 }
 
