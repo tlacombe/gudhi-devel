@@ -29,12 +29,14 @@
 #include <string>
 
 namespace Gudhi {
-namespace Tangential_complex_ {
-  
+namespace tangential_complex {
+namespace internal {
+
 template <typename PointRandomAccessRange, typename SimplexRange>
 class RIB_exporter
 {
   typedef typename PointRandomAccessRange::value_type  Point;
+  typedef typename SimplexRange::value_type            Simplex;
 public:
 
   typedef std::tuple<double, double, double, double>  Color; // RGBA
@@ -246,7 +248,7 @@ private:
 
     for (auto const& simplex : m_simplices)
     {
-      std::vector<std::set<std::size_t> > triangles;
+      std::vector<Simplex> triangles;
       // Get the triangles composing the simplex
       combinations(simplex, 3, std::back_inserter(triangles));
       for (auto const& t : triangles)
@@ -316,7 +318,8 @@ private:
   double m_point_sphere_radius;
 };
 
-} // namespace Tangential_complex_
+} // namespace internal
+} // namespace tangential_complex
 } //namespace Gudhi
 
 #endif // GUDHI_TC_WRITE_RIB_FILE_H

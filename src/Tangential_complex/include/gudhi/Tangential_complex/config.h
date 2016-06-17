@@ -59,8 +59,7 @@
 
 //========================= Parameters ========================================
 
-// PCA will use BASE_VALUE_FOR_PCA^intrinsic_dim points
-const std::size_t BASE_VALUE_FOR_PCA = 5;
-const unsigned int BASE_VALUE_FOR_ALPHA_TC_NEIGHBORHOOD = 5;
+// PCA will use GUDHI_TC_BASE_VALUE_FOR_PCA^intrinsic_dim points
+const std::size_t GUDHI_TC_BASE_VALUE_FOR_PCA = 5;
 
 #endif // GUDHI_TC_CONFIG_H

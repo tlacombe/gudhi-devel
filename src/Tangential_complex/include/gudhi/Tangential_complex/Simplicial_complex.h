@@ -41,7 +41,8 @@
 #include <fstream>
 
 namespace Gudhi {
-namespace Tangential_complex_ {
+namespace tangential_complex {
+namespace internal {
 
 class Simplicial_complex
 {
@@ -640,7 +641,8 @@ private:
 
 }; // /class Simplicial_complex
 
-} // namespace Tangential_complex_
+} // namespace internal
+} // namespace tangential_complex
 } //namespace Gudhi
 
 #endif // GUDHI_SIMPLICIAL_COMPLEX_H

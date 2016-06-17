@@ -38,7 +38,8 @@
 #include <boost/container/flat_set.hpp>
 
 namespace Gudhi {
-namespace Tangential_complex_ {
+namespace tangential_complex {
+namespace internal {
 
   // Provides copy constructors to std::atomic so that
   // it can be used in a vector
@@ -251,7 +252,7 @@ namespace Tangential_complex_ {
         {
           Vector v;
           in >> v;
-          tsb.push_back(Gudhi::Tangential_complex_::normalize_vector(v, k));
+          tsb.push_back(normalize_vector(v, k));
         }
         *tangent_spaces++ = tsb;
         ++i;
@@ -484,7 +485,8 @@ namespace Tangential_complex_ {
     } while (std::next_permutation(booleans.begin(), booleans.end()));
   }
 
-} // namespace Tangential_complex_
+} // namespace internal
+} // namespace tangential_complex
 } //namespace Gudhi
 
 #endif // GUDHI_TC_UTILITIES_H

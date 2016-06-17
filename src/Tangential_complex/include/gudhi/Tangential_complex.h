@@ -27,6 +27,7 @@
 #include <gudhi/Tangential_complex/Simplicial_complex.h>
 #include <gudhi/Tangential_complex/utilities.h>
 #include <gudhi/Spatial_tree_data_structure.h>
+#include <gudhi/Simplex_tree.h>
 #include <gudhi/console_color.h>
 #include <gudhi/Clock.h>
 
@@ -69,16 +70,11 @@
 
 //#define GUDHI_TC_EXPORT_NORMALS // Only for 3D surfaces (k=2, d=3)
 
-//CJTODO: debug
-//#define GUDHI_TC_COMPUTE_TANGENT_PLANES_FOR_SPHERE_2
-//#define GUDHI_TC_COMPUTE_TANGENT_PLANES_FOR_SPHERE_3
-//#define GUDHI_TC_COMPUTE_TANGENT_PLANES_FOR_FLAT_TORUS_D
-//#define GUDHI_TC_ADD_NOISE_TO_TANGENT_SPACE
-//#define GUDHI_TC_BETTER_EXPORT_FOR_FLAT_TORUS
-
 namespace Gudhi {
 
-using namespace Tangential_complex_;
+namespace tangential_complex {
+
+using namespace internal;
 
 enum Fix_inconsistencies_status {
   TC_FIXED = 0, TIME_LIMIT_REACHED, FIX_NOT_PERFORMED };
@@ -238,7 +234,7 @@ private:
   };
 
 public:
-  typedef Tangential_complex_::Simplicial_complex     Simplicial_complex;
+  typedef internal::Simplicial_complex Simplicial_complex;
 
   /// Constructor for a range of points
   template <typename InputIterator>
@@ -360,9 +356,6 @@ public:
     m_triangulations.resize(m_points.size());
     m_stars.resize(m_points.size());
     m_squared_star_spheres_radii_incl_margin.resize(m_points.size(), FT(-1));
-#ifdef GUDHI_USE_TBB
-    //m_tr_mutexes.resize(m_points.size());
-#endif
 #ifdef GUDHI_TC_PERTURB_POSITION
     m_translations.resize(m_points.size(),
                           m_k.construct_vector_d_object()(m_ambient_dim));
@@ -405,7 +398,7 @@ public:
 
     std::vector<FT> sum_eigen_values(m_ambient_dim, FT(0));
     std::size_t num_points_for_pca = static_cast<std::size_t>(
-      std::pow(BASE_VALUE_FOR_PCA, m_intrinsic_dim));
+      std::pow(GUDHI_TC_BASE_VALUE_FOR_PCA, m_intrinsic_dim));
 
     typename Points::const_iterator it_p = m_points.begin();
     typename Points::const_iterator it_p_end = m_points.end();
@@ -759,8 +752,65 @@ public:
       num_simplices, num_inconsistent_simplices, num_inconsistent_stars);
   }
 
+  // Exports the TC into a Simplex_tree
+  // Returns the max dimension of the simplices
+  int export_complex(Simplex_tree<> &tree,
+    bool export_infinite_simplices = false,
+    Simplex_set *p_inconsistent_simplices = NULL) const
+  {
+#if defined(GUDHI_TC_VERBOSE) || defined(GUDHI_TC_PROFILING)
+    std::cerr << yellow
+      << "\nExporting the TC as a Simplex_tree... " << white;
+#endif
+#ifdef GUDHI_TC_PROFILING
+    Gudhi::Clock t;
+#endif
+
+    int max_dim = -1;
+
+    // For each triangulation
+    for (std::size_t idx = 0 ; idx < m_points.size() ; ++idx)
+    {
+      // For each cell of the star
+      Star::const_iterator it_inc_simplex = m_stars[idx].begin();
+      Star::const_iterator it_inc_simplex_end = m_stars[idx].end();
+      for ( ; it_inc_simplex != it_inc_simplex_end ; ++it_inc_simplex)
+      {
+        Simplex c = *it_inc_simplex;
+
+        // Don't export infinite cells
+        if (!export_infinite_simplices && is_infinite(c))
+          continue;
+
+        if (static_cast<int>(c.size()) > max_dim)
+          max_dim = static_cast<int>(c.size());
+        // Add the missing center vertex
+        c.insert(idx);
+
+        // Try to insert the simplex
+        bool inserted = tree.insert_simplex_and_subfaces(c).second;
+
+        // Inconsistent?
+        if (p_inconsistent_simplices && inserted && !is_simplex_consistent(c))
+        {
+          p_inconsistent_simplices->insert(c);
+        }
+      }
+    }
+
+#ifdef GUDHI_TC_PROFILING
+    t.end();
+    std::cerr << yellow << "done in " << t.num_seconds()
+      << " seconds.\n" << white;
+#elif defined(GUDHI_TC_VERBOSE)
+    std::cerr << yellow << "done.\n" << white;
+#endif
+
+    return max_dim;
+  }
+
   // First clears the complex then exports the TC into it
-  // Return the max dimension of the simplices
+  // Returns the max dimension of the simplices
   // check_lower_and_higher_dim_simplices : 0 (false), 1 (true), 2 (auto)
   //   If the check is enabled, the function:
   //   - won't insert the simplex if it is already in a higher dim simplex
@@ -768,7 +818,7 @@ public:
   //   "auto" (= 2) will enable the check as a soon as it encounters a 
   //   simplex whose dimension is different from the previous ones.
   //   N.B.: The check is quite expensive.
-  int export_TC(Simplicial_complex &complex,
+  int export_complex(Simplicial_complex &complex,
     bool export_infinite_simplices = false, 
     int check_lower_and_higher_dim_simplices = 2,
     Simplex_set *p_inconsistent_simplices = NULL) const
@@ -955,198 +1005,6 @@ public:
         export_to_off(sc, off_stream);
       }
     }
-  }
-  
-  // Expensive!
-  bool is_simplex_in_the_ambient_delaunay(
-    Simplex const& s) const
-  {
-    //-------------------------------------------------------------------------
-    // Build the ambient Delaunay triangulation
-    // Then save its simplices into "amb_dt_simplices"
-    //-------------------------------------------------------------------------
-
-    typedef Regular_triangulation_euclidean_traits<K>         RT_Traits;
-    typedef Regular_triangulation<
-      RT_Traits,
-      Triangulation_data_structure<
-        typename RT_Traits::Dimension,
-        Triangulation_vertex<RT_Traits, Vertex_data>
-      > >                                                     RT;
-    typedef typename RT::Vertex_handle                        RT_VH;
-    typedef typename RT::Finite_full_cell_const_iterator      FFC_it;
-
-    RT ambient_dt(m_ambient_dim);
-    for (std::size_t i=0; i<m_points.size(); ++i)
-    {
-      const Weighted_point wp = compute_perturbed_weighted_point(i);
-      RT_VH vh = ambient_dt.insert(wp);
-      vh->data() = i;
-    }
-
-    for (FFC_it cit = ambient_dt.finite_full_cells_begin() ;
-         cit != ambient_dt.finite_full_cells_end() ; ++cit )
-    {
-      Simplex simplex;
-      for (int i = 0 ; i < m_ambient_dim + 1 ; ++i)
-        simplex.insert(cit->vertex(i)->data());
-
-      if (std::includes(simplex.begin(), simplex.end(), 
-                        s.begin(), s.end()))
-        return true;
-    }
-
-    return false;
-  }
-
-  bool check_if_all_simplices_are_in_the_ambient_delaunay(
-    const Simplicial_complex *p_complex = NULL,
-    bool check_for_any_dimension_simplices = true,
-    Simplex_set * incorrect_simplices = NULL) const
-  {
-    typedef Simplicial_complex::Simplex                     Simplex;
-    typedef Simplicial_complex::Simplex_set                 Simplex_set;
-
-    if (m_points.empty())
-      return true;
-
-    typedef Regular_triangulation_euclidean_traits<K>       RT_Traits;
-    typedef Regular_triangulation<
-      RT_Traits,
-      Triangulation_data_structure<
-        typename RT_Traits::Dimension,
-        Triangulation_vertex<RT_Traits, Vertex_data>
-      > >                                                   RT;
-    typedef typename RT::Vertex_handle                      RT_VH;
-    typedef typename RT::Finite_full_cell_const_iterator    FFC_it;
-
-    //-------------------------------------------------------------------------
-    // Build the ambient Delaunay triangulation
-    // Then save its simplices into "amb_dt_simplices"
-    //-------------------------------------------------------------------------
-
-    RT ambient_dt(m_ambient_dim);
-    for (std::size_t i=0; i<m_points.size(); ++i)
-    {
-      const Weighted_point wp = compute_perturbed_weighted_point(i);
-      RT_VH vh = ambient_dt.insert(wp);
-      vh->data() = i;
-    }
-
-    std::set<Simplex> amb_dt_simplices;
-
-    for (FFC_it cit = ambient_dt.finite_full_cells_begin() ;
-         cit != ambient_dt.finite_full_cells_end() ; ++cit )
-    {
-      int lowest_dim =
-        (check_for_any_dimension_simplices ? 1 : m_intrinsic_dim);
-      int highest_dim =
-        (check_for_any_dimension_simplices ? m_ambient_dim : m_intrinsic_dim);
-
-      for (int dim = lowest_dim ; dim <= highest_dim ; ++dim)
-      {
-        CGAL::Combination_enumerator<int> combi(dim + 1, 0, m_ambient_dim + 1);
-
-        for ( ; !combi.finished() ; ++combi)
-        {
-          Simplex simplex;
-          for (int i = 0 ; i < dim + 1 ; ++i)
-            simplex.insert(cit->vertex(combi[i])->data());
-
-          amb_dt_simplices.insert(simplex);
-        }
-      }
-    }
-
-    //-------------------------------------------------------------------------
-    // If p_complex is NULL, parse the TC and
-    // save its simplices into "stars_simplices"
-    //-------------------------------------------------------------------------
-
-    Simplex_set const *p_simplices;
-
-    std::size_t num_infinite_cells = 0;
-    Simplex_set stars_simplices;
-    if (!p_complex)
-    {
-      Stars_container::const_iterator it_star = m_stars.begin();
-      Stars_container::const_iterator it_star_end = m_stars.end();
-      // For each star: get the finite simplices
-      for ( ; it_star != it_star_end ; ++it_star)
-      {
-        for (Star::const_iterator it_s = it_star->begin(), 
-          it_s_end = it_star->end() ; it_s != it_s_end ; ++it_s)
-        {
-          if (!is_infinite(*it_s))
-            stars_simplices.insert(*it_s);
-        }
-      }
-      /*typename Tr_container::const_iterator it_tr = m_triangulations.begin();
-      typename Tr_container::const_iterator it_tr_end = m_triangulations.end();
-      // For each triangulation
-      for ( ; it_tr != it_tr_end ; ++it_tr)
-      {
-        Triangulation const& tr    = it_tr->tr();
-        Tr_vertex_handle center_vh = it_tr->center_vertex();
-
-        std::vector<Tr_full_cell_handle> incident_cells;
-        tr.incident_full_cells(center_vh, std::back_inserter(incident_cells));
-
-        typename std::vector<Tr_full_cell_handle>::const_iterator it_c =
-                                                           incident_cells.begin();
-        typename std::vector<Tr_full_cell_handle>::const_iterator it_c_end =
-                                                             incident_cells.end();
-        // For each cell
-        for ( ; it_c != it_c_end ; ++it_c)
-        {
-          if (tr.is_infinite(*it_c))
-          {
-            ++num_infinite_cells;
-            continue;
-          }
-          Simplex simplex;
-          for (int i = 0 ; i < tr.current_dimension() + 1 ; ++i)
-            simplex.insert((*it_c)->vertex(i)->data());
-
-          stars_simplices.insert(simplex);
-        }
-      }*/
-
-
-
-      p_simplices = &stars_simplices;
-    }
-    else
-    {
-      p_simplices = &p_complex->simplex_range();
-    }
-
-    //-------------------------------------------------------------------------
-    // Check if simplices of "*p_complex" are all in "amb_dt_simplices"
-    //-------------------------------------------------------------------------
-
-    std::set<Simplex> diff;
-    if (!incorrect_simplices)
-      incorrect_simplices = &diff;
-    std::set_difference(p_simplices->begin(),  p_simplices->end(),
-                   amb_dt_simplices.begin(), amb_dt_simplices.end(),
-                   std::inserter(*incorrect_simplices,
-                                 incorrect_simplices->begin()) );
-
-#ifdef GUDHI_TC_VERBOSE
-    std::cerr
-      << (incorrect_simplices->empty() ? "OK " : "ERROR ")
-      << "check_if_all_simplices_are_in_the_ambient_delaunay:\n"
-      << "  Number of simplices in ambient RT: " << amb_dt_simplices.size()
-      << "\n"
-      << "  Number of unique simplices in TC stars: " << p_simplices->size()
-      << "\n"
-      << "  Number of infinite full cells in TC stars: " << num_infinite_cells
-      << "\n"
-      << "  Number of wrong simplices: " << incorrect_simplices->size()
-      << "\n";
-#endif
-    return incorrect_simplices->empty();
   }
 
 private:
@@ -1500,9 +1358,6 @@ private:
   // Updates m_stars[i] directly from m_triangulations[i]
   void update_star(std::size_t i)
   {
-    //***************************************************
-    // Update the associated star (in m_stars)
-    //***************************************************
     Star &star = m_stars[i];
     star.clear();
     Triangulation &local_tr = m_triangulations[i].tr();
@@ -1530,6 +1385,7 @@ private:
     }
   }
 
+  // Estimates tangent subspaces using PCA
   Tangent_space_basis compute_tangent_space(
       const Point &p
     , const std::size_t i
@@ -1540,67 +1396,8 @@ private:
 #endif
     )
   {
-#ifdef GUDHI_TC_COMPUTE_TANGENT_PLANES_FOR_SPHERE_2
-
-    double tt[2] = {p[1], -p[0]};
-    Vector t(2, &tt[0], &tt[2]);
-
-    // Normalize t1 and t2
-    typename K::Squared_length_d sqlen      = m_k.squared_length_d_object();
-    typename K::Scaled_vector_d  scaled_vec = m_k.scaled_vector_d_object();
-
-    Tangent_space_basis ts(i);
-    ts.reserve(m_intrinsic_dim);
-    ts.push_back(scaled_vec(t, FT(1)/std::sqrt(sqlen(t))));
-    m_are_tangent_spaces_computed[i] = true;
-
-    return ts;
-
-#elif defined(GUDHI_TC_COMPUTE_TANGENT_PLANES_FOR_SPHERE_3)
-
-    double tt1[3] = {-p[1] - p[2], p[0], p[0]};
-    double tt2[3] = {p[1] * tt1[2] - p[2] * tt1[1],
-                     p[2] * tt1[0] - p[0] * tt1[2],
-                     p[0] * tt1[1] - p[1] * tt1[0]};
-    Vector t1(3, &tt1[0], &tt1[3]);
-    Vector t2(3, &tt2[0], &tt2[3]);
-
-    // Normalize t1 and t2
-    typename K::Squared_length_d sqlen      = m_k.squared_length_d_object();
-    typename K::Scaled_vector_d  scaled_vec = m_k.scaled_vector_d_object();
-
-    Tangent_space_basis ts(i);
-    ts.reserve(m_intrinsic_dim);
-    ts.push_back(scaled_vec(t1, FT(1)/std::sqrt(sqlen(t1))));
-    ts.push_back(scaled_vec(t2, FT(1)/std::sqrt(sqlen(t2))));
-
-    m_are_tangent_spaces_computed[i] = true;
-
-    return ts;
-
-#elif defined(GUDHI_TC_COMPUTE_TANGENT_PLANES_FOR_FLAT_TORUS_D)
-
-    Tangent_space_basis ts(i);
-    ts.reserve(m_intrinsic_dim);
-    for (int dim = 0 ; dim < m_intrinsic_dim ; ++dim)
-    {
-      std::vector<FT> tt(m_ambient_dim, 0.);
-      tt[2*dim] = -p[2*dim + 1];
-      tt[2*dim + 1] = p[2*dim];
-      Vector t(2*m_intrinsic_dim, tt.begin(), tt.end());
-      ts.push_back(t);
-    }
-
-    m_are_tangent_spaces_computed[i] = true;
-    
-    //return compute_gram_schmidt_basis(ts, m_k);
-    return ts;
-
-#else
-    //******************************* PCA *************************************
-
     unsigned int num_points_for_pca = static_cast<unsigned int>(
-      std::pow(BASE_VALUE_FOR_PCA, m_intrinsic_dim));
+      std::pow(GUDHI_TC_BASE_VALUE_FOR_PCA, m_intrinsic_dim));
 
     // Kernel functors
     typename K::Construct_vector_d      constr_vec =
@@ -1639,10 +1436,6 @@ private:
         //const Point p = transl(
         //  points_for_pca[nn_it->first], m_translations[nn_it->first]);
         mat_points(j, i) = CGAL::to_double(coord(points_for_pca[nn_it->first], i));
-#ifdef GUDHI_TC_ADD_NOISE_TO_TANGENT_SPACE
-        mat_points(j, i) += m_random_generator.get_double(
-            -0.5*m_max_perturb, 0.5*m_max_perturb);
-#endif
 #ifdef GUDHI_TC_PERTURB_TANGENT_SPACE
         if (perturb)
           mat_points(j, i) += m_random_generator.get_double(
@@ -1704,15 +1497,7 @@ private:
 
     m_are_tangent_spaces_computed[i] = true;
 
-    //*************************************************************************
-
-    //Vector n = m_k.point_to_vector_d_object()(p);
-    //n = scaled_vec(n, FT(1)/sqrt(sqlen(n)));
-    //std::cerr << "IP = " << scalar_pdct(n, ts[0]) << " & " << scalar_pdct(n, ts[1]) << "\n";
-
     return tsb;
-    
-#endif
 
     /*
     // Alternative code (to be used later)
@@ -1737,7 +1522,7 @@ private:
     const Simplex &s, bool normalize_basis = true)
   {
     unsigned int num_points_for_pca = static_cast<unsigned int>(
-      std::pow(BASE_VALUE_FOR_PCA, m_intrinsic_dim));
+      std::pow(GUDHI_TC_BASE_VALUE_FOR_PCA, m_intrinsic_dim));
 
     // Kernel functors
     typename K::Construct_vector_d      constr_vec =
@@ -2006,66 +1791,7 @@ private:
     }
     return is_simplex_consistent(c);
   }
-  
-  // A simplex here is a list of point indices
-  template <typename IndexRange>
-  double compute_simplex_fatness(IndexRange const& simplex) const
-  {
-    // Kernel functors
-    typename K::Compute_coordinate_d coord =
-      m_k.compute_coordinate_d_object();
-    typename K::Squared_distance_d sqdist =
-      m_k.squared_distance_d_object();
-    typename K::Difference_of_points_d diff_pts =
-      m_k.difference_of_points_d_object();
-    
-    auto const& tr_traits = m_triangulations[0].tr().geom_traits();
-
-    typename Tr_traits::Difference_of_points_d tr_diff_pts =
-      tr_traits.difference_of_points_d_object();
-
-    std::vector<std::size_t> s(simplex.begin(), simplex.end());
-    std::size_t simplex_dim = s.size() - 1;
-
-    // Compute basis
-    Tangent_space_basis basis(s[0]);
-    for (int j = 0 ; j < simplex_dim  ; ++j)
-    {
-      Vector e = diff_pts(
-        compute_perturbed_point(s[j+1]), compute_perturbed_point(s[0]));
-      basis.push_back(e);
-    }
-    basis = compute_gram_schmidt_basis(basis, m_k);
-
-    // Compute the volume of the simplex: determinant
-    Eigen::MatrixXd m(simplex_dim, simplex_dim);
-    for (int j = 0 ; j < simplex_dim ; ++j)
-    {
-      Tr_vector v_j = tr_diff_pts(
-        project_point(compute_perturbed_point(s[j+1]), basis, tr_traits),
-        project_point(compute_perturbed_point(s[0]), basis, tr_traits));
-      for (int i = 0 ; i < simplex_dim ; ++i)
-        m(j, i) = CGAL::to_double(coord(v_j, i));
-    }
-    double volume = 
-      std::abs(m.determinant()) 
-      / boost::math::factorial<double>(simplex_dim);
-
-    // Compute the longest edge of the simplex
-    CGAL::Combination_enumerator<int> combi(2, 0, simplex_dim+1);
-    FT max_sq_length = FT(0);
-    for ( ; !combi.finished() ; ++combi)
-    {
-      FT sq_length = sqdist(
-        compute_perturbed_point(s[combi[0]]), 
-        compute_perturbed_point(s[combi[1]]));
-      if (sq_length > max_sq_length)
-        max_sq_length = sq_length;
-    }
-
-    return volume / std::pow(std::sqrt(max_sq_length), simplex_dim);
-  }
-
+ 
   // A simplex here is a list of point indices
   // CJTODO: improve it like the other "is_simplex_consistent" below
   bool is_simplex_consistent(Simplex const& simplex) const
@@ -2551,15 +2277,8 @@ private:
       for (int ii = 0 ; ii < N ; ++ii)
       {
         int j = 0;
-#ifdef GUDHI_TC_BETTER_EXPORT_FOR_FLAT_TORUS
-        // For flat torus
-        os << (2 + 1 * CGAL::to_double(coord(p, 0))) * CGAL::to_double(coord(p, 2)) << " "
-           << (2 + 1 * CGAL::to_double(coord(p, 0))) * CGAL::to_double(coord(p, 3)) << " "
-           << 1 * CGAL::to_double(coord(p, 1));
-#else
         for ( ; j < num_coords ; ++j)
           os << CGAL::to_double(coord(p, j)) << " ";
-#endif
         if (j == 2)
           os << "0";
 
@@ -2949,9 +2668,6 @@ private:
                                               // and their center vertex
   Stars_container           m_stars;
   std::vector<FT>           m_squared_star_spheres_radii_incl_margin;
-#ifdef GUDHI_USE_TBB
-  //std::vector<Tr_mutex>     m_tr_mutexes;
-#endif
 
 #ifdef GUDHI_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
   Points                    m_points_for_tse;
@@ -2962,6 +2678,7 @@ private:
 
 }; // /class Tangential_complex
 
+}  // end namespace tangential_complex
 }  // end namespace Gudhi
 
 #endif // TANGENTIAL_COMPLEX_H

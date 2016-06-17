@@ -201,7 +201,7 @@ std::vector<typename Kernel::Point_d> generate_points_on_torus_3D(
         (R + r * std::cos(u)) * std::cos(v),
         0));
       p_tangent_planes->push_back(
-        CGAL::Tangential_complex_::compute_gram_schmidt_basis(sp, k));
+        CGAL::tangential_complex::internal::compute_gram_schmidt_basis(sp, k));
     }*/
   }
   return points;

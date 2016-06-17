@@ -7,14 +7,13 @@
 #include <cstddef>
 
 //#define GUDHI_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
-//#define CHECK_IF_ALL_SIMPLICES_ARE_IN_THE_AMBIENT_DELAUNAY
 //#define TC_INPUT_STRIDES 3 // only take one point every TC_INPUT_STRIDES points
 #define TC_NO_EXPORT
 //#define TC_EXPORT_TO_RIB
 //#define GUDHI_TC_EXPORT_SPARSIFIED_POINT_SET
 //#define GUDHI_TC_EXPORT_ALL_COORDS_IN_OFF
 
-const std::size_t ONLY_LOAD_THE_FIRST_N_POINTS = 1000000;
+const std::size_t ONLY_LOAD_THE_FIRST_N_POINTS = 20000000;
 
 #include <gudhi/Tangential_complex/RIB_exporter.h>
 #include <gudhi/Debug_utils.h>
@@ -45,19 +44,21 @@ const std::size_t ONLY_LOAD_THE_FIRST_N_POINTS = 1000000;
 #define GUDHI_TC_SET_PERFORMANCE_DATA(value_name, value) \
         XML_perf_data::set(value_name, value);
 
+
+namespace subsampl = Gudhi::subsampling;
+namespace tc = Gudhi::tangential_complex;
+        
 const char * const BENCHMARK_SCRIPT_FILENAME = "benchmark_script.txt";
 
 typedef CGAL::Epick_d<CGAL::Dynamic_dimension_tag>              Kernel;
 typedef Kernel::FT                                              FT;
 typedef Kernel::Point_d                                         Point;
 typedef Kernel::Vector_d                                        Vector;
-typedef Gudhi::Tangential_complex<
+typedef tc::Tangential_complex<
   Kernel, CGAL::Dynamic_dimension_tag,
   CGAL::Parallel_tag>                                           TC;
 typedef TC::Simplex                                             Simplex;
 typedef TC::Simplex_set                                         Simplex_set;
-
-using namespace Gudhi::Tangential_complex_;
 
 class XML_perf_data
 {
@@ -293,7 +294,7 @@ void make_tc(std::vector<Point> &points,
   {
     std::size_t num_points_before = points.size();
     std::vector<Point> sparsified_points;
-    Gudhi::sparsify_point_set(k, points, sparsity*sparsity, 
+    subsampl::sparsify_point_set(k, points, sparsity*sparsity, 
       std::back_inserter(sparsified_points));
     sparsified_points.swap(points);
     std::cerr << "Number of points before/after sparsification: "
@@ -301,7 +302,7 @@ void make_tc(std::vector<Point> &points,
 
 #ifdef GUDHI_TC_EXPORT_SPARSIFIED_POINT_SET
     std::ofstream ps_stream("output/sparsified_point_set.txt");
-    export_point_set(k, points, ps_stream);
+    tc::internal::export_point_set(k, points, ps_stream);
 #endif
   }
 
@@ -332,11 +333,6 @@ void make_tc(std::vector<Point> &points,
   tc.compute_tangential_complex();
   t.end();
   double computation_time = t.num_seconds();
-  
-#ifdef CHECK_IF_ALL_SIMPLICES_ARE_IN_THE_AMBIENT_DELAUNAY
-  if (ambient_dim <= 4)
-    tc.check_if_all_simplices_are_in_the_ambient_delaunay();
-#endif
 
   //===========================================================================
   // Export to OFF
@@ -346,7 +342,12 @@ void make_tc(std::vector<Point> &points,
   int max_dim = -1;
   TC::Simplicial_complex complex;
   Simplex_set inconsistent_simplices;
-  max_dim = tc.export_TC(complex, false, 2, &inconsistent_simplices);
+  max_dim = tc.export_complex(complex, false, 2, &inconsistent_simplices);
+
+  // CJTODO TEST
+  Gudhi::Simplex_tree<> stree;
+  tc.export_complex(stree, false);
+  //std::cerr << stree;
 
   t.begin();
   bool ret = export_to_off(
@@ -358,7 +359,7 @@ void make_tc(std::vector<Point> &points,
   unsigned int num_perturb_steps = 0;
   double perturb_time = -1;
     double export_after_perturb_time = -1.;
-  Gudhi::Fix_inconsistencies_status perturb_ret = Gudhi::FIX_NOT_PERFORMED;
+  tc::Fix_inconsistencies_status perturb_ret = tc::FIX_NOT_PERFORMED;
   if (perturb)
   {
     //=========================================================================
@@ -388,7 +389,7 @@ void make_tc(std::vector<Point> &points,
 
     // Re-build the complex
     Simplex_set inconsistent_simplices;
-    max_dim = tc.export_TC(complex, false, 2, &inconsistent_simplices);
+    max_dim = tc.export_complex(complex, false, 2, &inconsistent_simplices);
 
     t.begin();
     bool exported = export_to_off(
@@ -403,7 +404,7 @@ void make_tc(std::vector<Point> &points,
 
 #if !defined(TC_NO_EXPORT) && defined(TC_EXPORT_TO_RIB)
     std::ofstream rib(std::string("output/") + input_name_stripped + ".rib");
-    RIB_exporter<TC::Points, TC::Simplicial_complex::Simplex_set> rib_exporter(
+	tc::internal::RIB_exporter<TC::Points, TC::Simplicial_complex::Simplex_set> rib_exporter(
       tc.points(),
       complex.simplex_range(),
       rib,
@@ -415,7 +416,7 @@ void make_tc(std::vector<Point> &points,
     rib_exporter.write_file();
 
     std::ofstream rib_LQ(std::string("output/") + input_name_stripped + "_LQ.rib");
-    RIB_exporter<TC::Points, TC::Simplicial_complex::Simplex_set> rib_exporter_LQ(
+	tc::internal::RIB_exporter<TC::Points, TC::Simplicial_complex::Simplex_set> rib_exporter_LQ(
       tc.points(),
       complex.simplex_range(),
       rib_LQ,
@@ -433,7 +434,7 @@ void make_tc(std::vector<Point> &points,
     GUDHI_TC_SET_PERFORMANCE_DATA("Final_num_inconsistent_local_tr", "N/A");
   }
 
-  max_dim = tc.export_TC(complex, false, 2);
+  max_dim = tc.export_complex(complex, false, 2);
 
   complex.display_stats();
 
@@ -502,7 +503,7 @@ void make_tc(std::vector<Point> &points,
     << "  * Export to OFF (before perturb): " << export_before_time << "\n"
     << "  * Fix inconsistencies 1: " << perturb_time
     <<      " (" << num_perturb_steps << " steps) ==> "
-    <<      (perturb_ret == Gudhi::TC_FIXED ? "FIXED" : "NOT fixed") << "\n"
+    <<      (perturb_ret == tc::TC_FIXED ? "FIXED" : "NOT fixed") << "\n"
     << "  * Export to OFF (after perturb): " << export_after_perturb_time << "\n"
     << "  * Export to OFF (after collapse): "
     <<      export_after_collapse_time << "\n"
@@ -514,7 +515,7 @@ void make_tc(std::vector<Point> &points,
   GUDHI_TC_SET_PERFORMANCE_DATA("Init_time", init_time);
   GUDHI_TC_SET_PERFORMANCE_DATA("Comput_time", computation_time);
   GUDHI_TC_SET_PERFORMANCE_DATA("Perturb_successful",
-                                (perturb_ret == Gudhi::TC_FIXED ? 1 : 0));
+                                (perturb_ret == tc::TC_FIXED ? 1 : 0));
   GUDHI_TC_SET_PERFORMANCE_DATA("Perturb_time", perturb_time);
   GUDHI_TC_SET_PERFORMANCE_DATA("Perturb_steps", num_perturb_steps);
   GUDHI_TC_SET_PERFORMANCE_DATA("Result_pure_pseudomanifold",
@@ -536,7 +537,7 @@ int main()
 # ifdef _DEBUG
   int num_threads = 1;
 # else
-  int num_threads = tbb::task_scheduler_init::default_num_threads() - 2;
+  int num_threads = tbb::task_scheduler_init::default_num_threads() - 4;
 # endif
 #endif
 
@@ -754,7 +755,7 @@ int main()
               // Contains tangent space basis
               if (input.substr(input.size() - 3) == "pwt")
               {
-                load_points_and_tangent_space_basis_from_file
+                tc::internal::load_points_and_tangent_space_basis_from_file
                   <Kernel, typename TC::Tangent_space_basis>(
                   input, std::back_inserter(points),
                   std::back_inserter(tangent_spaces),
@@ -763,7 +764,7 @@ int main()
               }
               else
               {
-                load_points_from_file<Kernel>(
+				  tc::internal::load_points_from_file<Kernel>(
                   input, std::back_inserter(points),
                   ONLY_LOAD_THE_FIRST_N_POINTS);
               }
