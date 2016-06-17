@@ -64,36 +64,45 @@ public:
   typedef Incremental_neighbor_search                       INS_range;
 
   /// Constructor
-  Spatial_tree_data_structure(Point_container_ const& points)
+  Spatial_tree_data_structure(
+    Point_container_ const& points, bool build_the_tree_now = true)
   : m_points(points),
     m_tree(boost::counting_iterator<std::ptrdiff_t>(0),
            boost::counting_iterator<std::ptrdiff_t>(points.size()),
            typename Tree::Splitter(),
            STraits((Point*)&(points[0])) )
   {
-    // Build the tree now (we don't want to wait for the first query)
-    m_tree.build();
+    if (build_the_tree_now)
+    {
+      // Build the tree now (we don't want to wait for the first query)
+      m_tree.build();
+    }
   }
 
   /// Constructor
   template <typename Point_indices_range>
   Spatial_tree_data_structure(
     Point_container_ const& points,
-    Point_indices_range const& only_these_points)
+    Point_indices_range const& only_these_points, 
+    bool build_the_tree_now = true)
     : m_points(points),
     m_tree(
     only_these_points.begin(), only_these_points.end(),
     typename Tree::Splitter(),
     STraits((Point*)&(points[0])))
   {
-    // Build the tree now (we don't want to wait for the first query)
-    m_tree.build();
+    if (build_the_tree_now)
+    {
+      // Build the tree now (we don't want to wait for the first query)
+      m_tree.build();
+    }
   }
 
   /// Constructor
   Spatial_tree_data_structure(
     Point_container_ const& points,
-    std::size_t begin_idx, std::size_t past_the_end_idx)
+    std::size_t begin_idx, std::size_t past_the_end_idx,
+    bool build_the_tree_now = true)
   : m_points(points),
     m_tree(
       boost::counting_iterator<std::ptrdiff_t>(begin_idx),
@@ -101,8 +110,11 @@ public:
       typename Tree::Splitter(),
       STraits((Point*)&(points[0])) )
   {
-    // Build the tree now (we don't want to wait for the first query)
-    m_tree.build();
+    if (build_the_tree_now)
+    {
+      // Build the tree now (we don't want to wait for the first query)
+      m_tree.build();
+    }
   }
 
   /*Point_container_ &points()
