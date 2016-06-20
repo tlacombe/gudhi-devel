@@ -92,7 +92,27 @@ private:
   std::size_t m_data;
 };
 
-/// The class Tangential_complex represents a tangential complex
+/**
+ * \class Alpha_complex Alpha_complex.h gudhi/Alpha_complex.h
+ * \brief Alpha complex data structure.
+ * 
+ * \ingroup alpha_complex
+ * 
+ * \details
+ *  The class Tangential_complex represents a tangential complex.
+ *
+ * \tparam Kernel_ requires a <a target="_blank"
+ * href="http://doc.cgal.org/latest/Kernel_d/classCGAL_1_1Epick__d.html">CGAL::Epick_d</a> class, which
+ * can be static if you know the ambiant dimension at compile-time, or dynamic if you don't.
+ * \tparam DimensionTag can be either <a target="_blank"
+ * href="http://doc.cgal.org/latest/Kernel_23/classCGAL_1_1Dimension__tag.html">Dimension_tag<d></a>
+ * if you know the ambiant dimension at compile-time,
+ * or <a target="_blank"
+ * href="http://doc.cgal.org/latest/Kernel_23/classCGAL_1_1Dynamic__dimension__tag.html">CGAL::Dynamic_dimension_tag</a>
+ * if you don't.
+ * \tparam Concurrency_tag enables sequential versus parallel computation. Possible values are `CGAL::Parallel_tag` (the default) and `CGAL::Sequential_tag`.
+ * 
+ */
 template <
   typename Kernel_, // ambiant kernel
   typename DimensionTag, // intrinsic dimension
@@ -216,22 +236,6 @@ private:
   {
     return vh->point();
   }
-  struct First_of_pair
-  {
-    template<typename> struct result;
-
-    template <typename F, typename Pair>
-    struct result<F(Pair)>
-    {
-      typedef typename boost::remove_reference<Pair>::type::first_type const& type;
-    };
-
-    template <typename Pair>
-    typename Pair::first_type const& operator()(Pair const& pair) const
-    {
-      return pair.first;
-    }
-  };
 
 public:
   typedef internal::Simplicial_complex Simplicial_complex;
