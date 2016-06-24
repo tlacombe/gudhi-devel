@@ -93,13 +93,15 @@ private:
 };
 
 /**
- * \class Alpha_complex Alpha_complex.h gudhi/Alpha_complex.h
- * \brief Alpha complex data structure.
+ * \class Tangential_complex Tangential_complex.h gudhi/Tangential_complex.h
+ * \brief Tangential complex data structure.
  * 
- * \ingroup alpha_complex
+ * \ingroup tangential_complex
  * 
  * \details
  *  The class Tangential_complex represents a tangential complex.
+ *  After the computation of the complex, an optional post-processing called perturbation can
+ *  be run to attempt to remove inconsistencies.
  *
  * \tparam Kernel_ requires a <a target="_blank"
  * href="http://doc.cgal.org/latest/Kernel_d/classCGAL_1_1Epick__d.html">CGAL::Epick_d</a> class, which
@@ -240,22 +242,35 @@ private:
 public:
   typedef internal::Simplicial_complex Simplicial_complex;
 
-  /// Constructor for a range of points
-  template <typename InputIterator>
-  Tangential_complex(InputIterator first, InputIterator last,
-                     double sparsity, int intrinsic_dimension,
+  /** \brief Constructor from a range of points.
+  * Points are copied into the instance, and a search data structure is initialized.
+  * Note the complex is not computed: `compute_tangential_complex` must be called after the creation
+  * of the object.
+  *
+  * @param[in] points Range of points (`Point_range::value_type` must be the same as `Kernel_::Point_d`).
+  * @param[in] intrinsic_dimension Intrinsic dimension of the manifold.
+  * @param[in] max_perturb Maximum length of the translations used by the perturbation.
+  * @param[in] k Kernel instance.
+  */
+  template <typename Point_range>
+  Tangential_complex(Point_range points,
+                     int intrinsic_dimension,
+                     double max_perturb,
+#ifdef GUDHI_TC_PERTURB_WEIGHT
+                     double sparsity,
+#endif
 #ifdef GUDHI_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
                      InputIterator first_for_tse, InputIterator last_for_tse,
 #endif
-                     double max_perturb = 0.5*sparsity,
                      const K &k = K()
                      )
   : m_k(k),
     m_intrinsic_dim(intrinsic_dimension),
-    m_half_sparsity(0.5*sparsity),
-    m_sq_half_sparsity(m_half_sparsity*m_half_sparsity),
-    m_ambient_dim(k.point_dimension_d_object()(*first)),
-    m_points(first, last),
+#ifdef GUDHI_TC_PERTURB_WEIGHT
+    m_sq_half_sparsity(0.5*sparsity*0.5*sparsity),
+#endif
+    m_ambient_dim(k.point_dimension_d_object()(*points.begin())),
+    m_points(points.begin(), points.end()),
     m_weights(m_points.size(), FT(0))
 #ifdef GUDHI_TC_PERTURB_WEIGHT
     , m_weights_memory()
@@ -275,8 +290,10 @@ public:
     , m_points_ds_for_tse(m_points_for_tse)
 #endif
   {
+#ifdef GUDHI_TC_PERTURB_WEIGHT
     if (sparsity <= 0.)
       std::cerr << "!Warning! Sparsity should be > 0\n";
+#endif
   }
 
   /// Destructor
@@ -287,10 +304,13 @@ public:
 #endif
   }
 
+  /// Returns the intrinsic dimension of the manifold.
   int intrinsic_dimension() const
   {
     return m_intrinsic_dim;
   }
+
+  /// Returns the ambient dimension.
   int ambient_dimension() const
   {
     return m_ambient_dim;
@@ -301,6 +321,7 @@ public:
     return m_points;
   }
 
+  /// Returns the number of vertices.
   std::size_t number_of_vertices() const
   {
     return m_points.size();
@@ -343,6 +364,7 @@ public:
       m_are_tangent_spaces_computed[i] = true;
   }
 
+  /// Computes the tangential complex.
   void compute_tangential_complex()
   {
 #ifdef GUDHI_TC_PERFORM_EXTRA_CHECKS
@@ -446,82 +468,17 @@ public:
     std::cout << "\n";
   }
 
-  void refresh_tangential_complex()
-  {
-#if defined(GUDHI_TC_VERBOSE) || defined(GUDHI_TC_PROFILING)
-    std::cerr << yellow << "\nRefreshing TC... " << white;
-#endif
-
-#ifdef GUDHI_TC_PROFILING
-    Gudhi::Clock t;
-#endif
-#ifdef GUDHI_USE_TBB
-    // Parallel
-    if (boost::is_convertible<Concurrency_tag, CGAL::Parallel_tag>::value)
-    {
-      tbb::parallel_for(tbb::blocked_range<size_t>(0, m_points.size()),
-        Compute_tangent_triangulation(*this)
-      );
-    }
-    // Sequential
-    else
-#endif // GUDHI_USE_TBB
-    {
-      for (std::size_t i = 0 ; i < m_points.size() ; ++i)
-        compute_tangent_triangulation(i);
-    }
-
-#ifdef GUDHI_TC_PROFILING
-    t.end();
-    std::cerr << yellow << "done in " << t.num_seconds()
-      << " seconds.\n" << white;
-#elif defined(GUDHI_TC_VERBOSE)
-    std::cerr << yellow << "done.\n" << white;
-#endif
-  }
-
-  // If the list of perturbed points is provided, it is much faster
-  template <typename Point_indices_range>
-  void refresh_tangential_complex(
-    Point_indices_range const& perturbed_points_indices)
-  {
-#if defined(GUDHI_TC_VERBOSE) || defined(GUDHI_TC_PROFILING)
-    std::cerr << yellow << "\nRefreshing TC... " << white;
-#endif
-
-#ifdef GUDHI_TC_PROFILING
-    Gudhi::Clock t;
-#endif
-
-    // ANN tree containing only the perturbed points
-    Points_ds updated_pts_ds(m_points, perturbed_points_indices);
-
-#ifdef GUDHI_USE_TBB
-    // Parallel
-    if (boost::is_convertible<Concurrency_tag, CGAL::Parallel_tag>::value)
-    {
-      tbb::parallel_for(tbb::blocked_range<size_t>(0, m_points.size()),
-        Refresh_tangent_triangulation(*this, updated_pts_ds)
-        );
-    }
-    // Sequential
-    else
-#endif // GUDHI_USE_TBB
-    {
-      for (std::size_t i = 0 ; i < m_points.size() ; ++i)
-        refresh_tangent_triangulation(i, updated_pts_ds);
-    }
-
-#ifdef GUDHI_TC_PROFILING
-    t.end();
-    std::cerr << yellow << "done in " << t.num_seconds()
-      << " seconds.\n" << white;
-#elif defined(GUDHI_TC_VERBOSE)
-    std::cerr << yellow << "done.\n" << white;
-#endif
-  }
-
-  // time_limit in seconds: 0 = no fix to do, < 0 = no time limit
+  /** \brief Attempts to fix inconsistencies by perturbing the point positions.
+   *
+   * @param[out] num_steps Returns the number of steps performed.
+   * @param[out] initial_num_inconsistent_stars Returns the initial number of inconsistent stars.
+   * @param[out] best_num_inconsistent_stars Returns the best number of inconsistent stars during the process.
+   * @param[out] final_num_inconsistent_stars Returns the final number of inconsistent stars.
+   * @param[in] time_limit Time limit in seconds. If -1, no time limit is set.
+   *
+   * @return TC_FIXED if all inconsistencies coulb be removed, or
+   *         TIME_LIMIT_REACHED if the time limit has been reached.
+   */
   Fix_inconsistencies_status fix_inconsistencies_using_perturbation(
     unsigned int &num_steps,
     std::size_t &initial_num_inconsistent_stars,
@@ -694,8 +651,9 @@ public:
     return TC_FIXED;
   }
 
-  // Return a tuple
-  // <num_simplices, num_inconsistent_simplices, num_inconsistent_stars>
+  /// Returns the number of inconsistencies using a tuple
+  /// <num_simplices, num_inconsistent_simplices, num_inconsistent_stars>
+  /// @param[in] verbose If true, outputs a message into `std::cerr`.
   std::tuple<std::size_t, std::size_t, std::size_t> 
   number_of_inconsistent_simplices(
 #ifdef GUDHI_TC_VERBOSE
@@ -756,8 +714,11 @@ public:
       num_simplices, num_inconsistent_simplices, num_inconsistent_stars);
   }
 
-  // Exports the TC into a Simplex_tree
-  // Returns the max dimension of the simplices
+  /** \brief Exports the complex into a Simplex_tree.
+   *
+   * @param[out] tree The result.
+   * @return The maximal dimension of the simplices.
+   */
   int export_complex(Simplex_tree<> &tree,
     bool export_infinite_simplices = false,
     Simplex_set *p_inconsistent_simplices = NULL) const
@@ -967,7 +928,83 @@ public:
 
     return os;
   }
-  
+
+private:
+  void refresh_tangential_complex()
+  {
+#if defined(GUDHI_TC_VERBOSE) || defined(GUDHI_TC_PROFILING)
+    std::cerr << yellow << "\nRefreshing TC... " << white;
+#endif
+
+#ifdef GUDHI_TC_PROFILING
+    Gudhi::Clock t;
+#endif
+#ifdef GUDHI_USE_TBB
+    // Parallel
+    if (boost::is_convertible<Concurrency_tag, CGAL::Parallel_tag>::value)
+    {
+      tbb::parallel_for(tbb::blocked_range<size_t>(0, m_points.size()),
+        Compute_tangent_triangulation(*this)
+      );
+    }
+    // Sequential
+    else
+#endif // GUDHI_USE_TBB
+    {
+      for (std::size_t i = 0; i < m_points.size(); ++i)
+        compute_tangent_triangulation(i);
+    }
+
+#ifdef GUDHI_TC_PROFILING
+    t.end();
+    std::cerr << yellow << "done in " << t.num_seconds()
+      << " seconds.\n" << white;
+#elif defined(GUDHI_TC_VERBOSE)
+    std::cerr << yellow << "done.\n" << white;
+#endif
+  }
+
+  // If the list of perturbed points is provided, it is much faster
+  template <typename Point_indices_range>
+  void refresh_tangential_complex(
+    Point_indices_range const& perturbed_points_indices)
+  {
+#if defined(GUDHI_TC_VERBOSE) || defined(GUDHI_TC_PROFILING)
+    std::cerr << yellow << "\nRefreshing TC... " << white;
+#endif
+
+#ifdef GUDHI_TC_PROFILING
+    Gudhi::Clock t;
+#endif
+
+    // ANN tree containing only the perturbed points
+    Points_ds updated_pts_ds(m_points, perturbed_points_indices);
+
+#ifdef GUDHI_USE_TBB
+    // Parallel
+    if (boost::is_convertible<Concurrency_tag, CGAL::Parallel_tag>::value)
+    {
+      tbb::parallel_for(tbb::blocked_range<size_t>(0, m_points.size()),
+        Refresh_tangent_triangulation(*this, updated_pts_ds)
+      );
+    }
+    // Sequential
+    else
+#endif // GUDHI_USE_TBB
+    {
+      for (std::size_t i = 0; i < m_points.size(); ++i)
+        refresh_tangent_triangulation(i, updated_pts_ds);
+    }
+
+#ifdef GUDHI_TC_PROFILING
+    t.end();
+    std::cerr << yellow << "done in " << t.num_seconds()
+      << " seconds.\n" << white;
+#elif defined(GUDHI_TC_VERBOSE)
+    std::cerr << yellow << "done.\n" << white;
+#endif
+  }
+
   // Return a pair<num_simplices, num_inconsistent_simplices>
   void export_inconsistent_stars_to_OFF_files(
     std::string const& filename_base) const
@@ -1010,8 +1047,6 @@ public:
       }
     }
   }
-
-private:
 
   class Compare_distance_to_ref_point
   {
@@ -2642,8 +2677,9 @@ public:
 private:
   const K                   m_k;
   const int                 m_intrinsic_dim;
-  const double              m_half_sparsity;
+#ifdef GUDHI_TC_PERTURB_WEIGHT
   const double              m_sq_half_sparsity;
+#endif
   const int                 m_ambient_dim;
 
   Points                    m_points;

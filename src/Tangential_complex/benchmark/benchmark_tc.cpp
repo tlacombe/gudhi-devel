@@ -314,12 +314,17 @@ void make_tc(std::vector<Point> &points,
   // Compute Tangential Complex
   //===========================================================================
 
+  TC tc(
+    points,
+    intrinsic_dim,
+    max_perturb,
+# ifdef GUDHI_TC_PERTURB_WEIGHT
+    sparsity,
+# endif
 #ifdef GUDHI_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
-  TC tc(points.begin(), points.end(), sparsity, intrinsic_dim,
-    points_not_sparse.begin(), points_not_sparse.end(), max_perturb, k);
-#else
-  TC tc(points.begin(), points.end(), sparsity, intrinsic_dim, max_perturb, k);
+    points_not_sparse.begin(), points_not_sparse.end(),
 #endif
+    k);
 
   if (!tangent_spaces.empty())
   {
