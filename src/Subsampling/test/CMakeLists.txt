@@ -1,7 +1,15 @@
 cmake_minimum_required(VERSION 2.6)
-project(GUDHILandmarkingTest)
+project(Subsampling_tests)
 
-# Landmarking test
+if (GCOVR_PATH)
+  # for gcovr to make coverage reports - Corbera Jenkins plugin
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
+endif()
+if (GPROF_PATH)
+  # for gprof to make coverage reports - Jenkins
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
+endif()
+
 if(CGAL_FOUND)
   if (NOT CGAL_VERSION VERSION_LESS 4.8.0)
     message(STATUS "CGAL version: ${CGAL_VERSION}.")
@@ -12,11 +20,19 @@ if(CGAL_FOUND)
       include( ${EIGEN3_USE_FILE} )
       include_directories (BEFORE "../../include")
 
-      add_executable( landmarking_UT landmarking.cpp ) 
+      add_executable( Subsampling_test_pick_random_points test_pick_random_points.cpp )
+
+      add_executable( Subsampling_test_choose_farthest_point test_choose_farthest_point.cpp )
+      target_link_libraries(Subsampling_test_choose_farthest_point ${Boost_SYSTEM_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+      
+      add_executable(Subsampling_test_sparsify_point_set test_sparsify_point_set.cpp)
+      target_link_libraries(Subsampling_test_sparsify_point_set ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
     else()
-      message(WARNING "Eigen3 not found. Version 3.1.0 is required for Landmarking feature.")
+      message(WARNING "Eigen3 not found. Version 3.1.0 is required for Subsampling feature.")
     endif()
   else()
-    message(WARNING "CGAL version: ${CGAL_VERSION} is too old to compile Landmarking feature. Version 4.8.0 is required.")
+    message(WARNING "CGAL version: ${CGAL_VERSION} is too old to compile Subsampling tests. Version 4.8.0 is required.")
   endif ()
+else()
+  message(WARNING "CGAL not found. It is required for the Subsampling tests.")
 endif()

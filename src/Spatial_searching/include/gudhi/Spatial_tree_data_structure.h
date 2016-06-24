@@ -4,7 +4,7 @@
  *
  *    Author(s):       Clement Jamin
  *
- *    Copyright (C) 2016  INRIA Sophia-Antipolis (France)
+ *    Copyright (C) 2016 INRIA
  *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -20,8 +20,8 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GUDHI_POINT_CLOUD_H
-#define GUDHI_POINT_CLOUD_H
+#ifndef GUDHI_SPATIAL_TREE_DS_H_
+#define GUDHI_SPATIAL_TREE_DS_H_
 
 #include <CGAL/Orthogonal_k_neighbor_search.h>
 #include <CGAL/Orthogonal_incremental_neighbor_search.h>
@@ -34,6 +34,7 @@
 #include <vector>
 
 namespace Gudhi {
+namespace spatial_searching {
 
 template <typename K, typename Point_container_>
 class Spatial_tree_data_structure
@@ -176,6 +177,7 @@ protected:
   Tree m_tree;
 };
 
-} //namespace Gudhi
+} // namespace spatial_searching
+} // namespace Gudhi
 
-#endif // GUDHI_POINT_CLOUD_H
+#endif // GUDHI_SPATIAL_TREE_DS_H_

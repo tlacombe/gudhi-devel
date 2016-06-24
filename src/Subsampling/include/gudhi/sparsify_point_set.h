@@ -1,30 +1,30 @@
 /*    This file is part of the Gudhi Library. The Gudhi library
-*    (Geometric Understanding in Higher Dimensions) is a generic C++
-*    library for computational topology.
-*
-*    Author(s):       Clement Jamin
-*
-*    Copyright (C) 2016  INRIA Sophia-Antipolis (France)
-*
-*    This program is free software: you can redistribute it and/or modify
-*    it under the terms of the GNU General Public License as published by
-*    the Free Software Foundation, either version 3 of the License, or
-*    (at your option) any later version.
-*
-*    This program is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*    GNU General Public License for more details.
-*
-*    You should have received a copy of the GNU General Public License
-*    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ *    (Geometric Understanding in Higher Dimensions) is a generic C++
+ *    library for computational topology.
+ *
+ *    Author(s):       Clement Jamin
+ *
+ *    Copyright (C) 2016 INRIA
+ *
+ *    This program is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation, either version 3 of the License, or
+ *    (at your option) any later version.
+ *
+ *    This program is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #ifndef GUDHI_SPARSIFY_POINT_SET_H
 #define GUDHI_SPARSIFY_POINT_SET_H
 
 #include <gudhi/Spatial_tree_data_structure.h>
-#ifdef GUDHI_TC_PROFILING
+#ifdef GUDHI_SUBSAMPLING_PROFILING
 #include <gudhi/Clock.h>
 #endif
 
@@ -34,19 +34,27 @@
 namespace Gudhi {
 namespace subsampling {
 
+/**
+*  \ingroup subsampling
+*  \brief Outputs a subset of the input points so that the 
+*         squared distance between any two points
+*         is greater than or equal to `min_squared_dist`.
+*
+*/
+
 template <typename Kernel, typename Point_container, typename OutputIterator>
 void
 sparsify_point_set(
   const Kernel &k, Point_container const& input_pts,
   typename Kernel::FT min_squared_dist,
   OutputIterator output_it)
-{
-  typedef typename Gudhi::Spatial_tree_data_structure<
-    Kernel, Point_container>                    Points_ds;
+{ 
+  typedef typename Gudhi::spatial_searching::Spatial_tree_data_structure<
+    Kernel, Point_container>  Points_ds;
 
   typename Kernel::Squared_distance_d sqdist = k.squared_distance_d_object();
 
-#ifdef GUDHI_TC_PROFILING
+#ifdef GUDHI_SUBSAMPLING_PROFILING
   Gudhi::Clock t;
 #endif
 
@@ -85,7 +93,7 @@ sparsify_point_set(
     }
   }
 
-#ifdef GUDHI_TC_PROFILING
+#ifdef GUDHI_SUBSAMPLING_PROFILING
   t.end();
   std::cerr << "Point set sparsified in " << t.num_seconds()
     << " seconds." << std::endl;
