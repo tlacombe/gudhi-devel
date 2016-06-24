@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6)
-project(GUDHITangentialComplexBenchmark)
+project(Tangential_complex_benchmark)
 
 if (GCOVR_PATH)
   # for gcovr to make coverage reports - Corbera Jenkins plugin
@@ -22,11 +22,11 @@ if(CGAL_FOUND)
       include( ${EIGEN3_USE_FILE} )
       include_directories (BEFORE "../../include")
 
-      add_executable ( TangentialComplexBenchmark benchmark_tc.cpp )
-      target_link_libraries(TangentialComplexBenchmark 
+      add_executable(Tangential_complex_benchmark benchmark_tc.cpp)
+      target_link_libraries(Tangential_complex_benchmark 
 		${Boost_DATE_TIME_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${CGAL_LIBRARY})
       if (TBB_FOUND)
-        target_link_libraries(TangentialComplexBenchmark ${TBB_LIBRARIES})
+        target_link_libraries(Tangential_complex_benchmark ${TBB_LIBRARIES})
       endif()
 
       # Do not forget to copy test files in current binary dir
