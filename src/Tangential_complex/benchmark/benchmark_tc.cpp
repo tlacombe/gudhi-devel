@@ -347,11 +347,11 @@ void make_tc(std::vector<Point> &points,
   int max_dim = -1;
   TC::Simplicial_complex complex;
   Simplex_set inconsistent_simplices;
-  max_dim = tc.export_complex(complex, false, 2, &inconsistent_simplices);
+  max_dim = tc.export_complex(complex, true, false, 2, &inconsistent_simplices);
 
   // CJTODO TEST
   Gudhi::Simplex_tree<> stree;
-  tc.export_complex(stree, false);
+  tc.export_complex(stree, true, false);
   //std::cerr << stree;
 
   t.begin();
@@ -394,7 +394,7 @@ void make_tc(std::vector<Point> &points,
 
     // Re-build the complex
     Simplex_set inconsistent_simplices;
-    max_dim = tc.export_complex(complex, false, 2, &inconsistent_simplices);
+    max_dim = tc.export_complex(complex, true, false, 2, &inconsistent_simplices);
 
     t.begin();
     bool exported = export_to_off(
@@ -439,7 +439,7 @@ void make_tc(std::vector<Point> &points,
     GUDHI_TC_SET_PERFORMANCE_DATA("Final_num_inconsistent_local_tr", "N/A");
   }
 
-  max_dim = tc.export_complex(complex, false, 2);
+  max_dim = tc.export_complex(complex, true, false, 2);
 
   complex.display_stats();
 

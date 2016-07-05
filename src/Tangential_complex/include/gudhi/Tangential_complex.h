@@ -716,10 +716,12 @@ public:
 
   /** \brief Exports the complex into a Simplex_tree.
    *
+   * @param[int] export_inconsistent_simplices Also export inconsistent simplices or not?
    * @param[out] tree The result.
    * @return The maximal dimension of the simplices.
    */
   int export_complex(Simplex_tree<> &tree,
+    bool export_inconsistent_simplices = true,
     bool export_infinite_simplices = false,
     Simplex_set *p_inconsistent_simplices = NULL) const
   {
@@ -745,6 +747,9 @@ public:
 
         // Don't export infinite cells
         if (!export_infinite_simplices && is_infinite(c))
+          continue;
+
+        if (!export_inconsistent_simplices && !is_simplex_consistent(c))
           continue;
 
         if (static_cast<int>(c.size()) > max_dim)
@@ -784,6 +789,7 @@ public:
   //   simplex whose dimension is different from the previous ones.
   //   N.B.: The check is quite expensive.
   int export_complex(Simplicial_complex &complex,
+    bool export_inconsistent_simplices = true,
     bool export_infinite_simplices = false, 
     int check_lower_and_higher_dim_simplices = 2,
     Simplex_set *p_inconsistent_simplices = NULL) const
@@ -811,6 +817,9 @@ public:
 
         // Don't export infinite cells
         if (!export_infinite_simplices && is_infinite(c))
+          continue;
+
+        if (!export_inconsistent_simplices && !is_simplex_consistent(c))
           continue;
 
         // Unusual simplex dim?
