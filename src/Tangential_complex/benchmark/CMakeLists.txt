@@ -11,7 +11,6 @@ if (GPROF_PATH)
 endif()
 
 # need CGAL 4.8
-# cmake -DCGAL_DIR=~/workspace/CGAL-4.8 ../../..
 if(CGAL_FOUND)
   if (NOT CGAL_VERSION VERSION_LESS 4.8.0)
     message(STATUS "CGAL version: ${CGAL_VERSION}.")
