@@ -70,6 +70,8 @@
 
 //#define GUDHI_TC_EXPORT_NORMALS // Only for 3D surfaces (k=2, d=3)
 
+namespace sps = Gudhi::spatial_searching;
+
 namespace Gudhi {
 
 namespace tangential_complex {
@@ -213,7 +215,7 @@ public:
 
 private:                                               
                                                        
-  typedef Spatial_tree_data_structure<K, Points>        Points_ds;
+  typedef sps::Spatial_tree_data_structure<K, Points>   Points_ds;
   typedef typename Points_ds::KNS_range                 KNS_range;
   typedef typename Points_ds::KNS_iterator              KNS_iterator;
   typedef typename Points_ds::INS_range                 INS_range;
