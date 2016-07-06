@@ -155,27 +155,6 @@ protected:
   XML_exporter::Element_with_map m_current_element;
 };
 
-class Test_dim
-{
-public:
-  Test_dim(
-    int min_allowed_dim = 0, 
-    int max_allowed_dim = std::numeric_limits<int>::max())
-    : m_min_allowed_dim(min_allowed_dim), m_max_allowed_dim(max_allowed_dim)
-  {}
-
-  template <typename Simplex>
-  bool operator()(Simplex const& s)
-  {
-    return s.size() - 1 >= m_min_allowed_dim
-      && s.size() - 1 <= m_max_allowed_dim;
-  }
-
-private:
-  int m_min_allowed_dim;
-  int m_max_allowed_dim;
-};
-
 // color_inconsistencies: only works if p_complex = NULL
 template <typename TC>
 bool export_to_off(
