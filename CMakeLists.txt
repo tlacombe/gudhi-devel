@@ -111,6 +111,7 @@ endif()
   include_directories(src/Simplex_tree/include/)
   include_directories(src/Skeleton_blocker/include/)
   include_directories(src/Witness_complex/include/)
+  include_directories(src/Witness_grid_delaunay_complex/include/)
 
   add_subdirectory(src/common/example)
   add_subdirectory(src/common/test)
@@ -127,7 +128,7 @@ endif()
   add_subdirectory(src/Bitmap_cubical_complex/example)
   add_subdirectory(src/Alpha_complex/example)
   add_subdirectory(src/Alpha_complex/test)
-
+  add_subdirectory(src/Witness_grid_delaunay_complex/example)
   # data points generator
   add_subdirectory(data/points/generator)
 
