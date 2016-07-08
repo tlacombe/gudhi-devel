@@ -1,4 +1,3 @@
-#define CGAL_EIGEN3_ENABLED
 #include <gudhi/Simplex_tree.h>
 #include <gudhi/distance_functions.h>
 #include <gudhi/Point.h>
