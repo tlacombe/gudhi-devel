@@ -869,12 +869,12 @@ void Bitmap_cubical_complex_base<T>:: store_in_dipha_format( const char* filenam
 	std::ofstream out;
 	out.open( filename , std::ios::binary );
 	//store dipha magic number 8067171840
-	size_t magic_numebr = 8067171840;
-	out.write( reinterpret_cast<const char *>(&magic_numebr) , sizeof(size_t) );
+	long long int magic_numebr = 8067171840;
+	out.write( reinterpret_cast<const char *>(&magic_numebr) , sizeof(long long int) );
 	if ( dbg )std::cerr << "magic_numebr : " << magic_numebr << std::endl;
 	//store the file type
-	size_t file_type = 1;
-	out.write( reinterpret_cast<const char *>(&file_type) , sizeof(size_t) );
+	long long int file_type = 1;
+	out.write( reinterpret_cast<const char *>(&file_type) , sizeof(long long int) );
 	if ( dbg )std::cerr << "file_type : " << file_type << std::endl;
 	//total number of values
 	size_t total_number_of_values = 1;
@@ -882,18 +882,18 @@ void Bitmap_cubical_complex_base<T>:: store_in_dipha_format( const char* filenam
 	{
 		total_number_of_values *= this->sizes[i];
 	}
-	out.write( reinterpret_cast<const char *>(&total_number_of_values) , sizeof(size_t) );
+	out.write( reinterpret_cast<const char *>(&total_number_of_values) , sizeof(long long int) );
 	if ( dbg )std::cerr << "total_number_of_values : " << total_number_of_values << std::endl;
 	//dimension
-	size_t dimension = this->sizes.size();
-	out.put(dimension);
-	out.write( reinterpret_cast<const char *>(&dimension) , sizeof(size_t) );
+	long long int dimension = this->sizes.size();	
+	out.write( reinterpret_cast<const char *>(&dimension) , sizeof(long long int) );
 	if ( dbg )std::cerr << "dimension : " << dimension << std::endl;
 	
 	//lattice resolution
 	for ( size_t i = 0 ; i != this->sizes.size() ; ++i )
 	{
-		out.write( reinterpret_cast<const char *>(&this->sizes[i]) , sizeof(size_t) );
+		long long int size_ = (long long int)this->sizes[i];
+		out.write( reinterpret_cast<const char *>(&size_) , sizeof(long long int) );
 		if ( dbg )std::cerr << "this->sizes[i] : " << this->sizes[i] << std::endl;
 	}
 	//and now the filtration value on top dimensional cells stored in lexycographical order. 

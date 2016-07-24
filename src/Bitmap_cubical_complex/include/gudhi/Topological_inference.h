@@ -157,40 +157,51 @@ Topological_inference<T,K,F>::Topological_inference( const std::vector< std::pai
 			for ( size_t yy = 0 ; yy != point.size() ; ++yy )
 			{
 				std::cout << point[yy] << std::endl;
-			}
-			getchar();
+			}			
 		}
 		
 		K value = this->compute_value_at_a_given_point( point );
-		values_on_maximal_cells[i] = value;
+		values_on_maximal_cells[i] = value;		
 		if ( dbg )
 		{
-			std::cerr << "Computing value for a maximal cube number : " << i << ". It is : " << value << std::endl;
+			std::cerr << "Value of a function at this point: " << value << std::endl;
 			std::cin.ignore();
 		}
 	}
 	
 	std::vector<size_t> counter_v( coorfinates_of_grid_.size() , 0 );
 	size_t i = 0;
+		
 	
 	typename T::Top_dimensional_cells_iterator it = this->top_dimensional_cells_iterator_begin();
-	while ( true )
+	while ( i < number_of_maximal_cubes )
 	{		
 		size_t index = (*it);
-		this->data[index] = values_on_maximal_cells[i];
-		
+		this->data[index] = values_on_maximal_cells[i];					
 		if ( dbg )
 		{
-			std::cerr << "Assigning to a cube a value : " << values_on_maximal_cells[i] << ". Now this cube have the followign value : " << *it << std::endl;
-			std::cin.ignore();
+			std::cout << "Maximal cube of an index : " << index << " gets the value : " << values_on_maximal_cells[i] << std::endl;
 		}
 		++i;
-		++it;
-		if ( i == number_of_maximal_cubes )	break;		
+		++it;			
 	}
 	if ( dbg )std::cout << "Done with assigning values. Now will impose lower star filtration \n";
 	this->impose_lower_star_filtration();
 	this->initialize_simplex_associated_to_key();
+		
+	//std::ofstream out;
+	//out.open("gnupl");
+	//i = 0;
+	//while ( i < number_of_maximal_cubes )
+	//{		
+	//	out << values_on_maximal_cells[i] << " ";					
+	//	if ( i % resolution_of_a_grid_[0] == resolution_of_a_grid_[0]-1 )
+	//	{
+	//		out << std::endl;
+	//	}
+	//	++i;					
+	//}
+	//out.close();
 }
 
 

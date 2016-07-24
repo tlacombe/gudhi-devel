@@ -35,6 +35,68 @@
 #include <sstream>
 #include <vector>
 
+
+
+int main(int argc, char** argv) {
+  std::cout << "The parameters of the program are: (1) A file with points, (2) Dimension of a space, (3) Minimum of a grid in first direction (4) Maximum of a grin in first direction, ... , (3) Minimum of a grid in last direction (4) Maximum of a grin in last direction, resolution of a grid in the first direction, resolution of a grid in the last direction \n";
+
+  int p = 2;
+  double min_persistence = 0;
+
+  const char* filename = argv[1];
+  std::vector< std::vector<double> > point_cloud_;  
+  point_cloud_ = read_points_from_file<double>( filename );
+  
+  int dimension = atoi( argv[2] );
+  std::cout << "The dimension is : " << dimension << std::endl;
+  
+  std::vector< std::pair< double, double > > coorfinates_of_grid;
+  for ( int i = 0 ; i != dimension ; ++i )
+  {
+	  int min_ = atof( argv[3+2*i] );
+	  int max_ = atof( argv[3+2*i+1] );
+	  coorfinates_of_grid.push_back( std::make_pair(min_,max_) );
+	  std::cout << "Coordinates in direcion number : " << i << " are : " << min_ << " and " << max_ << std::endl;
+  }	
+  
+  std::vector< unsigned > resolution_of_a_grid;
+  for ( int i = 0 ; i != dimension ; ++i )
+  {	 
+	  size_t resolution_in_this_direction = (size_t)atoi( argv[3+2*dimension+i] );
+	  resolution_of_a_grid.push_back( resolution_in_this_direction );
+	  std::cout << "Resolution of a grid in direcion number : " << i << " is : " << resolution_in_this_direction << std::endl;
+  }	
+  
+   
+  Distance_to_closest_point f( point_cloud_ );
+  
+  typedef Gudhi::Cubical_complex::Bitmap_cubical_complex_base<double> Bitmap_cubical_complex_base;
+  typedef Gudhi::Cubical_complex::Bitmap_cubical_complex<Bitmap_cubical_complex_base> Bitmap_cubical_complex;
+  typedef Gudhi::Cubical_complex::Topological_inference< Bitmap_cubical_complex , double , Distance_to_closest_point > topological_inference;
+  
+  typedef Gudhi::persistent_cohomology::Field_Zp Field_Zp;
+  typedef Gudhi::persistent_cohomology::Persistent_cohomology<topological_inference, Field_Zp> Persistent_cohomology;
+
+   
+  topological_inference b( coorfinates_of_grid , resolution_of_a_grid , f );
+
+  
+  b.write_to_file_Perseus_format("perse");
+
+  // Compute the persistence diagram of the complex
+  Persistent_cohomology pcoh(b);
+  pcoh.init_coefficients(p);  // initializes the coefficient field for homology
+  pcoh.compute_persistent_cohomology(min_persistence);
+
+  std::ofstream out("top_inference");
+  pcoh.output_diagram(out);
+  out.close();
+
+  return 0;
+}
+
+
+/*
 int main(int argc, char** argv) {
   std::cout << "This program computes persistent homology, by using bitmap_cubical_complex class, of cubical " <<
       "complexes provided in text files in Perseus style (the only numbered in the first line is a dimension D of a" <<
@@ -53,20 +115,20 @@ int main(int argc, char** argv) {
   
   point_cloud_ = read_points_from_file<double>( "2000_random_points_on_3D_Torus.csv" );
   
-  /*
-  std::vector<double> point1;
-  point1.push_back( 0 );
-  point1.push_back( 1);
-  std::vector<double> point2;
-  point2.push_back( 1 );
-  point2.push_back( 2 );
-  std::vector<double> point3;
-  point3.push_back( 2 );
-  point3.push_back( 1 );
-  point_cloud_.push_back( point1 );
-  point_cloud_.push_back( point2 );
-  point_cloud_.push_back( point3 );
-  */
+  
+  //std::vector<double> point1;
+  //point1.push_back( 0 );
+  //point1.push_back( 1);
+  //std::vector<double> point2;
+  //point2.push_back( 1 );
+  //point2.push_back( 2 );
+  //std::vector<double> point3;
+  //point3.push_back( 2 );
+  //point3.push_back( 1 );
+  //point_cloud_.push_back( point1 );
+  //point_cloud_.push_back( point2 );
+  //point_cloud_.push_back( point3 );
+  
   
   
   Distance_to_closest_point f( point_cloud_ );
@@ -89,14 +151,14 @@ int main(int argc, char** argv) {
   resolution_of_a_grid[2] = 50;
   
 
-/*
-  std::vector< std::pair< double, double > > coorfinates_of_grid;
-  coorfinates_of_grid.push_back( std::make_pair(-2,2) );
-  coorfinates_of_grid.push_back( std::make_pair(-2,2) );  
-  std::vector< unsigned > resolution_of_a_grid(2);
-  resolution_of_a_grid[0] = 1;
-  resolution_of_a_grid[1] = 2;
-*/
+
+  //std::vector< std::pair< double, double > > coorfinates_of_grid;
+  //coorfinates_of_grid.push_back( std::make_pair(-2,2) );
+  //coorfinates_of_grid.push_back( std::make_pair(-2,2) );  
+  //std::vector< unsigned > resolution_of_a_grid(2);
+  //resolution_of_a_grid[0] = 1;
+  //resolution_of_a_grid[1] = 2;
+
   
   
   
@@ -105,7 +167,7 @@ int main(int argc, char** argv) {
   
    
   topological_inference b( coorfinates_of_grid , resolution_of_a_grid , f );
-\
+
   
   b.write_to_file_Perseus_format("perse");
 
@@ -120,3 +182,4 @@ int main(int argc, char** argv) {
 
   return 0;
 }
+*/

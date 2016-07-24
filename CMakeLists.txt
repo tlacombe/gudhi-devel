@@ -7,6 +7,8 @@ configure_file(GUDHIVersion.cmake.in "${PROJECT_BINARY_DIR}/GUDHIVersion.cmake" 
 
 find_package(Boost REQUIRED COMPONENTS system filesystem unit_test_framework chrono timer program_options thread REQUIRED)
 
+FIND_PACKAGE(OpenMP)
+
 if(NOT Boost_FOUND)
   message(FATAL_ERROR "NOTICE: This demo requires Boost and will not be compiled.")
 else()
@@ -104,8 +106,6 @@ else()
   add_subdirectory(src/Bitmap_cubical_complex/test)
   add_subdirectory(src/Bitmap_cubical_complex/example)
 
-  # data points generator
-  add_subdirectory(data/points/generator)
 
   # Please let GudhUI in last compilation position as QT is known to modify CMAKE_CXX_FLAGS
   # GudhUI

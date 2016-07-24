@@ -18,3 +18,5 @@ add_test(Bitmap_cubical_complex_periodic_3d_torus ${CMAKE_CURRENT_BINARY_DIR}/Bi
 add_executable ( topological_inference topological_inference.cpp )
 target_link_libraries(topological_inference ${Boost_SYSTEM_LIBRARY})
 
+add_executable ( convert_to_dipha convert_to_dipha.cpp )
+target_link_libraries(convert_to_dipha ${Boost_SYSTEM_LIBRARY})
