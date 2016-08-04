@@ -1807,7 +1807,7 @@ private:
     
     return tr_traits.construct_weighted_point_d_object()
     (
-      constr_pt(static_cast<int>(coords.size()), coords.begin(), coords.end()),
+      tr_traits.construct_point_d_object()(static_cast<int>(coords.size()), coords.begin(), coords.end()),
       w - sq_dist_to_proj_pt
     );
   }
