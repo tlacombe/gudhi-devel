@@ -134,8 +134,8 @@ endif()
   add_subdirectory(src/Spatial_searching/test)
   add_subdirectory(src/Subsampling/example)
   add_subdirectory(src/Subsampling/test)
-  #add_subdirectory(src/Tangential_complex/example)
-  #add_subdirectory(src/Tangential_complex/test)
+  add_subdirectory(src/Tangential_complex/example)
+  add_subdirectory(src/Tangential_complex/test)
   add_subdirectory(src/Tangential_complex/benchmark)
 
   # data points generator
