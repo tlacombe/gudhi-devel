@@ -35,22 +35,35 @@ namespace Gudhi {
 namespace subsampling {
 
 /**
-*  \ingroup subsampling
-*  \brief Outputs a subset of the input points so that the 
-*         squared distance between any two points
-*         is greater than or equal to `min_squared_dist`.
-*
-*/
+ *  \ingroup subsampling
+ *  \brief Outputs a subset of the input points so that the 
+ *         squared distance between any two points
+ *         is greater than or equal to `min_squared_dist`.
+ *
+ * \tparam Kernel must be a model of the <a target="_blank"
+ *   href="http://doc.cgal.org/latest/Spatial_searching/classSearchTraits.html">SearchTraits</a>
+ *   concept, such as the <a target="_blank"
+ *   href="http://doc.cgal.org/latest/Kernel_d/classCGAL_1_1Epick__d.html">CGAL::Epick_d</a> class, which
+ *   can be static if you know the ambiant dimension at compile-time, or dynamic if you don't.
+ * \tparam Point_range Range whose value type is Kernel::Point_d.  It must provide random-access 
+ *         via `operator[]` and the points should be stored contiguously in memory.
+ * \tparam OutputIterator Output iterator whose value type is Kernel::Point_d.
+ *
+ * @param[in] k A kernel object.
+ * @param[in] input_pts Const reference to the input points.
+ * @param[in] min_squared_dist Minimum squared distance separating the output points.
+ * @param[out] output_it The output iterator.
+ */
 
-template <typename Kernel, typename Point_container, typename OutputIterator>
+template <typename Kernel, typename Point_range, typename OutputIterator>
 void
 sparsify_point_set(
-  const Kernel &k, Point_container const& input_pts,
+  const Kernel &k, Point_range const& input_pts,
   typename Kernel::FT min_squared_dist,
   OutputIterator output_it)
 { 
   typedef typename Gudhi::spatial_searching::Spatial_tree_data_structure<
-    Kernel, Point_container>  Points_ds;
+    Kernel, Point_range>  Points_ds;
 
   typename Kernel::Squared_distance_d sqdist = k.squared_distance_d_object();
 
@@ -65,7 +78,7 @@ sparsify_point_set(
   // Parse the input points, and add them if they are not too close to
   // the other points
   std::size_t pt_idx = 0;
-  for (typename Point_container::const_iterator it_pt = input_pts.begin() ;
+  for (typename Point_range::const_iterator it_pt = input_pts.begin() ;
     it_pt != input_pts.end();
     ++it_pt, ++pt_idx)
   {
