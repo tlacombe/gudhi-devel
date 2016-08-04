@@ -26,7 +26,7 @@ int main (void)
 
   Kernel k;
 
-  // Generate points on 3-sphere
+  // Generate points on a 2-sphere
   CGAL::Random_points_on_sphere_d<Point> generator(AMBIENT_DIM, 3.);
   std::vector<Point> points;
   points.reserve(NUM_POINTS);
