@@ -217,9 +217,7 @@ private:
                                                        
   typedef sps::Spatial_tree_data_structure<K, Points>   Points_ds;
   typedef typename Points_ds::KNS_range                 KNS_range;
-  typedef typename Points_ds::KNS_iterator              KNS_iterator;
   typedef typename Points_ds::INS_range                 INS_range;
-  typedef typename Points_ds::INS_iterator              INS_iterator;
 
   typedef std::vector<Tr_and_VH>                        Tr_container;
   typedef std::vector<Vector>                           Vectors;
@@ -442,7 +440,7 @@ public:
 
       // One row = one point
       Eigen::MatrixXd mat_points(num_points_for_pca, m_ambient_dim);
-      KNS_iterator nn_it = kns_range.begin();
+      auto nn_it = kns_range.begin();
       for (int j = 0 ;
             j < num_points_for_pca && nn_it != kns_range.end() ;
             ++j, ++nn_it)
@@ -1195,7 +1193,7 @@ private:
     boost::optional<FT> squared_star_sphere_radius_plus_margin;
 
     // Insert points until we find a point which is outside "star sphere"
-    for (INS_iterator nn_it = ins_range.begin() ;
+    for (auto nn_it = ins_range.begin() ;
       nn_it != ins_range.end() ;
       ++nn_it)
     {
@@ -1476,7 +1474,7 @@ private:
 
     // One row = one point
     Eigen::MatrixXd mat_points(num_points_for_pca, m_ambient_dim);
-    KNS_iterator nn_it = kns_range.begin();
+    auto nn_it = kns_range.begin();
     for (unsigned int j = 0 ;
          j < num_points_for_pca && nn_it != kns_range.end() ;
          ++j, ++nn_it)
@@ -1608,7 +1606,7 @@ private:
       const Points &points_for_pca = m_points;
 #endif
 
-      KNS_iterator nn_it = kns_range.begin();
+      auto nn_it = kns_range.begin();
       for ( ;
            current_row < num_points_for_pca && nn_it != kns_range.end() ;
            ++current_row, ++nn_it)
@@ -2212,7 +2210,7 @@ private:
           global_center,
           GUDHI_TC_NUMBER_OF_PERTURBED_POINTS(m_intrinsic_dim));
         std::vector<std::size_t> neighbors;
-        for (KNS_iterator nn_it = kns_range.begin() ;
+        for (auto nn_it = kns_range.begin() ;
              nn_it != kns_range.end() ;
              ++nn_it)
         {

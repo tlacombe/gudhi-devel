@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE(test_Spatial_tree_data_structure)
     best_num_inconsistent_local_tr, final_num_inconsistent_local_tr,
     60); // give it 60 seconds to succeed
 
-  BOOST_CHECK(perturb_ret == TC_FIXED);
+  BOOST_CHECK(perturb_ret == tc::TC_FIXED);
 
   // Export the TC into a Simplex_tree
   Gudhi::Simplex_tree<> stree;
