@@ -53,7 +53,7 @@ namespace tangential_complex {
  * 
  * \section example_with_perturb Example with perturbation
  * 
- * This example builds the Tangential complex of point set, then tries to solve inconsistencies
+ * This example builds the Tangential complex of a point set, then tries to solve inconsistencies
  * by perturbing the positions of points involved in inconsistent simplices.
  * 
  * \include Tangential_complex/example_with_perturb.cpp
