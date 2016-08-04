@@ -22,7 +22,7 @@ int main (void)
 {
   const int INTRINSIC_DIM = 2;
   const int AMBIENT_DIM = 3;
-  const int NUM_POINTS = 30;
+  const int NUM_POINTS = 50;
 
   Kernel k;
 
