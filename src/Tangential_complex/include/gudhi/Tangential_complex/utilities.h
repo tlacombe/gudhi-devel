@@ -25,6 +25,7 @@
 
 #include <CGAL/Dimension.h>
 #include <CGAL/Combination_enumerator.h>
+#include <CGAL/IO/Triangulation_off_ostream.h>
 
 #include <Eigen/Core>
 #include <Eigen/Eigen>

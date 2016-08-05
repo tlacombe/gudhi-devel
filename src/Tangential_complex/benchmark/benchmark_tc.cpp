@@ -20,12 +20,11 @@ const std::size_t ONLY_LOAD_THE_FIRST_N_POINTS = 20000000;
 #include <gudhi/Clock.h>
 #include <gudhi/Tangential_complex.h>
 #include <gudhi/sparsify_point_set.h>
+#include <gudhi/random_point_generators.h>
 
 #include <CGAL/assertions_behaviour.h>
 #include <CGAL/Epick_d.h>
 #include <CGAL/Random.h>
-
-#include "../test/testing_utilities.h"
 
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/trim_all.hpp>
@@ -665,25 +664,25 @@ int main()
 
             if (input == "generate_moment_curve")
             {
-              points = generate_points_on_moment_curve<Kernel>(
+              points = Gudhi::generate_points_on_moment_curve<Kernel>(
                 num_points, ambient_dim,
                 std::atof(param1.c_str()), std::atof(param2.c_str()));
             }
             else if (input == "generate_plane")
             {
-              points = generate_points_on_plane<Kernel>(
+              points = Gudhi::generate_points_on_plane<Kernel>(
                 num_points, intrinsic_dim, ambient_dim);
             }
             else if (input == "generate_sphere_d")
             {
-              points = generate_points_on_sphere_d<Kernel>(
+              points = Gudhi::generate_points_on_sphere_d<Kernel>(
                 num_points, ambient_dim,
                 std::atof(param1.c_str()),  // radius
                 std::atof(param2.c_str())); // radius_noise_percentage
             }
             else if (input == "generate_two_spheres_d")
             {
-              points = generate_points_on_two_spheres_d<Kernel>(
+              points = Gudhi::generate_points_on_two_spheres_d<Kernel>(
                 num_points, ambient_dim,
                 std::atof(param1.c_str()),
                 std::atof(param2.c_str()),
@@ -695,13 +694,13 @@ int main()
                 std::logic_error("Intrinsic dim should be 3"));
               GUDHI_CHECK(ambient_dim == 5,
                 std::logic_error("Ambient dim should be 5"));
-              points = generate_points_on_3sphere_and_circle<Kernel>(
+              points = Gudhi::generate_points_on_3sphere_and_circle<Kernel>(
                 num_points,
                 std::atof(param1.c_str()));
             }
             else if (input == "generate_torus_3D")
             {
-              points = generate_points_on_torus_3D<Kernel>(
+              points = Gudhi::generate_points_on_torus_3D<Kernel>(
                 num_points,
                 std::atof(param1.c_str()),
                 std::atof(param2.c_str()),
@@ -709,7 +708,7 @@ int main()
             }
             else if (input == "generate_torus_d")
             {
-              points = generate_points_on_torus_d<Kernel>(
+              points = Gudhi::generate_points_on_torus_d<Kernel>(
                 num_points, 
                 intrinsic_dim,
                 param1 == "Y", // uniform
@@ -717,20 +716,20 @@ int main()
             }
             else if (input == "generate_klein_bottle_3D")
             {
-              points = generate_points_on_klein_bottle_3D<Kernel>(
+              points = Gudhi::generate_points_on_klein_bottle_3D<Kernel>(
                 num_points,
                 std::atof(param1.c_str()), std::atof(param2.c_str()));
             }
             else if (input == "generate_klein_bottle_4D")
             {
-              points = generate_points_on_klein_bottle_4D<Kernel>(
+              points = Gudhi::generate_points_on_klein_bottle_4D<Kernel>(
                 num_points,
                 std::atof(param1.c_str()), std::atof(param2.c_str()),
                 std::atof(param3.c_str())); // noise
             }
             else if (input == "generate_klein_bottle_variant_5D")
             {
-              points = generate_points_on_klein_bottle_variant_5D<Kernel>(
+              points = Gudhi::generate_points_on_klein_bottle_variant_5D<Kernel>(
                 num_points,
                 std::atof(param1.c_str()), std::atof(param2.c_str()));
             }
