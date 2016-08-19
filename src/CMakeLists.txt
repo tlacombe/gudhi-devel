@@ -17,9 +17,11 @@ else()
 
   find_package(GMP)
   if(GMP_FOUND)
+    message(STATUS "GMP_LIBRARIES = ${GMP_LIBRARIES}")
     INCLUDE_DIRECTORIES(${GMP_INCLUDE_DIR})
     find_package(GMPXX)
     if(GMPXX_FOUND)
+      message(STATUS "GMPXX_LIBRARIES = ${GMPXX_LIBRARIES}")
       INCLUDE_DIRECTORIES(${GMPXX_INCLUDE_DIR})
     endif()
   endif()
@@ -30,13 +32,16 @@ else()
   # A fix would be to use https://cmake.org/cmake/help/v3.1/prop_gbl/CMAKE_CXX_KNOWN_FEATURES.html 
   # or even better https://cmake.org/cmake/help/v3.1/variable/CMAKE_CXX_STANDARD.html
   # but it implies to use cmake version 3.1 at least.
-  find_package(CGAL)
+
+  # find CGAL in QUIET mode for cmake to be less verbose when CGAL is not found.
+  find_package(CGAL QUIET)
   # Only CGAL versions > 4.4 supports what Gudhi uses from CGAL
-  if (CGAL_VERSION VERSION_LESS 4.4.0)
+  if (CGAL_VERSION VERSION_LESS 4.4.0 AND CGAL_FOUND)
     message("CGAL version ${CGAL_VERSION} is considered too old to be used by Gudhi.")
     unset(CGAL_FOUND)
-  endif()
+  endif(CGAL_VERSION VERSION_LESS 4.4.0 AND CGAL_FOUND)
   if(CGAL_FOUND)
+    message(STATUS "CGAL version: ${CGAL_VERSION}.")
     include( ${CGAL_USE_FILE} )
   endif()
   
@@ -65,6 +70,13 @@ else()
     message("TBB found in ${TBB_LIBRARY_DIRS}")
     add_definitions(-DGUDHI_USE_TBB)
   endif()
+
+  find_package(Eigen3 3.1.0)
+  if (EIGEN3_FOUND)
+    message(STATUS "Eigen3 version: ${EIGEN3_VERSION}.")
+    include( ${EIGEN3_USE_FILE} )
+    #include_directories (BEFORE "../../include")
+  endif (EIGEN3_FOUND)
 
   # BOOST ISSUE result_of vs C++11
   add_definitions(-DBOOST_RESULT_OF_USE_DECLTYPE)
