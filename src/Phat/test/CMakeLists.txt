@@ -31,6 +31,6 @@ if(PHAT_FOUND)
   add_test(NAME phat_test
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/phat_test 
       # XML format for Jenkins xUnit plugin 
-      --log_format=XML --log_sink=${CMAKE_SOURCE_DIR}/phat_test.xml --log_level=test_suite --report_level=no)
+      --log_format=XML --log_sink=${CMAKE_SOURCE_DIR}/phat_testUT.xml --log_level=test_suite --report_level=no)
 
 endif(PHAT_FOUND)
