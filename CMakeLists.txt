@@ -65,6 +65,12 @@ else()
     endif()
   endif()
 
+  find_package(PHAT)
+  if(PHAT_FOUND)
+    message(STATUS "PHAT_INCLUDE_DIR = ${PHAT_INCLUDE_DIR}")
+    INCLUDE_DIRECTORIES(${PHAT_INCLUDE_DIR})
+  endif()
+
   # In CMakeLists.txt, when include(${CGAL_USE_FILE}), CMAKE_CXX_FLAGS are overwritten.
   # cf. http://doc.cgal.org/latest/Manual/installation.html#title40
   # A workaround is to include(${CGAL_USE_FILE}) before adding "-std=c++11".

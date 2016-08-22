@@ -33,13 +33,14 @@
 #include <limits>  // infinity
 
 using namespace Gudhi;
+using namespace Gudhi::phat_interface;
 using namespace std;
 
 typedef int Vertex_handle;
 typedef double Filtration_value;
 
 void program_options(int argc, char * argv[]
-                     , std::string & filepoints                     
+                     , std::string & filepoints
                      , std::string & filediag
                      , Filtration_value & threshold
                      , int & dim_max
@@ -56,7 +57,7 @@ int main(int argc, char * argv[]) {
 
   program_options(argc, argv, filepoints, filediag, threshold, dim_max, p, min_persistence);
 
-  
+
 
   // Extract the points from the file filepoints
   typedef std::vector<double> Point_t;
@@ -64,7 +65,7 @@ int main(int argc, char * argv[]) {
   read_points(filepoints, points);
 
   // Compute the proximity graph of the points
-  Graph_t prox_graph = compute_proximity_graph(points, threshold , euclidean_distance<Point_t>);
+  Graph_t prox_graph = compute_proximity_graph(points, threshold, euclidean_distance<Point_t>);
 
   // Construct the Rips complex in a Simplex Tree
   typedef Simplex_tree<Simplex_tree_options_fast_persistence> ST;
@@ -73,27 +74,25 @@ int main(int argc, char * argv[]) {
   st.insert_graph(prox_graph);
   // expand the graph until dimension dim_max
   st.expansion(dim_max);
-  
+
   // Sort the simplices in the order of the filtration
   st.initialize_filtration();
 
   std::cout << "The complex contains " << st.num_simplices() << " simplices \n";
   std::cout << "   and has dimension " << st.dimension() << " \n";
-  
-  Compute_persistence_with_phat< ST , double > phat(&st);
+
+  Compute_persistence_with_phat< ST, double > phat(&st);
 
 
   //phat::persistence_pairs pairs = phat.compute_persistence_pairs_dualized_chunk_reduction();
-    phat::persistence_pairs pairs = phat.compute_persistence_pairs_twist_reduction();
+  phat::persistence_pairs pairs = phat.compute_persistence_pairs_twist_reduction();
   //phat::persistence_pairs pairs = phat.compute_persistence_pairs_standard_reduction();
-    std::pair< std::vector< std::vector<double> > , std::vector< std::vector< std::pair<double,double> > > > persistence = phat.get_the_intervals( pairs );
-    
+  std::pair< std::vector< std::vector<double> >,
+      std::vector< std::vector< std::pair<double, double> > > > persistence = phat.get_the_intervals(pairs);
 
-    
-   write_intervas_to_file_Gudhi_format<double>( persistence , filediag.c_str() , dim_max );
-   return 0;
+  write_intervals_to_file_Gudhi_format<double>(persistence, filediag.c_str(), dim_max);
+  return 0;
 }
-
 
 void program_options(int argc, char * argv[]
                      , std::string & filepoints
@@ -113,7 +112,8 @@ void program_options(int argc, char * argv[]
       ("help,h", "produce help message")
       ("output-file,o", po::value<std::string>(&filediag)->default_value(std::string()),
        "Name of file in which the persistence diagram is written. Default print in std::cout")
-      ("max-edge-length,r", po::value<Filtration_value>(&threshold)->default_value(std::numeric_limits<Filtration_value>::infinity()),
+      ("max-edge-length,r",
+       po::value<Filtration_value>(&threshold)->default_value(std::numeric_limits<Filtration_value>::infinity()),
        "Maximal length of an edge for the Rips complex construction.")
       ("cpx-dimension,d", po::value<int>(&dim_max)->default_value(1),
        "Maximal dimension of the Rips complex we want to compute.")

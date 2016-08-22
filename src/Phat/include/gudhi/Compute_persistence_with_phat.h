@@ -35,127 +35,220 @@
 
 namespace Gudhi {
 
-/*
- * A procedure that outputs a persistence to a files in a format alternative to a standard Gudhi format. It create
- * separated files for Betti numbers, and separated files for persistence in each dimension. 
- * The persistence intervals in each dimension are not sorted.  
+namespace phat_interface {
+
+/**
+ * \class Compute_persistence_with_phat
+ * \brief Interface class to compute PHAT persistence from GUDHI data structures.
  * 
- */
-template <typename K>
-void writeBettiNumbersAndPersistenceIntervalsToFile(const char* prefix, std::pair< std::vector<std::vector< K > >,
-                                                    std::vector< std::vector< std::pair<K, K> > > > resutsFromPhat) {
-  std::ostringstream filenameStr;
-  filenameStr << prefix << "_bettiNumbers";
-  std::string str = filenameStr.str();
-  const char* filename = str.c_str();
-  std::ofstream out;
-  out.open(filename);
-  for (size_t dim = 0; dim != resutsFromPhat.first.size(); ++dim) {
-    out << "Dimension : " << dim << std::endl;
-    for (size_t i = 0; i != resutsFromPhat.first[dim].size(); ++i) {
-      out << resutsFromPhat.first[dim][i] << std::endl;
-    }
-    out << std::endl;
-  }
-  out.close();
-
-
-  for (size_t dim = 0; dim != resutsFromPhat.second.size(); ++dim) {
-    if (resutsFromPhat.second[dim].size() == 0)continue;
-    std::ostringstream filenameStr;
-    filenameStr << prefix << "_persistence_" << dim;
-    std::string str = filenameStr.str();
-    const char* filename = str.c_str();
-    std::ofstream out1;
-    out1.open(filename);
-    for (size_t i = 0; i != resutsFromPhat.second[dim].size(); ++i) {
-      out1 << resutsFromPhat.second[dim][i].first << " " << resutsFromPhat.second[dim][i].second << std::endl;
-    }
-    out1.close();
-  }
-}  // writeBettiNumbersAndPersistenceIntervalsToFile
-
-/*
- * A class that create Phat boundary matrix based on Gudhi data structure and call one of four possible methods from
- * Phat to compute ZZ/2 persisteince. 
+ * \ingroup phat_interface
+ * 
+ * \details
+ * A class that creates PHAT boundary matrix based on GUDHI data structure and call one of four possible methods from
+ * PHAT to compute \f$Z_{2}\f$ persistence. 
  * The template parameters are: 
- * T, a Gudhi data strucutre with the filtered complex (it can be for instance a simplex tree Simplex_tree or
- * Bitmap_cubical_complex
- * The second parameter is a type of filtration (most typically double). 
+ * T, a GUDHI data structure with the filtered complex (it can be for instance a simplex tree Simplex_tree, a
+ * Bitmap_cubical_complex, and so on)
+ * K, The second parameter is a type of filtration (most typically double). 
+ * 
+ * For more information on PHAT, please refer to \cite phat2017jsc.
  */
 template <typename T, typename K>
 class Compute_persistence_with_phat {
  public:
-  /*
-   * The only constructor of a Compute_persistence_with_phat class. It takes as an input a pointer to a Gudhi data
-   * structure, and based on it, create a phat boundary matrix. 
-   * No computations of persistence are run by a constructor. To run persistence computations you need to choose one of
-   * four possibel methods to compute persistence in phat:
+
+  /** \brief Compute_persistence_with_phat constructor from a GUDHI data structure.
+   *
+   * Creates a PHAT boundary matrix based on the GUDHI data structure.
+   * Notice that no computations of persistence are run by the constructor. To run persistence computations you need to
+   * choose one of the possible methods to compute persistence in PHAT.
+   * 
+   * @param[in] data_structure GUDHI data structure
+   */
+  Compute_persistence_with_phat(T* data_structure)
+  : data_structure_(data_structure) {
+    this->boundary_matrix_.set_num_cols(this->data_structure_->num_simplices());
+
+    // due to interface of phom in GUDHI it seems that I have to fill-in the keys for all simplices here. They are
+    // sorting according to filtration, but keys are not filled in (for some reason).
+    // in the same time when doing the enumeration, we wills set up the dimensions and setting up the boundary of cells.
+    typename T::Filtration_simplex_range range = this->data_structure_->filtration_simplex_range();
+    size_t position = 0;
+    std::vector< phat::index > temp_col;
+    for (typename T::Filtration_simplex_iterator it = range.begin(); it != range.end(); ++it) {
+      //enumeration
+      this->data_structure_->assign_key(*it, position);
+  
+  
+      // setting up the dimension:
+      this->boundary_matrix_.set_dim(position, this->data_structure_->dimension(*it));
+  
+      // setting up the boundary of this cell:
+      typename T::Boundary_simplex_range boundary_range = this->data_structure_->boundary_simplex_range(*it);
+      for (typename T::Boundary_simplex_iterator bd = boundary_range.begin(); bd != boundary_range.end(); ++bd) {
+        temp_col.push_back(this->data_structure_->key(*bd));
+      }
+      // we do not know if the boundary elements are sorted according to filtration, that is why I am enforcing it here:
+      std::sort(temp_col.begin(), temp_col.end());
+      this->boundary_matrix_.set_col(this->data_structure_->key(*it), temp_col);
+      temp_col.clear();
+  
+      ++position;
+    }
+  }
+
+  /* To run persistence computations you need to choose one of four possible methods to compute persistence in PHAT:
    * (1) compute_persistence_pairs_dualized_chunk_reduction();
    * (2) compute_persistence_pairs_twist_reduction();
    * (3) compute_persistence_pairs_standard_reduction();
    * (4) compute_persistence_pairs_spectral_sequence_reduction();
    */
-  Compute_persistence_with_phat(T* data_structure_);
 
-
-  /*
-   * A function that call Phat function compute_persistence_pairs_dualized_chunk_reduction.
+  /** \brief A function that call PHAT function compute_persistence_pairs_dualized_chunk_reduction.
+   *
+   * @return The persistence pairs.
    */
-  phat::persistence_pairs compute_persistence_pairs_dualized_chunk_reduction();
+  phat::persistence_pairs compute_persistence_pairs_dualized_chunk_reduction() {
+    phat::persistence_pairs pairs;
+    phat::compute_persistence_pairs_dualized< phat::chunk_reduction >(pairs, this->boundary_matrix_);
+    return pairs;
+  }
 
-  /*
-   * A function that call Phat function compute_persistence_pairs_twist_reduction.
+  /** \brief A function that call PHAT function compute_persistence_pairs_twist_reduction.
+   *
+   * @return The persistence pairs.
    */
-  phat::persistence_pairs compute_persistence_pairs_twist_reduction();
+  phat::persistence_pairs compute_persistence_pairs_twist_reduction() {
+    phat::persistence_pairs pairs;
+    phat::compute_persistence_pairs< phat::twist_reduction >(pairs, this->boundary_matrix_);
+    return pairs;
+  }
 
-  /*
-   * A function that call Phat function compute_persistence_pairs_standard_reduction.
+  /** \brief A function that call PHAT function compute_persistence_pairs_standard_reduction.
+   *
+   * @return The persistence pairs.
    */
-  phat::persistence_pairs compute_persistence_pairs_standard_reduction();
+  phat::persistence_pairs compute_persistence_pairs_standard_reduction() {
+    phat::persistence_pairs pairs;
+    phat::compute_persistence_pairs< phat::standard_reduction >(pairs, this->boundary_matrix_);
+    return pairs;
+  }
 
-  /*
-   * A function that call Phat function compute_persistence_pairs_spectral_sequence_reduction.
+  /** \brief A function that call PHAT function compute_persistence_pairs_spectral_sequence_reduction.
+   *
+   * @return The persistence pairs.
    */
-  phat::persistence_pairs compute_persistence_pairs_spectral_sequence_reduction();
+  phat::persistence_pairs compute_persistence_pairs_spectral_sequence_reduction() {
+    phat::persistence_pairs pairs;
+    phat::compute_persistence_pairs< phat::spectral_sequence_reduction >(pairs, this->boundary_matrix_);
+    return pairs;
+  }
 
 
-  /*
-   * This function can be called only when the Phat boundary matrix is reduced by one of four possible Phat functions
-   * to compute persistence. Once the matrix is reduced, this function return 
-   * Betti numbers (as a vector of birth times of infinite generators) and finite persistence intervals.
-   * The data returned from this function is a pair. 
+  /** \brief Once the matrix is reduced, this function returns Betti numbers (as a vector of birth times of infinite
+   * generators) and finite persistence intervals.
+   *
+   * \details
+   * This function can be called only when the PHAT boundary matrix is reduced by one of four possible PHAT functions
+   * to compute persistence.
+   * 
+   * @return The data returned from this function is a pair. 
    * The first element of the pair is: std::vector< std::vector<K> >, this is a graded (by a dimension) vector of
    * beginning of infinite persistence intervals.
    * The second element of the pair is: std::vector< std::vector< std::pair<K,K> > > >, this is a graded (by a
    * dimension) vector of pairs<K,K>. Each such a pair is a beginning and end of a persistence interval.
    */
   std::pair< std::vector< std::vector<K> >, std::vector< std::vector< std::pair<K, K> > > >
-  get_the_intervals(phat::persistence_pairs pairs);
+  get_the_intervals(phat::persistence_pairs pairs) {
+    bool dbg = false;
+    // in order to find the birth times of the infinite homology classes, we need to know which elements are not paired.
+    // To search for them, we will use this vector:
+    std::vector<bool> isTheElementPaired(this->data_structure_->num_simplices(), false);
+  
+    // now it is time to recover the finite persistence pairs and the Betti numbers:
+    std::vector< std::vector< std::pair<K, K> > > finitePersistencePairs(this->data_structure_->dimension());
+    for (phat::index idx = 0; idx < pairs.get_num_pairs(); idx++) {
+      typename T::Simplex_key positionOfBeginOfInterval = pairs.get_pair(idx).first;
+      typename T::Simplex_key positionOfEndOfInterval = pairs.get_pair(idx).second;
+  
+      typename T::Simplex_handle first_simplex = this->data_structure_->simplex(positionOfBeginOfInterval);
+      typename T::Simplex_handle second_simplex = this->data_structure_->simplex(positionOfEndOfInterval);
+  
+      typename T::Filtration_value valueFirst = this->data_structure_->filtration(first_simplex);
+      typename T::Filtration_value valueSecond = this->data_structure_->filtration(second_simplex);
+  
+      if (valueFirst > valueSecond) {
+        std::swap(valueFirst, valueSecond);
+      }
+  
+      unsigned dimFirst = this->data_structure_->dimension(first_simplex);
+      unsigned dimSecond = this->data_structure_->dimension(second_simplex);
+      unsigned dim = std::min(dimFirst, dimSecond);
+  
+  
+      // we are ignoring trivial barcodes
+      if (valueFirst != valueSecond) {
+        finitePersistencePairs[ dim ].push_back(std::make_pair(valueFirst, valueSecond));
+        if (dbg) {
+          std::cerr << "Adding barcode : " << valueFirst << "," << valueSecond << std::endl;
+        }
+      }
+  
+      isTheElementPaired[ pairs.get_pair(idx).first ] = true;
+      isTheElementPaired[ pairs.get_pair(idx).second ] = true;
+    }
+  
+  
+    std::vector< std::vector<K> > birthTimesOfInfinitePersistnceClasses(this->data_structure_->dimension() + 1);
+    for (size_t i = 0; i != this->data_structure_->dimension() + 1; ++i) {
+      std::vector<K> v;
+      birthTimesOfInfinitePersistnceClasses[i] = v;
+    }
+    for (size_t i = 0; i != isTheElementPaired.size(); ++i) {
+      if (isTheElementPaired[i] == false) {
+        // i-th element is not paired, therefore it gives an infinite class
+        typename T::Simplex_handle simplex = this->data_structure_->simplex(i);
+        birthTimesOfInfinitePersistnceClasses[this->data_structure_->dimension(simplex)].push_back(
+            this->data_structure_->filtration(simplex));
+      }
+    }
+  
+    // sorting finite persistence pairs: 
+    for (size_t dim = 0; dim != finitePersistencePairs.size(); ++dim) {
+      std::sort(finitePersistencePairs[dim].begin(), finitePersistencePairs[dim].end());
+    }
+    return std::make_pair(birthTimesOfInfinitePersistnceClasses, finitePersistencePairs);
+  }
 
-  /*
-   * This function store a boundary matrix in a phat format to a given file. For some reason this format is not
-   * recognized by load_ascii procedure in Phat. Therefore one can store the matrix with this procedure
+
+  /** \brief This function store a boundary matrix in a PHAT format to a given file. For some reason this format is not
+   * recognized by load_ascii procedure in PHAT. Therefore one can store the matrix with this procedure
    * but will not be later able to read it with load_ascii. If you want to read it later, please use save_for_reading. 
    */
   void save_ascii(std::string filename) {
-    this->boundary_matrix.save_ascii(filename);
+    this->boundary_matrix_.save_ascii(filename);
   }
 
-  /*
-   * This function store a boundary matrix in a phat format to a given file. The matrix can be later read by load_ascii
-   * function.
+  /** \brief This function load a boundary matrix from a file and stores it as a boundary matrix in this data
+   * structure.
+   */
+  void load_ascii(std::string filename) {
+    this->boundary_matrix_.load_ascii(filename);
+  }
+
+  /** \brief This function store a boundary matrix in a PHAT format to a given file. The matrix can be later read by
+   * load_ascii function.
    */
   void save_for_reading(std::string filename) {
     std::ofstream out;
     out.open(filename.c_str());
-    out << (int) this->boundary_matrix.get_num_cols() << std::endl;
+    out << (int) this->boundary_matrix_.get_num_cols() << std::endl;
 
-    for (phat::index col_idx = 0; col_idx < this->boundary_matrix.get_num_cols(); col_idx++) {
-      out << (int) this->boundary_matrix.get_dim(col_idx) << " ";
+    for (phat::index col_idx = 0; col_idx < this->boundary_matrix_.get_num_cols(); col_idx++) {
+      out << (int) this->boundary_matrix_.get_dim(col_idx) << " ";
 
       std::vector< phat::index > temp_col;
-      this->boundary_matrix.get_col(col_idx, temp_col);
+      this->boundary_matrix_.get_col(col_idx, temp_col);
       for (phat::index idx = 0; idx < (phat::index)temp_col.size(); idx++) {
         out << temp_col[ idx ] << " ";
       }
@@ -166,174 +259,37 @@ class Compute_persistence_with_phat {
     out.close();
   }
 
-  /*
-   * This function load a boundary matrix from a file and stores it as a boundary matrix in this data structure. 
+  /** \brief This function is used for a debugging purposes only. It write the boundary matrix on standard output.
    */
-  void load_ascii(std::string filename) {
-    this->boundary_matrix.load_ascii(filename);
+  void print_boundary_matrix() {
+    std::cout << "The boundary matrix has " << this->boundary_matrix_.get_num_cols() << " columns: " << std::endl;
+    for (phat::index col_idx = 0; col_idx < this->boundary_matrix_.get_num_cols(); col_idx++) {
+      std::cout << "Colum " << col_idx << " represents a cell of dimension "
+          << (int) this->boundary_matrix_.get_dim(col_idx) << ". ";
+      if (!this->boundary_matrix_.is_empty(col_idx)) {
+        std::vector< phat::index > temp_col;
+        this->boundary_matrix_.get_col(col_idx, temp_col);
+        std::cout << "Its boundary consists of the cells";
+        for (phat::index idx = 0; idx < (phat::index)temp_col.size(); idx++)
+          std::cout << " " << temp_col[ idx ];
+      }
+      std::cout << std::endl;
+    }
   }
 
-  /*
-   * This function is used for a debugging purposes only. It write the boundary matrix on a screen.
-   */
-  void print_bd_matrix();
 
 
  private:
-  phat::boundary_matrix< phat::vector_vector > boundary_matrix;
-  T* data_structure;
+  phat::boundary_matrix< phat::vector_vector > boundary_matrix_;
+  T* data_structure_;
 };
 
-template <typename T, typename K>
-void Compute_persistence_with_phat<T, K>::print_bd_matrix() {
-  std::cout << "The boundary matrix has " << this->boundary_matrix.get_num_cols() << " columns: " << std::endl;
-  for (phat::index col_idx = 0; col_idx < this->boundary_matrix.get_num_cols(); col_idx++) {
-    std::cout << "Colum " << col_idx << " represents a cell of dimension "
-        << (int) this->boundary_matrix.get_dim(col_idx) << ". ";
-    if (!this->boundary_matrix.is_empty(col_idx)) {
-      std::vector< phat::index > temp_col;
-      this->boundary_matrix.get_col(col_idx, temp_col);
-      std::cout << "Its boundary consists of the cells";
-      for (phat::index idx = 0; idx < (phat::index)temp_col.size(); idx++)
-        std::cout << " " << temp_col[ idx ];
-    }
-    std::cout << std::endl;
-  }
-}
 
-template <typename T, typename K>
-phat::persistence_pairs Compute_persistence_with_phat<T, K>::compute_persistence_pairs_dualized_chunk_reduction() {
-  phat::persistence_pairs pairs;
-  phat::compute_persistence_pairs_dualized< phat::chunk_reduction >(pairs, this->boundary_matrix);
-  return pairs;
-}
-
-template <typename T, typename K>
-phat::persistence_pairs Compute_persistence_with_phat<T, K>::compute_persistence_pairs_twist_reduction() {
-  phat::persistence_pairs pairs;
-  phat::compute_persistence_pairs< phat::twist_reduction >(pairs, this->boundary_matrix);
-  return pairs;
-}
-
-template <typename T, typename K>
-phat::persistence_pairs Compute_persistence_with_phat<T, K>::compute_persistence_pairs_standard_reduction() {
-  phat::persistence_pairs pairs;
-  phat::compute_persistence_pairs< phat::standard_reduction >(pairs, this->boundary_matrix);
-  return pairs;
-}
-
-template <typename T, typename K>
-phat::persistence_pairs Compute_persistence_with_phat<T, K>::compute_persistence_pairs_spectral_sequence_reduction() {
-  phat::persistence_pairs pairs;
-  phat::compute_persistence_pairs< phat::spectral_sequence_reduction >(pairs, this->boundary_matrix);
-  return pairs;
-}
-
-template <typename T, typename K>
-Compute_persistence_with_phat<T, K>::Compute_persistence_with_phat(T* data_structure_)
-: data_structure(data_structure_) {
-  //bool dbg = false;
-
-  this->boundary_matrix.set_num_cols(this->data_structure->num_simplices());
-
-
-  // due to interface of phom in Gudhi it seems that I have to fill-in the keys for all simplices here. They are
-  // sorting according to filtration, but keys are not filled in (for some reason).
-  // in the same time when doing the enumeration, we wills set up the dimensions and setting up the boundary of cells.
-  typename T::Filtration_simplex_range range = this->data_structure->filtration_simplex_range();
-  size_t position = 0;
-  std::vector< phat::index > temp_col;
-  for (typename T::Filtration_simplex_iterator it = range.begin(); it != range.end(); ++it) {
-    //enumeration
-    this->data_structure->assign_key(*it, position);
-
-
-    // setting up the dimension:
-    this->boundary_matrix.set_dim(position, this->data_structure->dimension(*it));
-
-    // setting up the boundary of this cell:
-    typename T::Boundary_simplex_range boundary_range = this->data_structure->boundary_simplex_range(*it);
-    for (typename T::Boundary_simplex_iterator bd = boundary_range.begin(); bd != boundary_range.end(); ++bd) {
-      temp_col.push_back(this->data_structure->key(*bd));
-    }
-    // we do not know if the boundary elements are sorted according to filtration, that is why I am enforcing it here:
-    std::sort(temp_col.begin(), temp_col.end());
-    this->boundary_matrix.set_col(this->data_structure->key(*it), temp_col);
-    temp_col.clear();
-
-    ++position;
-  }
-}
-
-template <typename T, typename K>
-std::pair< std::vector< std::vector<K> >, std::vector< std::vector< std::pair<K, K> > > >
-Compute_persistence_with_phat<T, K>::get_the_intervals(phat::persistence_pairs pairs) {
-  bool dbg = false;
-  // in order to find the birth times of the infinite homology classes, we need to know which elements are not paired.
-  // To search for them, we will use this vector:
-  std::vector<bool> isTheElementPaired(this->data_structure->num_simplices(), false);
-
-  // now it is time to recover the finite persistence pairs and the Betti numbers:
-  std::vector< std::vector< std::pair<K, K> > > finitePersistencePairs(this->data_structure->dimension());
-  for (phat::index idx = 0; idx < pairs.get_num_pairs(); idx++) {
-    typename T::Simplex_key positionOfBeginOfInterval = pairs.get_pair(idx).first;
-    typename T::Simplex_key positionOfEndOfInterval = pairs.get_pair(idx).second;
-
-    typename T::Simplex_handle first_simplex = this->data_structure->simplex(positionOfBeginOfInterval);
-    typename T::Simplex_handle second_simplex = this->data_structure->simplex(positionOfEndOfInterval);
-
-    typename T::Filtration_value valueFirst = this->data_structure->filtration(first_simplex);
-    typename T::Filtration_value valueSecond = this->data_structure->filtration(second_simplex);
-
-    if (valueFirst > valueSecond) {
-      std::swap(valueFirst, valueSecond);
-    }
-
-    unsigned dimFirst = this->data_structure->dimension(first_simplex);
-    unsigned dimSecond = this->data_structure->dimension(second_simplex);
-    unsigned dim = std::min(dimFirst, dimSecond);
-
-
-    // we are ignoring trivial barcodes
-    if (valueFirst != valueSecond) {
-      finitePersistencePairs[ dim ].push_back(std::make_pair(valueFirst, valueSecond));
-      if (dbg) {
-        std::cerr << "Adding barcode : " << valueFirst << "," << valueSecond << std::endl;
-      }
-    }
-
-    isTheElementPaired[ pairs.get_pair(idx).first ] = true;
-    isTheElementPaired[ pairs.get_pair(idx).second ] = true;
-  }
-
-
-  std::vector< std::vector<K> > birthTimesOfInfinitePersistnceClasses(this->data_structure->dimension() + 1);
-  for (size_t i = 0; i != this->data_structure->dimension() + 1; ++i) {
-    std::vector<K> v;
-    birthTimesOfInfinitePersistnceClasses[i] = v;
-  }
-  for (size_t i = 0; i != isTheElementPaired.size(); ++i) {
-    if (isTheElementPaired[i] == false) {
-      // i-th element is not paired, therefore it gives an infinite class
-      typename T::Simplex_handle simplex = this->data_structure->simplex(i);
-      birthTimesOfInfinitePersistnceClasses[this->data_structure->dimension(simplex)].push_back(
-          this->data_structure->filtration(simplex));
-    }
-  }
-
-  // sorting finite persistence pairs: 
-  for (size_t dim = 0; dim != finitePersistencePairs.size(); ++dim) {
-    std::sort(finitePersistencePairs[dim].begin(), finitePersistencePairs[dim].end());
-  }
-  return std::make_pair(birthTimesOfInfinitePersistnceClasses, finitePersistencePairs);
-}  // Compute_persistence_with_phat
-
-/*
- * This function takes as an input the output of a Compute_persistence_with_phat procedure and stores it to a file in a
- * strandard Gudhi format.
+/** \brief This function takes as an input the output of a Compute_persistence_with_phat procedure and stores it to a
+ * file in a standard GUDHI format.
  */
 template <typename K>
-void write_intervas_to_file_Gudhi_format(std::pair< std::vector< std::vector<K> >,
+void write_intervals_to_file_Gudhi_format(std::pair< std::vector< std::vector<K> >,
                                          std::vector< std::vector< std::pair<K, K> > > > intervals,
                                          const char* filename, size_t dimension_cup = -1) {
   std::ofstream out;
@@ -396,6 +352,47 @@ void write_intervas_to_file_Gudhi_format(std::pair< std::vector< std::vector<K> 
 
   out.close();
 }
+
+/** \brief A procedure that outputs a persistence to a files in a format alternative to a standard Gudhi format. It
+ * creates separated files for Betti numbers, and separated files for persistence in each dimension. 
+ * The persistence intervals in each dimension are not sorted.
+ */
+template <typename K>
+void write_betti_numbers_and_persistence_intervals_to_file(const char* prefix,
+                                                           std::pair< std::vector<std::vector< K > >,
+                                                           std::vector< std::vector< std::pair<K, K> > > > resutsFromPhat) {
+  std::ostringstream filenameStr;
+  filenameStr << prefix << "_bettiNumbers";
+  std::string str = filenameStr.str();
+  const char* filename = str.c_str();
+  std::ofstream out;
+  out.open(filename);
+  for (size_t dim = 0; dim != resutsFromPhat.first.size(); ++dim) {
+    out << "Dimension : " << dim << std::endl;
+    for (size_t i = 0; i != resutsFromPhat.first[dim].size(); ++i) {
+      out << resutsFromPhat.first[dim][i] << std::endl;
+    }
+    out << std::endl;
+  }
+  out.close();
+
+
+  for (size_t dim = 0; dim != resutsFromPhat.second.size(); ++dim) {
+    if (resutsFromPhat.second[dim].size() == 0)continue;
+    std::ostringstream filenameStr;
+    filenameStr << prefix << "_persistence_" << dim;
+    std::string str = filenameStr.str();
+    const char* filename = str.c_str();
+    std::ofstream out1;
+    out1.open(filename);
+    for (size_t i = 0; i != resutsFromPhat.second[dim].size(); ++i) {
+      out1 << resutsFromPhat.second[dim][i].first << " " << resutsFromPhat.second[dim][i].second << std::endl;
+    }
+    out1.close();
+  }
+}
+
+}  // phat_interface
 
 }  // namespace Gudhi
 

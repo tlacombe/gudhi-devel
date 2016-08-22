@@ -151,6 +151,23 @@
     </td>
  </tr>
 </table>
+</table>
+ \subsection PhatInterfaceToolbox PHAT interface
+<table border="0">
+  <tr>
+    <td width="25%">
+      <b>Author:</b> Pawel Dlotko<br>
+      <b>Introduced in:</b> GUDHI 1.4.0<br>
+      <b>Copyright:</b> GPL v3<br>
+    </td>
+    <td width="75%">
+    Interface class to compute PHAT persistence from GUDHI data structures. For more information on PHAT, please refer
+    to \cite phat2017jsc or to the <a target="_blank" href="https://bitbucket.org/phat-code/phat">PHAT</a> project
+    website.<br>
+    <b>User manual:</b> \ref phat_interface - <b>Reference manual:</b> Gudhi::phat_interface::Compute_persistence_with_phat
+    </td>
+ </tr>
+</table>
 */
 
 /*! \page installation Gudhi installation
@@ -237,6 +254,27 @@ make \endverbatim
  * Persistent_cohomology/periodic_alpha_complex_3d_persistence.cpp</a>
  * \li <a href="_persistent_cohomology_2custom_persistence_sort_8cpp-example.html">
  * Persistent_cohomology/custom_persistence_sort.cpp</a>
+ * 
+ * \subsection phat PHAT:
+ * The \ref phat_interface and its examples requires
+ * <a target="_blank" href="https://bitbucket.org/phat-code/phat">PHAT</a>, which is a header only library containing
+ * methods for computing the persistence pairs of a filtered cell complex represented by an ordered boundary matrix with
+ * \f$Z_{2}\f$ coefficients.
+ * 
+ * As PHAT has no installation procedure you have to precise
+ * <a target="_blank" href="https://bitbucket.org/phat-code/phat">PHAT</a> extraction path to your CMake command and
+ * recompile it. For instance:
+\verbatim
+cmake -DPHAT_DIR=~/workspace/phat_1.4.1 ..
+make
+\endverbatim
+ * 
+ * The following examples require the <a target="_blank" href="https://bitbucket.org/phat-code/phat">PHAT</a>
+ * and will not be built if CGAL is not installed:
+ * \li <a href="_phat_2cubical_complex_persistence_with_phat_8cpp-example.html">
+ * Phat/cubical_complex_persistence_with_phat.cpp</a>
+ * \li <a href="_phat_2rips_persistence_with_phat_8cpp-example.html">
+ * Phat/rips_persistence_with_phat.cpp</a>
  * 
  * \subsection tbb Threading Building Blocks:
  * <a target="_blank" href="https://www.threadingbuildingblocks.org/">Intel&reg; TBB</a> lets you easily write parallel
@@ -337,5 +375,8 @@ make \endverbatim
  * @example Skeleton_blocker/Skeleton_blocker_link.cpp
  * @example Witness_complex/witness_complex_from_file.cpp
  * @example Witness_complex/witness_complex_sphere.cpp
+ * @example Phat/cubical_complex_persistence_with_phat.cpp
+ * @example Phat/rips_persistence_with_phat.cpp
+
  */
 
