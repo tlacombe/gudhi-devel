@@ -110,7 +110,7 @@ private:
  * can be static if you know the ambiant dimension at compile-time, or dynamic if you don't.
  * \tparam DimensionTag can be either <a target="_blank"
  * href="http://doc.cgal.org/latest/Kernel_23/classCGAL_1_1Dimension__tag.html">Dimension_tag<d></a>
- * if you know the ambiant dimension at compile-time,
+ * if you know the intrinsic dimension at compile-time,
  * or <a target="_blank"
  * href="http://doc.cgal.org/latest/Kernel_23/classCGAL_1_1Dynamic__dimension__tag.html">CGAL::Dynamic_dimension_tag</a>
  * if you don't.
