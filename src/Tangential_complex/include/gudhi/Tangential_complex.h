@@ -433,7 +433,7 @@ public:
     {
       const Point &p = *it_p;
 
-      KNS_range kns_range = m_points_ds.query_ANN(
+      KNS_range kns_range = m_points_ds.query_k_nearest_neighbors(
         p, static_cast<unsigned int>(num_points_for_pca), false);
 
       //******************************* PCA *************************************
@@ -716,7 +716,7 @@ public:
 
   /** \brief Exports the complex into a Simplex_tree.
    *
-   * @param[int] export_inconsistent_simplices Also export inconsistent simplices or not?
+   * @param[in] export_inconsistent_simplices Also export inconsistent simplices or not?
    * @param[out] tree The result.
    * @return The maximal dimension of the simplices.
    */
@@ -1183,8 +1183,8 @@ private:
     std::size_t num_inserted_points = 1;
 #endif
     //const int NUM_NEIGHBORS = 150;
-    //KNS_range ins_range = m_points_ds.query_ANN(center_pt, NUM_NEIGHBORS);
-    INS_range ins_range = m_points_ds.query_incremental_ANN(center_pt);
+    //KNS_range ins_range = m_points_ds.query_k_nearest_neighbors(center_pt, NUM_NEIGHBORS);
+    INS_range ins_range = m_points_ds.query_incremental_nearest_neighbors(center_pt);
 
     // While building the local triangulation, we keep the radius
     // of the sphere "star sphere" centered at "center_vertex"
@@ -1318,7 +1318,7 @@ private:
     Point center_point = compute_perturbed_point(i);
     // Among updated point, what is the closer from our center point?
     std::size_t closest_pt_index = 
-      updated_pts_ds.query_ANN(center_point, 1, false).begin()->first;
+      updated_pts_ds.query_k_nearest_neighbors(center_point, 1, false).begin()->first;
 
     typename K::Construct_weighted_point_d k_constr_wp =
       m_k.construct_weighted_point_d_object();
@@ -1464,11 +1464,11 @@ private:
     //  m_k.translated_point_d_object();
 
 #ifdef GUDHI_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
-    KNS_range kns_range = m_points_ds_for_tse.query_ANN(
+    KNS_range kns_range = m_points_ds_for_tse.query_k_nearest_neighbors(
       p, num_points_for_pca, false);
     const Points &points_for_pca = m_points_for_tse;
 #else
-    KNS_range kns_range = m_points_ds.query_ANN(p, num_points_for_pca, false);
+    KNS_range kns_range = m_points_ds.query_k_nearest_neighbors(p, num_points_for_pca, false);
     const Points &points_for_pca = m_points;
 #endif
 
@@ -1598,11 +1598,11 @@ private:
       const Point &p = m_points[*it_index];
       
 #ifdef GUDHI_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
-      KNS_range kns_range = m_points_ds_for_tse.query_ANN(
+      KNS_range kns_range = m_points_ds_for_tse.query_k_nearest_neighbors(
         p, num_points_for_pca, false);
       const Points &points_for_pca = m_points_for_tse;
 #else
-      KNS_range kns_range = m_points_ds.query_ANN(p, num_points_for_pca, false);
+      KNS_range kns_range = m_points_ds.query_k_nearest_neighbors(p, num_points_for_pca, false);
       const Points &points_for_pca = m_points;
 #endif
 
@@ -2206,7 +2206,7 @@ private:
           m_tangent_spaces[tr_index],
           local_tr_traits);
 
-        KNS_range kns_range = m_points_ds.query_ANN(
+        KNS_range kns_range = m_points_ds.query_k_nearest_neighbors(
           global_center,
           GUDHI_TC_NUMBER_OF_PERTURBED_POINTS(m_intrinsic_dim));
         std::vector<std::size_t> neighbors;
