@@ -475,7 +475,7 @@ public:
    * @param[out] final_num_inconsistent_stars Returns the final number of inconsistent stars.
    * @param[in] time_limit Time limit in seconds. If -1, no time limit is set.
    *
-   * @return TC_FIXED if all inconsistencies coulb be removed, or
+   * @return TC_FIXED if all inconsistencies could be removed, or
    *         TIME_LIMIT_REACHED if the time limit has been reached.
    */
   Fix_inconsistencies_status fix_inconsistencies_using_perturbation(
