@@ -717,8 +717,8 @@ public:
    *
    * \tparam Simplex_tree_ must be a `Simplex_tree`.
    *
-   * @param[in] export_inconsistent_simplices Also export inconsistent simplices or not?
    * @param[out] tree The result.
+   * @param[in] export_inconsistent_simplices Also export inconsistent simplices or not?
    * @return The maximal dimension of the simplices.
    */
   template <typename Simplex_tree_>
