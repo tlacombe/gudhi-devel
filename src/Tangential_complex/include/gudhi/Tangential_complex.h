@@ -121,7 +121,7 @@ template <
   typename Kernel_, // ambiant kernel
   typename DimensionTag, // intrinsic dimension
   typename Concurrency_tag = CGAL::Parallel_tag,
-  typename Tr = CGAL::Regular_triangulation
+  typename Triangulation_ = CGAL::Regular_triangulation
   <
     CGAL::Epick_d<DimensionTag>,
     CGAL::Triangulation_data_structure
@@ -142,7 +142,7 @@ class Tangential_complex
   typedef typename K::Weighted_point_d                Weighted_point;
   typedef typename K::Vector_d                        Vector;
 
-  typedef Tr                                          Triangulation;
+  typedef Triangulation_                              Triangulation;
   typedef typename Triangulation::Geom_traits         Tr_traits;
   typedef typename Triangulation::Weighted_point      Tr_point;
   typedef typename Triangulation::Bare_point          Tr_bare_point;
