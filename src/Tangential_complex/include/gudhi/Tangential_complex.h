@@ -27,7 +27,6 @@
 #include <gudhi/Tangential_complex/Simplicial_complex.h>
 #include <gudhi/Tangential_complex/utilities.h>
 #include <gudhi/Spatial_tree_data_structure.h>
-#include <gudhi/Simplex_tree.h>
 #include <gudhi/console_color.h>
 #include <gudhi/Clock.h>
 
@@ -716,11 +715,14 @@ public:
 
   /** \brief Exports the complex into a Simplex_tree.
    *
+   * \tparam Simplex_tree_ must be a `Simplex_tree`.
+   *
    * @param[in] export_inconsistent_simplices Also export inconsistent simplices or not?
    * @param[out] tree The result.
    * @return The maximal dimension of the simplices.
    */
-  int export_complex(Simplex_tree<> &tree,
+  template <typename Simplex_tree_>
+  int export_complex(Simplex_tree_ &tree,
     bool export_inconsistent_simplices = true,
     bool export_infinite_simplices = false,
     Simplex_set *p_inconsistent_simplices = NULL) const
