@@ -29,7 +29,9 @@
 #include <gudhi/Spatial_tree_data_structure.h>
 #include <gudhi/console_color.h>
 #include <gudhi/Clock.h>
+#include <gudhi/Simplex_tree.h>
 
+#include <CGAL/Default.h>
 #include <CGAL/Dimension.h>
 #include <CGAL/function_objects.h> // for CGAL::Identity
 #include <CGAL/Epick_d.h>
@@ -114,24 +116,14 @@ private:
  * href="http://doc.cgal.org/latest/Kernel_23/classCGAL_1_1Dynamic__dimension__tag.html">CGAL::Dynamic_dimension_tag</a>
  * if you don't.
  * \tparam Concurrency_tag enables sequential versus parallel computation. Possible values are `CGAL::Parallel_tag` (the default) and `CGAL::Sequential_tag`.
- * 
+ * \tparam Triangulation_ is the type used for storing the local regular triangulations. We highly recommend to use the default value (`CGAL::Regular_triangulation`).
+ *
  */
 template <
   typename Kernel_, // ambiant kernel
   typename DimensionTag, // intrinsic dimension
   typename Concurrency_tag = CGAL::Parallel_tag,
-  typename Triangulation_ = CGAL::Regular_triangulation
-  <
-    CGAL::Epick_d<DimensionTag>,
-    CGAL::Triangulation_data_structure
-    <
-      CGAL::Epick_d<DimensionTag>::Dimension,
-      CGAL::Triangulation_vertex<CGAL::Regular_triangulation_euclidean_traits<
-        CGAL::Epick_d<DimensionTag> >, Vertex_data >,
-      CGAL::Triangulation_full_cell<CGAL::Regular_triangulation_euclidean_traits<
-        CGAL::Epick_d<DimensionTag> > >
-    >
-  >
+  typename Triangulation_ = CGAL::Default
 >
 class Tangential_complex
 {
@@ -141,7 +133,22 @@ class Tangential_complex
   typedef typename K::Weighted_point_d                Weighted_point;
   typedef typename K::Vector_d                        Vector;
 
-  typedef Triangulation_                              Triangulation;
+  typedef typename CGAL::Default::Get
+  <
+    Triangulation_, 
+    CGAL::Regular_triangulation
+    <
+      CGAL::Epick_d<DimensionTag>,
+      CGAL::Triangulation_data_structure
+      <
+        typename CGAL::Epick_d<DimensionTag>::Dimension,
+        CGAL::Triangulation_vertex<CGAL::Regular_triangulation_euclidean_traits<
+          CGAL::Epick_d<DimensionTag> >, Vertex_data >,
+        CGAL::Triangulation_full_cell<CGAL::Regular_triangulation_euclidean_traits<
+          CGAL::Epick_d<DimensionTag> > >
+      >
+    >
+  >::type                                           Triangulation;
   typedef typename Triangulation::Geom_traits         Tr_traits;
   typedef typename Triangulation::Weighted_point      Tr_point;
   typedef typename Triangulation::Bare_point          Tr_bare_point;
