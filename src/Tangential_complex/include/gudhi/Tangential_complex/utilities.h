@@ -33,6 +33,7 @@
 #include <set>
 #include <vector>
 #include <array>
+#include <fstream>
 #include <atomic>
 #include <cmath>  // for std::sqrt
 
