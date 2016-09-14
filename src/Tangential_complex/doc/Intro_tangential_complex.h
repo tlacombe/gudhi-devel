@@ -36,10 +36,10 @@ namespace tangential_complex {
  * \section definition Definition
  * 
  * A Tangential Delaunay complex is a <a target="_blank" href="https://en.wikipedia.org/wiki/Simplicial_complex">simplicial complex</a>
- * designed to reconstruct a $k$-dimensional manifold embedded in $d$-dimensional Euclidean space. 
+ * designed to reconstruct a \f$k\f$-dimensional manifold embedded in \f$d\f$-dimensional Euclidean space. 
  * The input is a point sample coming from an unknown manifold.
- * The running time depends only linearly on the extrinsic dimension $d$
- * and exponentially on the intrinsic dimension $k$.
+ * The running time depends only linearly on the extrinsic dimension \f$d\f$
+ * and exponentially on the intrinsic dimension \f$k\f$.
  *
  * An extensive description of the Tangential complex can be found in \cite tangentialcomplex2014.
  * 
