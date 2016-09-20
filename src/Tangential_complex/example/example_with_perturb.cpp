@@ -49,7 +49,7 @@ int main (void)
 
   // Export the TC into a Simplex_tree
   Gudhi::Simplex_tree<> stree;
-  tc.export_complex(stree);
+  tc.create_complex(stree);
 
   return 0;
 }

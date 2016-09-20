@@ -730,7 +730,7 @@ public:
    * @return The maximal dimension of the simplices.
    */
   template <typename Simplex_tree_>
-  int export_complex(Simplex_tree_ &tree,
+  int create_complex(Simplex_tree_ &tree,
     bool export_inconsistent_simplices = true,
     bool export_infinite_simplices = false,
     Simplex_set *p_inconsistent_simplices = NULL) const
@@ -798,7 +798,7 @@ public:
   //   "auto" (= 2) will enable the check as a soon as it encounters a 
   //   simplex whose dimension is different from the previous ones.
   //   N.B.: The check is quite expensive.
-  int export_complex(Simplicial_complex &complex,
+  int create_complex(Simplicial_complex &complex,
     bool export_inconsistent_simplices = true,
     bool export_infinite_simplices = false, 
     int check_lower_and_higher_dim_simplices = 2,

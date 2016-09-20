@@ -39,7 +39,7 @@ int main (void)
 
   // Export the TC into a Simplex_tree
   Gudhi::Simplex_tree<> stree;
-  tc.export_complex(stree);
+  tc.create_complex(stree);
 
   // Display stats about inconsistencies
   tc.number_of_inconsistent_simplices(true); // verbose

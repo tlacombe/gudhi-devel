@@ -77,5 +77,5 @@ BOOST_AUTO_TEST_CASE(test_Spatial_tree_data_structure)
 
   // Export the TC into a Simplex_tree
   Gudhi::Simplex_tree<> stree;
-  tc.export_complex(stree);
+  tc.create_complex(stree);
 }
