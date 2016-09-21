@@ -35,7 +35,7 @@
 #include <CGAL/Dimension.h>
 #include <CGAL/function_objects.h> // for CGAL::Identity
 #include <CGAL/Epick_d.h>
-#include <CGAL/Regular_triangulation_euclidean_traits.h>
+#include <CGAL/Regular_triangulation_traits_adapter.h>
 #include <CGAL/Regular_triangulation.h>
 #include <CGAL/Delaunay_triangulation.h>
 #include <CGAL/Combination_enumerator.h>
@@ -142,9 +142,9 @@ class Tangential_complex
       CGAL::Triangulation_data_structure
       <
         typename CGAL::Epick_d<DimensionTag>::Dimension,
-        CGAL::Triangulation_vertex<CGAL::Regular_triangulation_euclidean_traits<
+        CGAL::Triangulation_vertex<CGAL::Regular_triangulation_traits_adapter<
           CGAL::Epick_d<DimensionTag> >, Vertex_data >,
-        CGAL::Triangulation_full_cell<CGAL::Regular_triangulation_euclidean_traits<
+        CGAL::Triangulation_full_cell<CGAL::Regular_triangulation_traits_adapter<
           CGAL::Epick_d<DimensionTag> > >
       >
     >
