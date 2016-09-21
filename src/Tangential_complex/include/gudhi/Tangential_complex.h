@@ -730,10 +730,13 @@ public:
    * @return The maximal dimension of the simplices.
    */
   template <typename Simplex_tree_>
-  int create_complex(Simplex_tree_ &tree,
-    bool export_inconsistent_simplices = true,
-    bool export_infinite_simplices = false,
-    Simplex_set *p_inconsistent_simplices = NULL) const
+  int create_complex(Simplex_tree_ &tree
+    /// \cond ADVANCED_PARAMETERS
+    , bool export_inconsistent_simplices = true
+    , bool export_infinite_simplices = false
+    , Simplex_set *p_inconsistent_simplices = NULL
+    /// \endcond
+  ) const
   {
 #if defined(GUDHI_TC_VERBOSE) || defined(GUDHI_TC_PROFILING)
     std::cerr << yellow
