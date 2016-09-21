@@ -474,26 +474,31 @@ public:
     std::cout << "\n";
   }
 
+  /// \brief Type returned by `Tangential_complex::fix_inconsistencies_using_perturbation`.
+  struct Fix_inconsistencies_info
+  {
+    /// `true` if all inconsistencies could be removed, `false` if the time limit has been reached before
+    bool          success = false;
+    /// number of steps performed
+    unsigned int  num_steps = 0;
+    /// initial number of inconsistent stars
+    std::size_t   initial_num_inconsistent_stars = 0;
+    /// best number of inconsistent stars during the process
+    std::size_t   best_num_inconsistent_stars = 0;
+    /// final number of inconsistent stars
+    std::size_t   final_num_inconsistent_stars = 0;
+  };
+
   /** \brief Attempts to fix inconsistencies by perturbing the point positions.
    *
-   * @param[out] num_steps Returns the number of steps performed.
-   * @param[out] initial_num_inconsistent_stars Returns the initial number of inconsistent stars.
-   * @param[out] best_num_inconsistent_stars Returns the best number of inconsistent stars during the process.
-   * @param[out] final_num_inconsistent_stars Returns the final number of inconsistent stars.
    * @param[in] time_limit Time limit in seconds. If -1, no time limit is set.
-   *
-   * @return TC_FIXED if all inconsistencies could be removed, or
-   *         TIME_LIMIT_REACHED if the time limit has been reached.
    */
-  Fix_inconsistencies_status fix_inconsistencies_using_perturbation(
-    unsigned int &num_steps,
-    std::size_t &initial_num_inconsistent_stars,
-    std::size_t &best_num_inconsistent_stars,
-    std::size_t &final_num_inconsistent_stars,
-    double time_limit = -1.)
+  Fix_inconsistencies_info fix_inconsistencies_using_perturbation(double time_limit = -1.)
   {
+    Fix_inconsistencies_info info;
+
     if (time_limit == 0.)
-      return TIME_LIMIT_REACHED;
+      return info;
 
     Gudhi::Clock t;
 
@@ -506,13 +511,14 @@ public:
 # ifdef GUDHI_TC_VERBOSE
       std::cerr << "Nothing to fix.\n";
 # endif
-      return TC_FIXED;
+      info.success = false;
+      return info;
     }
 #endif // GUDHI_TC_SHOW_DETAILED_STATS_FOR_INCONSISTENCIES
 
     bool done = false;
-    best_num_inconsistent_stars = m_triangulations.size();
-    num_steps = 0;
+    info.best_num_inconsistent_stars = m_triangulations.size();
+    info.num_steps = 0;
     while (!done)
     {
 #ifdef GUDHI_TC_SHOW_DETAILED_STATS_FOR_INCONSISTENCIES
@@ -630,12 +636,12 @@ public:
 #endif
 
       if (num_steps == 0)
-        initial_num_inconsistent_stars = num_inconsistent_stars;
+        info.initial_num_inconsistent_stars = num_inconsistent_stars;
 
-      if (num_inconsistent_stars < best_num_inconsistent_stars)
-        best_num_inconsistent_stars = num_inconsistent_stars;
+      if (num_inconsistent_stars < info.best_num_inconsistent_stars)
+        info.best_num_inconsistent_stars = num_inconsistent_stars;
 
-      final_num_inconsistent_stars = num_inconsistent_stars;
+      info.final_num_inconsistent_stars = num_inconsistent_stars;
 
       done = (num_inconsistent_stars == 0);
       if (!done)
@@ -654,13 +660,24 @@ public:
 #ifdef GUDHI_TC_VERBOSE
     std::cerr << green << "Fixed!\n" << white;
 #endif
-    return TC_FIXED;
+    info.success = true;
+    return info;
   }
 
-  /// Returns the number of inconsistencies using a tuple
-  /// <num_simplices, num_inconsistent_simplices, num_inconsistent_stars>
+  /// \brief Type returned by `Tangential_complex::number_of_inconsistent_simplices`.
+  struct Num_inconsistencies
+  {
+    /// Total number of simplices in stars (including duplicates that appear in several stars)
+    std::size_t num_simplices = 0;
+    /// Number of inconsistent simplices
+    std::size_t num_inconsistent_simplices = 0;
+    /// Number of stars containing at least one inconsistent simplex
+    std::size_t num_inconsistent_stars = 0;
+  };
+
+  /// Returns the number of inconsistencies
   /// @param[in] verbose If true, outputs a message into `std::cerr`.
-  std::tuple<std::size_t, std::size_t, std::size_t> 
+  Num_inconsistencies
   number_of_inconsistent_simplices(
 #ifdef GUDHI_TC_VERBOSE
     bool verbose = true
@@ -669,9 +686,8 @@ public:
 #endif
     ) const
   {
-    std::size_t num_simplices = 0;
-    std::size_t num_inconsistent_simplices = 0;
-    std::size_t num_inconsistent_stars = 0;
+    Num_inconsistencies stats;
+
     // For each triangulation
     for (std::size_t idx = 0 ; idx < m_points.size() ; ++idx)
     {
@@ -691,13 +707,13 @@ public:
 
         if (!is_simplex_consistent(c))
         {
-          ++num_inconsistent_simplices;
+          ++stats.num_inconsistent_simplices;
           is_star_inconsistent = true;
         }
 
-        ++num_simplices;
+        ++stats.num_simplices;
       }
-      num_inconsistent_stars += is_star_inconsistent;
+      stats.num_inconsistent_stars += is_star_inconsistent;
     }
 
     if (verbose)
@@ -706,18 +722,17 @@ public:
         << "\n==========================================================\n"
         << "Inconsistencies:\n"
         << "  * Total number of simplices in stars (incl. duplicates): "
-        << num_simplices << "\n"
+        << stats.num_simplices << "\n"
         << "  * Number of inconsistent simplices in stars (incl. duplicates): "
-        << num_inconsistent_simplices << " (" 
-        << 100. * num_inconsistent_simplices / num_simplices << "%)\n"
+        << stats.num_inconsistent_simplices << " ("
+        << 100. * stats.num_inconsistent_simplices / stats.num_simplices << "%)\n"
         << "  * Number of stars containing inconsistent simplices: "
-        << num_inconsistent_stars << " ("
-        << 100. * num_inconsistent_stars / m_points.size() << "%)\n"
+        << stats.num_inconsistent_stars << " ("
+        << 100. * stats.num_inconsistent_stars / m_points.size() << "%)\n"
         << "==========================================================\n";
     }
 
-    return std::make_tuple(
-      num_simplices, num_inconsistent_simplices, num_inconsistent_stars);
+    return stats;
   }
 
   /** \brief Exports the complex into a Simplex_tree.
@@ -1027,12 +1042,9 @@ private:
 #endif
   }
 
-  // Return a pair<num_simplices, num_inconsistent_simplices>
   void export_inconsistent_stars_to_OFF_files(
     std::string const& filename_base) const
   {
-    std::size_t num_simplices = 0;
-    std::size_t num_inconsistent_simplices = 0;
     // For each triangulation
     for (std::size_t idx = 0 ; idx < m_points.size() ; ++idx)
     {
