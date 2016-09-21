@@ -12,7 +12,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules/")
 find_package(Boost REQUIRED COMPONENTS system filesystem program_options chrono timer date_time REQUIRED)
 
 if(NOT Boost_FOUND)
-  message(FATAL_ERROR "NOTICE: This demo requires Boost and will not be compiled.")
+  message(FATAL_ERROR "NOTICE: This program requires Boost and will not be compiled.")
 else()
 
   # For "make doxygen"
@@ -98,6 +98,7 @@ else()
 
   #---------------------------------------------------------------------------------------
   # Gudhi compilation part
+  include_directories(BEFORE "include/gudhi_patches")
   include_directories(include)
 
   add_subdirectory(example/common)

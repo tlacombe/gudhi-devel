@@ -8,7 +8,7 @@ configure_file(GUDHIVersion.cmake.in "${CMAKE_SOURCE_DIR}/GUDHIVersion.cmake" @O
 find_package(Boost REQUIRED COMPONENTS system filesystem unit_test_framework chrono timer date_time program_options thread REQUIRED)
 
 if(NOT Boost_FOUND)
-  message(FATAL_ERROR "NOTICE: This demo requires Boost and will not be compiled.")
+  message(FATAL_ERROR "NOTICE: This program requires Boost and will not be compiled.")
 else()
 
   set(CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/src/cmake/modules/")
@@ -116,6 +116,7 @@ else()
     add_definitions(-DDEBUG_TRACES)
   endif()
 
+  include_directories(BEFORE "src/common/include/gudhi_patches")
   include_directories(src/common/include/)
   include_directories(src/Alpha_complex/include/)
   include_directories(src/Bitmap_cubical_complex/include/)
