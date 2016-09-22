@@ -79,9 +79,6 @@ namespace tangential_complex {
 
 using namespace internal;
 
-enum Fix_inconsistencies_status {
-  TC_FIXED = 0, TIME_LIMIT_REACHED, FIX_NOT_PERFORMED };
-
 class Vertex_data
 {
 public:
