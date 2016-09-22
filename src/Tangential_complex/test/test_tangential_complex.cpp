@@ -63,17 +63,10 @@ BOOST_AUTO_TEST_CASE(test_Spatial_tree_data_structure)
   TC tc(points, INTRINSIC_DIM, 0.01, k);
   tc.compute_tangential_complex();
 
-  // Try to fix inconsistencies
-  unsigned int num_perturb_steps;
-  std::size_t initial_num_inconsistent_local_tr;
-  std::size_t best_num_inconsistent_local_tr;
-  std::size_t final_num_inconsistent_local_tr;
-  auto perturb_ret = tc.fix_inconsistencies_using_perturbation(
-    num_perturb_steps, initial_num_inconsistent_local_tr,
-    best_num_inconsistent_local_tr, final_num_inconsistent_local_tr,
-    60); // give it 60 seconds to succeed
+  // Try to fix inconsistencies. Give it 60 seconds to succeed
+  auto perturb_ret = tc.fix_inconsistencies_using_perturbation(60);
 
-  BOOST_CHECK(perturb_ret == tc::TC_FIXED);
+  BOOST_CHECK(perturb_ret.success);
 
   // Export the TC into a Simplex_tree
   Gudhi::Simplex_tree<> stree;

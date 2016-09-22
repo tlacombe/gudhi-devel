@@ -534,7 +534,7 @@ public:
 #if defined(GUDHI_TC_VERBOSE) || defined(GUDHI_TC_PROFILING)
       std::cerr << yellow 
         << "\nAttempt to fix inconsistencies using perturbations - step #"
-        << num_steps + 1 << "... " << white;
+        << info.num_steps + 1 << "... " << white;
 #endif
 
       std::size_t num_inconsistent_stars = 0;
@@ -632,7 +632,7 @@ public:
       stats_before = stats_after;
 #endif
 
-      if (num_steps == 0)
+      if (info.num_steps == 0)
         info.initial_num_inconsistent_stars = num_inconsistent_stars;
 
       if (num_inconsistent_stars < info.best_num_inconsistent_stars)
@@ -643,13 +643,14 @@ public:
       done = (num_inconsistent_stars == 0);
       if (!done)
       {
-        ++num_steps;
+        ++info.num_steps;
         if (time_limit > 0. && t.num_seconds() > time_limit)
         {
 #ifdef GUDHI_TC_VERBOSE
           std::cerr << red << "Time limit reached.\n" << white;
 #endif
-          return TIME_LIMIT_REACHED;
+          info.success = false;
+          return info;
         }
       }
     }

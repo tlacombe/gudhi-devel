@@ -342,29 +342,25 @@ void make_tc(std::vector<Point> &points,
   unsigned int num_perturb_steps = 0;
   double perturb_time = -1;
     double export_after_perturb_time = -1.;
-  tc::Fix_inconsistencies_status perturb_ret = tc::FIX_NOT_PERFORMED;
+  bool perturb_success = false;
   if (perturb)
   {
     //=========================================================================
     // Try to fix inconsistencies by perturbing points
     //=========================================================================
     t.begin();
-    std::size_t initial_num_inconsistent_local_tr;
-    std::size_t best_num_inconsistent_local_tr;
-    std::size_t final_num_inconsistent_local_tr;
-    perturb_ret = tc.fix_inconsistencies_using_perturbation(
-      num_perturb_steps, initial_num_inconsistent_local_tr,
-      best_num_inconsistent_local_tr, final_num_inconsistent_local_tr,
-      time_limit_for_perturb);
+    auto fix_result = 
+      tc.fix_inconsistencies_using_perturbation(time_limit_for_perturb);
     t.end();
     perturb_time = t.num_seconds();
 
+    perturb_success = fix_result.success;
     GUDHI_TC_SET_PERFORMANCE_DATA("Initial_num_inconsistent_local_tr", 
-                                 initial_num_inconsistent_local_tr);
+                                  fix_result.initial_num_inconsistent_stars);
     GUDHI_TC_SET_PERFORMANCE_DATA("Best_num_inconsistent_local_tr", 
-                                 best_num_inconsistent_local_tr);
+                                 fix_result.best_num_inconsistent_stars);
     GUDHI_TC_SET_PERFORMANCE_DATA("Final_num_inconsistent_local_tr", 
-                                 final_num_inconsistent_local_tr);
+                                 fix_result.final_num_inconsistent_stars);
 
     //=========================================================================
     // Export to OFF
@@ -486,7 +482,7 @@ void make_tc(std::vector<Point> &points,
     << "  * Export to OFF (before perturb): " << export_before_time << "\n"
     << "  * Fix inconsistencies 1: " << perturb_time
     <<      " (" << num_perturb_steps << " steps) ==> "
-    <<      (perturb_ret == tc::TC_FIXED ? "FIXED" : "NOT fixed") << "\n"
+    <<      (perturb_success ? "FIXED" : "NOT fixed") << "\n"
     << "  * Export to OFF (after perturb): " << export_after_perturb_time << "\n"
     << "  * Export to OFF (after collapse): "
     <<      export_after_collapse_time << "\n"
@@ -498,7 +494,7 @@ void make_tc(std::vector<Point> &points,
   GUDHI_TC_SET_PERFORMANCE_DATA("Init_time", init_time);
   GUDHI_TC_SET_PERFORMANCE_DATA("Comput_time", computation_time);
   GUDHI_TC_SET_PERFORMANCE_DATA("Perturb_successful",
-                                (perturb_ret == tc::TC_FIXED ? 1 : 0));
+                                (perturb_success ? 1 : 0));
   GUDHI_TC_SET_PERFORMANCE_DATA("Perturb_time", perturb_time);
   GUDHI_TC_SET_PERFORMANCE_DATA("Perturb_steps", num_perturb_steps);
   GUDHI_TC_SET_PERFORMANCE_DATA("Result_pure_pseudomanifold",

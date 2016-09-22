@@ -37,15 +37,8 @@ int main (void)
   TC tc(points, INTRINSIC_DIM, 0.05, k);
   tc.compute_tangential_complex();
 
-  // Try to fix inconsistencies
-  unsigned int num_perturb_steps;
-  std::size_t initial_num_inconsistent_local_tr;
-  std::size_t best_num_inconsistent_local_tr;
-  std::size_t final_num_inconsistent_local_tr;
-  auto perturb_ret = tc.fix_inconsistencies_using_perturbation(
-    num_perturb_steps, initial_num_inconsistent_local_tr,
-    best_num_inconsistent_local_tr, final_num_inconsistent_local_tr,
-    10); // give it 10 seconds to succeed
+  // Try to fix inconsistencies. Give it 10 seconds to succeed
+  tc.fix_inconsistencies_using_perturbation(10);
 
   // Export the TC into a Simplex_tree
   Gudhi::Simplex_tree<> stree;
