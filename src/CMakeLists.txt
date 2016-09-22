@@ -47,6 +47,10 @@ else()
   if(CGAL_FOUND)
     message(STATUS "CGAL version: ${CGAL_VERSION}.")
     include( ${CGAL_USE_FILE} )
+    
+    if (NOT CGAL_VERSION VERSION_LESS 4.8.0)
+      include_directories(BEFORE "include/gudhi_patches")
+    endif()
   endif()
   
   if(MSVC)
@@ -98,7 +102,6 @@ else()
 
   #---------------------------------------------------------------------------------------
   # Gudhi compilation part
-  include_directories(BEFORE "include/gudhi_patches")
   include_directories(include)
 
   add_subdirectory(example/common)
