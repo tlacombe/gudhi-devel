@@ -26,7 +26,7 @@
 #include <gudhi/Tangential_complex/config.h>
 #include <gudhi/Tangential_complex/Simplicial_complex.h>
 #include <gudhi/Tangential_complex/utilities.h>
-#include <gudhi/Spatial_tree_data_structure.h>
+#include <gudhi/Kd_tree_search.h>
 #include <gudhi/console_color.h>
 #include <gudhi/Clock.h>
 #include <gudhi/Simplex_tree.h>
@@ -218,7 +218,7 @@ public:
 
 private:                                               
                                                        
-  typedef sps::Spatial_tree_data_structure<K, Points>   Points_ds;
+  typedef sps::Kd_tree_search<K, Points>                Points_ds;
   typedef typename Points_ds::KNS_range                 KNS_range;
   typedef typename Points_ds::INS_range                 INS_range;
 
