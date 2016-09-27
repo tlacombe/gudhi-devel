@@ -40,13 +40,13 @@ namespace spatial_searching {
 
 
   /**
-  * \class Spatial_tree_data_structure Spatial_tree_data_structure.h gudhi/Spatial_tree_data_structure.h
+  * \class Kd_tree_search Kd_tree_search.h gudhi/Kd_tree_search.h
   * \brief Spatial tree data structure to perform (approximate) nearest neighbor search.
   *
   * \ingroup spatial_searching
   *
   * \details
-  * The class Spatial_tree_data_structure is a tree-based data structure, based on
+  * The class Kd_tree_search is a tree-based data structure, based on
   * <a target="_blank" href="http://doc.cgal.org/latest/Spatial_searching/index.html">CGAL dD spatial searching data structures</a>.
   * It provides a simplified API to perform (approximate) nearest neighbor searches. Contrary to CGAL default behavior, the tree
   * does not store the points themselves, but stores indices.
@@ -65,7 +65,7 @@ namespace spatial_searching {
   *   It must be a range whose iterator type is a `RandomAccessIterator`.
   */
 template <typename K, typename Point_range>
-class Spatial_tree_data_structure
+class Kd_tree_search
 {
   typedef boost::iterator_property_map<
     typename Point_range::const_iterator,
@@ -108,19 +108,15 @@ public:
   /// \brief Constructor
   /// @param[in] points Const reference to the point range. This range
   /// is not copied, so it should not be destroyed or modified afterwards.
-  Spatial_tree_data_structure(
-    Point_range const& points, bool build_the_tree_now = true)
+  Kd_tree_search(Point_range const& points)
   : m_points(points),
     m_tree(boost::counting_iterator<std::ptrdiff_t>(0),
            boost::counting_iterator<std::ptrdiff_t>(points.size()),
            typename Tree::Splitter(),
            STraits(std::begin(points)) )
   {
-    if (build_the_tree_now)
-    {
-      // Build the tree now (we don't want to wait for the first query)
-      m_tree.build();
-    }
+    // Build the tree now (we don't want to wait for the first query)
+    m_tree.build();
   }
 
   /// \brief Constructor
@@ -129,21 +125,17 @@ public:
   /// @param[in] only_these_points Specifies the indices of the points that
   /// should be actually inserted into the tree. The other points are ignored.
   template <typename Point_indices_range>
-  Spatial_tree_data_structure(
+  Kd_tree_search(
     Point_range const& points,
-    Point_indices_range const& only_these_points, 
-    bool build_the_tree_now = true)
+    Point_indices_range const& only_these_points)
     : m_points(points),
       m_tree(
         only_these_points.begin(), only_these_points.end(),
         typename Tree::Splitter(),
         STraits(std::begin(points)))
   {
-    if (build_the_tree_now)
-    {
-      // Build the tree now (we don't want to wait for the first query)
-      m_tree.build();
-    }
+    // Build the tree now (we don't want to wait for the first query)
+    m_tree.build();
   }
 
   /// \brief Constructor
@@ -151,22 +143,18 @@ public:
   /// is not copied, so it should not be destroyed or modified afterwards.
   /// @param[in] begin_idx, past_the_end_idx Define the subset of the points that
   /// should be actually inserted into the tree. The other points are ignored.
-  Spatial_tree_data_structure(
+  Kd_tree_search(
     Point_range const& points,
-    std::size_t begin_idx, std::size_t past_the_end_idx,
-    bool build_the_tree_now = true)
+    std::size_t begin_idx, std::size_t past_the_end_idx)
   : m_points(points),
     m_tree(
       boost::counting_iterator<std::ptrdiff_t>(begin_idx),
       boost::counting_iterator<std::ptrdiff_t>(past_the_end_idx),
       typename Tree::Splitter(),
-      STraits(std::begin(point)) )
+      STraits(std::begin(points)) )
   {
-    if (build_the_tree_now)
-    {
-      // Build the tree now (we don't want to wait for the first query)
-      m_tree.build();
-    }
+    // Build the tree now (we don't want to wait for the first query)
+    m_tree.build();
   }
 
   // Be careful, this function invalidates the tree,
