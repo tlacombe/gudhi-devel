@@ -35,8 +35,8 @@ public:
   
   // Construct and start the timer
   Clock(const std::string& msg_ = std::string())
-  : end_called(false),
-    startTime(boost::posix_time::microsec_clock::local_time()),
+  : startTime(boost::posix_time::microsec_clock::local_time()),
+    end_called(false),
     msg(msg_)
   {}
 

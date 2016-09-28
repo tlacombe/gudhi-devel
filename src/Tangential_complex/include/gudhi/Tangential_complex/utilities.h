@@ -141,7 +141,6 @@ namespace internal {
     typename K::FT sqlen_threshold = typename K::FT(1e-13)
     )
   {
-    typedef Basis<K>                  Basis;
     typedef typename K::FT            FT;
     typedef typename K::Vector_d      Vector;
 
@@ -328,8 +327,8 @@ namespace internal {
 
     Point operator()(Point const& p) const
     {
-      typedef K::FT         FT;
-      typedef K::Point_d    Point;
+      typedef typename K::FT         FT;
+      typedef typename K::Point_d    Point;
 
       typename K::Construct_point_d constr_pt = m_k.construct_point_d_object();
       typename K::Compute_coordinate_d coord = m_k.compute_coordinate_d_object();
@@ -370,9 +369,9 @@ namespace internal {
       GUDHI_CHECK(m_k.point_dimension_d_object()(p) == 4,
         std::logic_error("Wrong dimension"));
 
-      typedef K::FT         FT;
-      typedef K::Point_d    Point;
-      typedef K::Vector_d   Vector;
+      typedef typename K::FT         FT;
+      typedef typename K::Point_d    Point;
+      typedef typename K::Vector_d   Vector;
 
       typename K::Translated_point_d transl = m_k.translated_point_d_object();
       typename K::Point_to_vector_d pt_to_vec = m_k.point_to_vector_d_object();
@@ -412,8 +411,8 @@ namespace internal {
       GUDHI_CHECK(m_k.point_dimension_d_object()(p) == 4,
         std::logic_error("Wrong dimension"));
 
-      typedef K::FT         FT;
-      typedef K::Point_d    Point;
+      typedef typename K::FT         FT;
+      typedef typename K::Point_d    Point;
 
       typename K::Construct_point_d constr_pt = m_k.construct_point_d_object();
       typename K::Compute_coordinate_d coord = m_k.compute_coordinate_d_object();

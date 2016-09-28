@@ -191,7 +191,7 @@ public:
            it_simplex != it_simplex_end ;
            ++it_simplex)
       {
-        if (it_simplex->size() > k + 1)
+        if (static_cast<int>(it_simplex->size()) > k + 1)
         {
           std::vector<Simplex> k_faces;
           // Get the k-faces composing the simplex
@@ -317,7 +317,7 @@ public:
          it_simplex != it_simplex_end ;
          ++it_simplex)
     {
-      if (it_simplex->size() != simplex_dim + 1)
+      if (static_cast<int>(it_simplex->size()) != simplex_dim + 1)
       {
         if (verbose_level >= 2)
           std::cerr << "Found a simplex with dim = "
@@ -474,7 +474,7 @@ public:
          it_simplex != it_simplex_end ; 
          ++it_simplex)
     {
-      if (it_simplex->size() != simplex_dim + 1)
+      if (static_cast<int>(it_simplex->size()) != simplex_dim + 1)
       {
         if (verbose_level >= 2)
           std::cerr << "Found a simplex with dim = " 
@@ -507,7 +507,7 @@ public:
                                                       Dm1_faces_to_adj_D_faces;
       Dm1_faces_to_adj_D_faces dm1_faces_to_adj_d_faces;
       
-      for (int i_dsimpl = 0 ; i_dsimpl < it_star->size() ; ++i_dsimpl)
+      for (std::size_t i_dsimpl = 0 ; i_dsimpl < it_star->size() ; ++i_dsimpl)
       {
         Simplex dm1_simpl_of_link = *((*it_star)[i_dsimpl]);
         dm1_simpl_of_link.erase(center_vertex_index);
@@ -529,7 +529,7 @@ public:
       Adj_graph adj_graph;
       std::vector<Graph_vertex> d_faces_descriptors;
       d_faces_descriptors.resize(it_star->size());
-      for (int j = 0 ; j < it_star->size() ; ++j)
+      for (std::size_t j = 0 ; j < it_star->size() ; ++j)
         d_faces_descriptors[j] = boost::add_vertex(adj_graph);
 
       Dm1_faces_to_adj_D_faces::const_iterator dm1_to_d_it = 

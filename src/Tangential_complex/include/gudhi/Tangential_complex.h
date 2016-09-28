@@ -1171,8 +1171,8 @@ private:
     typename K::Squared_distance_d k_sqdist = m_k.squared_distance_d_object();
 
     // Triangulation's traits functor & objects
-    typename Tr_traits::Point_weight_d point_weight =
-      local_tr_traits.point_weight_d_object();
+    typename Tr_traits::Compute_weight_d point_weight =
+      local_tr_traits.compute_weight_d_object();
     typename Tr_traits::Power_center_d power_center =
       local_tr_traits.power_center_d_object();
 
@@ -1772,8 +1772,8 @@ private:
   {
     typename K::Point_drop_weight_d k_drop_w =
       m_k.point_drop_weight_d_object();
-    typename K::Point_weight_d k_point_weight =
-      m_k.point_weight_d_object();
+    typename K::Compute_weight_d k_point_weight =
+      m_k.compute_weight_d_object();
     return project_point_and_compute_weight(
       k_drop_w(wp), k_point_weight(wp), tsb, tr_traits);
   }
@@ -2332,7 +2332,7 @@ private:
 #ifdef GUDHI_TC_EXPORT_ALL_COORDS_IN_OFF
     int num_coords = m_ambient_dim;
 #else
-    int num_coords = min(m_ambient_dim, 3);
+    int num_coords = std::min(m_ambient_dim, 3);
 #endif
 
 #ifdef GUDHI_TC_EXPORT_NORMALS
