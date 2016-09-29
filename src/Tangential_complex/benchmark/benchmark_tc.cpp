@@ -339,7 +339,7 @@ void make_tc(std::vector<Point> &points,
 
   unsigned int num_perturb_steps = 0;
   double perturb_time = -1;
-    double export_after_perturb_time = -1.;
+  double export_after_perturb_time = -1.;
   bool perturb_success = false;
   if (perturb)
   {
@@ -373,7 +373,7 @@ void make_tc(std::vector<Point> &points,
       tc, input_name_stripped, "_AFTER_FIX", true, &complex, 
       &inconsistent_simplices);
     t.end();
-    double export_after_perturb_time = (exported ? t.num_seconds() : -1);
+    export_after_perturb_time = (exported ? t.num_seconds() : -1);
 
     //std::string fn = "output/inc_stars/";
     //fn += input_name_stripped;
@@ -463,7 +463,7 @@ void make_tc(std::vector<Point> &points,
       << "   * Red: wrong dim simplices\n"
       << "   * Green: wrong number of cofaces simplices\n"
       << "   * Blue: not-connected stars\n";
-    double export_after_collapse_time = (exported ? t.num_seconds() : -1.);
+    export_after_collapse_time = (exported ? t.num_seconds() : -1.);
   }
 
   //===========================================================================

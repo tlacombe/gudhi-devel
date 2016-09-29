@@ -2107,7 +2107,6 @@ private:
     Star const& star = m_stars[tr_index];
     Triangulation const& tr    = m_triangulations[tr_index].tr();
     Tr_vertex_handle center_vh = m_triangulations[tr_index].center_vertex();
-    int cur_dim = tr.current_dimension();
 
     // For each incident simplex
     Star::const_iterator it_inc_simplex = star.begin();

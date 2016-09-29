@@ -149,7 +149,6 @@ std::vector<typename Kernel::Point_d> generate_points_on_torus_3D(
   /*, std::vector<TC_basis> *p_tangent_planes = NULL*/)
 {
   typedef typename Kernel::Point_d Point;
-  typedef typename Kernel::Vector_d Vector;
   typedef typename Kernel::FT FT;
   Kernel k;
   CGAL::Random rng;
@@ -200,6 +199,7 @@ std::vector<typename Kernel::Point_d> generate_points_on_torus_3D(
   return points;
 }
 
+// "Private" function used by generate_points_on_torus_d
 template <typename Kernel, typename OutputIterator>
 static void generate_uniform_points_on_torus_d(
   const Kernel &k, int dim, std::size_t num_slices,
@@ -207,7 +207,7 @@ static void generate_uniform_points_on_torus_d(
   double radius_noise_percentage = 0., 
   std::vector<typename Kernel::FT> current_point = std::vector<typename Kernel::FT>())
 {
-  static CGAL::Random rng;
+  CGAL::Random rng;
   if (current_point.size() == 2*dim)
   {
     *out++ = k.construct_point_d_object()(
@@ -243,7 +243,7 @@ std::vector<typename Kernel::Point_d> generate_points_on_torus_d(
   typedef typename Kernel::Point_d Point;
   typedef typename Kernel::FT FT;
   Kernel k;
-  static CGAL::Random rng;
+  CGAL::Random rng;
 
   std::vector<Point> points;
   points.reserve(num_points);
@@ -368,7 +368,6 @@ std::vector<typename Kernel::Point_d> generate_points_on_3sphere_and_circle(
 {
   typedef typename Kernel::FT FT;
   typedef typename Kernel::Point_d Point;
-  typedef typename Kernel::Vector_d Vector;
   Kernel k;
   CGAL::Random rng;
   CGAL::Random_points_on_sphere_d<Point> generator(3, sphere_radius);
