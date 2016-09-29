@@ -319,7 +319,7 @@ public:
     return m_ambient_dim;
   }
 
-  Points const& points()
+  Points const& points() const
   {
     return m_points;
   }
@@ -2104,8 +2104,12 @@ private:
   {
     bool is_inconsistent = false;
 
+#ifdef GUDHI_TC_PERTURB_N_CLOSEST_POINTS
+    Triangulation const& tr = m_triangulations[tr_index].tr();
+    Tr_traits const& local_tr_traits = tr.geom_traits();
+#endif
+
     Star const& star = m_stars[tr_index];
-    Triangulation const& tr    = m_triangulations[tr_index].tr();
     Tr_vertex_handle center_vh = m_triangulations[tr_index].center_vertex();
 
     // For each incident simplex
@@ -2214,18 +2218,18 @@ private:
         {
           simplex_pts.push_back(project_point_and_compute_weight(
             m_points[*it_point_idx], m_weights[*it_point_idx],
-              m_tangent_spaces[tr_index], tr.geom_traits()));
+              m_tangent_spaces[tr_index], tr));
         }
 
         typename Tr_traits::Power_center_d power_center =
-          tr.geom_traits().power_center_d_object();
+          local_tr_traits.power_center_d_object();
         typename Tr_traits::Compute_coordinate_d coord =
-          tr.geom_traits().compute_coordinate_d_object();
+          local_tr_traits.compute_coordinate_d_object();
 
         Point global_center = unproject_point(
           power_center(simplex_pts.begin(), simplex_pts.end()),
           m_tangent_spaces[tr_index],
-          tr.geom_traits());
+          local_tr_traits);
 
         KNS_range kns_range = m_points_ds.query_k_nearest_neighbors(
           global_center,
