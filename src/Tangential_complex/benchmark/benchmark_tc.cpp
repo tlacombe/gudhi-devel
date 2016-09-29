@@ -257,8 +257,6 @@ void make_tc(std::vector<Point> &points,
   input_name_stripped = input_name_stripped.substr(
     slash_index, input_name_stripped.find_last_of('.') - slash_index);
 
-  int ambient_dim = k.point_dimension_d_object()(*points.begin());
-
   GUDHI_TC_SET_PERFORMANCE_DATA("Num_points_in_input", points.size());
 
 #ifdef GUDHI_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM

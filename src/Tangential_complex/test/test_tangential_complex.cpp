@@ -39,9 +39,7 @@ namespace tc = Gudhi::tangential_complex;
 BOOST_AUTO_TEST_CASE(test_Spatial_tree_data_structure)
 {
   typedef CGAL::Epick_d<CGAL::Dynamic_dimension_tag>              Kernel;
-  typedef Kernel::FT                                              FT;
   typedef Kernel::Point_d                                         Point;
-  typedef Kernel::Vector_d                                        Vector;
   typedef tc::Tangential_complex<
     Kernel, CGAL::Dynamic_dimension_tag,
     CGAL::Parallel_tag>                                           TC;

@@ -158,7 +158,6 @@ std::vector<typename Kernel::Point_d> generate_points_on_torus_3D(
 
   // if uniform
   std::size_t num_lines = (std::size_t)sqrt(num_points);
-  std::size_t num_cols = num_points/num_lines + 1;
 
   std::vector<Point> points;
   points.reserve(num_points);
@@ -177,7 +176,6 @@ std::vector<typename Kernel::Point_d> generate_points_on_torus_3D(
       u = rng.get_double(0, 6.2832);
       v = rng.get_double(0, 6.2832);
     }
-    double tmp = cos(u/2)*sin(v) - sin(u/2)*sin(2.*v);
     Point p = construct_point(k,
       (R + r * std::cos(u)) * std::cos(v),
       (R + r * std::cos(u)) * std::sin(v),
@@ -228,7 +226,7 @@ static void generate_uniform_points_on_torus_d(
           (100. + radius_noise_percentage)/100.);
       }
       std::vector<typename Kernel::FT> cp2 = current_point;
-      FT alpha = 6.2832 * slice_idx / num_slices;
+      double alpha = 6.2832 * slice_idx / num_slices;
       cp2.push_back(radius_noise_ratio*std::cos(alpha));
       cp2.push_back(radius_noise_ratio*std::sin(alpha));
       generate_uniform_points_on_torus_d(
@@ -411,7 +409,6 @@ std::vector<typename Kernel::Point_d> generate_points_on_klein_bottle_3D(
 
   // if uniform
   std::size_t num_lines = (std::size_t)sqrt(num_points);
-  std::size_t num_cols = num_points/num_lines + 1;
 
   std::vector<Point> points;
   points.reserve(num_points);
@@ -453,7 +450,6 @@ std::vector<typename Kernel::Point_d> generate_points_on_klein_bottle_4D(
 
   // if uniform
   std::size_t num_lines = (std::size_t)sqrt(num_points);
-  std::size_t num_cols = num_points/num_lines + 1;
 
   std::vector<Point> points;
   points.reserve(num_points);
@@ -497,7 +493,6 @@ generate_points_on_klein_bottle_variant_5D(
 
   // if uniform
   std::size_t num_lines = (std::size_t)sqrt(num_points);
-  std::size_t num_cols = num_points/num_lines + 1;
 
   std::vector<Point> points;
   points.reserve(num_points);

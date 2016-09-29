@@ -327,9 +327,6 @@ namespace internal {
 
     Point operator()(Point const& p) const
     {
-      typedef typename K::FT         FT;
-      typedef typename K::Point_d    Point;
-
       typename K::Construct_point_d constr_pt = m_k.construct_point_d_object();
       typename K::Compute_coordinate_d coord = m_k.compute_coordinate_d_object();
 
@@ -410,9 +407,6 @@ namespace internal {
     {
       GUDHI_CHECK(m_k.point_dimension_d_object()(p) == 4,
         std::logic_error("Wrong dimension"));
-
-      typedef typename K::FT         FT;
-      typedef typename K::Point_d    Point;
 
       typename K::Construct_point_d constr_pt = m_k.construct_point_d_object();
       typename K::Compute_coordinate_d coord = m_k.compute_coordinate_d_object();

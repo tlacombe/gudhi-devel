@@ -188,26 +188,6 @@ private:
     }
   }
 
-  // CJTODO
-  void write_background(const Color& color)
-  {
-    write_turn_background_light(false);
-
-    /*m_out << "Surface \"constant\"" << std::endl;
-    write_color(color, false);
-
-    double corner = zmax_ * 2.;
-    double depth_pos = zmax_ * 1.6;
-
-    m_out << "Polygon \"P\" [";
-    m_out << " " << -corner << " " << -corner << " " << depth_pos << " ";
-    m_out << " " << corner << " " << -corner << " " << depth_pos << " ";
-    m_out << " " << corner << " " << corner << " " << depth_pos << " ";
-    m_out << " " << -corner << " " << corner << " " << depth_pos << " ";
-    m_out << "]" << std::endl;*/
-  }
-
-
   void write_color(Color const& color, bool use_transparency)
   {
     if (m_current_color == color)
