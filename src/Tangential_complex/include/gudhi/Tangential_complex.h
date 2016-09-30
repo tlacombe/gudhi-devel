@@ -324,6 +324,16 @@ public:
     return m_points;
   }
 
+  /** \brief Returns the point corresponding to the vertex given as parameter.
+  *
+  * @param[in] vertex Vertex handle of the point to retrieve.
+  * @return The point found.
+  */
+  Point get_point(std::size_t vertex) const
+  {
+    return m_points[vertex_handle];
+  }
+
   /// Returns the number of vertices.
   std::size_t number_of_vertices() const
   {
