@@ -329,7 +329,7 @@ public:
   * @param[in] vertex Vertex handle of the point to retrieve.
   * @return The point found.
   */
-  Point get_point(std::size_t vertex) const
+  Point get_point(std::size_t vertex_handle) const
   {
     return m_points[vertex_handle];
   }
