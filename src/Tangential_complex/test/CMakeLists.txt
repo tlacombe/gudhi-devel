@@ -12,9 +12,6 @@ endif()
 
 if(CGAL_FOUND)
   if (NOT CGAL_VERSION VERSION_LESS 4.8.0)
-    message(STATUS "CGAL version: ${CGAL_VERSION}.")
-
-    find_package(Eigen3 3.1.0)
     if (EIGEN3_FOUND)
       message(STATUS "Eigen3 version: ${EIGEN3_VERSION}.")
       include( ${EIGEN3_USE_FILE} )
@@ -25,12 +22,10 @@ if(CGAL_FOUND)
       if (TBB_FOUND)
         target_link_libraries(Tangential_complex_test_TC ${TBB_LIBRARIES})
       endif()
-    else()
-      message(WARNING "Eigen3 not found. Version 3.1.0 is required for the Tangential_complex tests.")
+      add_test(Tangential_complex_test_TC ${CMAKE_CURRENT_BINARY_DIR}/Tangential_complex_test_TC
+      # XML format for Jenkins xUnit plugin 
+      --log_format=XML --log_sink=${CMAKE_SOURCE_DIR}/Tangential_complex_UT.xml --log_level=test_suite --report_level=no)
+
     endif()
-  else()
-    message(WARNING "CGAL version: ${CGAL_VERSION} is too old to compile Tangential_complex tests. Version 4.8.0 is required.")
   endif ()
-else()
-  message(WARNING "CGAL not found. It is required for the Tangential_complex tests.")
 endif()
