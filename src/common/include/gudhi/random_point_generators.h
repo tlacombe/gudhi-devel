@@ -181,20 +181,6 @@ std::vector<typename Kernel::Point_d> generate_points_on_torus_3D(
       r * std::sin(u));
     points.push_back(p);
     ++i;
-    /*if (p_tangent_planes)
-    {
-      TC_basis tp(p);
-      tp.push_back(cstr_vec(
-        -r * std::cos(v) * std::sin(u),
-        -r * std::sin(v) * std::sin(u),
-        r * std::cos(u)));
-      tp.push_back(cstr_vec(
-        -(R + r * std::cos(u)) * std::sin(v),
-        (R + r * std::cos(u)) * std::cos(v),
-        0));
-      p_tangent_planes->push_back(
-        CGAL::tangential_complex::internal::compute_gram_schmidt_basis(sp, k));
-    }*/
   }
   return points;
 }

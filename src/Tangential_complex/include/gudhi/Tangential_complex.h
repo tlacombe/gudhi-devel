@@ -244,7 +244,7 @@ public:
   * Note the complex is not computed: `compute_tangential_complex` must be called after the creation
   * of the object.
   *
-  * @param[in] points Range of points (`Point_range::value_type` must be the same as `Kernel_::Point_d`).
+  * @param[in] points Range of points (`Point_range::value_type` must be the same as `Kernel_::Point_d`). It must contain at least one point.
   * @param[in] intrinsic_dimension Intrinsic dimension of the manifold.
   * @param[in] max_perturb Maximum length of the translations used by the perturbation.
   * @param[in] k Kernel instance.
@@ -397,57 +397,6 @@ public:
     std::cerr << "Tangential complex computed in " << t.num_seconds()
               << " seconds.\n";
 #endif
-  }
-
-  void estimate_intrinsic_dimension() const
-  {
-    // Kernel functors
-    typename K::Compute_coordinate_d coord = m_k.compute_coordinate_d_object();
-
-    std::vector<FT> sum_eigen_values(m_ambient_dim, FT(0));
-    std::size_t num_points_for_pca = static_cast<std::size_t>(
-      std::pow(GUDHI_TC_BASE_VALUE_FOR_PCA, m_intrinsic_dim));
-
-    typename Points::const_iterator it_p = m_points.begin();
-    typename Points::const_iterator it_p_end = m_points.end();
-    // For each point p
-    for ( ; it_p != it_p_end ; ++it_p)
-    {
-      const Point &p = *it_p;
-
-      KNS_range kns_range = m_points_ds.query_k_nearest_neighbors(
-        p, static_cast<unsigned int>(num_points_for_pca), false);
-
-      //******************************* PCA *************************************
-
-      // One row = one point
-      Eigen::MatrixXd mat_points(num_points_for_pca, m_ambient_dim);
-      auto nn_it = kns_range.begin();
-      for (int j = 0 ;
-            j < num_points_for_pca && nn_it != kns_range.end() ;
-            ++j, ++nn_it)
-      {
-        for (int i = 0 ; i < m_ambient_dim ; ++i)
-          mat_points(j, i) = CGAL::to_double(coord(m_points[nn_it->first], i));
-      }
-      Eigen::MatrixXd centered = mat_points.rowwise() - mat_points.colwise().mean();
-      Eigen::MatrixXd cov = centered.adjoint() * centered;
-      Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eig(cov);
-
-      // The eigenvectors are sorted in increasing order of their corresponding
-      // eigenvalues
-      for (int i = 0 ; i < m_ambient_dim ; ++i)
-        sum_eigen_values[m_ambient_dim-1 - i] += eig.eigenvalues()[i];
-
-      //*************************************************************************
-    }
-
-    // CJTODO: replace this by an actual estimation
-    for (FT v : sum_eigen_values)
-    {
-      std::cout << v / m_points.size() << " ; ";
-    }
-    std::cout << "\n";
   }
 
   /// \brief Type returned by `Tangential_complex::fix_inconsistencies_using_perturbation`.
@@ -1437,8 +1386,6 @@ private:
       m_k.scalar_product_d_object();
     typename K::Difference_of_vectors_d diff_vec =
       m_k.difference_of_vectors_d_object();
-    //typename K::Translated_point_d      transl =
-    //  m_k.translated_point_d_object();
 
 #ifdef GUDHI_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
     KNS_range kns_range = m_points_ds_for_tse.query_k_nearest_neighbors(
@@ -1458,8 +1405,6 @@ private:
     {
       for (int i = 0 ; i < m_ambient_dim ; ++i)
       {
-        //const Point p = transl(
-        //  points_for_pca[nn_it->first], m_translations[nn_it->first]);
         mat_points(j, i) = CGAL::to_double(coord(points_for_pca[nn_it->first], i));
       }
     }
@@ -1518,20 +1463,6 @@ private:
     m_are_tangent_spaces_computed[i] = true;
 
     return tsb;
-
-    /*
-    // Alternative code (to be used later)
-    //Vector n = m_k.point_to_vector_d_object()(p);
-    //n = scaled_vec(n, FT(1)/sqrt(sqlen(n)));
-    //Vector t1(12., 15., 65.);
-    //Vector t2(32., 5., 85.);
-    //Tangent_space_basis ts;
-    //ts.reserve(m_intrinsic_dim);
-    //ts.push_back(diff_vec(t1, scaled_vec(n, scalar_pdct(t1, n))));
-    //ts.push_back(diff_vec(t2, scaled_vec(n, scalar_pdct(t2, n))));
-    //ts = compute_gram_schmidt_basis(ts, m_k);
-    //return ts;
-    */
   }
 
   // Compute the space tangent to a simplex (p1, p2, ... pn)
@@ -1557,8 +1488,6 @@ private:
       m_k.scalar_product_d_object();
     typename K::Difference_of_vectors_d diff_vec =
       m_k.difference_of_vectors_d_object();
-    //typename K::Translated_point_d      transl =
-    //  m_k.translated_point_d_object();
 
     // One row = one point
     Eigen::MatrixXd mat_points(s.size()*num_points_for_pca, m_ambient_dim);
@@ -1585,8 +1514,6 @@ private:
       {
         for (int i = 0 ; i < m_ambient_dim ; ++i)
         {
-          //const Point p = transl(
-          //  points_for_pca[nn_it->first], m_translations[nn_it->first]);
           mat_points(current_row, i) = 
             CGAL::to_double(coord(points_for_pca[nn_it->first], i));
         }

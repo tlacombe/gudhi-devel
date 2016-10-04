@@ -154,6 +154,41 @@ protected:
   XML_exporter::Element_with_map m_current_element;
 };
 
+template<
+  typename Kernel, typename OutputIteratorPoints>
+  bool load_points_from_file(
+    const std::string &filename,
+    OutputIteratorPoints points,
+    std::size_t only_first_n_points = std::numeric_limits<std::size_t>::max())
+{
+  typedef typename Kernel::Point_d    Point;
+
+  std::ifstream in(filename);
+  if (!in.is_open())
+  {
+    std::cerr << "Could not open '" << filename << "'" << std::endl;
+    return false;
+  }
+
+  Kernel k;
+  Point p;
+  int num_ppints;
+  in >> num_ppints;
+
+  std::size_t i = 0;
+  while (i < only_first_n_points && in >> p)
+  {
+    *points++ = p;
+    ++i;
+  }
+
+#ifdef GUDHI_TC_VERBOSE
+  std::cerr << "'" << filename << "' loaded." << std::endl;
+#endif
+
+  return true;
+}
+
 // color_inconsistencies: only works if p_complex = NULL
 template <typename TC>
 bool export_to_off(
@@ -170,20 +205,7 @@ bool export_to_off(
   return true;
 #endif
 
-#if 0
-  Kernel k;
-  FT center_pt[] = { -0.5, -std::sqrt(3.) / 2, -0.5, std::sqrt(3.) / 2 };
-  FT proj_pt[] = { 0., 0., 0., 0.2 };
-  S3_to_R3_stereographic_projection<Kernel>
-    proj_functor(0.2, 
-                 Point(4, &center_pt[0], &center_pt[4]),
-                 k);
-#else
   CGAL::Identity<Point> proj_functor;
-  //Kernel k;
-  //std::array<int, 3> sel = { 1, 3, 5 };
-  //Orthogonal_projection<Kernel> proj_functor(sel, k);
-#endif
 
   if (tc.intrinsic_dimension() <= 3)
   {
@@ -713,7 +735,7 @@ int main()
               }
               else
               {
-				  tc::internal::load_points_from_file<Kernel>(
+                load_points_from_file<Kernel>(
                   input, std::back_inserter(points),
                   ONLY_LOAD_THE_FIRST_N_POINTS);
               }
