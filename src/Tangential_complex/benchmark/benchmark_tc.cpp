@@ -189,6 +189,54 @@ template<
   return true;
 }
 
+template<
+  typename Kernel, typename Tangent_space_basis,
+  typename OutputIteratorPoints, typename OutputIteratorTS>
+  bool load_points_and_tangent_space_basis_from_file(
+    const std::string &filename,
+    OutputIteratorPoints points,
+    OutputIteratorTS tangent_spaces,
+    int intrinsic_dim,
+    std::size_t only_first_n_points = std::numeric_limits<std::size_t>::max())
+{
+  typedef typename Kernel::Point_d    Point;
+  typedef typename Kernel::Vector_d   Vector;
+
+  std::ifstream in(filename);
+  if (!in.is_open())
+  {
+    std::cerr << "Could not open '" << filename << "'" << std::endl;
+    return false;
+  }
+
+  Kernel k;
+  Point p;
+  int num_ppints;
+  in >> num_ppints;
+
+  std::size_t i = 0;
+  while (i < only_first_n_points && in >> p)
+  {
+    *points++ = p;
+
+    Tangent_space_basis tsb(i);
+    for (int d = 0; d < intrinsic_dim; ++d)
+    {
+      Vector v;
+      in >> v;
+      tsb.push_back(normalize_vector(v, k));
+    }
+    *tangent_spaces++ = tsb;
+    ++i;
+  }
+
+#ifdef GUDHI_TC_VERBOSE
+  std::cerr << "'" << filename << "' loaded." << std::endl;
+#endif
+
+  return true;
+}
+
 // color_inconsistencies: only works if p_complex = NULL
 template <typename TC>
 bool export_to_off(
