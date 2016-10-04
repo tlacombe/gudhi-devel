@@ -32,23 +32,9 @@
 //#define GUDHI_TC_PERFORM_EXTRA_CHECKS
 //#define GUDHI_TC_SHOW_DETAILED_STATS_FOR_INCONSISTENCIES
 
-// Solving inconsistencies: only perturb the vertex, the simplex or more?
-#define GUDHI_TC_PERTURB_THE_CENTER_VERTEX_ONLY // Best technique
-//#define GUDHI_TC_PERTURB_THE_SIMPLEX_ONLY // Best technique ex-aequo
-//#define GUDHI_TC_PERTURB_THE_1_STAR // BAD TECHNIQUE
-//#define GUDHI_TC_PERTURB_N_CLOSEST_POINTS // perturb the GUDHI_TC_NUMBER_OF_PERTURBED_POINTS closest points
-// Otherwise, perturb one random point of the simplex
-
-// Only used if GUDHI_TC_PERTURB_N_CLOSEST_POINTS is defined
-#define GUDHI_TC_NUMBER_OF_PERTURBED_POINTS(intr_dim) (1) // Good technique
-//#define GUDHI_TC_NUMBER_OF_PERTURBED_POINTS(intr_dim) (intr_dim + 2) // Quite good technique
-
 //========================= Strategy ==========================================
 #define GUDHI_TC_PERTURB_POSITION
-# define GUDHI_TC_PERTURB_POSITION_TANGENTIAL // default
-//# define GUDHI_TC_PERTURB_POSITION_GLOBAL
 //#define GUDHI_TC_PERTURB_WEIGHT
-//#define GUDHI_TC_PERTURB_TANGENT_SPACE
 
 //========================= Parameters ========================================
 

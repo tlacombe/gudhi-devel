@@ -157,15 +157,9 @@ class Tangential_complex
   typedef tbb::mutex                                  Mutex_for_perturb;
   typedef Vector                                      Translation_for_perturb;
   typedef std::vector<Atomic_wrapper<FT> >            Weights;
- #ifdef GUDHI_TC_PERTURB_WEIGHT
-  typedef std::vector<Atomic_wrapper<FT> >            Weights_memory;
- #endif
 #else
   typedef Vector                                      Translation_for_perturb;
   typedef std::vector<FT>                             Weights;
- #ifdef GUDHI_TC_PERTURB_WEIGHT
-  typedef std::vector<FT>                             Weights_memory;
- #endif
 #endif
   typedef std::vector<Translation_for_perturb>        Translations_for_perturb;
 
@@ -259,9 +253,6 @@ public:
   Tangential_complex(Point_range points,
                      int intrinsic_dimension,
                      double max_perturb,
-#ifdef GUDHI_TC_PERTURB_WEIGHT
-                     double sparsity,
-#endif
 #ifdef GUDHI_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
                      InputIterator first_for_tse, InputIterator last_for_tse,
 #endif
@@ -269,15 +260,9 @@ public:
                      )
   : m_k(k),
     m_intrinsic_dim(intrinsic_dimension),
-#ifdef GUDHI_TC_PERTURB_WEIGHT
-    m_sq_half_sparsity(0.5*sparsity*0.5*sparsity),
-#endif
     m_ambient_dim(k.point_dimension_d_object()(*points.begin())),
     m_points(points.begin(), points.end()),
     m_weights(m_points.size(), FT(0))
-#ifdef GUDHI_TC_PERTURB_WEIGHT
-    , m_weights_memory()
-#endif
 #if defined(GUDHI_USE_TBB) && defined(GUDHI_TC_PERTURB_POSITION)
     , m_p_perturb_mutexes(NULL)
 #endif
@@ -292,12 +277,7 @@ public:
     , m_points_for_tse(first_for_tse, last_for_tse)
     , m_points_ds_for_tse(m_points_for_tse)
 #endif
-  {
-#ifdef GUDHI_TC_PERTURB_WEIGHT
-    if (sparsity <= 0.)
-      std::cerr << "!Warning! Sparsity should be > 0\n";
-#endif
-  }
+  {}
 
   /// Destructor
   ~Tangential_complex()
@@ -343,9 +323,6 @@ public:
   void set_weights(const Weights& weights)
   {
     m_weights = weights;
-#ifdef GUDHI_TC_PERTURB_WEIGHT
-    m_weights_memory = weights;
-#endif
   }
 
   void set_tangent_planes(const TS_container& tangent_spaces
@@ -354,11 +331,6 @@ public:
 #endif
                          )
   {
-#ifdef GUDHI_TC_PERTURB_TANGENT_SPACE
-    std::cerr << "Cannot use GUDHI_TC_PERTURB_TANGENT_SPACE and set "
-              << " tangent spaces manually at the same time\n";
-    std::exit(EXIT_FAILURE);
-#endif
 #ifdef GUDHI_TC_EXPORT_NORMALS
     GUDHI_CHECK(
       m_points.size() == tangent_spaces.size()
@@ -402,9 +374,6 @@ public:
     delete [] m_p_perturb_mutexes;
     m_p_perturb_mutexes = new Mutex_for_perturb[m_points.size()];
 # endif
-#endif
-#ifdef GUDHI_TC_PERTURB_TANGENT_SPACE
-    m_perturb_tangent_space.resize(m_points.size(), false);
 #endif
 
 #ifdef GUDHI_USE_TBB
@@ -1313,16 +1282,11 @@ private:
             // The value depends on whether we perturb weight or position
             if (squared_star_sphere_radius_plus_margin)
             {
-#ifdef GUDHI_TC_PERTURB_WEIGHT
-              // "4*m_sq_half_sparsity" because both points can be perturbed
-              squared_star_sphere_radius_plus_margin =
-                *squared_star_sphere_radius_plus_margin + 4 * m_sq_half_sparsity;
-#else
               // "2*m_max_perturb" because both points can be perturbed
               squared_star_sphere_radius_plus_margin = CGAL::square(
                 std::sqrt(*squared_star_sphere_radius_plus_margin)
                 + 2 * m_max_perturb);
-#endif
+
               // Save it in `m_squared_star_spheres_radii_incl_margin`
               m_squared_star_spheres_radii_incl_margin[i] = 
                 *squared_star_sphere_radius_plus_margin;
@@ -1389,23 +1353,6 @@ private:
       tsb = compute_tangent_space(center_pt, i);
 #endif
     }
-#ifdef GUDHI_TC_PERTURB_TANGENT_SPACE
-    else if (m_perturb_tangent_space[i])
-    {
-#ifdef GUDHI_TC_EXPORT_NORMALS
-      tsb = compute_tangent_space(center_pt, i,
-        true /*normalize_basis*/,
-        &m_orth_spaces[i],
-        true /*perturb*/);
-#else
-      tsb = compute_tangent_space(center_pt, i,
-        true /*normalize_basis*/,
-        NULL /*ortho basis*/,
-        true /*perturb*/);
-#endif
-      m_perturb_tangent_space[i] = false;
-    }
-#endif
 
 #if defined(GUDHI_TC_PROFILING) && defined(GUDHI_TC_VERY_VERBOSE)
     Gudhi::Clock t;
@@ -1472,9 +1419,6 @@ private:
     , const std::size_t i
     , bool normalize_basis = true
     , Orthogonal_space_basis *p_orth_space_basis = NULL
-#ifdef GUDHI_TC_PERTURB_TANGENT_SPACE
-    , bool perturb = false
-#endif
     )
   {
     unsigned int num_points_for_pca = static_cast<unsigned int>(
@@ -1517,11 +1461,6 @@ private:
         //const Point p = transl(
         //  points_for_pca[nn_it->first], m_translations[nn_it->first]);
         mat_points(j, i) = CGAL::to_double(coord(points_for_pca[nn_it->first], i));
-#ifdef GUDHI_TC_PERTURB_TANGENT_SPACE
-        if (perturb)
-          mat_points(j, i) += m_random_generator.get_double(
-            -m_max_perturb, m_max_perturb);
-#endif
       }
     }
     Eigen::MatrixXd centered = mat_points.rowwise() - mat_points.colwise().mean();
@@ -2033,37 +1972,6 @@ private:
 
   void perturb(std::size_t point_idx)
   {
-    // Perturb the weight?
-#ifdef GUDHI_TC_PERTURB_WEIGHT
-    m_weights[point_idx] = m_random_generator.get_double(0., m_sq_half_sparsity);
-    if(m_weights_memory.size() > 0) // external weights were initially set
-      m_weights[point_idx] = m_weights[point_idx] + m_weights_memory[point_idx];
-#endif
-
-#ifdef GUDHI_TC_PERTURB_TANGENT_SPACE
-    m_perturb_tangent_space[point_idx] = true;
-#endif
-
-    // Perturb the position?
-#ifdef GUDHI_TC_PERTURB_POSITION
-# ifdef GUDHI_TC_PERTURB_POSITION_GLOBAL
-    typename K::Point_to_vector_d k_pt_to_vec =
-      m_k.point_to_vector_d_object();
-    CGAL::Random_points_in_ball_d<Point>
-      tr_point_in_ball_generator(
-        m_ambient_dim, m_max_perturb);
-    // Parallel
-#  if defined(GUDHI_USE_TBB)
-    Vector transl = k_pt_to_vec(*tr_point_in_ball_generator++);
-    m_p_perturb_mutexes[point_idx].lock();
-    m_translations[point_idx] = transl;
-    m_p_perturb_mutexes[point_idx].unlock();
-    // Sequential
-#  else
-    m_translations[point_idx] = k_pt_to_vec(*tr_point_in_ball_generator++);
-#  endif
-
-# else // GUDHI_TC_PERTURB_POSITION_TANGENTIAL
     const Tr_traits &local_tr_traits =
       m_triangulations[point_idx].tr().geom_traits();
     typename Tr_traits::Compute_coordinate_d coord =
@@ -2093,17 +2001,14 @@ private:
       );
     }
     // Parallel
-#  if defined(GUDHI_USE_TBB)
+#if defined(GUDHI_USE_TBB)
     m_p_perturb_mutexes[point_idx].lock();
     m_translations[point_idx] = global_transl;
     m_p_perturb_mutexes[point_idx].unlock();
     // Sequential
-#  else
+#else
     m_translations[point_idx] = global_transl;
-#  endif
-
-# endif // GUDHI_TC_PERTURB_POSITION_TANGENTIAL
-#endif // GUDHI_TC_PERTURB_POSITION
+#endif
   }
 
   // Return true if inconsistencies were found
@@ -2113,11 +2018,6 @@ private:
     OutputIt perturbed_pts_indices = CGAL::Emptyset_iterator())
   {
     bool is_inconsistent = false;
-
-#ifdef GUDHI_TC_PERTURB_N_CLOSEST_POINTS
-    Triangulation const& tr = m_triangulations[tr_index].tr();
-    Tr_traits const& local_tr_traits = tr.geom_traits();
-#endif
 
     Star const& star = m_stars[tr_index];
     Tr_vertex_handle center_vh = m_triangulations[tr_index].center_vertex();
@@ -2136,30 +2036,7 @@ private:
       Simplex c = incident_simplex;
       c.insert(tr_index); // Add the missing index
 
-//*****************************************************************************
-// STRATEGY 1: perturb all the points of the first inconsistent simplex
-//*****************************************************************************
-#ifdef GUDHI_TC_PERTURB_THE_SIMPLEX_ONLY
-      // Inconsistent?
-      if (!is_simplex_consistent(c))
-      {
-        is_inconsistent = true;
-
-        for (Simplex::const_iterator it = c.begin();
-             it != c.end() ; ++it)
-        {
-          perturb(*it);
-          *perturbed_pts_indices++ = *it;
-        }
-
-        // We will try the other cells next time
-        break;
-      }
-
-//*****************************************************************************
-// STRATEGY 2: perturb the center point only
-//*****************************************************************************
-#elif defined(GUDHI_TC_PERTURB_THE_CENTER_VERTEX_ONLY)
+      // Perturb the center point
       if (!is_simplex_consistent(c))
       {
         is_inconsistent = true;
@@ -2172,124 +2049,6 @@ private:
         // We will try the other cells next time
         break;
       }
-
-//*****************************************************************************
-// STRATEGY 3: perturb all the points of the 1-star
-//*****************************************************************************
-#elif defined(GUDHI_TC_PERTURB_THE_1_STAR)
-
-      // Inconsistent?
-      if (!is_simplex_consistent(c))
-      {
-        is_inconsistent = true;
-
-        std::set<std::size_t> the_1_star;
-
-        Star::const_iterator it_inc_simplex = star.begin();
-        Star::const_iterator it_inc_simplex_end = star.end();
-        for ( ; it_inc_simplex != it_inc_simplex_end ; ++it_inc_simplex)
-        {
-          the_1_star.insert(it_inc_simplex->begin(), it_inc_simplex ->end());
-        }
-
-        for (std::set<std::size_t>::iterator it = the_1_star.begin() ;
-             it != the_1_star.end() ; ++it)
-        {
-          perturb(*it);
-          *perturbed_pts_indices++ = *it;
-        }
-
-        // We will try the other cells next time
-        break;
-      }
-
-//*****************************************************************************
-// STRATEGY 4: perturb the k + 1 + GUDHI_TC_NUMBER_OF_ADDITIONNAL_PERTURBED_POINTS
-// closest points (to the power center of first the inconsistent cell)
-//*****************************************************************************
-#elif defined(GUDHI_TC_PERTURB_N_CLOSEST_POINTS)
-
-      // Inconsistent?
-      if (!is_simplex_consistent(c))
-      {
-        is_inconsistent = true;
-
-        // Get the k + 1 + GUDHI_TC_NUMBER_OF_ADDITIONNAL_PERTURBED_POINTS
-        // closest points
-
-        std::vector<Tr_point> simplex_pts;
-        simplex_pts.reserve(c.size());
-
-        Incident_simplex::const_iterator it_point_idx = c.begin();
-        Incident_simplex::const_iterator it_point_idx_end = c.end();
-        // For each point p of the simplex, we reproject it onto the tangent
-        // space. Could be optimized since it's already been computed before.
-        for ( ; it_point_idx != it_point_idx_end ; ++it_point_idx)
-        {
-          simplex_pts.push_back(project_point_and_compute_weight(
-            m_points[*it_point_idx], m_weights[*it_point_idx],
-              m_tangent_spaces[tr_index], tr));
-        }
-
-        typename Tr_traits::Power_center_d power_center =
-          local_tr_traits.power_center_d_object();
-        typename Tr_traits::Compute_coordinate_d coord =
-          local_tr_traits.compute_coordinate_d_object();
-
-        Point global_center = unproject_point(
-          power_center(simplex_pts.begin(), simplex_pts.end()),
-          m_tangent_spaces[tr_index],
-          local_tr_traits);
-
-        KNS_range kns_range = m_points_ds.query_k_nearest_neighbors(
-          global_center,
-          GUDHI_TC_NUMBER_OF_PERTURBED_POINTS(m_intrinsic_dim));
-        std::vector<std::size_t> neighbors;
-        for (auto nn_it = kns_range.begin() ;
-             nn_it != kns_range.end() ;
-             ++nn_it)
-        {
-          neighbors.push_back(nn_it->first);
-        }
-
-        for (std::vector<std::size_t>::iterator it = neighbors.begin();
-             it != neighbors.end() ;
-             ++it)
-        {
-          perturb(*it);
-          *perturbed_pts_indices++ = *it;
-        }
-
-        // We will try the other cells next time
-        break;
-      }
-//*****************************************************************************
-// STRATEGY 5: perturb one random point of the simplex
-//*****************************************************************************
-#else
-      // Inconsistent?
-      if (!is_simplex_consistent(c))
-      {
-        is_inconsistent = true;
-        int rnd = m_random_generator.get_int(0, static_cast<int>(c.size()));
-        if (rnd == 0)
-        {
-          perturb(tr_index);
-          *perturbed_pts_indices++ = tr_index;
-        }
-        else
-        {
-          Simplex::const_iterator it_idx = c.begin();
-          std::advance(it_idx, rnd - 1);
-          perturb(*it_idx);
-          *perturbed_pts_indices++ = *it_idx;
-        }
-
-        // We will try the other cells next time
-        break;
-      }
-
-#endif // GUDHI_TC_PERTURB_THE_SIMPLEX_ONLY
     }
 
     return is_inconsistent;
@@ -2721,24 +2480,15 @@ public:
 private:
   const K                   m_k;
   const int                 m_intrinsic_dim;
-#ifdef GUDHI_TC_PERTURB_WEIGHT
-  const double              m_sq_half_sparsity;
-#endif
   const int                 m_ambient_dim;
 
   Points                    m_points;
   Weights                   m_weights;
-#ifdef GUDHI_TC_PERTURB_WEIGHT
-  Weights_memory            m_weights_memory;
-#endif
 #ifdef GUDHI_TC_PERTURB_POSITION
   Translations_for_perturb  m_translations;
 # if defined(GUDHI_USE_TBB)
   Mutex_for_perturb        *m_p_perturb_mutexes;
 # endif
-#endif
-#ifdef GUDHI_TC_PERTURB_TANGENT_SPACE
-  std::vector<Atomic_wrapper<bool> > m_perturb_tangent_space;
 #endif
 
   Points_ds                 m_points_ds;

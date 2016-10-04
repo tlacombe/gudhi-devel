@@ -294,9 +294,6 @@ void make_tc(std::vector<Point> &points,
     points,
     intrinsic_dim,
     max_perturb,
-# ifdef GUDHI_TC_PERTURB_WEIGHT
-    sparsity,
-# endif
 #ifdef GUDHI_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
     points_not_sparse.begin(), points_not_sparse.end(),
 #endif
@@ -611,33 +608,8 @@ int main()
             GUDHI_TC_SET_PERFORMANCE_DATA("Param3", param3);
             GUDHI_TC_SET_PERFORMANCE_DATA("Ambient_dim", ambient_dim);
             GUDHI_TC_SET_PERFORMANCE_DATA("Intrinsic_dim", intrinsic_dim);
-#ifdef GUDHI_TC_PERTURB_POSITION
-# ifdef GUDHI_TC_PERTURB_POSITION_TANGENTIAL
             GUDHI_TC_SET_PERFORMANCE_DATA("Perturb_technique", "Tangential_translation");
-# else
-            GUDHI_TC_SET_PERFORMANCE_DATA("Perturb_technique", "Ambient_translation");
-# endif
-#elif defined(GUDHI_TC_PERTURB_WEIGHT)
-            GUDHI_TC_SET_PERFORMANCE_DATA("Perturb_technique", "Weight");
-#elif defined(GUDHI_TC_PERTURB_TANGENT_SPACE)
-            GUDHI_TC_SET_PERFORMANCE_DATA("Perturb_technique", "Tangent_space");
-#else
-            GUDHI_TC_SET_PERFORMANCE_DATA("Perturb_technique", "Undefined_value");
-#endif
-#ifdef GUDHI_TC_PERTURB_THE_CENTER_VERTEX_ONLY
             GUDHI_TC_SET_PERFORMANCE_DATA("Perturb_which_points", "Center_vertex");
-#elif defined(GUDHI_TC_PERTURB_THE_SIMPLEX_ONLY)
-            GUDHI_TC_SET_PERFORMANCE_DATA("Perturb_which_points", "Simplex");
-#elif defined(GUDHI_TC_PERTURB_THE_1_STAR)
-            GUDHI_TC_SET_PERFORMANCE_DATA("Perturb_which_points", "1_star");
-#elif defined(GUDHI_TC_PERTURB_N_CLOSEST_POINTS)
-            std::stringstream sstr;
-            sstr << GUDHI_TC_NUMBER_OF_PERTURBED_POINTS(intrinsic_dim) <<
-              "_closest_points";
-            GUDHI_TC_SET_PERFORMANCE_DATA("Perturb_which_points", sstr.str());
-#else
-            GUDHI_TC_SET_PERFORMANCE_DATA("Perturb_which_points", "Undefined_value");
-#endif
 
 #ifdef GUDHI_USE_TBB
             GUDHI_TC_SET_PERFORMANCE_DATA(
