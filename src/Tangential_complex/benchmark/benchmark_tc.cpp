@@ -15,7 +15,6 @@
 
 const std::size_t ONLY_LOAD_THE_FIRST_N_POINTS = 20000000;
 
-#include <gudhi/Tangential_complex/RIB_exporter.h>
 #include <gudhi/Debug_utils.h>
 #include <gudhi/Clock.h>
 #include <gudhi/Tangential_complex.h>
@@ -39,6 +38,7 @@ const std::size_t ONLY_LOAD_THE_FIRST_N_POINTS = 20000000;
 # include <tbb/task_scheduler_init.h>
 #endif
 #include "XML_exporter.h"
+#include "RIB_exporter.h"
 #define GUDHI_TC_EXPORT_PERFORMANCE_DATA
 #define GUDHI_TC_SET_PERFORMANCE_DATA(value_name, value) \
         XML_perf_data::set(value_name, value);
@@ -378,7 +378,7 @@ void make_tc(std::vector<Point> &points,
 
 #if !defined(TC_NO_EXPORT) && defined(TC_EXPORT_TO_RIB)
     std::ofstream rib(std::string("output/") + input_name_stripped + ".rib");
-	tc::internal::RIB_exporter<TC::Points, TC::Simplicial_complex::Simplex_set> rib_exporter(
+	RIB_exporter<TC::Points, TC::Simplicial_complex::Simplex_set> rib_exporter(
       tc.points(),
       complex.simplex_range(),
       rib,
@@ -390,7 +390,7 @@ void make_tc(std::vector<Point> &points,
     rib_exporter.write_file();
 
     std::ofstream rib_LQ(std::string("output/") + input_name_stripped + "_LQ.rib");
-	tc::internal::RIB_exporter<TC::Points, TC::Simplicial_complex::Simplex_set> rib_exporter_LQ(
+	RIB_exporter<TC::Points, TC::Simplicial_complex::Simplex_set> rib_exporter_LQ(
       tc.points(),
       complex.simplex_range(),
       rib_LQ,

@@ -20,17 +20,13 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GUDHI_TC_WRITE_RIB_FILE_H
-#define GUDHI_TC_WRITE_RIB_FILE_H
+#ifndef GUDHI_TC_RIB_EXPORTER_H
+#define GUDHI_TC_RIB_EXPORTER_H
 
 #include <gudhi/Tangential_complex/utilities.h>
 
 #include <tuple>
 #include <string>
-
-namespace Gudhi {
-namespace tangential_complex {
-namespace internal {
 
 template <typename PointRandomAccessRange, typename SimplexRange>
 class RIB_exporter
@@ -298,8 +294,4 @@ private:
   double m_point_sphere_radius;
 };
 
-} // namespace internal
-} // namespace tangential_complex
-} //namespace Gudhi
-
-#endif // GUDHI_TC_WRITE_RIB_FILE_H
+#endif // GUDHI_TC_RIB_EXPORTER_H
