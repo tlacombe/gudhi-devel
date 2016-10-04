@@ -95,47 +95,6 @@ public:
     return m_complex.insert(s).second;
   }
 
-  // Ignore the point coordinates
-  bool load_simplices_from_OFF(const char *filename)
-  {
-    std::ifstream in(filename);
-    if (!in.is_open())
-    {
-      std::cerr << "Could not open '" << filename << "'" << std::endl;
-      return false;
-    }
-
-    std::string line;
-    std::getline(in, line); // Skip first line
-    std::size_t num_points, num_triangles, dummy;
-    in >> num_points;
-    in >> num_triangles;
-    std::getline(in, line); // Skip the rest of the line
-    
-    // Skip points
-    for (std::size_t i = 0 ; i < num_points ; ++i)
-      std::getline(in, line);
-
-    // Read triangles
-    for (std::size_t i = 0 ; i < num_triangles ; ++i)
-    {
-      in >> dummy;
-      GUDHI_CHECK(dummy == 3, std::logic_error("OFF: not a triangle."));
-      Simplex tri;
-      std::size_t idx;
-      for (int j = 0 ; j < 3 ; ++j)
-      {
-        in >> idx;
-        tri.insert(idx);
-      }
-      std::getline(in, line); // Skip the rest of the line
-
-      add_simplex(tri, false);
-    }
-
-    return true;
-  }
-
   const Simplex_set &simplex_range() const
   {
     return m_complex;
