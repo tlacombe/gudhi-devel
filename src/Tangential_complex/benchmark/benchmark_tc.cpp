@@ -364,7 +364,6 @@ void make_tc(std::vector<Point> &points,
   TC tc(
     points,
     intrinsic_dim,
-    max_perturb,
 #ifdef GUDHI_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
     points_not_sparse.begin(), points_not_sparse.end(),
 #endif
@@ -416,7 +415,7 @@ void make_tc(std::vector<Point> &points,
     //=========================================================================
     t.begin();
     auto fix_result = 
-      tc.fix_inconsistencies_using_perturbation(time_limit_for_perturb);
+      tc.fix_inconsistencies_using_perturbation(max_perturb, time_limit_for_perturb);
     t.end();
     perturb_time = t.num_seconds();
 

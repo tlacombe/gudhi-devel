@@ -246,13 +246,11 @@ public:
   *
   * @param[in] points Range of points (`Point_range::value_type` must be the same as `Kernel_::Point_d`). It must contain at least one point.
   * @param[in] intrinsic_dimension Intrinsic dimension of the manifold.
-  * @param[in] max_perturb Maximum length of the translations used by the perturbation.
   * @param[in] k Kernel instance.
   */
   template <typename Point_range>
   Tangential_complex(Point_range points,
                      int intrinsic_dimension,
-                     double max_perturb,
 #ifdef GUDHI_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
                      InputIterator first_for_tse, InputIterator last_for_tse,
 #endif
@@ -267,7 +265,7 @@ public:
     , m_p_perturb_mutexes(NULL)
 #endif
     , m_points_ds(m_points)
-    , m_max_perturb(max_perturb)
+    , m_last_max_perturb(0.)
     , m_are_tangent_spaces_computed(m_points.size(), false)
     , m_tangent_spaces(m_points.size(), Tangent_space_basis())
 #ifdef GUDHI_TC_EXPORT_NORMALS
@@ -426,9 +424,10 @@ public:
 
   /** \brief Attempts to fix inconsistencies by perturbing the point positions.
    *
+   * @param[in] max_perturb Maximum length of the translations used by the perturbation.
    * @param[in] time_limit Time limit in seconds. If -1, no time limit is set.
    */
-  Fix_inconsistencies_info fix_inconsistencies_using_perturbation(double time_limit = -1.)
+  Fix_inconsistencies_info fix_inconsistencies_using_perturbation(double max_perturb, double time_limit = -1.)
   {
     Fix_inconsistencies_info info;
 
@@ -450,6 +449,8 @@ public:
       return info;
     }
 #endif // GUDHI_TC_SHOW_DETAILED_STATS_FOR_INCONSISTENCIES
+
+    m_last_max_perturb = max_perturb;
 
     bool done = false;
     info.best_num_inconsistent_stars = m_triangulations.size();
@@ -491,7 +492,7 @@ public:
         tbb::parallel_for(
           tbb::blocked_range<size_t>(0, m_triangulations.size()),
           Try_to_solve_inconsistencies_in_a_local_triangulation(
-          *this, num_inconsistencies, tls_updated_points)
+          *this, max_perturb, num_inconsistencies, tls_updated_points)
         );
         num_inconsistent_stars =
           num_inconsistencies.combine(std::plus<std::size_t>());
@@ -512,7 +513,7 @@ public:
         {
           num_inconsistent_stars +=
             try_to_solve_inconsistencies_in_a_local_triangulation(
-              i, std::back_inserter(updated_points));
+              i, max_perturb, std::back_inserter(updated_points));
         }
       }
 
@@ -1242,10 +1243,10 @@ private:
             // The value depends on whether we perturb weight or position
             if (squared_star_sphere_radius_plus_margin)
             {
-              // "2*m_max_perturb" because both points can be perturbed
+              // "2*m_last_max_perturb" because both points can be perturbed
               squared_star_sphere_radius_plus_margin = CGAL::square(
                 std::sqrt(*squared_star_sphere_radius_plus_margin)
-                + 2 * m_max_perturb);
+                + 2 * m_last_max_perturb);
 
               // Save it in `m_squared_star_spheres_radii_incl_margin`
               m_squared_star_spheres_radii_incl_margin[i] = 
@@ -1873,6 +1874,7 @@ private:
   class Try_to_solve_inconsistencies_in_a_local_triangulation
   {
     Tangential_complex & m_tc;
+    double m_max_perturb;
     tbb::combinable<std::size_t> &m_num_inconsistencies;
     tbb::combinable<std::vector<std::size_t> > &m_updated_points;
 
@@ -1880,19 +1882,22 @@ private:
     // Constructor
     Try_to_solve_inconsistencies_in_a_local_triangulation(
       Tangential_complex &tc,
+      double max_perturb,
       tbb::combinable<std::size_t> &num_inconsistencies,
       tbb::combinable<std::vector<std::size_t> > &updated_points)
     : m_tc(tc),
+      m_max_perturb(max_perturb),
       m_num_inconsistencies(num_inconsistencies),
       m_updated_points(updated_points)
     {}
 
     // Constructor
     Try_to_solve_inconsistencies_in_a_local_triangulation(
-      const Compute_tangent_triangulation &ctt)
-    : m_tc(ctt.m_tc),
-      m_num_inconsistencies(ctt.m_num_inconsistencies),
-      m_updated_points(ctt.m_updated_points)
+      const Try_to_solve_inconsistencies_in_a_local_triangulation &tsilt)
+    : m_tc(tsilt.m_tc),
+      m_max_perturb(tsilt.m_max_perturb),
+      m_num_inconsistencies(tsilt.m_num_inconsistencies),
+      m_updated_points(tsilt.m_updated_points)
     {}
 
     // operator()
@@ -1902,13 +1907,13 @@ private:
       {
         m_num_inconsistencies.local() +=
           m_tc.try_to_solve_inconsistencies_in_a_local_triangulation(
-            i, std::back_inserter(m_updated_points.local()));
+            i, m_max_perturb, std::back_inserter(m_updated_points.local()));
       }
     }
   };
 #endif // GUDHI_USE_TBB
 
-  void perturb(std::size_t point_idx)
+  void perturb(std::size_t point_idx, double max_perturb)
   {
     const Tr_traits &local_tr_traits =
       m_triangulations[point_idx].tr().geom_traits();
@@ -1924,7 +1929,7 @@ private:
     CGAL::Random_points_in_ball_d<Tr_bare_point>
       tr_point_in_ball_generator(
         m_intrinsic_dim, 
-        m_random_generator.get_double(0., m_max_perturb));
+        m_random_generator.get_double(0., max_perturb));
 
     Tr_point local_random_transl =
       local_tr_traits.construct_weighted_point_d_object()(
@@ -1952,7 +1957,8 @@ private:
   // Return true if inconsistencies were found
   template <typename OutputIt>
   bool try_to_solve_inconsistencies_in_a_local_triangulation(
-    std::size_t tr_index, 
+    std::size_t tr_index,
+    double max_perturb,
     OutputIt perturbed_pts_indices = CGAL::Emptyset_iterator())
   {
     bool is_inconsistent = false;
@@ -1981,7 +1987,7 @@ private:
 
         std::size_t idx = tr_index;
 
-        perturb(tr_index);
+        perturb(tr_index, max_perturb);
         *perturbed_pts_indices++ = idx;
 
         // We will try the other cells next time
@@ -2430,7 +2436,7 @@ private:
 #endif
 
   Points_ds                 m_points_ds;
-  double                    m_max_perturb;
+  double                    m_last_max_perturb;
   std::vector<bool>         m_are_tangent_spaces_computed;
   TS_container              m_tangent_spaces;
 #ifdef GUDHI_TC_EXPORT_NORMALS

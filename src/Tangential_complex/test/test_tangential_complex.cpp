@@ -57,11 +57,11 @@ BOOST_AUTO_TEST_CASE(test_Spatial_tree_data_structure)
     points.push_back(*generator++);
 
   // Compute the TC
-  TC tc(points, INTRINSIC_DIM, 0.01, k);
+  TC tc(points, INTRINSIC_DIM, k);
   tc.compute_tangential_complex();
 
   // Try to fix inconsistencies. Give it 60 seconds to succeed
-  auto perturb_ret = tc.fix_inconsistencies_using_perturbation(60);
+  auto perturb_ret = tc.fix_inconsistencies_using_perturbation(0.01, 60);
 
   BOOST_CHECK(perturb_ret.success);
 

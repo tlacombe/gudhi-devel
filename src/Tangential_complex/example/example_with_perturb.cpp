@@ -33,11 +33,11 @@ int main (void)
     points.push_back(*generator++);
 
   // Compute the TC
-  TC tc(points, INTRINSIC_DIM, 0.05, k);
+  TC tc(points, INTRINSIC_DIM, k);
   tc.compute_tangential_complex();
 
   // Try to fix inconsistencies. Give it 10 seconds to succeed
-  tc.fix_inconsistencies_using_perturbation(10);
+  tc.fix_inconsistencies_using_perturbation(0.05, 10);
 
   // Export the TC into a Simplex_tree
   Gudhi::Simplex_tree<> stree;

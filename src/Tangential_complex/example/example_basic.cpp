@@ -33,7 +33,7 @@ int main (void)
     points.push_back(*generator++);
 
   // Compute the TC
-  TC tc(points, INTRINSIC_DIM, 0.01, k);
+  TC tc(points, INTRINSIC_DIM, k);
   tc.compute_tangential_complex();
 
   // Export the TC into a Simplex_tree
