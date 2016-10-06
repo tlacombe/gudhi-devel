@@ -33,7 +33,6 @@
 #include <array>
 #include <vector>
 
-namespace subsampl = Gudhi::subsampling;
 namespace tc = Gudhi::tangential_complex;
 
 BOOST_AUTO_TEST_CASE(test_Spatial_tree_data_structure)

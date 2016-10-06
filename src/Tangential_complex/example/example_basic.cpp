@@ -7,7 +7,6 @@
 #include <array>
 #include <vector>
 
-namespace subsampl = Gudhi::subsampling;
 namespace tc = Gudhi::tangential_complex;
 
 typedef CGAL::Epick_d<CGAL::Dynamic_dimension_tag>              Kernel;
