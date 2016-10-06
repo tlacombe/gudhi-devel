@@ -127,7 +127,7 @@ public:
   // without changing the topology
   void collapse(int max_simplex_dim, bool quiet = false)
   {
-#ifdef GUDHI_TC_VERBOSE
+#ifdef DEBUG_TRACES
     if (!quiet)
       std::cerr << "Collapsing... ";
 #endif
@@ -215,7 +215,7 @@ public:
     if (k > 0)
       collapse(max_simplex_dim - 1, true);
 
-#ifdef GUDHI_TC_VERBOSE
+#ifdef DEBUG_TRACES
     if (!quiet)
       std::cerr << "done.\n";
 #endif

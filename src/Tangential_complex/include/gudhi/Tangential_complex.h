@@ -433,7 +433,7 @@ public:
 
     if (std::get<1>(stats_before) == 0)
     {
-# ifdef GUDHI_TC_VERBOSE
+# ifdef DEBUG_TRACES
       std::cerr << "Nothing to fix.\n";
 # endif
       info.success = false;
@@ -459,7 +459,7 @@ public:
         << 100. * std::get<2>(stats_before) / m_points.size() << "%)\n";
 #endif
 
-#if defined(GUDHI_TC_VERBOSE) || defined(GUDHI_TC_PROFILING)
+#if defined(DEBUG_TRACES) || defined(GUDHI_TC_PROFILING)
       std::cerr << yellow 
         << "\nAttempt to fix inconsistencies using perturbations - step #"
         << info.num_steps + 1 << "... " << white;
@@ -510,7 +510,7 @@ public:
       t_fix_step.end();
 #endif
 
-#if defined(GUDHI_TC_SHOW_DETAILED_STATS_FOR_INCONSISTENCIES) || defined(GUDHI_TC_VERBOSE)
+#if defined(GUDHI_TC_SHOW_DETAILED_STATS_FOR_INCONSISTENCIES) || defined(DEBUG_TRACES)
       std::cerr
         << "\nEncountered during fix:\n"
         << "  * Num stars containing inconsistent simplices: "
@@ -521,7 +521,7 @@ public:
 #ifdef GUDHI_TC_PROFILING
       std::cerr << yellow << "done in " << t_fix_step.num_seconds()
         << " seconds.\n" << white;
-#elif defined(GUDHI_TC_VERBOSE)
+#elif defined(DEBUG_TRACES)
       std::cerr << yellow << "done.\n" << white;
 #endif
 
@@ -574,7 +574,7 @@ public:
         ++info.num_steps;
         if (time_limit > 0. && t.num_seconds() > time_limit)
         {
-#ifdef GUDHI_TC_VERBOSE
+#ifdef DEBUG_TRACES
           std::cerr << red << "Time limit reached.\n" << white;
 #endif
           info.success = false;
@@ -583,7 +583,7 @@ public:
       }
     }
 
-#ifdef GUDHI_TC_VERBOSE
+#ifdef DEBUG_TRACES
     std::cerr << green << "Fixed!\n" << white;
 #endif
     info.success = true;
@@ -605,7 +605,7 @@ public:
   /// @param[in] verbose If true, outputs a message into `std::cerr`.
   Num_inconsistencies
   number_of_inconsistent_simplices(
-#ifdef GUDHI_TC_VERBOSE
+#ifdef DEBUG_TRACES
     bool verbose = true
 #else
     bool verbose = false
@@ -679,7 +679,7 @@ public:
     /// \endcond
   ) const
   {
-#if defined(GUDHI_TC_VERBOSE) || defined(GUDHI_TC_PROFILING)
+#if defined(DEBUG_TRACES) || defined(GUDHI_TC_PROFILING)
     std::cerr << yellow
       << "\nExporting the TC as a Simplex_tree... " << white;
 #endif
@@ -726,7 +726,7 @@ public:
     t.end();
     std::cerr << yellow << "done in " << t.num_seconds()
       << " seconds.\n" << white;
-#elif defined(GUDHI_TC_VERBOSE)
+#elif defined(DEBUG_TRACES)
     std::cerr << yellow << "done.\n" << white;
 #endif
 
@@ -748,7 +748,7 @@ public:
     int check_lower_and_higher_dim_simplices = 2,
     Simplex_set *p_inconsistent_simplices = NULL) const
   {
-#if defined(GUDHI_TC_VERBOSE) || defined(GUDHI_TC_PROFILING)
+#if defined(DEBUG_TRACES) || defined(GUDHI_TC_PROFILING)
     std::cerr << yellow
       << "\nExporting the TC as a Simplicial_complex... " << white;
 #endif
@@ -809,7 +809,7 @@ public:
     t.end();
     std::cerr << yellow << "done in " << t.num_seconds()
       << " seconds.\n" << white;
-#elif defined(GUDHI_TC_VERBOSE)
+#elif defined(DEBUG_TRACES)
     std::cerr << yellow << "done.\n" << white;
 #endif
 
@@ -895,7 +895,7 @@ public:
 private:
   void refresh_tangential_complex()
   {
-#if defined(GUDHI_TC_VERBOSE) || defined(GUDHI_TC_PROFILING)
+#if defined(DEBUG_TRACES) || defined(GUDHI_TC_PROFILING)
     std::cerr << yellow << "\nRefreshing TC... " << white;
 #endif
 
@@ -922,7 +922,7 @@ private:
     t.end();
     std::cerr << yellow << "done in " << t.num_seconds()
       << " seconds.\n" << white;
-#elif defined(GUDHI_TC_VERBOSE)
+#elif defined(DEBUG_TRACES)
     std::cerr << yellow << "done.\n" << white;
 #endif
   }
@@ -932,7 +932,7 @@ private:
   void refresh_tangential_complex(
     Point_indices_range const& perturbed_points_indices)
   {
-#if defined(GUDHI_TC_VERBOSE) || defined(GUDHI_TC_PROFILING)
+#if defined(DEBUG_TRACES) || defined(GUDHI_TC_PROFILING)
     std::cerr << yellow << "\nRefreshing TC... " << white;
 #endif
 
@@ -963,7 +963,7 @@ private:
     t.end();
     std::cerr << yellow << "done in " << t.num_seconds()
       << " seconds.\n" << white;
-#elif defined(GUDHI_TC_VERBOSE)
+#elif defined(DEBUG_TRACES)
     std::cerr << yellow << "done.\n" << white;
 #endif
   }
@@ -2230,7 +2230,7 @@ private:
         ++num_inconsistent_stars;
     }
 
-#ifdef GUDHI_TC_VERBOSE
+#ifdef DEBUG_TRACES
     std::cerr
       << "\n==========================================================\n"
       << "Export from list of stars to OFF:\n"
@@ -2391,7 +2391,7 @@ public:
       }
     }
 
-#ifdef GUDHI_TC_VERBOSE
+#ifdef DEBUG_TRACES
     std::cerr
       << "\n==========================================================\n"
       << "Export from complex to OFF:\n"

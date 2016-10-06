@@ -182,7 +182,7 @@ template<
     ++i;
   }
 
-#ifdef GUDHI_TC_VERBOSE
+#ifdef DEBUG_TRACES
   std::cerr << "'" << filename << "' loaded." << std::endl;
 #endif
 
@@ -230,7 +230,7 @@ template<
     ++i;
   }
 
-#ifdef GUDHI_TC_VERBOSE
+#ifdef DEBUG_TRACES
   std::cerr << "'" << filename << "' loaded." << std::endl;
 #endif
 
