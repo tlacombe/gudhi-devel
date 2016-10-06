@@ -20,6 +20,7 @@ const std::size_t ONLY_LOAD_THE_FIRST_N_POINTS = 20000000;
 #include <gudhi/Tangential_complex.h>
 #include <gudhi/sparsify_point_set.h>
 #include <gudhi/random_point_generators.h>
+#include <gudhi/Tangential_complex/utilities.h>
 
 #include <CGAL/assertions_behaviour.h>
 #include <CGAL/Epick_d.h>
@@ -224,7 +225,7 @@ template<
     {
       Vector v;
       in >> v;
-      tsb.push_back(normalize_vector(v, k));
+      tsb.push_back(tc::internal::normalize_vector(v, k));
     }
     *tangent_spaces++ = tsb;
     ++i;
@@ -774,7 +775,7 @@ int main()
               // Contains tangent space basis
               if (input.substr(input.size() - 3) == "pwt")
               {
-                tc::internal::load_points_and_tangent_space_basis_from_file
+                load_points_and_tangent_space_basis_from_file
                   <Kernel, typename TC::Tangent_space_basis>(
                   input, std::back_inserter(points),
                   std::back_inserter(tangent_spaces),
