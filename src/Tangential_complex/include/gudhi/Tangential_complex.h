@@ -314,6 +314,16 @@ public:
     return m_points[vertex];
   }
 
+  /** \brief Returns the perturbed position of the point corresponding to the vertex given as parameter.
+  *
+  * @param[in] vertex Vertex handle of the point to retrieve.
+  * @return The perturbed position of the point found.
+  */
+  Point get_perturbed_point(std::size_t vertex) const
+  {
+    return compute_perturbed_point(vertex);
+  }
+
   /// Returns the number of vertices.
   std::size_t number_of_vertices() const
   {
