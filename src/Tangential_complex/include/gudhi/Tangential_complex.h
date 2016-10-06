@@ -666,14 +666,15 @@ public:
    * \tparam Simplex_tree_ must be a `Simplex_tree`.
    *
    * @param[out] tree The result, where each `Vertex_handle` is the index of the 
-   *   corresponding point in the range provided to the constructor.
+   *   corresponding point in the range provided to the constructor (it can also be
+   *   retrieved through the `Tangential_complex::get_point` function.
    * @param[in] export_inconsistent_simplices Also export inconsistent simplices or not?
    * @return The maximal dimension of the simplices.
    */
   template <typename Simplex_tree_>
   int create_complex(Simplex_tree_ &tree
-    /// \cond ADVANCED_PARAMETERS
     , bool export_inconsistent_simplices = true
+    /// \cond ADVANCED_PARAMETERS
     , bool export_infinite_simplices = false
     , Simplex_set *p_inconsistent_simplices = NULL
     /// \endcond
