@@ -116,7 +116,8 @@ public:
            STraits(std::begin(points)) )
   {
     // Build the tree now (we don't want to wait for the first query)
-    m_tree.build();
+    if (!m_points.empty())
+      m_tree.build();
   }
 
   /// \brief Constructor
@@ -135,7 +136,8 @@ public:
         STraits(std::begin(points)))
   {
     // Build the tree now (we don't want to wait for the first query)
-    m_tree.build();
+    if (!m_points.empty())
+      m_tree.build();
   }
 
   /// \brief Constructor
@@ -154,7 +156,8 @@ public:
       STraits(std::begin(points)) )
   {
     // Build the tree now (we don't want to wait for the first query)
-    m_tree.build();
+    if (!m_points.empty())
+      m_tree.build();
   }
 
   // Be careful, this function invalidates the tree,

@@ -244,7 +244,7 @@ public:
   * Note the complex is not computed: `compute_tangential_complex` must be called after the creation
   * of the object.
   *
-  * @param[in] points Range of points (`Point_range::value_type` must be the same as `Kernel_::Point_d`). It must contain at least one point.
+  * @param[in] points Range of points (`Point_range::value_type` must be the same as `Kernel_::Point_d`).
   * @param[in] intrinsic_dimension Intrinsic dimension of the manifold.
   * @param[in] k Kernel instance.
   */
@@ -258,7 +258,7 @@ public:
                      )
   : m_k(k),
     m_intrinsic_dim(intrinsic_dimension),
-    m_ambient_dim(k.point_dimension_d_object()(*points.begin())),
+    m_ambient_dim(points.empty()? 0 : k.point_dimension_d_object()(*points.begin())),
     m_points(points.begin(), points.end()),
     m_weights(m_points.size(), FT(0))
 #if defined(GUDHI_USE_TBB) && defined(GUDHI_TC_PERTURB_POSITION)
@@ -376,8 +376,11 @@ public:
     m_stars.resize(m_points.size());
     m_squared_star_spheres_radii_incl_margin.resize(m_points.size(), FT(-1));
 #ifdef GUDHI_TC_PERTURB_POSITION
-    m_translations.resize(m_points.size(),
-                          m_k.construct_vector_d_object()(m_ambient_dim));
+    if (m_points.empty())
+      m_translations.clear();
+    else
+      m_translations.resize(m_points.size(),
+                            m_k.construct_vector_d_object()(m_ambient_dim));
 # if defined(GUDHI_USE_TBB)
     delete [] m_p_perturb_mutexes;
     m_p_perturb_mutexes = new Mutex_for_perturb[m_points.size()];
