@@ -7,6 +7,7 @@
 #include <array>
 #include <vector>
 
+namespace subsampl = Gudhi::subsampling;
 namespace tc = Gudhi::tangential_complex;
 
 typedef CGAL::Epick_d<CGAL::Dimension_tag<3>>                   Kernel;
@@ -31,6 +32,12 @@ int main (void)
   points.reserve(NUM_POINTS);
   for (int i = 0 ; i < NUM_POINTS; ++i)
     points.push_back(*generator++);
+  
+  // Sparsify the point set
+  std::vector<Point> sparsified_points;
+  subsampl::sparsify_point_set(k, points, 0.1*0.1,
+    std::back_inserter(sparsified_points));
+  sparsified_points.swap(points);
 
   // Compute the TC
   TC tc(points, INTRINSIC_DIM, k);

@@ -71,7 +71,14 @@ Now, the star of \f$ Q \f$ contains \f$ QP \f$, but the star of \f$ P \f$ does n
 \image html "tc_example_08.png" "After"
 
 One way to solve inconsistencies is to randomly perturb the positions of the points involved in an inconsistency.
-In the current implementation, this perturbation is done in the tangent subspace of each point.
+In the current implementation, this perturbation is done in the tangent subspace of each point. 
+The maximum perturbation radius is given as a parameter to the constructor.
+
+In most cases, we recommend to provide a point set where the minimum distance between any two points
+is not too small. This can be achieved using the functions provided by the Subsampling module. Then, a good value to start with for
+the maximum perturbation radius would be around half the minimum distance between any two points. 
+The \ref example_with_perturb below shows an example of such a process.
+
 In most cases, this process is able to dramatically reduce the number of inconsistencies, but is not guaranteed to succeed.
 
 \subsection output Output
