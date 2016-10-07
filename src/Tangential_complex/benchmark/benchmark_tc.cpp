@@ -1,3 +1,15 @@
+/******************************************************************************
+This benchmark allows to compute the Tangential Complex from input files or 
+generated point sets.
+
+It reads the benchmark_script.txt file (located in the same folder as this 
+file) and compute one or several complexes for each line. Unless TC_NO_EXPORT 
+is defined, each complex is exported as an OFF file and/or as a RIB file 
+(RenderMan). In addition an XML file is created at each run of the benchmark. 
+It contains statistics about the complexes that were created. This XML file 
+can be processed in Excel, for example.
+******************************************************************************/
+
 // Without TBB_USE_THREADING_TOOL Intel Inspector XE will report false positives in Intel TBB
 // (http://software.intel.com/en-us/articles/compiler-settings-for-threading-error-analysis-in-intel-inspector-xe/)
 #ifdef _DEBUG
@@ -8,8 +20,8 @@
 
 //#define GUDHI_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
 //#define TC_INPUT_STRIDES 3 // only take one point every TC_INPUT_STRIDES points
-#define TC_NO_EXPORT
-//#define TC_EXPORT_TO_RIB
+#define TC_NO_EXPORT // do not output OFF files
+//#define TC_EXPORT_TO_RIB // 
 //#define GUDHI_TC_EXPORT_SPARSIFIED_POINT_SET
 //#define GUDHI_TC_EXPORT_ALL_COORDS_IN_OFF
 
@@ -835,6 +847,6 @@ int main()
     std::cerr << "Script file '" << BENCHMARK_SCRIPT_FILENAME << "' NOT found.\n";
   }
 
-  system("pause");
+  //system("pause");
   return 0;
 }
