@@ -158,10 +158,10 @@ BOOST_AUTO_TEST_CASE(phat_simplicial_twist) {
   // Sort the simplices in the order of the filtration
   st.initialize_filtration();
 
-  Compute_persistence_with_phat< ST, double > phat(&st);
+  Compute_persistence_with_phat< ST > phat(&st);
 
   phat::persistence_pairs pairs = phat.compute_persistence_pairs_twist_reduction();
-  std::pair< std::vector< std::vector<double> >, std::vector< std::vector< std::pair<double, double> > > > persistence = phat.get_the_intervals(pairs);
+  std::pair< std::vector< std::vector<float> >, std::vector< std::vector< std::pair<float, float> > > > persistence = phat.get_the_intervals(pairs);
 
 
 
@@ -324,10 +324,10 @@ BOOST_AUTO_TEST_CASE(phat_simplicial_chunk) {
   // Sort the simplices in the order of the filtration
   st.initialize_filtration();
 
-  Compute_persistence_with_phat< ST, double > phat(&st);
+  Compute_persistence_with_phat< ST > phat(&st);
 
   phat::persistence_pairs pairs = phat.compute_persistence_pairs_dualized_chunk_reduction();
-  std::pair< std::vector< std::vector<double> >, std::vector< std::vector< std::pair<double, double> > > > persistence = phat.get_the_intervals(pairs);
+  std::pair< std::vector< std::vector<float> >, std::vector< std::vector< std::pair<float, float> > > > persistence = phat.get_the_intervals(pairs);
 
 
 
@@ -490,10 +490,10 @@ BOOST_AUTO_TEST_CASE(phat_simplicial_standard_reductions) {
   // Sort the simplices in the order of the filtration
   st.initialize_filtration();
 
-  Compute_persistence_with_phat< ST, double > phat(&st);
+  Compute_persistence_with_phat< ST > phat(&st);
 
   phat::persistence_pairs pairs = phat.compute_persistence_pairs_standard_reduction();
-  std::pair< std::vector< std::vector<double> >, std::vector< std::vector< std::pair<double, double> > > > persistence = phat.get_the_intervals(pairs);
+  std::pair< std::vector< std::vector<float> >, std::vector< std::vector< std::pair<float, float> > > > persistence = phat.get_the_intervals(pairs);
 
 
 
@@ -656,10 +656,10 @@ BOOST_AUTO_TEST_CASE(phat_simplicial_spectral_sequence) {
   // Sort the simplices in the order of the filtration
   st.initialize_filtration();
 
-  Compute_persistence_with_phat< ST, double > phat(&st);
+  Compute_persistence_with_phat< ST > phat(&st);
 
   phat::persistence_pairs pairs = phat.compute_persistence_pairs_spectral_sequence_reduction();
-  std::pair< std::vector< std::vector<double> >, std::vector< std::vector< std::pair<double, double> > > > persistence = phat.get_the_intervals(pairs);
+  std::pair< std::vector< std::vector<float> >, std::vector< std::vector< std::pair<float, float> > > > persistence = phat.get_the_intervals(pairs);
 
 
 
@@ -1006,7 +1006,7 @@ BOOST_AUTO_TEST_CASE(phat_cubical_twist) {
 
 
   Bitmap_cubical_complex< Bitmap_cubical_complex_base<double> > b("random_cubical_complex");
-  Compute_persistence_with_phat< Bitmap_cubical_complex< Bitmap_cubical_complex_base<double> >, double > phat(&b);
+  Compute_persistence_with_phat< Bitmap_cubical_complex< Bitmap_cubical_complex_base<double> > > phat(&b);
   phat::persistence_pairs pairs = phat.compute_persistence_pairs_twist_reduction();
   std::pair< std::vector< std::vector<double> >, std::vector< std::vector< std::pair<double, double> > > > persistence = phat.get_the_intervals(pairs);
 
@@ -1340,7 +1340,7 @@ BOOST_AUTO_TEST_CASE(phat_cubical_chunk) {
 
 
   Bitmap_cubical_complex< Bitmap_cubical_complex_base<double> > b("random_cubical_complex");
-  Compute_persistence_with_phat< Bitmap_cubical_complex< Bitmap_cubical_complex_base<double> >, double > phat(&b);
+  Compute_persistence_with_phat< Bitmap_cubical_complex< Bitmap_cubical_complex_base<double> > > phat(&b);
   phat::persistence_pairs pairs = phat.compute_persistence_pairs_dualized_chunk_reduction();
   std::pair< std::vector< std::vector<double> >, std::vector< std::vector< std::pair<double, double> > > > persistence = phat.get_the_intervals(pairs);
 
@@ -1674,7 +1674,7 @@ BOOST_AUTO_TEST_CASE(phat_cubical_standard_reductions) {
 
 
   Bitmap_cubical_complex< Bitmap_cubical_complex_base<double> > b("random_cubical_complex");
-  Compute_persistence_with_phat< Bitmap_cubical_complex< Bitmap_cubical_complex_base<double> >, double > phat(&b);
+  Compute_persistence_with_phat< Bitmap_cubical_complex< Bitmap_cubical_complex_base<double> > > phat(&b);
   phat::persistence_pairs pairs = phat.compute_persistence_pairs_standard_reduction();
   std::pair< std::vector< std::vector<double> >, std::vector< std::vector< std::pair<double, double> > > > persistence = phat.get_the_intervals(pairs);
 
@@ -2008,7 +2008,7 @@ BOOST_AUTO_TEST_CASE(phat_cubical_spectral_sequence) {
 
 
   Bitmap_cubical_complex< Bitmap_cubical_complex_base<double> > b("random_cubical_complex");
-  Compute_persistence_with_phat< Bitmap_cubical_complex< Bitmap_cubical_complex_base<double> >, double > phat(&b);
+  Compute_persistence_with_phat< Bitmap_cubical_complex< Bitmap_cubical_complex_base<double> > > phat(&b);
   phat::persistence_pairs pairs = phat.compute_persistence_pairs_spectral_sequence_reduction();
   std::pair< std::vector< std::vector<double> >, std::vector< std::vector< std::pair<double, double> > > > persistence = phat.get_the_intervals(pairs);
 

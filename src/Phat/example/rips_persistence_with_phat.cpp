@@ -81,16 +81,17 @@ int main(int argc, char * argv[]) {
   std::cout << "The complex contains " << st.num_simplices() << " simplices \n";
   std::cout << "   and has dimension " << st.dimension() << " \n";
 
-  Compute_persistence_with_phat< ST, double > phat(&st);
-
+ 
+  Compute_persistence_with_phat< ST > phat(&st);
+  
 
   //phat::persistence_pairs pairs = phat.compute_persistence_pairs_dualized_chunk_reduction();
   phat::persistence_pairs pairs = phat.compute_persistence_pairs_twist_reduction();
   //phat::persistence_pairs pairs = phat.compute_persistence_pairs_standard_reduction();
-  std::pair< std::vector< std::vector<double> >,
-      std::vector< std::vector< std::pair<double, double> > > > persistence = phat.get_the_intervals(pairs);
+  std::pair< std::vector< std::vector<float> >, std::vector< std::vector< std::pair<float, float> > > > persistence = phat.get_the_intervals(pairs);
+  
 
-  write_intervals_to_file_Gudhi_format<double>(persistence, filediag.c_str(), dim_max);
+  write_intervals_to_file_Gudhi_format<float>(persistence, filediag.c_str(), dim_max);
   return 0;
 }
 

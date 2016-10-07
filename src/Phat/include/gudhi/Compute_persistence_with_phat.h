@@ -48,12 +48,11 @@ namespace phat_interface {
  * PHAT to compute \f$Z_{2}\f$ persistence. 
  * The template parameters are: 
  * T, a GUDHI data structure with the filtered complex (it can be for instance a simplex tree Simplex_tree, a
- * Bitmap_cubical_complex, and so on)
- * K, The second parameter is a type of filtration (most typically double). 
+ * Bitmap_cubical_complex, and so on). A type of filtration can be recovered by taking T::Filtration_value. 
  * 
  * For more information on PHAT, please refer to \cite phat2017jsc.
  */
-template <typename T, typename K>
+template <typename T>
 class Compute_persistence_with_phat {
  public:
 
@@ -62,39 +61,59 @@ class Compute_persistence_with_phat {
    * Creates a PHAT boundary matrix based on the GUDHI data structure.
    * Notice that no computations of persistence are run by the constructor. To run persistence computations you need to
    * choose one of the possible methods to compute persistence in PHAT.
+   * Note also that the descructor of this class will not delete an object T* data_structure. The user is responsible for doing this.
    * 
    * @param[in] data_structure GUDHI data structure
    */
   Compute_persistence_with_phat(T* data_structure)
   : data_structure_(data_structure) {
-    this->boundary_matrix_.set_num_cols(this->data_structure_->num_simplices());
+	try
+	{
+		this->boundary_matrix_.set_num_cols(this->data_structure_->num_simplices());
 
-    // due to interface of phom in GUDHI it seems that I have to fill-in the keys for all simplices here. They are
-    // sorting according to filtration, but keys are not filled in (for some reason).
-    // in the same time when doing the enumeration, we wills set up the dimensions and setting up the boundary of cells.
-    typename T::Filtration_simplex_range range = this->data_structure_->filtration_simplex_range();
-    size_t position = 0;
-    std::vector< phat::index > temp_col;
-    for (typename T::Filtration_simplex_iterator it = range.begin(); it != range.end(); ++it) {
-      //enumeration
-      this->data_structure_->assign_key(*it, position);
-  
-  
-      // setting up the dimension:
-      this->boundary_matrix_.set_dim(position, this->data_structure_->dimension(*it));
-  
-      // setting up the boundary of this cell:
-      typename T::Boundary_simplex_range boundary_range = this->data_structure_->boundary_simplex_range(*it);
-      for (typename T::Boundary_simplex_iterator bd = boundary_range.begin(); bd != boundary_range.end(); ++bd) {
-        temp_col.push_back(this->data_structure_->key(*bd));
-      }
-      // we do not know if the boundary elements are sorted according to filtration, that is why I am enforcing it here:
-      std::sort(temp_col.begin(), temp_col.end());
-      this->boundary_matrix_.set_col(this->data_structure_->key(*it), temp_col);
-      temp_col.clear();
-  
-      ++position;
+		// due to interface of phom in GUDHI it seems that I have to fill-in the keys for all simplices here. They are
+		// sorting according to filtration, but keys are not filled in (for some reason).
+		// in the same time when doing the enumeration, we wills set up the dimensions and setting up the boundary of cells.
+		typename T::Filtration_simplex_range range = this->data_structure_->filtration_simplex_range();
+		size_t position = 0;
+		std::vector< phat::index > temp_col;
+		for (typename T::Filtration_simplex_iterator it = range.begin(); it != range.end(); ++it) {
+		  //enumeration
+		  this->data_structure_->assign_key(*it, position);
+	  
+	  
+		  // setting up the dimension:
+		  this->boundary_matrix_.set_dim(position, this->data_structure_->dimension(*it));
+	  
+		  // setting up the boundary of this cell:
+		  typename T::Boundary_simplex_range boundary_range = this->data_structure_->boundary_simplex_range(*it);
+		  for (typename T::Boundary_simplex_iterator bd = boundary_range.begin(); bd != boundary_range.end(); ++bd) {
+			temp_col.push_back(this->data_structure_->key(*bd));
+		  }
+		  // we do not know if the boundary elements are sorted according to filtration, that is why I am enforcing it here:
+		  
+		  
+		  //Question: temp_col is a short vector. Does it make sense to use tbb::pararel_sort over here?
+		  #ifdef GUDHI_USE_TBB
+		  tbb::parallel_sort(temp_col.begin(), temp_col.end());
+		  #else
+		  std::stable_sort(temp_col.begin(), temp_col.end());
+		  #endif
+		  
+		  
+		  
+		  
+		  this->boundary_matrix_.set_col(this->data_structure_->key(*it), temp_col);
+		  temp_col.clear();
+	  
+		  ++position;
+		}
     }
+	catch (...)
+	{
+		  std::cout << "The constructor of a class Compute_persistence_with_phat thrown an exception/ Most probably the structure you are trying to use do not satisfy all the requirements of Gudhi FilteredComplex concept. \n";
+		  throw "The constructor of a class Compute_persistence_with_phat thrown an exception/ Most probably the structure you are trying to use do not satisfy all the requirements of Gudhi FilteredComplex concept. \n";
+	}
   }
 
   /* To run persistence computations you need to choose one of four possible methods to compute persistence in PHAT:
@@ -105,6 +124,8 @@ class Compute_persistence_with_phat {
    */
 
   /** \brief A function that call PHAT function compute_persistence_pairs_dualized_chunk_reduction.
+   * Note that the function returns a structure od phat::persistence_pairs. That allows later to get vector of birth--death pairs (by using get_the_intervals method) as well as
+   * getting the information about the cells that are paired. 
    *
    * @return The persistence pairs.
    */
@@ -115,6 +136,8 @@ class Compute_persistence_with_phat {
   }
 
   /** \brief A function that call PHAT function compute_persistence_pairs_twist_reduction.
+   * Note that the function returns a structure od phat::persistence_pairs. That allows later to get vector of birth--death pairs (by using get_the_intervals method) as well as
+   * getting the information about the cells that are paired. 
    *
    * @return The persistence pairs.
    */
@@ -125,6 +148,8 @@ class Compute_persistence_with_phat {
   }
 
   /** \brief A function that call PHAT function compute_persistence_pairs_standard_reduction.
+   * Note that the function returns a structure od phat::persistence_pairs. That allows later to get vector of birth--death pairs (by using get_the_intervals method) as well as
+   * getting the information about the cells that are paired. 
    *
    * @return The persistence pairs.
    */
@@ -135,6 +160,8 @@ class Compute_persistence_with_phat {
   }
 
   /** \brief A function that call PHAT function compute_persistence_pairs_spectral_sequence_reduction.
+   * Note that the function returns a structure od phat::persistence_pairs. That allows later to get vector of birth--death pairs (by using get_the_intervals method) as well as
+   * getting the information about the cells that are paired. 
    *
    * @return The persistence pairs.
    */
@@ -153,79 +180,92 @@ class Compute_persistence_with_phat {
    * to compute persistence.
    * 
    * @return The data returned from this function is a pair. 
-   * The first element of the pair is: std::vector< std::vector<K> >, this is a graded (by a dimension) vector of
+   * The first element of the pair is: std::vector< std::vector<T::Filtration_value> >, this is a graded (by a dimension) vector of
    * beginning of infinite persistence intervals.
-   * The second element of the pair is: std::vector< std::vector< std::pair<K,K> > > >, this is a graded (by a
-   * dimension) vector of pairs<K,K>. Each such a pair is a beginning and end of a persistence interval.
+   * The second element of the pair is: std::vector< std::vector< std::pair<T::Filtration_value,T::Filtration_value> > > >, this is a graded (by a
+   * dimension) vector of pairs<T::Filtration_value,T::Filtration_value>. Each such a pair is a beginning and end of finite persistence interval.
    */
-  std::pair< std::vector< std::vector<K> >, std::vector< std::vector< std::pair<K, K> > > >
+  std::pair< std::vector< std::vector<typename T::Filtration_value> >, std::vector< std::vector< std::pair<typename T::Filtration_value , typename T::Filtration_value> > > >
   get_the_intervals(phat::persistence_pairs pairs) {
-    bool dbg = false;
-    // in order to find the birth times of the infinite homology classes, we need to know which elements are not paired.
-    // To search for them, we will use this vector:
-    std::vector<bool> isTheElementPaired(this->data_structure_->num_simplices(), false);
-  
-    // now it is time to recover the finite persistence pairs and the Betti numbers:
-    std::vector< std::vector< std::pair<K, K> > > finitePersistencePairs(this->data_structure_->dimension());
-    for (phat::index idx = 0; idx < pairs.get_num_pairs(); idx++) {
-      typename T::Simplex_key positionOfBeginOfInterval = pairs.get_pair(idx).first;
-      typename T::Simplex_key positionOfEndOfInterval = pairs.get_pair(idx).second;
-  
-      typename T::Simplex_handle first_simplex = this->data_structure_->simplex(positionOfBeginOfInterval);
-      typename T::Simplex_handle second_simplex = this->data_structure_->simplex(positionOfEndOfInterval);
-  
-      typename T::Filtration_value valueFirst = this->data_structure_->filtration(first_simplex);
-      typename T::Filtration_value valueSecond = this->data_structure_->filtration(second_simplex);
-  
-      if (valueFirst > valueSecond) {
-        std::swap(valueFirst, valueSecond);
-      }
-  
-      unsigned dimFirst = this->data_structure_->dimension(first_simplex);
-      unsigned dimSecond = this->data_structure_->dimension(second_simplex);
-      unsigned dim = std::min(dimFirst, dimSecond);
-  
-  
-      // we are ignoring trivial barcodes
-      if (valueFirst != valueSecond) {
-        finitePersistencePairs[ dim ].push_back(std::make_pair(valueFirst, valueSecond));
-        if (dbg) {
-          std::cerr << "Adding barcode : " << valueFirst << "," << valueSecond << std::endl;
-        }
-      }
-  
-      isTheElementPaired[ pairs.get_pair(idx).first ] = true;
-      isTheElementPaired[ pairs.get_pair(idx).second ] = true;
-    }
-  
-  
-    std::vector< std::vector<K> > birthTimesOfInfinitePersistnceClasses(this->data_structure_->dimension() + 1);
-    for (size_t i = 0; i != this->data_structure_->dimension() + 1; ++i) {
-      std::vector<K> v;
-      birthTimesOfInfinitePersistnceClasses[i] = v;
-    }
-    for (size_t i = 0; i != isTheElementPaired.size(); ++i) {
-      if (isTheElementPaired[i] == false) {
-        // i-th element is not paired, therefore it gives an infinite class
-        typename T::Simplex_handle simplex = this->data_structure_->simplex(i);
-        birthTimesOfInfinitePersistnceClasses[this->data_structure_->dimension(simplex)].push_back(
-            this->data_structure_->filtration(simplex));
-      }
-    }
-  
-    // sorting finite persistence pairs: 
-    for (size_t dim = 0; dim != finitePersistencePairs.size(); ++dim) {
-      std::sort(finitePersistencePairs[dim].begin(), finitePersistencePairs[dim].end());
-    }
-    return std::make_pair(birthTimesOfInfinitePersistnceClasses, finitePersistencePairs);
+	 try
+	 {  
+		bool dbg = false;
+		// in order to find the birth times of the infinite homology classes, we need to know which elements are not paired.
+		// To search for them, we will use this vector:
+		std::vector<bool> isTheElementPaired(this->data_structure_->num_simplices(), false);
+	  
+		// now it is time to recover the finite persistence pairs and the Betti numbers:
+		std::vector< std::vector< std::pair<typename T::Filtration_value,typename T::Filtration_value> > > finitePersistencePairs(this->data_structure_->dimension());
+		for (phat::index idx = 0; idx < pairs.get_num_pairs(); idx++) {
+		  typename T::Simplex_key positionOfBeginOfInterval = pairs.get_pair(idx).first;
+		  typename T::Simplex_key positionOfEndOfInterval = pairs.get_pair(idx).second;
+	  
+		  typename T::Simplex_handle first_simplex = this->data_structure_->simplex(positionOfBeginOfInterval);
+		  typename T::Simplex_handle second_simplex = this->data_structure_->simplex(positionOfEndOfInterval);
+	  
+		  typename T::Filtration_value valueFirst = this->data_structure_->filtration(first_simplex);
+		  typename T::Filtration_value valueSecond = this->data_structure_->filtration(second_simplex);
+	  
+		  if (valueFirst > valueSecond) {
+			std::swap(valueFirst, valueSecond);
+		  }
+	  
+		  unsigned dimFirst = this->data_structure_->dimension(first_simplex);
+		  unsigned dimSecond = this->data_structure_->dimension(second_simplex);
+		  unsigned dim = std::min(dimFirst, dimSecond);
+	  
+	  
+		  // we are ignoring trivial barcodes
+		  if (valueFirst != valueSecond) {
+			finitePersistencePairs[ dim ].push_back(std::make_pair(valueFirst, valueSecond));
+			if (dbg) {
+			  std::cerr << "Adding barcode : " << valueFirst << "," << valueSecond << std::endl;
+			}
+		  }
+	  
+		  isTheElementPaired[ pairs.get_pair(idx).first ] = true;
+		  isTheElementPaired[ pairs.get_pair(idx).second ] = true;
+		}
+	  
+	  
+		std::vector< std::vector<typename T::Filtration_value> > birthTimesOfInfinitePersistnceClasses(this->data_structure_->dimension() + 1);
+		for (size_t i = 0; i != this->data_structure_->dimension() + 1; ++i) {
+		  std::vector<typename T::Filtration_value> v;
+		  birthTimesOfInfinitePersistnceClasses[i] = v;
+		}
+		for (size_t i = 0; i != isTheElementPaired.size(); ++i) {
+		  if (isTheElementPaired[i] == false) {
+			// i-th element is not paired, therefore it gives an infinite class
+			typename T::Simplex_handle simplex = this->data_structure_->simplex(i);
+			birthTimesOfInfinitePersistnceClasses[this->data_structure_->dimension(simplex)].push_back(
+				this->data_structure_->filtration(simplex));
+		  }
+		}
+	  
+		// sorting finite persistence pairs: 
+		for (size_t dim = 0; dim != finitePersistencePairs.size(); ++dim) {
+		  #ifdef GUDHI_USE_TBB
+		  tbb::parallel_sort( finitePersistencePairs[dim].begin(), finitePersistencePairs[dim].end() );
+		  #else
+		  std::stable_sort( finitePersistencePairs[dim].begin(), finitePersistencePairs[dim].end() );
+		  #endif      
+		  //std::sort(finitePersistencePairs[dim].begin(), finitePersistencePairs[dim].end());
+		}
+		return std::make_pair(birthTimesOfInfinitePersistnceClasses, finitePersistencePairs);
+	}
+	catch (...)
+	{
+		std::cout << "The method get_the_intervals() thrown an exception. The most probable reason for that is because the data structure you are trying to use do not satisfy all teh requirements of GudhiFilteredComplex concept.  \n";
+		throw "The method get_the_intervals() thrown an exception. The most probable reason for that is because the data structure you are trying to use do not satisfy all teh requirements of GudhiFilteredComplex concept.  \n";		
+	}	
   }
 
 
-  /** \brief This function store a boundary matrix in a PHAT format to a given file. For some reason this format is not
+  /** \brief This function store a boundary matrix in a PHAT format to a given file. This format is not
    * recognized by load_ascii procedure in PHAT. Therefore one can store the matrix with this procedure
-   * but will not be later able to read it with load_ascii. If you want to read it later, please use save_for_reading. 
+   * but will not be later able to read it with load_ascii. If you want to read it later, please use load_ascii. 
    */
-  void save_ascii(std::string filename) {
+  void save_for_reading(std::string filename) {
     this->boundary_matrix_.save_ascii(filename);
   }
 
@@ -239,7 +279,7 @@ class Compute_persistence_with_phat {
   /** \brief This function store a boundary matrix in a PHAT format to a given file. The matrix can be later read by
    * load_ascii function.
    */
-  void save_for_reading(std::string filename) {
+  void save_ascii(std::string filename) {
     std::ofstream out;
     out.open(filename.c_str());
     out << (int) this->boundary_matrix_.get_num_cols() << std::endl;
@@ -313,9 +353,18 @@ void write_intervals_to_file_Gudhi_format(std::pair< std::vector< std::vector<K>
   }
 
   // now we need to sort beginnings_of_infinite_intervals according to the first coordinate:
-  std::sort(beginnings_of_infinite_intervals.begin(), beginnings_of_infinite_intervals.end(),
-            [](const std::pair<K, size_t>& lhs, const std::pair<K, size_t>& rhs) {
+  #ifdef GUDHI_USE_TBB
+  tbb::parallel_sort(beginnings_of_infinite_intervals.begin(), beginnings_of_infinite_intervals.end()
+  [](const std::pair<K, size_t>& lhs, const std::pair<K, size_t>& rhs) {
+    return lhs.second > rhs.second; } );
+  #else
+  std::stable_sort(beginnings_of_infinite_intervals.begin(), beginnings_of_infinite_intervals.end(),
+  [](const std::pair<K, size_t>& lhs, const std::pair<K, size_t>& rhs) {
     return lhs.second > rhs.second; });
+  #endif
+  //std::sort(beginnings_of_infinite_intervals.begin(), beginnings_of_infinite_intervals.end(),
+  //          [](const std::pair<K, size_t>& lhs, const std::pair<K, size_t>& rhs) {
+  //  return lhs.second > rhs.second; });
 
   // and now we output the sorted pairs to a file:
   for (size_t i = 0; i != beginnings_of_infinite_intervals.size(); ++i) {
@@ -340,9 +389,20 @@ void write_intervals_to_file_Gudhi_format(std::pair< std::vector< std::vector<K>
 
   // and now we need to sort the finite_intervals vector according to the length of intervals, i.e. according to
   // finite_intervals[i].first.second - finite_intervals[i].first.first.
-  std::sort(finite_intervals.begin(), finite_intervals.end(), [](const std::pair<std::pair<K, K>, size_t>& lhs,
+  #ifdef GUDHI_USE_TBB
+  tbb::parallel_sort(finite_intervals.begin(), finite_intervals.end(), [](const std::pair<std::pair<K, K>, size_t>& lhs,
       const std::pair<std::pair<K, K>, size_t>& rhs) {
     return lhs.first.second - lhs.first.first > rhs.first.second - rhs.first.first; });
+  #else
+  std::stable_sort(finite_intervals.begin(), finite_intervals.end(), [](const std::pair<std::pair<K, K>, size_t>& lhs,
+      const std::pair<std::pair<K, K>, size_t>& rhs) {
+    return lhs.first.second - lhs.first.first > rhs.first.second - rhs.first.first; });
+  #endif  
+  //std::sort(finite_intervals.begin(), finite_intervals.end(), [](const std::pair<std::pair<K, K>, size_t>& lhs,
+  //    const std::pair<std::pair<K, K>, size_t>& rhs) {
+  //  return lhs.first.second - lhs.first.first > rhs.first.second - rhs.first.first; });
+
+
 
   // and now we should output them to a file:
   for (size_t i = 0; i != finite_intervals.size(); ++i) {
