@@ -54,6 +54,11 @@ else()
 
   enable_testing()
 
+  # For "make user_version"
+  include(${CMAKE_MODULE_PATH}/GUDHI_user_version_target.txt)
+  # For "make doxygen"
+  include(${CMAKE_MODULE_PATH}/GUDHI_doxygen_target.txt)
+
   find_package(GMP)
   if(GMP_FOUND)
     message(STATUS "GMP_LIBRARIES = ${GMP_LIBRARIES}")
@@ -92,7 +97,7 @@ else()
     # Turn off some VC++ warnings
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4267 /wd4668 /wd4311 /wd4800 /wd4820 /wd4503 /wd4244 /wd4345 /wd4996 /wd4396 /wd4018")
   else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wpedantic -Wsign-compare")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -pedantic")
   endif()
 
   if(CMAKE_BUILD_TYPE MATCHES Debug)
@@ -162,6 +167,8 @@ else()
   include_directories(src/Persistent_cohomology/include/)
   include_directories(src/Simplex_tree/include/)
   include_directories(src/Skeleton_blocker/include/)
+  include_directories(src/Spatial_searching/include/)
+  include_directories(src/Subsampling/include/)
   include_directories(src/Witness_complex/include/)
   include_directories(src/Phat/include/)
 
@@ -181,6 +188,10 @@ else()
   add_subdirectory(src/Bitmap_cubical_complex/example)
   add_subdirectory(src/Alpha_complex/example)
   add_subdirectory(src/Alpha_complex/test)
+  add_subdirectory(src/Spatial_searching/example)
+  add_subdirectory(src/Spatial_searching/test)
+  add_subdirectory(src/Subsampling/example)
+  add_subdirectory(src/Subsampling/test)
   add_subdirectory(src/Phat/example)
   add_subdirectory(src/Phat/test)
 

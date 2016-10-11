@@ -56,11 +56,11 @@ namespace phat_interface {
  the filtration on the simplex represented by the handle.
 
 \section Examples
-\subsection Cubical complex persistence with PHAT interface
+\subsection cubicalphatpersistence Cubical complex persistence with PHAT interface
 
 \include Phat/cubical_complex_persistence_with_phat.cpp
 
-\subsection Rips complex persistence with PHAT interface
+\subsection ripsphatpersistence Rips complex persistence with PHAT interface
 
 \include Phat/rips_persistence_with_phat.cpp
 

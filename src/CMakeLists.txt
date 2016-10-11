@@ -15,6 +15,10 @@ if(NOT Boost_FOUND)
   message(FATAL_ERROR "NOTICE: This demo requires Boost and will not be compiled.")
 else()
 
+  # For "make doxygen"
+  set(GUDHI_USER_VERSION_DIR ${CMAKE_SOURCE_DIR})
+  include(${CMAKE_MODULE_PATH}/GUDHI_doxygen_target.txt)
+
   find_package(GMP)
   if(GMP_FOUND)
     message(STATUS "GMP_LIBRARIES = ${GMP_LIBRARIES}")
@@ -55,7 +59,7 @@ else()
     # Turn off some VC++ warnings
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4267 /wd4668 /wd4311 /wd4800 /wd4820 /wd4503 /wd4244 /wd4345 /wd4996 /wd4396 /wd4018")
   else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wpedantic -Wsign-compare")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -pedantic")
   endif()
 
   if(CMAKE_BUILD_TYPE MATCHES Debug)
@@ -110,6 +114,8 @@ else()
   add_subdirectory(example/Bitmap_cubical_complex)
   add_subdirectory(example/Witness_complex)
   add_subdirectory(example/Alpha_complex)
+  add_subdirectory(example/Spatial_searching)
+  add_subdirectory(example/Subsampling)
   add_subdirectory(example/Phat)
 
   # data points generator
