@@ -9,16 +9,15 @@
 
 namespace tc = Gudhi::tangential_complex;
 
-typedef CGAL::Epick_d<CGAL::Dynamic_dimension_tag>              Kernel;
-typedef Kernel::FT                                              FT;
-typedef Kernel::Point_d                                         Point;
-typedef Kernel::Vector_d                                        Vector;
+typedef CGAL::Epick_d<CGAL::Dynamic_dimension_tag> Kernel;
+typedef Kernel::FT FT;
+typedef Kernel::Point_d Point;
+typedef Kernel::Vector_d Vector;
 typedef tc::Tangential_complex<
-  Kernel, CGAL::Dynamic_dimension_tag,
-  CGAL::Parallel_tag>                                           TC;
+Kernel, CGAL::Dynamic_dimension_tag,
+CGAL::Parallel_tag> TC;
 
-int main (void)
-{
+int main(void) {
   const int INTRINSIC_DIM = 2;
   const int AMBIENT_DIM = 3;
   const int NUM_POINTS = 1000;
@@ -29,7 +28,7 @@ int main (void)
   CGAL::Random_points_on_sphere_d<Point> generator(AMBIENT_DIM, 3.);
   std::vector<Point> points;
   points.reserve(NUM_POINTS);
-  for (int i = 0 ; i < NUM_POINTS; ++i)
+  for (int i = 0; i < NUM_POINTS; ++i)
     points.push_back(*generator++);
 
   // Compute the TC
@@ -41,7 +40,7 @@ int main (void)
   tc.create_complex(stree);
 
   // Display stats about inconsistencies
-  tc.number_of_inconsistent_simplices(true); // verbose
+  tc.number_of_inconsistent_simplices(true);  // verbose
 
   return 0;
 }

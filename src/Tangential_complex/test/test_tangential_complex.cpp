@@ -4,7 +4,7 @@
  *
  *    Author(s):       Clement Jamin
  *
- *    Copyright (C) 2016  INRIA Sophia-Antipolis (France)
+ *    Copyright (C) 2016  INRIA
  *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -35,13 +35,12 @@
 
 namespace tc = Gudhi::tangential_complex;
 
-BOOST_AUTO_TEST_CASE(test_Spatial_tree_data_structure)
-{
-  typedef CGAL::Epick_d<CGAL::Dynamic_dimension_tag>              Kernel;
-  typedef Kernel::Point_d                                         Point;
+BOOST_AUTO_TEST_CASE(test_Spatial_tree_data_structure) {
+  typedef CGAL::Epick_d<CGAL::Dynamic_dimension_tag> Kernel;
+  typedef Kernel::Point_d Point;
   typedef tc::Tangential_complex<
-    Kernel, CGAL::Dynamic_dimension_tag,
-    CGAL::Parallel_tag>                                           TC;
+      Kernel, CGAL::Dynamic_dimension_tag,
+      CGAL::Parallel_tag> TC;
 
   const int INTRINSIC_DIM = 2;
   const int AMBIENT_DIM = 3;

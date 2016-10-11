@@ -10,16 +10,15 @@
 namespace subsampl = Gudhi::subsampling;
 namespace tc = Gudhi::tangential_complex;
 
-typedef CGAL::Epick_d<CGAL::Dimension_tag<3>>                   Kernel;
-typedef Kernel::FT                                              FT;
-typedef Kernel::Point_d                                         Point;
-typedef Kernel::Vector_d                                        Vector;
+typedef CGAL::Epick_d<CGAL::Dimension_tag < 3 >> Kernel;
+typedef Kernel::FT FT;
+typedef Kernel::Point_d Point;
+typedef Kernel::Vector_d Vector;
 typedef tc::Tangential_complex<
-  Kernel, CGAL::Dimension_tag<2>,
-  CGAL::Parallel_tag>                                           TC;
+Kernel, CGAL::Dimension_tag<2>,
+CGAL::Parallel_tag> TC;
 
-int main (void)
-{
+int main(void) {
   const int INTRINSIC_DIM = 2;
   const int AMBIENT_DIM = 3;
   const int NUM_POINTS = 50;
@@ -30,13 +29,13 @@ int main (void)
   CGAL::Random_points_on_sphere_d<Point> generator(AMBIENT_DIM, 3.);
   std::vector<Point> points;
   points.reserve(NUM_POINTS);
-  for (int i = 0 ; i < NUM_POINTS; ++i)
+  for (int i = 0; i < NUM_POINTS; ++i)
     points.push_back(*generator++);
-  
+
   // Sparsify the point set
   std::vector<Point> sparsified_points;
-  subsampl::sparsify_point_set(k, points, 0.1*0.1,
-    std::back_inserter(sparsified_points));
+  subsampl::sparsify_point_set(k, points, 0.1 * 0.1,
+                               std::back_inserter(sparsified_points));
   sparsified_points.swap(points);
 
   // Compute the TC

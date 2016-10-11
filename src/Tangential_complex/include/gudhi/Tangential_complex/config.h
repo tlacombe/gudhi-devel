@@ -20,8 +20,8 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef GUDHI_TC_CONFIG_H
-#define GUDHI_TC_CONFIG_H
+#ifndef TANGENTIAL_COMPLEX_CONFIG_H
+#define TANGENTIAL_COMPLEX_CONFIG_H
 
 #include <cstddef>
 
@@ -41,4 +41,4 @@
 // PCA will use GUDHI_TC_BASE_VALUE_FOR_PCA^intrinsic_dim points
 const std::size_t GUDHI_TC_BASE_VALUE_FOR_PCA = 5;
 
-#endif // GUDHI_TC_CONFIG_H
+#endif // TANGENTIAL_COMPLEX_CONFIG_H

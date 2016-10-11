@@ -33,7 +33,7 @@ namespace tangential_complex {
 
 @{
 
-\section definition Definition
+\section tangentialdefinition Definition
 
 A Tangential Delaunay complex is a <a target="_blank" href="https://en.wikipedia.org/wiki/Simplicial_complex">simplicial complex</a>
 designed to reconstruct a \f$k\f$-dimensional smooth manifold embedded in \f$d\f$-dimensional Euclidean space. 
