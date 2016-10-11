@@ -73,8 +73,9 @@ class Clock {
     if (!end_called) {
       auto end = boost::posix_time::microsec_clock::local_time();
       return (end - startTime).total_milliseconds() / 1000.;
-    } else
+    } else {
       return (endTime - startTime).total_milliseconds() / 1000.;
+    }
   }
 
  private:
