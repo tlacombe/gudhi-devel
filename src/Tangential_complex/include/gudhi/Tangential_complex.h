@@ -395,8 +395,7 @@ class Tangential_complex {
     // Parallel
     if (boost::is_convertible<Concurrency_tag, CGAL::Parallel_tag>::value) {
       tbb::parallel_for(tbb::blocked_range<size_t>(0, m_points.size()),
-                        Compute_tangent_triangulation(*this)
-                        );
+                        Compute_tangent_triangulation(*this));
     } else {
 #endif  // GUDHI_USE_TBB
       // Sequential
@@ -895,8 +894,7 @@ class Tangential_complex {
     // Parallel
     if (boost::is_convertible<Concurrency_tag, CGAL::Parallel_tag>::value) {
       tbb::parallel_for(tbb::blocked_range<size_t>(0, m_points.size()),
-                        Compute_tangent_triangulation(*this)
-                        );
+                        Compute_tangent_triangulation(*this));
     } else {
 #endif  // GUDHI_USE_TBB
       // Sequential
@@ -934,8 +932,7 @@ class Tangential_complex {
     // Parallel
     if (boost::is_convertible<Concurrency_tag, CGAL::Parallel_tag>::value) {
       tbb::parallel_for(tbb::blocked_range<size_t>(0, m_points.size()),
-                        Refresh_tangent_triangulation(*this, updated_pts_ds)
-                        );
+                        Refresh_tangent_triangulation(*this, updated_pts_ds));
     } else {
 #endif  // GUDHI_USE_TBB
       // Sequential
@@ -2133,7 +2130,7 @@ class Tangential_complex {
       Simplex c = *it_s;
       ++num_maximal_simplices;
 
-      int color_simplex = -1; // -1=no color, 0=yellow, 1=red, 2=green, 3=blue
+      int color_simplex = -1;  // -1=no color, 0=yellow, 1=red, 2=green, 3=blue
       if (p_simpl_to_color_in_red &&
           std::find(
                     p_simpl_to_color_in_red->begin(),
@@ -2141,14 +2138,12 @@ class Tangential_complex {
                     c) != p_simpl_to_color_in_red->end()) {
         color_simplex = 1;
       } else if (p_simpl_to_color_in_green &&
-                 std::find(
-                           p_simpl_to_color_in_green->begin(),
+                 std::find(p_simpl_to_color_in_green->begin(),
                            p_simpl_to_color_in_green->end(),
                            c) != p_simpl_to_color_in_green->end()) {
         color_simplex = 2;
       } else if (p_simpl_to_color_in_blue &&
-                 std::find(
-                           p_simpl_to_color_in_blue->begin(),
+                 std::find(p_simpl_to_color_in_blue->begin(),
                            p_simpl_to_color_in_blue->end(),
                            c) != p_simpl_to_color_in_blue->end()) {
         color_simplex = 3;
