@@ -171,8 +171,7 @@
     <li>The chunk algorithm, see \cite persistencewithchunks2013 available via the method compute_persistence_pairs_dualized_chunk_reduction </li>
     <li>The spectral sequence algorithm, see \cite DBLP:books/daglib/0025666 available via the method compute_persistence_pairs_spectral_sequence_reduction() </li>
     </ul>
-	When using this functionality please acknowledge both Phat and Gudhi contributors. 
-    website.<br>
+	When using this functionality please acknowledge both Phat and Gudhi contributors.<br>
     <b>User manual:</b> \ref phat_interface - <b>Reference manual:</b> Gudhi::phat_interface::Compute_persistence_with_phat
     </td>
  </tr>
