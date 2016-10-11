@@ -161,8 +161,17 @@
       <b>Copyright:</b> GPL v3<br>
     </td>
     <td width="75%">
-    Interface class to compute PHAT persistence from GUDHI data structures. For more information on PHAT, please refer
-    to \cite phat2017jsc or to the <a target="_blank" href="https://bitbucket.org/phat-code/phat">PHAT</a> project
+    Interface class to compute persistence with PHAT using GUDHI data structures. For more information on PHAT, please refer
+    to \cite phat2017jsc or to the <a target="_blank" href="https://bitbucket.org/phat-code/phat">PHAT</a> project.
+    Phat is a project developed at IST-Austria, founded by Ulrich Bauer, Michael Kerber and Jan Reininghaus and contributed by Hubert Wagner. 
+    The following matrix reduction algorithms from Phat are available through Gudhi:
+    <ul>
+    <li>The standard algorithm, see \cite DBLP:books/daglib/0025666 available via the method compute_persistence_pairs_standard_reduction() </li>
+    <li>The twist algorithm, see \cite persistencewithatwist2011 available via the method compute_persistence_pairs_twist_reduction() </li>
+    <li>The chunk algorithm, see \cite persistencewithchunks2013 available via the method compute_persistence_pairs_dualized_chunk_reduction </li>
+    <li>The spectral sequence algorithm, see \cite DBLP:books/daglib/0025666 available via the method compute_persistence_pairs_spectral_sequence_reduction() </li>
+    </ul>
+	When using this functionality please acknowledge both Phat and Gudhi contributors. 
     website.<br>
     <b>User manual:</b> \ref phat_interface - <b>Reference manual:</b> Gudhi::phat_interface::Compute_persistence_with_phat
     </td>
