@@ -20,8 +20,8 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TANGENTIAL_COMPLEX_SIMPLICIAL_COMPLEX_H
-#define TANGENTIAL_COMPLEX_SIMPLICIAL_COMPLEX_H
+#ifndef TANGENTIAL_COMPLEX_SIMPLICIAL_COMPLEX_H_
+#define TANGENTIAL_COMPLEX_SIMPLICIAL_COMPLEX_H_
 
 #include <gudhi/Tangential_complex/config.h>
 #include <gudhi/Tangential_complex/utilities.h>
@@ -39,6 +39,9 @@
 #include <algorithm>
 #include <string>
 #include <fstream>
+#include <map>  // for map<>
+#include <vector>  // for vector<>
+#include <set>  // for set<>
 
 namespace Gudhi {
 namespace tangential_complex {
@@ -111,7 +114,7 @@ class Simplicial_complex {
     }
   }
 
-  // When a simplex S has only one co-face C, we can remove S and C 
+  // When a simplex S has only one co-face C, we can remove S and C
   // without changing the topology
 
   void collapse(int max_simplex_dim, bool quiet = false) {
@@ -223,7 +226,6 @@ class Simplicial_complex {
   }
 
   // verbose_level = 0, 1 or 2
-
   bool is_pure_pseudomanifold__do_not_check_if_stars_are_connected(int simplex_dim,
                                                                    bool allow_borders = false,
                                                                    bool exit_at_the_first_problem = false,
@@ -370,7 +372,7 @@ class Simplicial_complex {
                                                                          p_num_wrong_dim_simplices,
                                                                          p_num_wrong_number_of_cofaces);
     }
-    // Associates each vertex (= the index in the vector) 
+    // Associates each vertex (= the index in the vector)
     // to its star (list of simplices)
     typedef std::vector<std::vector<Complex::const_iterator> > Stars;
     std::size_t num_wrong_dim_simplices = 0;
@@ -529,11 +531,10 @@ class Simplicial_complex {
   typedef boost::graph_traits<Adj_graph>::edge_descriptor Graph_edge;
 
   Complex m_complex;
-
 };  // class Simplicial_complex
 
 }  // namespace internal
 }  // namespace tangential_complex
 }  // namespace Gudhi
 
-#endif  // TANGENTIAL_COMPLEX_SIMPLICIAL_COMPLEX_H
+#endif  // TANGENTIAL_COMPLEX_SIMPLICIAL_COMPLEX_H_

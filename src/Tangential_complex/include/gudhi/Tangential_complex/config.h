@@ -20,25 +20,25 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TANGENTIAL_COMPLEX_CONFIG_H
-#define TANGENTIAL_COMPLEX_CONFIG_H
+#ifndef TANGENTIAL_COMPLEX_CONFIG_H_
+#define TANGENTIAL_COMPLEX_CONFIG_H_
 
 #include <cstddef>
 
-//========================= Debugging & profiling =============================
+// ========================= Debugging & profiling =============================
 #define GUDHI_TC_PROFILING
 #define DEBUG_TRACES
-//#define GUDHI_TC_VERY_VERBOSE
-//#define GUDHI_TC_PERFORM_EXTRA_CHECKS
-//#define GUDHI_TC_SHOW_DETAILED_STATS_FOR_INCONSISTENCIES
+// #define GUDHI_TC_VERY_VERBOSE
+// #define GUDHI_TC_PERFORM_EXTRA_CHECKS
+// #define GUDHI_TC_SHOW_DETAILED_STATS_FOR_INCONSISTENCIES
 
-//========================= Strategy ==========================================
+// ========================= Strategy ==========================================
 #define GUDHI_TC_PERTURB_POSITION
-//#define GUDHI_TC_PERTURB_WEIGHT
+// #define GUDHI_TC_PERTURB_WEIGHT
 
-//========================= Parameters ========================================
+// ========================= Parameters ========================================
 
 // PCA will use GUDHI_TC_BASE_VALUE_FOR_PCA^intrinsic_dim points
 const std::size_t GUDHI_TC_BASE_VALUE_FOR_PCA = 5;
 
-#endif // TANGENTIAL_COMPLEX_CONFIG_H
+#endif  // TANGENTIAL_COMPLEX_CONFIG_H_

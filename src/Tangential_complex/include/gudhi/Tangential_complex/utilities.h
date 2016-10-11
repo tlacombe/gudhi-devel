@@ -20,12 +20,14 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TANGENTIAL_COMPLEX_UTILITIES_H
-#define TANGENTIAL_COMPLEX_UTILITIES_H
+#ifndef TANGENTIAL_COMPLEX_UTILITIES_H_
+#define TANGENTIAL_COMPLEX_UTILITIES_H_
 
 #include <CGAL/Dimension.h>
 #include <CGAL/Combination_enumerator.h>
 #include <CGAL/IO/Triangulation_off_ostream.h>
+
+#include <boost/container/flat_set.hpp>
 
 #include <Eigen/Core>
 #include <Eigen/Eigen>
@@ -36,8 +38,6 @@
 #include <fstream>
 #include <atomic>
 #include <cmath>  // for std::sqrt
-
-#include <boost/container/flat_set.hpp>
 
 namespace Gudhi {
 namespace tangential_complex {
@@ -169,7 +169,7 @@ std::ostream &export_point_set(
 }
 
 // Compute all the k-combinations of elements
-// Output_iterator::value_type must be 
+// Output_iterator::value_type must be
 // boost::container::flat_set<std::size_t>
 template <typename Elements_container, typename Output_iterator>
 void combinations(const Elements_container elements, int k,
@@ -185,12 +185,11 @@ void combinations(const Elements_container elements, int k,
         combination.insert(*it_elt);
     }
     *combinations++ = combination;
-
   } while (std::next_permutation(booleans.begin(), booleans.end()));
 }
 
 }  // namespace internal
 }  // namespace tangential_complex
-}  //namespace Gudhi
+}  // namespace Gudhi
 
-#endif  // TANGENTIAL_COMPLEX_UTILITIES_H
+#endif  // TANGENTIAL_COMPLEX_UTILITIES_H_

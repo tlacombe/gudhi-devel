@@ -62,6 +62,7 @@
 #include <functional>
 #include <iterator>
 #include <cmath>  // for std::sqrt
+#include <string>
 
 #ifdef GUDHI_USE_TBB
 #include <tbb/parallel_for.h>
@@ -69,7 +70,7 @@
 #include <tbb/mutex.h>
 #endif
 
-//#define GUDHI_TC_EXPORT_NORMALS // Only for 3D surfaces (k=2, d=3)
+// #define GUDHI_TC_EXPORT_NORMALS // Only for 3D surfaces (k=2, d=3)
 
 namespace sps = Gudhi::spatial_searching;
 
@@ -81,7 +82,6 @@ using namespace internal;
 
 class Vertex_data {
  public:
-
   Vertex_data(std::size_t data = std::numeric_limits<std::size_t>::max())
       : m_data(data) { }
 
@@ -171,7 +171,6 @@ class Tangential_complex {
 
   struct Tr_and_VH {
    public:
-
     Tr_and_VH()
         : m_tr(NULL) { }
 
@@ -226,7 +225,6 @@ class Tangential_complex {
   typedef std::set<Simplex> Simplex_set;
 
  private:
-
   typedef sps::Kd_tree_search<K, Points> Points_ds;
   typedef typename Points_ds::KNS_range KNS_range;
   typedef typename Points_ds::INS_range INS_range;
@@ -399,13 +397,14 @@ class Tangential_complex {
       tbb::parallel_for(tbb::blocked_range<size_t>(0, m_points.size()),
                         Compute_tangent_triangulation(*this)
                         );
-    }      // Sequential
-    else
+    } else {
 #endif  // GUDHI_USE_TBB
-    {
+      // Sequential
       for (std::size_t i = 0; i < m_points.size(); ++i)
         compute_tangent_triangulation(i);
+#ifdef GUDHI_USE_TBB
     }
+#endif  // GUDHI_USE_TBB
 
 #if defined(GUDHI_TC_PROFILING) && defined(GUDHI_USE_TBB)
     t.end();
@@ -507,16 +506,17 @@ class Tangential_complex {
                                                          res.insert(res.end(), y.begin(), y.end());
                                                          return res;
                                                     });
-      }        // Sequential
-      else
+      } else {
 #endif  // GUDHI_USE_TBB
-      {
+        // Sequential
         for (std::size_t i = 0; i < m_triangulations.size(); ++i) {
           num_inconsistent_stars +=
               try_to_solve_inconsistencies_in_a_local_triangulation(i, max_perturb,
                                                                     std::back_inserter(updated_points));
         }
+#if defined(GUDHI_USE_TBB)
       }
+#endif  // GUDHI_USE_TBB
 
 #ifdef GUDHI_TC_PROFILING
       t_fix_step.end();
@@ -741,7 +741,7 @@ class Tangential_complex {
   //   If the check is enabled, the function:
   //   - won't insert the simplex if it is already in a higher dim simplex
   //   - will erase any lower-dim simplices that are faces of the new simplex
-  //   "auto" (= 2) will enable the check as a soon as it encounters a 
+  //   "auto" (= 2) will enable the check as a soon as it encounters a
   //   simplex whose dimension is different from the previous ones.
   //   N.B.: The check is quite expensive.
 
@@ -883,7 +883,6 @@ class Tangential_complex {
   }
 
  private:
-
   void refresh_tangential_complex() {
 #if defined(DEBUG_TRACES) || defined(GUDHI_TC_PROFILING)
     std::cerr << yellow << "\nRefreshing TC... " << white;
@@ -898,13 +897,14 @@ class Tangential_complex {
       tbb::parallel_for(tbb::blocked_range<size_t>(0, m_points.size()),
                         Compute_tangent_triangulation(*this)
                         );
-    }      // Sequential
-    else
+    } else {
 #endif  // GUDHI_USE_TBB
-    {
+      // Sequential
       for (std::size_t i = 0; i < m_points.size(); ++i)
         compute_tangent_triangulation(i);
+#ifdef GUDHI_USE_TBB
     }
+#endif  // GUDHI_USE_TBB
 
 #ifdef GUDHI_TC_PROFILING
     t.end();
@@ -936,13 +936,14 @@ class Tangential_complex {
       tbb::parallel_for(tbb::blocked_range<size_t>(0, m_points.size()),
                         Refresh_tangent_triangulation(*this, updated_pts_ds)
                         );
-    }      // Sequential
-    else
+    } else {
 #endif  // GUDHI_USE_TBB
-    {
+      // Sequential
       for (std::size_t i = 0; i < m_points.size(); ++i)
         refresh_tangent_triangulation(i, updated_pts_ds);
+#ifdef GUDHI_USE_TBB
     }
+#endif  // GUDHI_USE_TBB
 
 #ifdef GUDHI_TC_PROFILING
     t.end();
@@ -990,7 +991,6 @@ class Tangential_complex {
 
   class Compare_distance_to_ref_point {
    public:
-
     Compare_distance_to_ref_point(Point const& ref, K const& k)
         : m_ref(ref), m_k(k) { }
 
@@ -1130,7 +1130,7 @@ class Tangential_complex {
 
 
         Tr_vertex_handle vh = triangulation.insert_if_in_star(proj_pt, center_vertex);
-        //Tr_vertex_handle vh = triangulation.insert(proj_pt);
+        // Tr_vertex_handle vh = triangulation.insert(proj_pt);
         if (vh != Tr_vertex_handle()) {
 #ifdef GUDHI_TC_VERY_VERBOSE
           ++num_inserted_points;
@@ -1299,14 +1299,12 @@ class Tangential_complex {
 
   // Estimates tangent subspaces using PCA
 
-  Tangent_space_basis compute_tangent_space(
-                                            const Point &p
+  Tangent_space_basis compute_tangent_space(const Point &p
                                             , const std::size_t i
                                             , bool normalize_basis = true
                                             , Orthogonal_space_basis *p_orth_space_basis = NULL
                                             ) {
-    unsigned int num_points_for_pca = static_cast<unsigned int> (
-                                                                 std::pow(GUDHI_TC_BASE_VALUE_FOR_PCA, m_intrinsic_dim));
+    unsigned int num_points_for_pca = static_cast<unsigned int> (std::pow(GUDHI_TC_BASE_VALUE_FOR_PCA, m_intrinsic_dim));
 
     // Kernel functors
     typename K::Construct_vector_d constr_vec =
@@ -1394,10 +1392,8 @@ class Tangential_complex {
   // Basically, it takes all the neighbor points to p1, p2... pn and runs PCA
   // on it. Note that most points are duplicated.
 
-  Tangent_space_basis compute_tangent_space(
-                                            const Simplex &s, bool normalize_basis = true) {
-    unsigned int num_points_for_pca = static_cast<unsigned int> (
-                                                                 std::pow(GUDHI_TC_BASE_VALUE_FOR_PCA, m_intrinsic_dim));
+  Tangent_space_basis compute_tangent_space(const Simplex &s, bool normalize_basis = true) {
+    unsigned int num_points_for_pca = static_cast<unsigned int> (std::pow(GUDHI_TC_BASE_VALUE_FOR_PCA, m_intrinsic_dim));
 
     // Kernel functors
     typename K::Construct_vector_d constr_vec =
@@ -1598,9 +1594,10 @@ class Tangential_complex {
       coords.push_back(c);
 
       // p_proj += c * tsb[i]
-      if (!same_dim)
+      if (!same_dim) {
         for (int j = 0; j < point_dim; ++j)
           p_proj[j] += c * coord(tsb[i], j);
+      }
     }
 
     // Same dimension? Then the weight is 0
@@ -1611,10 +1608,8 @@ class Tangential_complex {
     }
 
     return tr_traits.construct_weighted_point_d_object()
-        (
-         tr_traits.construct_point_d_object()(static_cast<int> (coords.size()), coords.begin(), coords.end()),
-         w - sq_dist_to_proj_pt
-         );
+        (tr_traits.construct_point_d_object()(static_cast<int> (coords.size()), coords.begin(), coords.end()),
+         w - sq_dist_to_proj_pt);
   }
 
   // Project all the points in the tangent space
@@ -1676,7 +1671,7 @@ class Tangential_complex {
   // A simplex here is a list of point indices
   // "s" contains all the points of the simplex except "center_point"
   // This function returns the points whose star doesn't contain the simplex
-  // N.B.: the function assumes that the simplex is contained in 
+  // N.B.: the function assumes that the simplex is contained in
   //       star(center_point)
 
   template <typename OutputIterator>  // value_type = std::size_t
@@ -2114,7 +2109,6 @@ class Tangential_complex {
   }
 
  public:
-
   std::ostream &export_simplices_to_off(
                                         const Simplicial_complex &complex,
                                         std::ostream & os, std::size_t &num_OFF_simplices,
@@ -2281,7 +2275,6 @@ class Tangential_complex {
 #endif
 
   mutable CGAL::Random m_random_generator;
-
 };  // /class Tangential_complex
 
 }  // end namespace tangential_complex
