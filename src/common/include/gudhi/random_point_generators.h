@@ -27,6 +27,8 @@
 #include <CGAL/Random.h>
 #include <CGAL/point_generators_d.h>
 
+#include <vector>  // for vector<>
+
 namespace Gudhi {
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -282,7 +284,8 @@ std::vector<typename Kernel::Point_d> generate_points_on_sphere_d(std::size_t nu
 
 template <typename Kernel>
 std::vector<typename Kernel::Point_d> generate_points_on_two_spheres_d(std::size_t num_points, int dim, double radius,
-                                                                       double distance_between_centers, double radius_noise_percentage = 0.) {
+                                                                       double distance_between_centers,
+                                                                       double radius_noise_percentage = 0.) {
   typedef typename Kernel::FT FT;
   typedef typename Kernel::Point_d Point;
   typedef typename Kernel::Vector_d Vector;
@@ -340,7 +343,7 @@ std::vector<typename Kernel::Point_d> generate_points_on_3sphere_and_circle(std:
   typename Kernel::Compute_coordinate_d k_coord =
       k.compute_coordinate_d_object();
   for (std::size_t i = 0; i < num_points;) {
-    Point p_sphere = *generator++; // First 3 coords
+    Point p_sphere = *generator++;  // First 3 coords
 
     FT alpha = rng.get_double(0, 6.2832);
     std::vector<FT> pt(5);

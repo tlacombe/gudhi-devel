@@ -364,8 +364,7 @@ class Simplicial_complex {
     if (simplex_dim == 1) {
       if (p_num_unconnected_stars)
         *p_num_unconnected_stars = 0;
-      return is_pure_pseudomanifold__do_not_check_if_stars_are_connected(
-                                                                         simplex_dim,
+      return is_pure_pseudomanifold__do_not_check_if_stars_are_connected(simplex_dim,
                                                                          allow_borders,
                                                                          exit_at_the_first_problem,
                                                                          verbose_level,

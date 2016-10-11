@@ -20,8 +20,8 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TANGENTIAL_COMPLEX_H
-#define TANGENTIAL_COMPLEX_H
+#ifndef TANGENTIAL_COMPLEX_H_
+#define TANGENTIAL_COMPLEX_H_
 
 #include <gudhi/Tangential_complex/config.h>
 #include <gudhi/Tangential_complex/Simplicial_complex.h>
@@ -1301,7 +1301,7 @@ class Tangential_complex {
                                             , bool normalize_basis = true
                                             , Orthogonal_space_basis *p_orth_space_basis = NULL
                                             ) {
-    unsigned int num_points_for_pca = static_cast<unsigned int> (std::pow(GUDHI_TC_BASE_VALUE_FOR_PCA, m_intrinsic_dim));
+    unsigned int num_pts_for_pca = static_cast<unsigned int> (std::pow(GUDHI_TC_BASE_VALUE_FOR_PCA, m_intrinsic_dim));
 
     // Kernel functors
     typename K::Construct_vector_d constr_vec =
@@ -1319,18 +1319,18 @@ class Tangential_complex {
 
 #ifdef GUDHI_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
     KNS_range kns_range = m_points_ds_for_tse.query_k_nearest_neighbors(
-                                                                        p, num_points_for_pca, false);
+                                                                        p, num_pts_for_pca, false);
     const Points &points_for_pca = m_points_for_tse;
 #else
-    KNS_range kns_range = m_points_ds.query_k_nearest_neighbors(p, num_points_for_pca, false);
+    KNS_range kns_range = m_points_ds.query_k_nearest_neighbors(p, num_pts_for_pca, false);
     const Points &points_for_pca = m_points;
 #endif
 
     // One row = one point
-    Eigen::MatrixXd mat_points(num_points_for_pca, m_ambient_dim);
+    Eigen::MatrixXd mat_points(num_pts_for_pca, m_ambient_dim);
     auto nn_it = kns_range.begin();
     for (unsigned int j = 0;
-         j < num_points_for_pca && nn_it != kns_range.end();
+         j < num_pts_for_pca && nn_it != kns_range.end();
          ++j, ++nn_it) {
       for (int i = 0; i < m_ambient_dim; ++i) {
         mat_points(j, i) = CGAL::to_double(coord(points_for_pca[nn_it->first], i));
@@ -1390,7 +1390,7 @@ class Tangential_complex {
   // on it. Note that most points are duplicated.
 
   Tangent_space_basis compute_tangent_space(const Simplex &s, bool normalize_basis = true) {
-    unsigned int num_points_for_pca = static_cast<unsigned int> (std::pow(GUDHI_TC_BASE_VALUE_FOR_PCA, m_intrinsic_dim));
+    unsigned int num_pts_for_pca = static_cast<unsigned int> (std::pow(GUDHI_TC_BASE_VALUE_FOR_PCA, m_intrinsic_dim));
 
     // Kernel functors
     typename K::Construct_vector_d constr_vec =
@@ -1407,7 +1407,7 @@ class Tangential_complex {
         m_k.difference_of_vectors_d_object();
 
     // One row = one point
-    Eigen::MatrixXd mat_points(s.size() * num_points_for_pca, m_ambient_dim);
+    Eigen::MatrixXd mat_points(s.size() * num_pts_for_pca, m_ambient_dim);
     unsigned int current_row = 0;
 
     for (Simplex::const_iterator it_index = s.begin();
@@ -1416,16 +1416,16 @@ class Tangential_complex {
 
 #ifdef GUDHI_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
       KNS_range kns_range = m_points_ds_for_tse.query_k_nearest_neighbors(
-                                                                          p, num_points_for_pca, false);
+                                                                          p, num_pts_for_pca, false);
       const Points &points_for_pca = m_points_for_tse;
 #else
-      KNS_range kns_range = m_points_ds.query_k_nearest_neighbors(p, num_points_for_pca, false);
+      KNS_range kns_range = m_points_ds.query_k_nearest_neighbors(p, num_pts_for_pca, false);
       const Points &points_for_pca = m_points;
 #endif
 
       auto nn_it = kns_range.begin();
       for (;
-           current_row < num_points_for_pca && nn_it != kns_range.end();
+           current_row < num_pts_for_pca && nn_it != kns_range.end();
            ++current_row, ++nn_it) {
         for (int i = 0; i < m_ambient_dim; ++i) {
           mat_points(current_row, i) =
@@ -1803,8 +1803,7 @@ class Tangential_complex {
     const Tangent_space_basis &tsb = m_tangent_spaces[point_idx];
     for (int i = 0; i < m_intrinsic_dim; ++i) {
       global_transl = k_transl(global_transl,
-                               k_scaled_vec(tsb[i], coord(local_random_transl, i))
-                               );
+                               k_scaled_vec(tsb[i], coord(local_random_transl, i)));
     }
     // Parallel
 #if defined(GUDHI_USE_TBB)
@@ -2275,4 +2274,4 @@ class Tangential_complex {
 }  // end namespace tangential_complex
 }  // end namespace Gudhi
 
-#endif  // TANGENTIAL_COMPLEX_H
+#endif  // TANGENTIAL_COMPLEX_H_
