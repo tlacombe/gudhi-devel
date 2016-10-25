@@ -7,6 +7,8 @@ if(CGAL_FOUND)
     if (EIGEN3_FOUND)
       add_executable( Witness_complex_experiment_bottleneck ../bench/experiment_bottleneck.cpp )
 
+      add_executable( Witness_complex_bench_rwit ../bench/bench_rwit.cpp )
+
       add_executable( Witness_complex_example_off example_witness_complex_off.cpp )
       add_executable ( Witness_complex_example_sphere example_witness_complex_sphere.cpp )
 
