@@ -58,12 +58,12 @@ using namespace Gudhi::witness_complex;
 using namespace Gudhi::persistent_cohomology;
 using namespace Gudhi::subsampling;
 
+typedef CGAL::Epick_d<CGAL::Dynamic_dimension_tag> K;
+typedef typename K::Point_d Point_d;
 typedef std::vector<Point_d> Point_Vector;
 //typedef Simplex_tree<Simplex_tree_options_fast_persistence> STree;
 typedef Simplex_tree<> STree;
 typedef STree::Simplex_handle Simplex_handle;
-
-typedef CGAL::Epick_d<CGAL::Dynamic_dimension_tag> K;
 
 typedef Strong_witness_complex<K> SRWit;
 typedef Witness_complex<K> WRWit;
@@ -204,17 +204,17 @@ void output_experiment_information(char * const file_name)
               << "The maximal relaxation is alpha and the limit on simplicial complex dimension is limD\n";
 }
 
-void sparsify_until(Point_Vector const& point_vector,
+void sparsify_until(Point_Vector& point_vector,
                     double mu_epsilon,
-                    int nbL,
+                    unsigned nbL,
                     Point_Vector& landmarks)
 {
-  std::vector<Point_d> landmarks_sparsified;
-  sparsify_point_set(K(), point_vector, mu_epsilon, landmarks_sparsified);
+  Point_Vector landmarks_sparsified;
+  sparsify_point_set(K(), point_vector, mu_epsilon, std::back_inserter(landmarks_sparsified)); 
   if (landmarks_sparsified.size() > nbL)
-    pick_n_random_points(landmarks_sparsified, nbL, landmarks);
+    pick_n_random_points(landmarks_sparsified, nbL, std::back_inserter(landmarks));
   else
-    landmarks(landmarks_sparsified);
+    landmarks = landmarks_sparsified;
 }
 
 void rw_experiment(Point_Vector & point_vector, int nbL, FT alpha2, int limD, FT mu_epsilon = 0.1,
@@ -267,6 +267,7 @@ void rw_experiment(Point_Vector & point_vector, int nbL, FT alpha2, int limD, FT
   Dim_lists<STree> simplices(simplex_tree, limD); 
   
   // std::vector<Simplex_handle> simplices;
+  /*
   std::cout << "Starting collapses...\n";
   simplices.collapse();
   simplices.output_simplices();
@@ -279,19 +280,20 @@ void rw_experiment(Point_Vector & point_vector, int nbL, FT alpha2, int limD, FT
     collapsed_tree.insert_simplex(vertices);
   } 
   std::vector<int> landmarks_ind(nbL); 
-  for (unsigned i = 0; i != distances.size(); ++i) {
+  for (unsigned i = 0; i != nbL; ++i) {
     if (distances[i][0] == 0)
       landmarks_ind[knn[i][0]] = i;
   }
   //write_witness_mesh(point_vector, landmarks_ind, simplex_tree, simplices, false, true);
   write_witness_mesh(point_vector, landmarks_ind, simplex_tree, simplex_tree.complex_simplex_range(), false, true, mesh_filename+"_before_collapse.mesh");
-
+  
   collapsed_tree.set_dimension(limD);
   Persistent_cohomology< STree, Field_Zp > pcoh2(collapsed_tree, true);
   pcoh2.init_coefficients( p ); //initilizes the coefficient field for homology
   pcoh2.compute_persistent_cohomology( alpha2/10 );
   pcoh2.output_diagram();
-
+  */
+  /*
   chi = 0;
   for (auto sh: simplices)
     chi += 1-2*(simplex_tree.dimension(sh)%2);
@@ -312,6 +314,7 @@ void rw_experiment(Point_Vector & point_vector, int nbL, FT alpha2, int limD, FT
     std::cout << "All links are good.\n";
   else
     std::cout << "There are bad links.\n";
+  */
 }
 
 void rips_experiment(Point_Vector & points, double threshold, int dim_max)
@@ -371,7 +374,7 @@ int experiment0 (int argc, char * const argv[])
   std::cout << "Successfully generated " << point_vector.size() << " points.\n";
   std::cout << "Ambient dimension is " << point_vector[0].size() << ".\n";
 
-  rw_experiment(point_vector, nbL, alpha, limD);
+  rw_experiment(point_vector, nbL, alpha, limD, mu_epsilon);
   return 0;
 }
 
@@ -526,7 +529,7 @@ void run_comparison(Point_Vector & landmarks,
   wrwit.create_complex(simplex_tree, alpha2_s, limD);
   end = clock();
   std::cout << "WRWit.size = " << simplex_tree2.num_simplices() << std::endl;
-  simplex_tree2.set_dimension(nbL-1);
+  simplex_tree2.set_dimension(landmarks.size()-1);
   
   std::cout << "Good homology interval length for WRWit is "
             << good_interval_length(desired_homology, simplex_tree2, alpha2_w) << "\n";
