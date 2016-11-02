@@ -33,12 +33,27 @@ void write_wl( std::string file_name, std::vector< std::vector <Value> > & WL)
   ofs.close();
 }
 
-/** \brief Write the coordinates of points in points to a file. 
+/** \brief Write the coordinates of points to a file. 
  *
  */
 void write_points( std::string file_name, std::vector< Point_d > & points)
 {
   std::ofstream ofs (file_name, std::ofstream::out);
+  for (auto w : points)
+    {
+      for (auto it = w.cartesian_begin(); it != w.cartesian_end(); ++it)
+        ofs << *it << " ";
+      ofs << "\n";
+    }
+  ofs.close();
+}
+
+/** \brief Write the coordinates of points in an off file
+ */
+void write_points_to_off(std::string file_name, const Point_Vector & points)
+{
+  std::ofstream ofs (file_name, std::ofstream::out);
+  ofs << "OFF\n" << points.size() << " 0 0\n";
   for (auto w : points)
     {
       for (auto it = w.cartesian_begin(); it != w.cartesian_end(); ++it)

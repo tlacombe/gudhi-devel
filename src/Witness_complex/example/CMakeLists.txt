@@ -10,6 +10,8 @@ if(CGAL_FOUND)
       add_executable( Witness_complex_bench_rwit ../bench/bench_rwit.cpp )
       target_link_libraries(Witness_complex_bench_rwit ${Boost_PROGRAM_OPTIONS_LIBRARY})
 
+      add_executable( generate_subsamplings ../bench/generate_subsamplings.cpp )
+
       add_executable( Witness_complex_example_off example_witness_complex_off.cpp )
       add_executable ( Witness_complex_example_sphere example_witness_complex_sphere.cpp )
 
