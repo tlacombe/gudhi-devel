@@ -12,6 +12,9 @@ if(CGAL_FOUND)
 
       add_executable( Witness_complex_rips_persistence ../bench/rips_persistence.cpp )
       target_link_libraries(Witness_complex_rips_persistence ${Boost_PROGRAM_OPTIONS_LIBRARY})
+      if (TBB_FOUND)
+        target_link_libraries(Witness_complex_rips_persistence ${TBB_LIBRARIES})
+      endif()
 
       add_executable( generate_subsamplings ../bench/generate_subsamplings.cpp )
 
