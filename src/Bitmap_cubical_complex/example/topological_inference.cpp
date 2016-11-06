@@ -38,9 +38,19 @@
 
 
 int main(int argc, char** argv) {
-  std::cout << "The parameters of the program are: (1) A file with points, (2) Dimension of a space, (3) Minimum of a grid in first direction (4) Maximum of a grin in first direction, ... , (3) Minimum of a grid in last direction (4) Maximum of a grin in last direction, resolution of a grid in the first direction, resolution of a grid in the last direction \n";
+  std::cout << "The parameters of the program are: \n";
+  std::cout << "(1) A file with points coordinates, \n";
+  std::cout << "(2) Dimension of a space, \n";
+  std::cout << "(3) Minimum of a grid in first direction, \n";
+  std::cout << "(4) Maximum of a grin in first direction, \n";
+  std::cout << " ... ,\n";
+  std::cout << "(i) Minimum of a grid in last direction, \n";
+  std::cout << "(i+1) Maximum of a grin in last direction, \n";
+  std::cout << "(i+2) resolution of a grid in the first direction,\n";
+  std::cout << " ... ,\n";
+  std::cout << "(2i-2) resolution of a grid in the last direction.\n";
 
-  int p = 2;
+		int p = 2;
   double min_persistence = 0;
 
   const char* filename = argv[1];

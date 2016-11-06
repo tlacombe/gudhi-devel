@@ -20,3 +20,6 @@ target_link_libraries(topological_inference ${Boost_SYSTEM_LIBRARY})
 
 add_executable ( convert_to_dipha convert_to_dipha.cpp )
 target_link_libraries(convert_to_dipha ${Boost_SYSTEM_LIBRARY})
+
+add_executable ( distance_from_collection_of_cubes distance_from_collection_of_cubes.cpp )
+target_link_libraries(distance_from_collection_of_cubes ${Boost_SYSTEM_LIBRARY})

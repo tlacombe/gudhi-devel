@@ -26,6 +26,7 @@
 
 #include <gudhi/reader_utils.h>
 #include <gudhi/Bitmap_cubical_complex.h>
+#include <gudhi/Bitmap_cubical_complex_base.h>
 #include <gudhi/Persistent_cohomology.h>
 
 // standard stuff
@@ -1376,3 +1377,129 @@ BOOST_AUTO_TEST_CASE(Top_dimensional_cells_iterator_range_check)
     }
 }
 
+std::vector< unsigned > compute( std::vector<unsigned>& counter , Bitmap_cubical_complex_base& b )
+{
+	std::vector< unsigned > result;
+	size_t pos = b.give_position_of_top_dimensional_cell( counter );
+	std::vector<unsigned> couter_back = b.compute_counter_for_top_dimensional_cell( pos );
+	for ( size_t i = 0 ; i != couter_back.size() ; ++i )
+	{
+		result.push_back(couter_back[i]);	
+	}
+	
+	
+	std::vector<size_t> neighs = b.give_neighbouring_top_dimensional_cells( pos );
+	for ( size_t i = 0 ; i != neighs.size() ; ++i )
+	{
+		result.push_back(neighs[i]);	
+	}
+	return result;
+}
+
+
+BOOST_AUTO_TEST_CASE(Top_dimensional_addresing_of_bitmap_check)
+{
+	std::vector< unsigned > template_vector;
+	template_vector.push_back(0);
+	template_vector.push_back(0);
+	template_vector.push_back(10);
+	template_vector.push_back(22);
+	template_vector.push_back(1);
+	template_vector.push_back(0);
+	template_vector.push_back(12);
+	template_vector.push_back(8);
+	template_vector.push_back(24);
+	template_vector.push_back(2);
+	template_vector.push_back(0);
+	template_vector.push_back(10);
+	template_vector.push_back(26);
+	template_vector.push_back(0);
+	template_vector.push_back(1);
+	template_vector.push_back(24);
+	template_vector.push_back(36);
+	template_vector.push_back(8);
+	template_vector.push_back(0);
+	template_vector.push_back(2);
+	template_vector.push_back(38);
+	template_vector.push_back(22);
+	template_vector.push_back(1);
+	template_vector.push_back(1);
+	template_vector.push_back(26);
+	template_vector.push_back(22);
+	template_vector.push_back(38);
+	template_vector.push_back(10);
+	template_vector.push_back(1);
+	template_vector.push_back(2);
+	template_vector.push_back(40);
+	template_vector.push_back(36);
+	template_vector.push_back(24);
+	template_vector.push_back(2);
+	template_vector.push_back(1);
+	template_vector.push_back(24);
+	template_vector.push_back(40);
+	template_vector.push_back(12);
+	template_vector.push_back(2);
+	template_vector.push_back(2);
+	template_vector.push_back(38);
+	template_vector.push_back(26);	
+	
+	std::vector< unsigned > sizes;
+	sizes.push_back(3);
+	sizes.push_back(3);
+	
+	std::vector< double > data;
+	data.push_back(1);
+	data.push_back(2);
+	data.push_back(3);
+	data.push_back(4);
+	data.push_back(5);
+	data.push_back(6);
+	data.push_back(7);
+	data.push_back(8);
+	data.push_back(9);
+	
+	Bitmap_cubical_complex_base b( sizes , data );
+	
+	std::vector<unsigned> counter(2);
+	counter[0] = 0;
+	counter[1] = 0;
+	std::vector< unsigned > a1 = compute( counter , b );
+	counter[0] = 1;
+	std::vector< unsigned > a2 = compute( counter , b );
+	counter[0] = 2;
+	std::vector< unsigned > a3 = compute( counter , b );
+	counter[0] = 0;
+	counter[1] = 1;
+	std::vector< unsigned > a4 = compute( counter , b );
+	counter[1] = 2;
+	std::vector< unsigned > a5 = compute( counter , b );
+	counter[0] = 1;
+	counter[1] = 1;
+	std::vector< unsigned > a6 = compute( counter , b );
+	counter[1] = 2;	
+	std::vector< unsigned > a7 = compute( counter , b );
+	counter[0] = 2;
+	counter[1] = 1;
+	std::vector< unsigned > a8 = compute( counter , b );
+	counter[0] = 2;
+	counter[1] = 2;
+	std::vector< unsigned > a9 = compute( counter , b );
+	
+	std::vector< unsigned > total;
+	total.insert(total.end(), a1.begin(), a1.end());
+	total.insert(total.end(), a2.begin(), a2.end());
+	total.insert(total.end(), a3.begin(), a3.end());
+	total.insert(total.end(), a4.begin(), a4.end());
+	total.insert(total.end(), a5.begin(), a5.end());
+	total.insert(total.end(), a6.begin(), a6.end());
+	total.insert(total.end(), a7.begin(), a7.end());
+	total.insert(total.end(), a8.begin(), a8.end());
+	total.insert(total.end(), a9.begin(), a9.end());
+	
+	BOOST_CHECK( total.size() == template_vector.size() );
+	
+	for ( size_t i = 0 ; i != total.size() ; ++i )
+	{
+		BOOST_CHECK( total[i] == template_vector[i] );
+	}
+}

@@ -2,32 +2,78 @@
 #include <cmath>
 
 
-class Gaussian_kernels_centerd_in_point_cloud
+//This extra functions are placed in Gudhi stat, and when this is all merged to the same branch, they should be taken from there!
+/**
+ * This is a simple procedure to create n by n (or 2*pixel_radius times 2*pixel_radius.
+**/ 
+std::vector< std::vector<double> > create_Gaussian_filter( size_t pixel_radius , double sigma )
 {
-public:
-	Gaussian_kernels_centerd_in_point_cloud( const std::vector< std::vector<double> >& point_cloud_ , double standard_deviation_ )
-	{
-		this->standard_deviation = standard_deviation_;
-		this->point_cloud = point_cloud_;
-	}
-    double operator() ( const std::vector<double>& point )const
+	bool dbg = false;
+	//we are computing the kernel mask to 2 standard deviations away from the center. We discretize it in a grid of a size 2*pixel_radius times 2*pixel_radius.
+	
+    double r = 0;
+    double sigma_sqr = sigma * sigma;
+ 
+    // sum is for normalization
+    double sum = 0;
+    
+    //initialization of a kernel:
+    std::vector< std::vector<double> > kernel( 2*pixel_radius +1 );
+    for ( size_t i = 0 ; i != kernel.size() ; ++i )
     {
-        double result = 0;                   
-        for ( size_t i = 0 ; i != this->point_cloud.size() ; ++i )
+		std::vector<double> v( 2*pixel_radius +1 , 0 );
+		kernel[i] = v;
+	}
+	
+	if ( dbg )
+	{
+		std::cerr << "Kernel initalize \n";	
+		cerr << "pixel_radius : " << pixel_radius << endl; 
+		std::cerr << "kernel.size() : " << kernel.size() << endl;
+		getchar();
+	}
+ 
+    for (int x = -pixel_radius; x <= (int)pixel_radius; x++)
+    {
+        for(int y = -pixel_radius; y <= (int)pixel_radius; y++)
+        {			
+			double real_x = 2*sigma*x/pixel_radius;
+			double real_y = 2*sigma*y/pixel_radius;						
+            r = sqrt(real_x*real_x + real_y*real_y);						
+            kernel[x + pixel_radius][y + pixel_radius] = (exp(-(r*r)/sigma_sqr))/(3.141592 * sigma_sqr);
+            sum += kernel[x + pixel_radius][y + pixel_radius];            
+        }
+    }      
+ 
+    // normalize the kernel
+    for( size_t i = 0; i != kernel.size() ; ++i)
+    {
+        for( size_t j = 0; j != kernel[i].size() ; ++j)
         {
-			//compute value of a Gaussian kernel centered in this->point_cloud[i] on a point 
-			for ( size_t aa = 0  ; aa != this->point_cloud[i].size() ; ++aa )
-			{
-				 //TODO
-				//result += ( 1 / ( s * sqrt(2*M_PI) ) ) * exp( -0.5 * pow( (x-)/s, 2.0 ) );
-			}
+            kernel[i][j] /= sum;
 		}
-		return result;
+            
     }
-private:
-	std::vector< std::vector<double> > point_cloud;
-	double standard_deviation;
-};
+    
+    if ( dbg )
+    {
+		std::cerr << "Here is the kernel : \n";
+		for( size_t i = 0; i != kernel.size() ; ++i)
+		{
+			for( size_t j = 0; j != kernel[i].size() ; ++j)
+			{
+				std::cerr << kernel[i][j] << " ";
+			}
+			std::cerr << std::endl;
+		}
+	}
+    return kernel;
+}
+
+
+
+
+
 
 //we assume that there are no spaces at the end of lines.
 template<typename T>
@@ -87,6 +133,52 @@ std::vector< std::vector<T> > read_points_from_file( const char* filename , bool
 	in.close();
 	return result;
 }
+
+//***************END OF FUNCTIONS THAT SHOULD BE COMMON FOR THE GUDHI STAT.
+
+
+
+
+//*****************************************************************************************//
+//*****************************************************************************************//
+//*****************************************************************************************//
+//*****************************************************************************************//
+//*********************Functions for topological inference*********************************//
+//*****************************************************************************************//
+//*****************************************************************************************//
+//*****************************************************************************************//
+//*****************************************************************************************//
+
+
+
+
+class Gaussian_kernels_centerd_in_point_cloud
+{
+public:
+	Gaussian_kernels_centerd_in_point_cloud( const std::vector< std::vector<double> >& point_cloud_ , double standard_deviation_ )
+	{
+		this->standard_deviation = standard_deviation_;
+		this->point_cloud = point_cloud_;
+	}
+    double operator() ( const std::vector<double>& point )const
+    {
+        double result = 0;                   
+        for ( size_t i = 0 ; i != this->point_cloud.size() ; ++i )
+        {
+			//compute value of a Gaussian kernel centered in this->point_cloud[i] on a point 
+			for ( size_t aa = 0  ; aa != this->point_cloud[i].size() ; ++aa )
+			{
+				 //TODO
+				//result += ( 1 / ( s * sqrt(2*M_PI) ) ) * exp( -0.5 * pow( (x-)/s, 2.0 ) );
+			}
+		}
+		return result;
+    }
+private:
+	std::vector< std::vector<double> > point_cloud;
+	double standard_deviation;
+};
+
 
 class Sum_of_inverse_of_distances_from_points
 {

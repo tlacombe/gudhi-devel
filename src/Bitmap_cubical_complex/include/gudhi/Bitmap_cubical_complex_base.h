@@ -190,6 +190,93 @@ class Bitmap_cubical_complex_base {
    * Functions to find min and max values of filtration.
    **/
   std::pair< T, T > min_max_filtration();
+  
+  /**
+   * Given a bitmap cubical complex one can use a counter to enumerate all the cells. For a bitmap having n maximal cells in each direction such a sull bitmap have 2n+1 cells in each direction/
+   * One can also enumerate all the maximal cells disregarding the others. The procedure below is used to give a reference to filtration value of a maximal cell given a counter that enumerate only the maxumal cells
+   * (and therefore for a bitmap having n maximal cells in each direction assign the values between 0 and n-1 in each position.
+  **/
+  inline size_t give_position_of_top_dimensional_cell( const std::vector<unsigned>& counter )
+  {
+	  //first check if the counter is correct:
+	  if ( this->sizes.size() != counter.size() )
+	  {
+		  std::cerr << "Wrong size of a counter \n";
+		  throw "Wrong size of a counter \n";
+	  }
+	  size_t position_of_this_cell = 0;
+	  for ( size_t i = 0 ; i != counter.size() ; ++i )
+	  {
+		  if ( counter[i] >= this->sizes[i] )
+		  {
+			  std::cerr << "Wrong index of a counter in the give_filtration_value_of_top_dimensional_cell procedure";
+			  throw "Wrong index of a counter in the give_filtration_value_of_top_dimensional_cell procedure";
+		  }
+		  position_of_this_cell += (2*counter[i] + 1)*this->multipliers[i];
+	  }
+	  //now we know that the counter is correct. 	  	  
+	  return position_of_this_cell;	  
+  }//give_filtration_value_of_top_dimensional_cell
+  
+  
+  /**
+   * This procedure assumes at the input the position of a top dimensional cell. It returns a counter which describe a position of this top dimensional
+   * cell in a grid consisting of top dimensional cells only. For instance, given the following 2 by 2 grid of top dimensional cells:
+   * 2 3 
+   * 0 1
+   * the cell having value 0 have the corresponding vector (0,0). The cell ov value 1 have the corresponding vector (1,0). The cell of value 2 have the corresponding vector (0,1)
+   * The cell of value 3 have the corresponding vector (1,1).
+  **/ 
+  inline std::vector<unsigned> compute_counter_for_top_dimensional_cell( size_t cell )
+  {
+	   std::vector< unsigned > counter = this->compute_counter_for_given_cell (cell);
+	   for ( size_t i = 0 ; i != counter.size() ; ++i )
+	   {
+		   //in each position, we have x = 2*n+1
+		   if ( (counter[i]-1)%2 != 0 )
+		   {
+			   throw "This is not a maximal cell.";
+		   }  
+		   counter[i] = (counter[i]-1)/2;
+	   }
+	   return counter;
+  }//compute_counter_for_top_dimensional_cell
+  
+  
+  /**
+   * This function takes a position of a top dimensional cell R, and returns the position in a bitmap of all top dimensional cells sharing a codimension 1 face with R.
+  **/ 
+  inline std::vector< size_t > give_neighbouring_top_dimensional_cells( const size_t cell )
+  {	
+	  std::vector< unsigned > counter = this->compute_counter_for_top_dimensional_cell (cell);
+	  std::vector<size_t> result;
+	  if ( this->sizes.size() != counter.size() )
+	  {
+		  std::cerr << "Wrong size of a counter \n";
+		  throw "Wrong size of a counter \n";
+	  }
+	  for ( size_t i = 0 ; i != counter.size() ; ++i )
+	  {
+		  if ( counter[i] > this->sizes[i] )
+		  {
+			  std::cerr << "Wrong index of a counter in the give_filtration_value_of_top_dimensional_cell proceure";
+			  throw "Wrong index of a counter in the give_filtration_value_of_top_dimensional_cell proceure";
+		  }
+		  if ( counter[i]+1 < this->sizes[i] )
+		  {
+			  counter[i]++;
+			  result.push_back( give_position_of_top_dimensional_cell(counter) );
+			  counter[i]--;
+		  }
+		  if ( counter[i] > 0 )
+		  {
+			  counter[i]--;
+			  result.push_back( give_position_of_top_dimensional_cell(counter) );
+			  counter[i]++;
+		  }
+	  }
+	  return result;
+  }
 
   // ITERATORS
 
