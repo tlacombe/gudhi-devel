@@ -913,6 +913,12 @@ int main()
                 num_points,
                 std::atof(param1.c_str()), std::atof(param2.c_str()));
             }
+            else if (input == "generate_points_on_polyline_configurations")
+            {
+              points = Gudhi::generate_points_on_polyline_configurations<Kernel>(
+                num_points,
+                std::atof(param1.c_str()), std::atof(param2.c_str()), param3 == "Y");
+            }
             else
             {
               load_points_from_file<Kernel, typename TC::Tangent_space_basis>(
