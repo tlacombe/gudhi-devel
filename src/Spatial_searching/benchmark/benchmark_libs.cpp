@@ -1,0 +1,355 @@
+/******************************************************************************
+This benchmark allows to compare different libraries.
+
+It reads the benchmark_script.txt file (located in the same folder as this 
+file) and performs neighboring operations on the point set.
+An XML file is created at each run of the benchmark. 
+It contains statistics about the tests performed. This XML file 
+can be processed in Excel, for example.
+ ******************************************************************************/
+
+// Without TBB_USE_THREADING_TOOL Intel Inspector XE will report false positives in Intel TBB
+// (http://software.intel.com/en-us/articles/compiler-settings-for-threading-error-analysis-in-intel-inspector-xe/)
+#ifdef _DEBUG
+#define TBB_USE_THREADING_TOOL
+#endif
+
+//#define PRINT_FOUND_NEIGHBORS
+
+#include <cstddef>
+
+//#define INPUT_STRIDES 3 // only take one point every INPUT_STRIDES points
+const std::size_t ONLY_LOAD_THE_FIRST_N_POINTS = 20000000;
+
+#include "utilities.h"
+#include "functor_GUDHI_Kd_tree_search.h"
+
+#ifdef GUDHI_NMSLIB_IS_AVAILABLE
+#include "functor_NMSLIB_hnsw.h"
+#endif
+
+#include <gudhi/Debug_utils.h>
+#include <gudhi/Clock.h>
+#include <gudhi/random_point_generators.h>
+
+#include <CGAL/IO/Triangulation_off_ostream.h>
+#include <CGAL/assertions_behaviour.h>
+#include <CGAL/Epick_d.h>
+#include <CGAL/Random.h>
+
+#include <boost/algorithm/string/replace.hpp>
+#include <boost/algorithm/string/trim_all.hpp>
+#include <boost/range/adaptor/strided.hpp>
+
+#include <utility>
+#include <cstdlib>
+#include <ctime>
+#include <fstream>
+#include <algorithm>
+
+#ifdef GUDHI_USE_TBB
+#include <tbb/task_scheduler_init.h>
+#endif
+
+const char * const BENCHMARK_SCRIPT_FILENAME = "benchmark_script.txt";
+
+typedef CGAL::Epick_d<CGAL::Dynamic_dimension_tag> Kernel;
+typedef Kernel::FT FT;
+typedef Kernel::Point_d Point;
+typedef Kernel::Vector_d Vector;
+
+// Returns the timing for the building and the queries
+// (or -1 if time_limit reached)
+template <typename ANN_Functor, typename Point>
+std::pair<double, double> test__ANN_queries(
+  std::vector<Point> const& points,
+  std::vector<Point> const& queries,
+  int K,
+  double epsilon,
+  double time_limit = 0.)
+{
+  Gudhi::Clock t;
+
+  // Build the structure
+  t.begin();
+  ANN_Functor functor(points, epsilon);
+  t.end();
+  double build_time = t.num_seconds();
+
+  // Perform the queries
+  t.begin();
+  for (Point const& q : queries)
+  {
+    if (t.num_seconds() > time_limit)
+      return std::make_pair(build_time, -1.);
+
+    functor.query_k_nearest_neighbors(q, K, epsilon);
+  }
+  t.end();
+
+  return std::make_pair(build_time, t.num_seconds());
+}
+
+void run_tests(
+  int ambient_dim,
+  std::vector<Point> &points,
+  double time_limit = 0.,
+  const char *input_name = "") {
+
+  Kernel k;
+
+  //===========================================================================
+  // Init
+  //===========================================================================
+  Gudhi::Clock t;
+
+  // Get input_name_stripped
+  std::string input_name_stripped(input_name);
+  size_t slash_index = input_name_stripped.find_last_of('/');
+  if (slash_index == std::string::npos)
+    slash_index = input_name_stripped.find_last_of('\\');
+  if (slash_index == std::string::npos)
+    slash_index = 0;
+  else
+    ++slash_index;
+  input_name_stripped = input_name_stripped.substr(
+    slash_index, input_name_stripped.find_last_of('.') - slash_index);
+
+  SET_PERFORMANCE_DATA("Num_points", points.size());
+
+#ifdef GUDHI_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
+  std::vector<Point> points_not_sparse = points;
+#endif
+
+  SET_PERFORMANCE_DATA("Num_points", points.size());
+
+  //===========================================================================
+  // TODO: run the test
+  //===========================================================================
+
+  std::vector<Point> queries(points.begin(), points.begin() + std::min(points.size(), (std::size_t)1000));
+  auto GUDHI_search_timings = test__ANN_queries<GUDHI_Kd_tree_search>(
+    points, queries, 10, 0., time_limit);
+
+#ifdef GUDHI_NMSLIB_IS_AVAILABLE
+  auto HNSW_search_timings = test__ANN_queries<NMSLIB_hnsw>(
+    points, queries, 10, 0., time_limit);
+#endif
+
+  //===========================================================================
+  // Display info
+  //===========================================================================
+
+  std::cerr
+      << "\n================================================\n"
+      << "Dimension: " << ambient_dim << "\n"
+      << "Number of points: " << points.size() << "\n"
+      << "Number of queries: " << queries.size() << "\n"
+      << "Computation times (seconds): \n"
+      << "  * GUDHI Kd_tree_search\n"
+      << "    - Build   : " << GUDHI_search_timings.first << "\n"
+      << "    - Queries : " << GUDHI_search_timings.second << "\n"
+      << "    - Total   : " << GUDHI_search_timings.first + GUDHI_search_timings.second << "\n"
+    << "Computation times (seconds): \n"
+#ifdef GUDHI_NMSLIB_IS_AVAILABLE
+    << "  * NMSLIB Hnsw\n"
+    << "    - Build   : " << HNSW_search_timings.first << "\n"
+    << "    - Queries : " << HNSW_search_timings.second << "\n"
+    << "    - Total   : " << HNSW_search_timings.first + HNSW_search_timings.second << "\n"
+#endif
+      << "================================================\n";
+
+  //===========================================================================
+  // Export info
+  //===========================================================================
+  /*SET_PERFORMANCE_DATA("Init_time", init_time);
+  SET_PERFORMANCE_DATA("Comput_time", computation_time);
+  SET_PERFORMANCE_DATA("Perturb_successful",
+                       (perturb_success ? 1 : 0));
+  SET_PERFORMANCE_DATA("Perturb_time", perturb_time);
+  SET_PERFORMANCE_DATA("Perturb_steps", num_perturb_steps);
+  SET_PERFORMANCE_DATA("Info", "");
+  */
+}
+
+int main() {
+  CGAL::set_error_behaviour(CGAL::ABORT);
+
+#ifdef GUDHI_USE_TBB
+#ifdef _DEBUG
+  int num_threads = 1;
+#else
+  int num_threads = tbb::task_scheduler_init::default_num_threads() - 4;
+#endif
+#endif
+
+  unsigned int seed = static_cast<unsigned int> (time(NULL));
+  CGAL::default_random = CGAL::Random(seed);  // TODO(CJ): use set_default_random
+  std::cerr << "Random seed = " << seed << "\n";
+
+  std::ifstream script_file;
+  script_file.open(BENCHMARK_SCRIPT_FILENAME);
+  // Script?
+  // Script file format: each line gives
+  //    - Filename (point set) or "generate_XXX" (point set generation)
+  //    - Ambient dim
+  //    - Intrinsic dim
+  //    - Number of iterations with these parameters
+  if (script_file.is_open()) {
+    int i = 1;
+
+#ifdef GUDHI_USE_TBB
+    tbb::task_scheduler_init init(num_threads > 0 ? num_threads : tbb::task_scheduler_init::automatic);
+#endif
+
+    std::cerr << "Script file '" << BENCHMARK_SCRIPT_FILENAME << "' found.\n";
+    script_file.seekg(0);
+    while (script_file.good()) {
+      std::string line;
+      std::getline(script_file, line);
+      if (line.size() > 1 && line[0] != '#') {
+        boost::replace_all(line, "\t", " ");
+        boost::trim_all(line);
+        std::cerr << "\n\n";
+        std::cerr << "*****************************************\n";
+        std::cerr << "******* " << line << "\n";
+        std::cerr << "*****************************************\n";
+        std::stringstream sstr(line);
+
+        std::string input;
+        std::string param1;
+        std::string param2;
+        std::string param3;
+        std::size_t num_points;
+        int ambient_dim;
+        double time_limit;
+        int num_iteration;
+        sstr >> input;
+        sstr >> param1;
+        sstr >> param2;
+        sstr >> param3;
+        sstr >> num_points;
+        sstr >> ambient_dim;
+        sstr >> time_limit;
+        sstr >> num_iteration;
+
+        for (int j = 0; j < num_iteration; ++j) {
+          std::string input_stripped = input;
+          size_t slash_index = input_stripped.find_last_of('/');
+          if (slash_index == std::string::npos)
+            slash_index = input_stripped.find_last_of('\\');
+          if (slash_index == std::string::npos)
+            slash_index = 0;
+          else
+            ++slash_index;
+          input_stripped = input_stripped.substr(
+                                                  slash_index, input_stripped.find_last_of('.') - slash_index);
+
+          SET_PERFORMANCE_DATA("Input", input_stripped);
+          SET_PERFORMANCE_DATA("Param1", param1);
+          SET_PERFORMANCE_DATA("Param2", param2);
+          SET_PERFORMANCE_DATA("Param3", param3);
+          SET_PERFORMANCE_DATA("Ambient_dim", ambient_dim);
+
+#ifdef GUDHI_USE_TBB
+          SET_PERFORMANCE_DATA(
+            "Num_threads",
+            (num_threads == -1 ? tbb::task_scheduler_init::default_num_threads() : num_threads));
+#else
+          SET_PERFORMANCE_DATA("Num_threads", "N/A");
+#endif
+
+          std::cerr << "\nRun #" << i << "...\n";
+
+#ifdef GUDHI_TC_PROFILING
+          Gudhi::Clock t_gen;
+#endif
+
+          std::vector<Point> points;
+
+          if (input == "generate_moment_curve") {
+            points = Gudhi::generate_points_on_moment_curve<Kernel>(num_points, ambient_dim,
+                                                                    std::atof(param1.c_str()), std::atof(param2.c_str()));
+          } else if (input == "generate_plane") {
+            points = Gudhi::generate_points_on_plane<Kernel>(num_points, std::atoi(param1.c_str()), ambient_dim);
+          } else if (input == "generate_sphere_d") {
+            points = Gudhi::generate_points_on_sphere_d<Kernel>(num_points, ambient_dim,
+                                                                std::atof(param1.c_str()),  // radius
+                                                                std::atof(param2.c_str()));  // radius_noise_percentage
+          } else if (input == "generate_two_spheres_d") {
+            points = Gudhi::generate_points_on_two_spheres_d<Kernel>(num_points, ambient_dim,
+                                                                     std::atof(param1.c_str()),
+                                                                     std::atof(param2.c_str()),
+                                                                     std::atof(param3.c_str()));
+          } else if (input == "generate_3sphere_and_circle_d") {
+            GUDHI_CHECK(ambient_dim == 5,
+                        std::logic_error("Ambient dim should be 5"));
+            points = Gudhi::generate_points_on_3sphere_and_circle<Kernel>(num_points,
+                                                                          std::atof(param1.c_str()));
+          } else if (input == "generate_torus_3D") {
+            points = Gudhi::generate_points_on_torus_3D<Kernel>(num_points,
+                                                                std::atof(param1.c_str()),
+                                                                std::atof(param2.c_str()),
+                                                                param3 == "Y");
+          } else if (input == "generate_torus_d") {
+            points = Gudhi::generate_points_on_torus_d<Kernel>(num_points,
+                                                               ambient_dim / 2,
+                                                               param2 == "Y",  // uniform
+                                                               std::atof(param2.c_str()));  // radius_noise_percentage
+          } else if (input == "generate_klein_bottle_3D") {
+            points = Gudhi::generate_points_on_klein_bottle_3D<Kernel>(num_points,
+                                                                       std::atof(param1.c_str()), std::atof(param2.c_str()));
+          } else if (input == "generate_klein_bottle_4D") {
+            points = Gudhi::generate_points_on_klein_bottle_4D<Kernel>(num_points,
+                                                                       std::atof(param1.c_str()), std::atof(param2.c_str()),
+                                                                       std::atof(param3.c_str()));  // noise
+          } else if (input == "generate_klein_bottle_variant_5D") {
+            points = Gudhi::generate_points_on_klein_bottle_variant_5D<Kernel>(num_points,
+                                                                               std::atof(param1.c_str()), std::atof(param2.c_str()));
+          } else {
+            load_points_from_file<Kernel>(input, std::back_inserter(points),
+                                          ONLY_LOAD_THE_FIRST_N_POINTS);
+          }
+
+#ifdef GUDHI_TC_PROFILING
+          t_gen.end();
+          std::cerr << "Point set generated/loaded in " << t_gen.num_seconds()
+              << " seconds.\n";
+#endif
+
+          if (!points.empty()) {
+#if defined(INPUT_STRIDES) && INPUT_STRIDES > 1
+            auto p = points | boost::adaptors::strided(INPUT_STRIDES);
+            std::vector<Point> points(p.begin(), p.end());
+            std::cerr << "****************************************\n"
+                << "WARNING: taking 1 point every " << INPUT_STRIDES
+                << " points.\n"
+                << "****************************************\n";
+#endif
+
+            run_tests(ambient_dim, points, time_limit, input.c_str());
+
+            std::cerr << "TC #" << i++ << " done.\n";
+            std::cerr << "\n---------------------------------\n";
+          } else {
+            std::cerr << "TC #" << i++ << ": no points loaded.\n";
+          }
+
+          XML_perf_data::commit();
+        }
+      }
+    }
+    script_file.seekg(0);
+    script_file.clear();
+
+    script_file.close();
+  }    // Or not script?
+  else {
+    std::cerr << "Script file '" << BENCHMARK_SCRIPT_FILENAME << "' NOT found.\n";
+  }
+
+#ifdef _MSC_VER
+  system("pause");
+#endif
+  return 0;
+}
