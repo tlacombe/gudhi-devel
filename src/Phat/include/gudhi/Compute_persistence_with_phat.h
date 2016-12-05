@@ -61,7 +61,8 @@ class Compute_persistence_with_phat {
    * Creates a PHAT boundary matrix based on the GUDHI data structure.
    * Notice that no computations of persistence are run by the constructor. To run persistence computations you need to
    * choose one of the possible methods to compute persistence in PHAT.
-   * Note also that the descructor of this class will not delete an object T* data_structure. The user is responsible for doing this.
+   * Note also that the descructor of this class will not delete an object T* data_structure. The user is responsible
+   * for doing this.
    * 
    * @param[in] data_structure GUDHI data structure
    */
@@ -73,7 +74,8 @@ class Compute_persistence_with_phat {
 
 		// due to interface of phom in GUDHI it seems that I have to fill-in the keys for all simplices here. They are
 		// sorting according to filtration, but keys are not filled in (for some reason).
-		// in the same time when doing the enumeration, we wills set up the dimensions and setting up the boundary of cells.
+        // in the same time when doing the enumeration, we wills set up the dimensions and setting up the boundary of
+        // cells.
 		typename T::Filtration_simplex_range range = this->data_structure_->filtration_simplex_range();
 		size_t position = 0;
 		std::vector< phat::index > temp_col;
@@ -90,7 +92,8 @@ class Compute_persistence_with_phat {
 		  for (typename T::Boundary_simplex_iterator bd = boundary_range.begin(); bd != boundary_range.end(); ++bd) {
 			temp_col.push_back(this->data_structure_->key(*bd));
 		  }
-		  // we do not know if the boundary elements are sorted according to filtration, that is why I am enforcing it here:
+          // we do not know if the boundary elements are sorted according to filtration, that is why I am enforcing it
+          // here:
 		  
 		  
 		  //Question: temp_col is a short vector. Does it make sense to use tbb::pararel_sort over here?
@@ -111,8 +114,10 @@ class Compute_persistence_with_phat {
     }
 	catch (...)
 	{
-		  std::cout << "The constructor of a class Compute_persistence_with_phat thrown an exception/ Most probably the structure you are trying to use do not satisfy all the requirements of Gudhi FilteredComplex concept. \n";
-		  throw "The constructor of a class Compute_persistence_with_phat thrown an exception/ Most probably the structure you are trying to use do not satisfy all the requirements of Gudhi FilteredComplex concept. \n";
+          std::cout << "The constructor of a class Compute_persistence_with_phat thrown an exception/ Most probably "
+                    << "the structure you are trying to use do not satisfy all the requirements of Gudhi "
+                    << "FilteredComplex concept. \n";
+          throw "The constructor of a class Compute_persistence_with_phat thrown an exception\n";
 	}
   }
 
@@ -124,8 +129,9 @@ class Compute_persistence_with_phat {
    */
 
   /** \brief A function that call PHAT function compute_persistence_pairs_dualized_chunk_reduction.
-   * Note that the function returns a structure od phat::persistence_pairs. That allows later to get vector of birth--death pairs (by using get_the_intervals method) as well as
-   * getting the information about the cells that are paired. 
+   * Note that the function returns a structure od phat::persistence_pairs. That allows later to get vector of
+   * birth--death pairs (by using get_the_intervals method) as well as getting the information about the cells that
+   * are paired.
    *
    * @return The persistence pairs.
    */
@@ -136,8 +142,9 @@ class Compute_persistence_with_phat {
   }
 
   /** \brief A function that call PHAT function compute_persistence_pairs_twist_reduction.
-   * Note that the function returns a structure od phat::persistence_pairs. That allows later to get vector of birth--death pairs (by using get_the_intervals method) as well as
-   * getting the information about the cells that are paired. 
+   * Note that the function returns a structure od phat::persistence_pairs. That allows later to get vector of
+   * birth--death pairs (by using get_the_intervals method) as well as getting the information about the cells that
+   * are paired.
    *
    * @return The persistence pairs.
    */
@@ -148,8 +155,9 @@ class Compute_persistence_with_phat {
   }
 
   /** \brief A function that call PHAT function compute_persistence_pairs_standard_reduction.
-   * Note that the function returns a structure od phat::persistence_pairs. That allows later to get vector of birth--death pairs (by using get_the_intervals method) as well as
-   * getting the information about the cells that are paired. 
+   * Note that the function returns a structure od phat::persistence_pairs. That allows later to get vector of
+   * birth--death pairs (by using get_the_intervals method) as well as getting the information about the cells that
+   * are paired.
    *
    * @return The persistence pairs.
    */
@@ -160,8 +168,9 @@ class Compute_persistence_with_phat {
   }
 
   /** \brief A function that call PHAT function compute_persistence_pairs_spectral_sequence_reduction.
-   * Note that the function returns a structure od phat::persistence_pairs. That allows later to get vector of birth--death pairs (by using get_the_intervals method) as well as
-   * getting the information about the cells that are paired. 
+   * Note that the function returns a structure od phat::persistence_pairs. That allows later to get vector of
+   * birth--death pairs (by using get_the_intervals method) as well as getting the information about the cells that
+   * are paired.
    *
    * @return The persistence pairs.
    */
@@ -180,10 +189,12 @@ class Compute_persistence_with_phat {
    * to compute persistence.
    * 
    * @return The data returned from this function is a pair. 
-   * The first element of the pair is: std::vector< std::vector<T::Filtration_value> >, this is a graded (by a dimension) vector of
-   * beginning of infinite persistence intervals.
-   * The second element of the pair is: std::vector< std::vector< std::pair<T::Filtration_value,T::Filtration_value> > > >, this is a graded (by a
-   * dimension) vector of pairs<T::Filtration_value,T::Filtration_value>. Each such a pair is a beginning and end of finite persistence interval.
+   * The first element of the pair is: std::vector< std::vector<T::Filtration_value> >, this is a graded (by a
+   * dimension) vector of beginning of infinite persistence intervals.
+   * The second element of the pair is:
+   * std::vector< std::vector< std::pair<T::Filtration_value,T::Filtration_value> > > >, this is a graded (by a
+   * dimension) vector of pairs<T::Filtration_value,T::Filtration_value>. Each such a pair is a beginning and end of
+   * finite persistence interval.
    */
   std::pair< std::vector< std::vector<typename T::Filtration_value> >, std::vector< std::vector< std::pair<typename T::Filtration_value , typename T::Filtration_value> > > >
   get_the_intervals(phat::persistence_pairs pairs) {
@@ -255,15 +266,17 @@ class Compute_persistence_with_phat {
 	}
 	catch (...)
 	{
-		std::cout << "The method get_the_intervals() thrown an exception. The most probable reason for that is because the data structure you are trying to use do not satisfy all teh requirements of GudhiFilteredComplex concept.  \n";
-		throw "The method get_the_intervals() thrown an exception. The most probable reason for that is because the data structure you are trying to use do not satisfy all teh requirements of GudhiFilteredComplex concept.  \n";		
+        std::cout << "The method get_the_intervals() thrown an exception. The most probable reason for that is because"
+                  << " the data structure you are trying to use do not satisfy all the requirements of "
+                  << "GudhiFilteredComplex concept.  \n";
+        throw "The method get_the_intervals() thrown an exception.\n";
 	}	
   }
 
 
   /** \brief This function store a boundary matrix in a PHAT format to a given file. This format is not
    * recognized by load_ascii procedure in PHAT. Therefore one can store the matrix with this procedure
-   * but will not be later able to read it with load_ascii. If you want to read it later, please use load_ascii. 
+   * but will not be later able to read it with load_ascii. If you want to read it later, please use load_ascii.
    */
   void save_for_reading(std::string filename) {
     this->boundary_matrix_.save_ascii(filename);
@@ -324,7 +337,6 @@ class Compute_persistence_with_phat {
   T* data_structure_;
 };
 
-
 /** \brief This function takes as an input the output of a Compute_persistence_with_phat procedure and stores it to a
  * file in a standard GUDHI format.
  */
@@ -354,17 +366,14 @@ void write_intervals_to_file_Gudhi_format(std::pair< std::vector< std::vector<K>
 
   // now we need to sort beginnings_of_infinite_intervals according to the first coordinate:
   #ifdef GUDHI_USE_TBB
-  tbb::parallel_sort(beginnings_of_infinite_intervals.begin(), beginnings_of_infinite_intervals.end()
-  [](const std::pair<K, size_t>& lhs, const std::pair<K, size_t>& rhs) {
-    return lhs.second > rhs.second; } );
+  tbb::parallel_sort(beginnings_of_infinite_intervals.begin(), beginnings_of_infinite_intervals.end(),
+                     [](const std::pair<K, size_t>& lhs, const std::pair<K, size_t>& rhs) {
+                       return lhs.second > rhs.second; } );
   #else
   std::stable_sort(beginnings_of_infinite_intervals.begin(), beginnings_of_infinite_intervals.end(),
-  [](const std::pair<K, size_t>& lhs, const std::pair<K, size_t>& rhs) {
-    return lhs.second > rhs.second; });
+                   [](const std::pair<K, size_t>& lhs, const std::pair<K, size_t>& rhs) {
+                     return lhs.second > rhs.second; });
   #endif
-  //std::sort(beginnings_of_infinite_intervals.begin(), beginnings_of_infinite_intervals.end(),
-  //          [](const std::pair<K, size_t>& lhs, const std::pair<K, size_t>& rhs) {
-  //  return lhs.second > rhs.second; });
 
   // and now we output the sorted pairs to a file:
   for (size_t i = 0; i != beginnings_of_infinite_intervals.size(); ++i) {
@@ -390,19 +399,14 @@ void write_intervals_to_file_Gudhi_format(std::pair< std::vector< std::vector<K>
   // and now we need to sort the finite_intervals vector according to the length of intervals, i.e. according to
   // finite_intervals[i].first.second - finite_intervals[i].first.first.
   #ifdef GUDHI_USE_TBB
-  tbb::parallel_sort(finite_intervals.begin(), finite_intervals.end(), [](const std::pair<std::pair<K, K>, size_t>& lhs,
-      const std::pair<std::pair<K, K>, size_t>& rhs) {
-    return lhs.first.second - lhs.first.first > rhs.first.second - rhs.first.first; });
+  tbb::parallel_sort(finite_intervals.begin(), finite_intervals.end(),
+                     [](const std::pair<std::pair<K, K>, size_t>& lhs, const std::pair<std::pair<K, K>, size_t>& rhs) {
+                       return lhs.first.second - lhs.first.first > rhs.first.second - rhs.first.first; });
   #else
-  std::stable_sort(finite_intervals.begin(), finite_intervals.end(), [](const std::pair<std::pair<K, K>, size_t>& lhs,
-      const std::pair<std::pair<K, K>, size_t>& rhs) {
-    return lhs.first.second - lhs.first.first > rhs.first.second - rhs.first.first; });
+  std::stable_sort(finite_intervals.begin(), finite_intervals.end(),
+                   [](const std::pair<std::pair<K, K>, size_t>& lhs, const std::pair<std::pair<K, K>, size_t>& rhs) {
+                     return lhs.first.second - lhs.first.first > rhs.first.second - rhs.first.first; });
   #endif  
-  //std::sort(finite_intervals.begin(), finite_intervals.end(), [](const std::pair<std::pair<K, K>, size_t>& lhs,
-  //    const std::pair<std::pair<K, K>, size_t>& rhs) {
-  //  return lhs.first.second - lhs.first.first > rhs.first.second - rhs.first.first; });
-
-
 
   // and now we should output them to a file:
   for (size_t i = 0; i != finite_intervals.size(); ++i) {
