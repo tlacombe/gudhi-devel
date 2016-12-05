@@ -55,6 +55,13 @@ namespace phat_interface {
  \li type and method <CODE>Filtration_value filtration (Simplex_handle)</CODE> that returns the value of
  the filtration on the simplex represented by the handle.
 
+
+TODO: There are various representations of collumns in the PHAT matrix available. THe default one is 
+Any other representation can be used (as a second template parameter of the class 
+For full list of collumn's representations, please consult PHAT wiki: https://bitbucket.org/phat-code/phat
+For the full dicussion as well as sample running times of PHAT algorithms please consul the paper /2017 JSC Michael et all.
+
+
 \section Examples
 \subsection cubicalphatpersistence Cubical complex persistence with PHAT interface
 
