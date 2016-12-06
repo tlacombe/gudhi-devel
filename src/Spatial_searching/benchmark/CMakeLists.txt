@@ -21,12 +21,23 @@ if(CGAL_FOUND)
         target_link_libraries(Spatial_searching_benchmark ${TBB_LIBRARIES})
       endif(TBB_FOUND)
       
-      # CJTODO TEMP
-      include_directories(BEFORE "D:/INRIA/Libs/nmslib-1.5.3/similarity_search/include") # CJTODO TEMP
+      # NMSLIB
+      include_directories("D:/INRIA/Libs/nmslib-1.5.3/similarity_search/include") # CJTODO TEMP
       target_link_libraries(Spatial_searching_benchmark
         optimized "D:/INRIA/Libs/nmslib-1.5.3/similarity_search/x64/Release/MainLib/NonMetricSpaceLib.lib"
         debug "D:/INRIA/Libs/nmslib-1.5.3/similarity_search/x64/Debug/MainLib/NonMetricSpaceLib.lib")
       add_definitions(-DGUDHI_NMSLIB_IS_AVAILABLE)
+      
+      #FLANN
+      include_directories("D:/INRIA/Libs/flann-4.9.1/src/cpp") # CJTODO TEMP
+      target_link_libraries(Spatial_searching_benchmark
+        optimized "D:/INRIA/Libs/flann-4.9.1/msvc/lib/Release/flann.lib"
+        debug "D:/INRIA/Libs/flann-4.9.1/msvc/lib/Debug/flann.lib")
+      add_definitions(-DGUDHI_FLANN_IS_AVAILABLE)
+      
+      #Nanoflann
+      include_directories("D:\INRIA\Libs\nanoflann-1.2.2\include") # CJTODO TEMP
+      add_definitions(-DGUDHI_NANOFLANN_IS_AVAILABLE)
       
     endif(EIGEN3_FOUND)
   endif (NOT CGAL_VERSION VERSION_LESS 4.8.0)

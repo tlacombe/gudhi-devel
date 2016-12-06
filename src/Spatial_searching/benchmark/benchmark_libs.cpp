@@ -11,23 +11,30 @@ can be processed in Excel, for example.
 // Without TBB_USE_THREADING_TOOL Intel Inspector XE will report false positives in Intel TBB
 // (http://software.intel.com/en-us/articles/compiler-settings-for-threading-error-analysis-in-intel-inspector-xe/)
 #ifdef _DEBUG
-#define TBB_USE_THREADING_TOOL
+# define TBB_USE_THREADING_TOOL
 #endif
 
-//#define PRINT_FOUND_NEIGHBORS
+#ifdef _DEBUG
+# define PRINT_FOUND_NEIGHBORS
+#endif
 
 #include <cstddef>
 
 //#define INPUT_STRIDES 3 // only take one point every INPUT_STRIDES points
-const std::size_t ONLY_LOAD_THE_FIRST_N_POINTS = 20000000;
 
 #include "utilities.h"
 #include "functor_GUDHI_Kd_tree_search.h"
 
 #ifdef GUDHI_NMSLIB_IS_AVAILABLE
 #include "functor_NMSLIB_hnsw.h"
+#include "functor_NMSLIB_swgraph.h"
 #endif
 
+#ifdef GUDHI_NANOFLANN_IS_AVAILABLE
+#include "functor_NANOFLANN.h"
+#endif
+
+#include <gudhi/Points_off_io.h>
 #include <gudhi/Debug_utils.h>
 #include <gudhi/Clock.h>
 #include <gudhi/random_point_generators.h>
@@ -93,6 +100,8 @@ std::pair<double, double> test__ANN_queries(
 void run_tests(
   int ambient_dim,
   std::vector<Point> &points,
+  int num_queries,
+  double epsilon,
   double time_limit = 0.,
   const char *input_name = "") {
 
@@ -124,16 +133,23 @@ void run_tests(
   SET_PERFORMANCE_DATA("Num_points", points.size());
 
   //===========================================================================
-  // TODO: run the test
+  // Run the test
   //===========================================================================
 
-  std::vector<Point> queries(points.begin(), points.begin() + std::min(points.size(), (std::size_t)1000));
+  std::vector<Point> queries(points.begin(), points.begin() + std::min(points.size(), (std::size_t)num_queries));
   auto GUDHI_search_timings = test__ANN_queries<GUDHI_Kd_tree_search>(
-    points, queries, 10, 0., time_limit);
+    points, queries, 10, epsilon, time_limit);
 
 #ifdef GUDHI_NMSLIB_IS_AVAILABLE
   auto HNSW_search_timings = test__ANN_queries<NMSLIB_hnsw>(
-    points, queries, 10, 0., time_limit);
+    points, queries, 10, epsilon, time_limit);
+  auto SWgraph_search_timings = test__ANN_queries<NMSLIB_swgraph>(
+    points, queries, 10, epsilon, time_limit);
+#endif
+
+#ifdef GUDHI_NANOFLANN_IS_AVAILABLE
+  auto nanoflann_search_timings = test__ANN_queries<Nanoflann>(
+    points, queries, 10, epsilon, time_limit);
 #endif
 
   //===========================================================================
@@ -149,13 +165,18 @@ void run_tests(
       << "  * GUDHI Kd_tree_search\n"
       << "    - Build   : " << GUDHI_search_timings.first << "\n"
       << "    - Queries : " << GUDHI_search_timings.second << "\n"
-      << "    - Total   : " << GUDHI_search_timings.first + GUDHI_search_timings.second << "\n"
-    << "Computation times (seconds): \n"
 #ifdef GUDHI_NMSLIB_IS_AVAILABLE
     << "  * NMSLIB Hnsw\n"
     << "    - Build   : " << HNSW_search_timings.first << "\n"
     << "    - Queries : " << HNSW_search_timings.second << "\n"
-    << "    - Total   : " << HNSW_search_timings.first + HNSW_search_timings.second << "\n"
+    << "  * NMSLIB SWgraph\n"
+    << "    - Build   : " << SWgraph_search_timings.first << "\n"
+    << "    - Queries : " << SWgraph_search_timings.second << "\n"
+#endif
+#ifdef GUDHI_NANOFLANN_IS_AVAILABLE
+    << "  * Nanoflann\n"
+    << "    - Build   : " << nanoflann_search_timings.first << "\n"
+    << "    - Queries : " << nanoflann_search_timings.second << "\n"
 #endif
       << "================================================\n";
 
@@ -222,7 +243,9 @@ int main() {
         std::string param3;
         std::size_t num_points;
         int ambient_dim;
+        double epsilon;
         double time_limit;
+        int num_queries;
         int num_iteration;
         sstr >> input;
         sstr >> param1;
@@ -230,7 +253,9 @@ int main() {
         sstr >> param3;
         sstr >> num_points;
         sstr >> ambient_dim;
+        sstr >> epsilon;
         sstr >> time_limit;
+        sstr >> num_queries;
         sstr >> num_iteration;
 
         for (int j = 0; j < num_iteration; ++j) {
@@ -243,7 +268,7 @@ int main() {
           else
             ++slash_index;
           input_stripped = input_stripped.substr(
-                                                  slash_index, input_stripped.find_last_of('.') - slash_index);
+            slash_index, input_stripped.find_last_of('.') - slash_index);
 
           SET_PERFORMANCE_DATA("Input", input_stripped);
           SET_PERFORMANCE_DATA("Param1", param1);
@@ -307,8 +332,11 @@ int main() {
             points = Gudhi::generate_points_on_klein_bottle_variant_5D<Kernel>(num_points,
                                                                                std::atof(param1.c_str()), std::atof(param2.c_str()));
           } else {
-            load_points_from_file<Kernel>(input, std::back_inserter(points),
-                                          ONLY_LOAD_THE_FIRST_N_POINTS);
+            Gudhi::Points_off_reader<Point> off_reader(input);
+            if (!off_reader.is_valid())
+              std::cerr << "Unable to read file " << input << "\n";
+            else
+              points = off_reader.get_point_cloud();
           }
 
 #ifdef GUDHI_TC_PROFILING
@@ -327,7 +355,7 @@ int main() {
                 << "****************************************\n";
 #endif
 
-            run_tests(ambient_dim, points, time_limit, input.c_str());
+            run_tests(ambient_dim, points, num_queries, epsilon, time_limit, input.c_str());
 
             std::cerr << "TC #" << i++ << " done.\n";
             std::cerr << "\n---------------------------------\n";

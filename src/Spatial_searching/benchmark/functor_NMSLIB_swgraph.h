@@ -22,8 +22,8 @@
 
 #ifdef GUDHI_NMSLIB_IS_AVAILABLE
 
-#ifndef FUNCTOR_NMSLIB_HNSW_
-#define FUNCTOR_NMSLIB_HNSW_
+#ifndef FUNCTOR_NMSLIB_SWGRAPH_
+#define FUNCTOR_NMSLIB_SWGRAPH_
 
 // NMSLIB
 #include <params.h>
@@ -31,40 +31,39 @@
 #include <knnquery.h>
 #include <space/space_vector.h>
 #include <factory/space/space_lp.h>
-#include <method/hnsw.h>
+#include <method/small_world_rand.h>
 
 #include <memory>
 #include <vector>
 
 namespace nms = similarity;
 
-class NMSLIB_hnsw
+class NMSLIB_swgraph
 {
   typedef CGAL::Epick_d<CGAL::Dynamic_dimension_tag>      K;
   typedef typename K::Point_d                             Point;
   typedef std::vector<Point>                              Points;
 
-  typedef double                                          Dist_type; // CJTODO
+  typedef double                                          Dist_type;
   typedef std::unique_ptr<nms::SpaceLp<Dist_type>>        Space;
-  typedef nms::Hnsw<Dist_type>                            Hnsw;
+  typedef nms::SmallWorldRand<Dist_type>                  SWgraph;
 
 public:
-  NMSLIB_hnsw(Points const& points, double /*epsilon*/)
+  NMSLIB_swgraph(Points const& points, double /*epsilon*/)
   : m_space(std::unique_ptr<nms::SpaceLp<Dist_type>>(static_cast<nms::SpaceLp<Dist_type>*>(nms::CreateL2<Dist_type>(nms::AnyParams())))),
     m_points(create_points_vector(points)),
-    m_hnsw(/*PrintProgress =*/ false, *m_space, m_points)
+    m_swgraph(/*PrintProgress =*/ false, *m_space, m_points)
   {
     nms::AnyParams index_params({
-      "M=10",
+      "NN=10",
       "efConstruction=20",
-      "indexThreadQty=1",
-      "searchMethod=0" });
-    m_hnsw.CreateIndex(index_params);
+      "indexThreadQty=1" });
+    m_swgraph.CreateIndex(index_params);
 
     nms::AnyParams query_time_params({
-      //"algoType=2",
-      "efSearch=100" }); /// ???
-    m_hnsw.SetQueryTimeParams(query_time_params);
+      "algoType=v1merge", // or "old"
+      "efSearch=100" });
+    m_swgraph.SetQueryTimeParams(query_time_params);
   }
 
   void query_k_nearest_neighbors(
@@ -75,7 +74,7 @@ public:
     int dummy = 0;
     nms::Object *pt = create_point(p);
     nms::KNNQuery<Dist_type> q(*m_space, pt, k, eps);
-    m_hnsw.Search(&q, dummy);
+    m_swgraph.Search(&q, dummy);
 #ifdef PRINT_FOUND_NEIGHBORS
     q.Print();
 #endif
@@ -87,7 +86,6 @@ private:
   nms::Object *create_point(Point const& p, int index = 0) const
   {
     int dummy = 0;
-    // CJTODO: this temporary object creation is costly
     return m_space->CreateObjFromVect(
       index, dummy, std::vector<Dist_type>(p.cartesian_begin(), p.cartesian_end()));
   }
@@ -103,14 +101,13 @@ private:
       points.push_back(create_point(p, c));
       ++c;
     }
-
     return points;
   }
 
   Space m_space;
   nms::ObjectVector m_points;
-  Hnsw m_hnsw;
+  SWgraph m_swgraph;
 };
 
-#endif // FUNCTOR_NMSLIB_HNSW_
+#endif // FUNCTOR_NMSLIB_SWGRAPH_
 #endif // GUDHI_NMSLIB_IS_AVAILABLE
