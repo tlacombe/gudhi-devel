@@ -119,7 +119,7 @@ class Compute_persistence_with_phat {
 	  
 		  ++position;
 		}		
-		if ( dualized )
+		if ( this->dualized )
 		{
 			cerr << "We are dualizing the matrix \n";
 			phat::dualize ( this->boundary_matrix_ );
@@ -336,7 +336,7 @@ void write_intervals_to_file_Gudhi_format(std::pair< std::vector< std::vector<K>
 
   // now we need to sort beginnings_of_infinite_intervals according to the first coordinate:
   #ifdef GUDHI_USE_TBB
-  tbb::parallel_sort(beginnings_of_infinite_intervals.begin(), beginnings_of_infinite_intervals.end()
+  tbb::parallel_sort(beginnings_of_infinite_intervals.begin(), beginnings_of_infinite_intervals.end(),
   [](const std::pair<K, size_t>& lhs, const std::pair<K, size_t>& rhs) {
     return lhs.second > rhs.second; } );
   #else
