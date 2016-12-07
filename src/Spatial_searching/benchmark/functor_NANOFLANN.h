@@ -110,9 +110,11 @@ public:
   /// "points" must not be empty
   Nanoflann(Points const& points, double /*epsilon*/)
     : m_adaptor(points, m_k),
-      m_kd_tree(m_k.point_dimension_d_object()(*points.begin()),
-      m_adaptor,
-      nanoflann::KDTreeSingleIndexAdaptorParams(10 /* max leaf */))
+      m_kd_tree(
+        m_k.point_dimension_d_object()(*points.begin()),
+        m_adaptor,
+        nanoflann::KDTreeSingleIndexAdaptorParams(10 /* max leaf */)
+      )
   {
     m_kd_tree.buildIndex();
   }
