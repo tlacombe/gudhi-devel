@@ -26,6 +26,7 @@ can be processed in Excel, for example.
 #include "functor_GUDHI_Kd_tree_search.h"
 
 #ifdef GUDHI_NMSLIB_IS_AVAILABLE
+#include <init.h>
 #include "functor_NMSLIB_hnsw.h"
 #include "functor_NMSLIB_swgraph.h"
 #endif
@@ -34,6 +35,11 @@ can be processed in Excel, for example.
 #include "functor_NANOFLANN.h"
 #endif
 
+#ifdef GUDHI_FLANN_IS_AVAILABLE
+#include "functor_FLANN.h"
+#endif
+
+#include <gudhi/console_color.h>
 #include <gudhi/Points_off_io.h>
 #include <gudhi/Debug_utils.h>
 #include <gudhi/Clock.h>
@@ -53,6 +59,9 @@ can be processed in Excel, for example.
 #include <ctime>
 #include <fstream>
 #include <algorithm>
+#include <map>
+#include <string>
+#include <iomanip>
 
 #ifdef GUDHI_USE_TBB
 #include <tbb/task_scheduler_init.h>
@@ -67,19 +76,20 @@ typedef Kernel::Vector_d Vector;
 
 // Returns the timing for the building and the queries
 // (or -1 if time_limit reached)
-template <typename ANN_Functor, typename Point>
+template <typename ANN_Functor, typename Point, typename... Targs>
 std::pair<double, double> test__ANN_queries(
   std::vector<Point> const& points,
   std::vector<Point> const& queries,
   int K,
   double epsilon,
-  double time_limit = 0.)
+  double time_limit = 0.,
+  Targs... functor_additional_args)
 {
   Gudhi::Clock t;
 
   // Build the structure
   t.begin();
-  ANN_Functor functor(points, epsilon);
+  ANN_Functor functor(points, epsilon, functor_additional_args...);
   t.end();
   double build_time = t.num_seconds();
 
@@ -136,20 +146,43 @@ void run_tests(
   // Run the test
   //===========================================================================
 
+  std::map<std::string, std::pair<double, double>> timings;
+
   std::vector<Point> queries(points.begin(), points.begin() + std::min(points.size(), (std::size_t)num_queries));
-  auto GUDHI_search_timings = test__ANN_queries<GUDHI_Kd_tree_search>(
+  timings["GUDHI"] = test__ANN_queries<GUDHI_Kd_tree_search>(
     points, queries, 10, epsilon, time_limit);
 
 #ifdef GUDHI_NMSLIB_IS_AVAILABLE
-  auto HNSW_search_timings = test__ANN_queries<NMSLIB_hnsw>(
+  similarity::initLibrary(LIB_LOGNONE, NULL); // No logging
+  timings["NMSLIB HNSW"] = test__ANN_queries<NMSLIB_hnsw>(
     points, queries, 10, epsilon, time_limit);
-  auto SWgraph_search_timings = test__ANN_queries<NMSLIB_swgraph>(
+  timings["NMSLIB SWgraph"] = test__ANN_queries<NMSLIB_swgraph>(
     points, queries, 10, epsilon, time_limit);
 #endif
 
 #ifdef GUDHI_NANOFLANN_IS_AVAILABLE
-  auto nanoflann_search_timings = test__ANN_queries<Nanoflann>(
+  timings["Nanoflann"] = test__ANN_queries<Nanoflann>(
     points, queries, 10, epsilon, time_limit);
+#endif
+
+#ifdef GUDHI_FLANN_IS_AVAILABLE
+  timings["Flann - linear bruteforce"] = test__ANN_queries<Flann>(
+    points, queries, 10, epsilon, time_limit, flann::LinearIndexParams());
+
+  timings["Flann - randomized kd-trees"] = test__ANN_queries<Flann>(
+    points, queries, 10, epsilon, time_limit, flann::KDTreeIndexParams());
+
+  timings["Flann - hierarchical k-means"] = test__ANN_queries<Flann>(
+    points, queries, 10, epsilon, time_limit, flann::KMeansIndexParams());
+
+  timings["Flann - composite (kd-trees + k-means)"] = test__ANN_queries<Flann>(
+    points, queries, 10, epsilon, time_limit, flann::CompositeIndexParams());
+
+  timings["Flann - single kd-tree"] = test__ANN_queries<Flann>(
+    points, queries, 10, epsilon, time_limit, flann::KDTreeSingleIndexParams());
+
+  timings["Flann - hierarchical clustering"] = test__ANN_queries<Flann>(
+    points, queries, 10, epsilon, time_limit, flann::HierarchicalClusteringIndexParams());
 #endif
 
   //===========================================================================
@@ -157,28 +190,24 @@ void run_tests(
   //===========================================================================
 
   std::cerr
-      << "\n================================================\n"
-      << "Dimension: " << ambient_dim << "\n"
-      << "Number of points: " << points.size() << "\n"
-      << "Number of queries: " << queries.size() << "\n"
-      << "Computation times (seconds): \n"
-      << "  * GUDHI Kd_tree_search\n"
-      << "    - Build   : " << GUDHI_search_timings.first << "\n"
-      << "    - Queries : " << GUDHI_search_timings.second << "\n"
-#ifdef GUDHI_NMSLIB_IS_AVAILABLE
-    << "  * NMSLIB Hnsw\n"
-    << "    - Build   : " << HNSW_search_timings.first << "\n"
-    << "    - Queries : " << HNSW_search_timings.second << "\n"
-    << "  * NMSLIB SWgraph\n"
-    << "    - Build   : " << SWgraph_search_timings.first << "\n"
-    << "    - Queries : " << SWgraph_search_timings.second << "\n"
-#endif
-#ifdef GUDHI_NANOFLANN_IS_AVAILABLE
-    << "  * Nanoflann\n"
-    << "    - Build   : " << nanoflann_search_timings.first << "\n"
-    << "    - Queries : " << nanoflann_search_timings.second << "\n"
-#endif
-      << "================================================\n";
+    << "\n================================================\n"
+    << "Dimension: " << ambient_dim << "\n"
+    << "Number of points: " << points.size() << "\n"
+    << "Number of queries: " << queries.size() << "\n"
+    << "Computation times in seconds (build + queries): \n\n";
+  
+  int c = 0;
+  for (auto timing : timings)
+  {
+    //std::cerr << (c % 2 ? white : black_on_white);
+    std::cerr << std::left << "  "
+      << std::setw(50) << std::setfill(' ') << timing.first
+      << std::setw(10) << std::setfill(' ') << timing.second.first
+      << std::setw(10) << std::setfill(' ') << timing.second.second << "\n\n";
+    ++c;
+  }
+  std::cerr << white;
+  std::cerr << "================================================\n";
 
   //===========================================================================
   // Export info

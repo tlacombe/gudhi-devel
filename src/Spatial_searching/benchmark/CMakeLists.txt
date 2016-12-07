@@ -29,10 +29,12 @@ if(CGAL_FOUND)
       add_definitions(-DGUDHI_NMSLIB_IS_AVAILABLE)
       
       #FLANN
+      # Use the static version ("_s") because the dynamic version is not correctly built on MSVC 
+      # (no flann_cpp.lib generated because no exported functions)
       include_directories("D:/INRIA/Libs/flann-4.9.1/src/cpp") # CJTODO TEMP
       target_link_libraries(Spatial_searching_benchmark
-        optimized "D:/INRIA/Libs/flann-4.9.1/msvc/lib/Release/flann.lib"
-        debug "D:/INRIA/Libs/flann-4.9.1/msvc/lib/Debug/flann.lib")
+        optimized "D:/INRIA/Libs/flann-4.9.1/msvc/lib/Release/flann_cpp_s.lib"
+        debug "D:/INRIA/Libs/flann-4.9.1/msvc/lib/Debug/flann_cpp_s.lib")
       add_definitions(-DGUDHI_FLANN_IS_AVAILABLE)
       
       #Nanoflann
