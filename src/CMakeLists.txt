@@ -34,6 +34,11 @@ else()
   if(PHAT_FOUND)
     message(STATUS "PHAT_INCLUDE_DIR = ${PHAT_INCLUDE_DIR}")
     INCLUDE_DIRECTORIES(${PHAT_INCLUDE_DIR})
+    # Phat is linking with openmp
+    find_package(OpenMP)
+    if (OPENMP_FOUND)
+        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    endif()
   endif()
 
   # In CMakeLists.txt, when include(${CGAL_USE_FILE}), CMAKE_CXX_FLAGS are overwritten.
