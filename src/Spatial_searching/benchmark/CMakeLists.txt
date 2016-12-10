@@ -18,6 +18,7 @@ if(CGAL_FOUND)
       target_link_libraries(Spatial_searching_benchmark 
         ${Boost_DATE_TIME_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${CGAL_LIBRARY})
       if (TBB_FOUND)
+		add_definitions(-DCGAL_LINKED_WITH_TBB)
         target_link_libraries(Spatial_searching_benchmark ${TBB_LIBRARIES})
       endif(TBB_FOUND)
       
