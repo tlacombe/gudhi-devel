@@ -29,12 +29,14 @@
 #include <params.h>
 #include <object.h>
 #include <knnquery.h>
+#include <knnqueue.h>
 #include <space/space_vector.h>
 #include <factory/space/space_lp.h>
 #include <method/small_world_rand.h>
 
 #include <memory>
 #include <vector>
+#include <utility>
 
 namespace nms = similarity;
 
@@ -66,19 +68,47 @@ public:
     m_swgraph.SetQueryTimeParams(query_time_params);
   }
 
-  void query_k_nearest_neighbors(
+  std::size_t query_k_nearest_neighbors(
     Point const& p,
     unsigned int k,
-    double eps = 0.) const
+    double eps = 0.,
+    std::vector<std::pair<std::size_t, double>> *result = NULL) const
   {
     int dummy = 0;
     nms::Object *pt = create_point(p);
     nms::KNNQuery<Dist_type> q(*m_space, pt, k, eps);
     m_swgraph.Search(&q, dummy);
-#ifdef PRINT_FOUND_NEIGHBORS
-    q.Print();
-#endif
     delete pt;
+
+#ifdef PRINT_FOUND_NEIGHBORS
+    std::cerr << "Query:\n";
+    nms::KNNQueue<Dist_type> *res2 = q.Result()->Clone();
+    while (!res2->Empty()) {
+      std::cerr << "  " << res2->TopObject()->id() 
+        << " : " << res2->TopDistance()*res2->TopDistance() << "\n";
+      res2->Pop();
+    }
+#endif
+
+    std::size_t sum = 0;
+    nms::KNNQueue<Dist_type> *res = q.Result()->Clone();
+    if (result) {
+      result->resize(k);
+      int i = k - 1;
+      while (!res->Empty()) {
+        sum += res->TopObject()->id();
+        (*result)[i] = std::make_pair(res->TopObject()->id(), res->TopDistance()*res->TopDistance());
+        res->Pop();
+        --i;
+      }
+    }
+    else {
+      while (!res->Empty()) {
+        sum += res->TopObject()->id();
+        res->Pop();
+      }
+    }
+    return sum;
   }
 
 private:

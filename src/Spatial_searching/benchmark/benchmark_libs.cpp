@@ -16,7 +16,15 @@ can be processed in Excel, for example.
 
 #ifdef _DEBUG
 # define PRINT_FOUND_NEIGHBORS
+
+#else // RELEASE
+//# define PRINT_FOUND_NEIGHBORS
+# define CHECK_ACTUAL_EPSILON
+
 #endif
+
+const int ONLY_THE_FIRST_N_POINTS = 100000;
+
 
 #include <cstddef>
 
@@ -49,6 +57,8 @@ can be processed in Excel, for example.
 #include <CGAL/assertions_behaviour.h>
 #include <CGAL/Epick_d.h>
 #include <CGAL/Random.h>
+#include <CGAL/Memory_sizer.h>
+#include <CGAL/Mesh_3/Profiling_tools.h>
 
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/trim_all.hpp>
@@ -61,7 +71,9 @@ can be processed in Excel, for example.
 #include <algorithm>
 #include <map>
 #include <string>
+#include <tuple>
 #include <iomanip>
+#include <typeinfo>
 
 #ifdef GUDHI_USE_TBB
 #include <tbb/task_scheduler_init.h>
@@ -75,47 +87,90 @@ typedef Kernel::Point_d Point;
 typedef Kernel::Vector_d Vector;
 
 // Returns the timing for the building and the queries
-// (or -1 if time_limit reached)
-template <typename ANN_Functor, typename Point, typename... Targs>
-std::pair<double, double> test__ANN_queries(
+template <typename ANN_Functor, typename Point, typename Range_of_query_results, typename... Targs>
+std::tuple<std::string, double, double, std::size_t> test__ANN_queries(
   std::vector<Point> const& points,
   std::vector<Point> const& queries,
-  int K,
+  int k,
   double epsilon,
-  double time_limit = 0.,
+  std::string const& algorith_name,
+  Range_of_query_results const *ground_truth,
   Targs... functor_additional_args)
 {
-  Gudhi::Clock t;
+  WallClockTimer t;
+  
+  std::cerr << "Testing " << algorith_name << "...\n";
+  SET_PERFORMANCE_DATA("Algorithm", algorith_name);
+  SET_PERFORMANCE_DATA("Type_of_test", "ANN queries");
+  SET_PERFORMANCE_DATA("Num_queries", queries.size());
+  SET_PERFORMANCE_DATA("K", k);
+
+  std::size_t mem_before = CGAL::Memory_sizer().virtual_size();
 
   // Build the structure
-  t.begin();
+  t.reset();
   ANN_Functor functor(points, epsilon, functor_additional_args...);
-  t.end();
-  double build_time = t.num_seconds();
+  double build_time = t.elapsed();
 
   // Perform the queries
-  t.begin();
+  std::size_t checksum = 0;
+  std::vector<std::vector<std::pair<std::size_t, double>>> results(
+    queries.size(), std::vector<std::pair<std::size_t, double>>());
+  t.reset();
+  auto it_res = results.begin();
   for (Point const& q : queries)
-  {
-    if (t.num_seconds() > time_limit)
-      return std::make_pair(build_time, -1.);
+    checksum += functor.query_k_nearest_neighbors(q, k, epsilon, &(*it_res++));
 
-    functor.query_k_nearest_neighbors(q, K, epsilon);
+  double q_time = t.elapsed();
+  if (ground_truth) {
+    auto actual_eps_and_recall = compute_actual_epsilon(results, *ground_truth);
+    if (actual_eps_and_recall.first > epsilon)
+      std::cerr << red << "WARNING: Actual epsilon = " << actual_eps_and_recall.first << " > " << epsilon << white << "\n";
+    else
+      std::cerr << green << "OK: Actual epsilon = " << actual_eps_and_recall.first << " <= " << epsilon << white << "\n";
+
+    if (actual_eps_and_recall.second < 1. - epsilon)
+      std::cerr << red << "WARNING: Actual recall = " << actual_eps_and_recall.second << " > " << 1. - epsilon << white << "\n";
+    else
+      std::cerr << green << "OK: Actual recall = " << actual_eps_and_recall.second << " >= " << 1. - epsilon << white << "\n";
+
+    SET_PERFORMANCE_DATA("Actual_eps", actual_eps_and_recall.first);
+    SET_PERFORMANCE_DATA("Actual_recall", actual_eps_and_recall.second);
   }
-  t.end();
+  else {
+    SET_PERFORMANCE_DATA("Actual_eps", -1.);
+    SET_PERFORMANCE_DATA("Actual_recall", -1.);
+  }
 
-  return std::make_pair(build_time, t.num_seconds());
+  std::cerr << "DONE Testing " << algorith_name << " ("
+    << "checksum = " << checksum
+    << ", build = " << build_time
+    << " s, queries = " << q_time
+    << " s).\n\n";
+
+  double queries_per_sec = static_cast<double>(queries.size()) / q_time;
+  std::size_t mem_after = CGAL::Memory_sizer().virtual_size();
+
+  SET_PERFORMANCE_DATA("Time1_label", "Build");
+  SET_PERFORMANCE_DATA("Time1", build_time);
+  SET_PERFORMANCE_DATA("Time2_label", "Queries/s");
+  SET_PERFORMANCE_DATA("Time2", queries_per_sec);
+  SET_PERFORMANCE_DATA("Mem_MB", (mem_after - mem_before)/(1024*1024));
+  SET_PERFORMANCE_DATA("Checksum", checksum);
+  XML_perf_data::commit(false);
+
+  return std::make_tuple(algorith_name, build_time, queries_per_sec, (mem_after - mem_before) / (1024 * 1024));
 }
 
 void run_tests(
   int ambient_dim,
   std::vector<Point> &points,
   int num_queries,
+  int k,
   double epsilon,
-  double time_limit = 0.,
   const char *input_name = "") {
 
-  Kernel k;
+  num_queries = std::min(points.size(), (std::size_t)num_queries);
 
   //===========================================================================
   // Init
@@ -135,54 +190,104 @@ void run_tests(
     slash_index, input_name_stripped.find_last_of('.') - slash_index);
 
   SET_PERFORMANCE_DATA("Num_points", points.size());
+  SET_PERFORMANCE_DATA("Epsilon", epsilon);
 
-#ifdef GUDHI_TC_USE_ANOTHER_POINT_SET_FOR_TANGENT_SPACE_ESTIM
-  std::vector<Point> points_not_sparse = points;
+  //===========================================================================
+  // Compute ground truth for all queries
+  //===========================================================================
+#ifdef CHECK_ACTUAL_EPSILON
+  typedef std::vector<std::pair<std::size_t, double>> Query_res;
+
+  GUDHI_Kd_tree_search gkts(points);
+
+  std::vector<std::vector<std::pair<std::size_t, double>>> ground_truth(
+    num_queries, std::vector<std::pair<std::size_t, double>>());
+
+  auto ground_truth_it = ground_truth.begin();
+  for (int i = 0; i < num_queries; ++i)
+    gkts.query_k_nearest_neighbors(points[i], k, 0., &(*ground_truth_it++));
+
+  std::vector<std::vector<std::pair<std::size_t, double>>> const* p_ground_truth = &ground_truth;
+
+#else
+  std::vector<std::vector<std::pair<std::size_t, double>>> const* p_ground_truth = NULL;
 #endif
 
-  SET_PERFORMANCE_DATA("Num_points", points.size());
 
   //===========================================================================
   // Run the test
   //===========================================================================
 
-  std::map<std::string, std::pair<double, double>> timings;
+  std::vector<std::tuple<std::string, double, double, std::size_t>> perfs;
 
-  std::vector<Point> queries(points.begin(), points.begin() + std::min(points.size(), (std::size_t)num_queries));
-  timings["GUDHI"] = test__ANN_queries<GUDHI_Kd_tree_search>(
-    points, queries, 10, epsilon, time_limit);
+  std::vector<Point> queries(points.begin(), points.begin() + num_queries);
+  
+  //perfs.push_back(test__ANN_queries<GUDHI_Kd_tree_search>(
+  //  points, queries, k, epsilon, "GUDHI Kd_tree_search", p_ground_truth));
 
 #ifdef GUDHI_NMSLIB_IS_AVAILABLE
   similarity::initLibrary(LIB_LOGNONE, NULL); // No logging
-  timings["NMSLIB HNSW"] = test__ANN_queries<NMSLIB_hnsw>(
-    points, queries, 10, epsilon, time_limit);
-  timings["NMSLIB SWgraph"] = test__ANN_queries<NMSLIB_swgraph>(
-    points, queries, 10, epsilon, time_limit);
+  perfs.push_back(test__ANN_queries<NMSLIB_hnsw>(
+    points, queries, k, epsilon, "NMSLIB HNSW", p_ground_truth));
+  perfs.push_back(test__ANN_queries<NMSLIB_swgraph>(
+    points, queries, k, epsilon, "NMSLIB SWgraph", p_ground_truth));
 #endif
 
 #ifdef GUDHI_NANOFLANN_IS_AVAILABLE
-  timings["Nanoflann"] = test__ANN_queries<Nanoflann>(
-    points, queries, 10, epsilon, time_limit);
+  perfs.push_back(test__ANN_queries<Nanoflann>(
+    points, queries, k, epsilon, "Nanoflann", p_ground_truth));
 #endif
 
 #ifdef GUDHI_FLANN_IS_AVAILABLE
-  timings["Flann - linear bruteforce"] = test__ANN_queries<Flann>(
-    points, queries, 10, epsilon, time_limit, flann::LinearIndexParams());
 
-  timings["Flann - randomized kd-trees"] = test__ANN_queries<Flann>(
-    points, queries, 10, epsilon, time_limit, flann::KDTreeIndexParams());
+  //**********************************************************
+  // Compute ground truth for N random queries
+  // DO NOT CONFUSE WITH THE "all queries" GROUND TRUTH
 
-  timings["Flann - hierarchical k-means"] = test__ANN_queries<Flann>(
-    points, queries, 10, epsilon, time_limit, flann::KMeansIndexParams());
+  const int GROUND_TRUTH_FOR_FLANN_NUM_QUERIES = 200;
+  typedef std::vector<std::pair<std::size_t, double>> Query_res;
 
-  timings["Flann - composite (kd-trees + k-means)"] = test__ANN_queries<Flann>(
-    points, queries, 10, epsilon, time_limit, flann::CompositeIndexParams());
+  GUDHI_Kd_tree_search gkts_for_flann(points);
 
-  timings["Flann - single kd-tree"] = test__ANN_queries<Flann>(
-    points, queries, 10, epsilon, time_limit, flann::KDTreeSingleIndexParams());
+  std::vector<Point> gt_queries;
+  gt_queries.reserve(GROUND_TRUTH_FOR_FLANN_NUM_QUERIES);
+  std::vector<std::vector<std::pair<std::size_t, double>>> ground_truth_for_flann(
+    GROUND_TRUTH_FOR_FLANN_NUM_QUERIES, std::vector<std::pair<std::size_t, double>>());
 
-  timings["Flann - hierarchical clustering"] = test__ANN_queries<Flann>(
-    points, queries, 10, epsilon, time_limit, flann::HierarchicalClusteringIndexParams());
+  auto ground_truth_for_flann_it = ground_truth_for_flann.begin();
+  for (int i = 0; i < GROUND_TRUTH_FOR_FLANN_NUM_QUERIES; ++i)
+  {
+    // Randomly draw query point (might draw the same one sometimes, but it's ok)
+    int q_index = (rand() % points.size());
+    gt_queries.push_back(points[q_index]);
+
+    gkts_for_flann.query_k_nearest_neighbors(points[q_index], k, 0., &(*ground_truth_for_flann_it++));
+  }
+  //**********************************************************
+
+  perfs.push_back(test__ANN_queries<Flann>(
+    points, queries, k, epsilon, "Flann - linear bruteforce", p_ground_truth, flann::LinearIndexParams()));
+
+  perfs.push_back(test__ANN_queries<Flann>(
+    points, queries, k, epsilon, "Flann - randomized kd-trees - 4 trees", p_ground_truth, flann::KDTreeIndexParams(4), &ground_truth_for_flann, &gt_queries));
+
+  perfs.push_back(test__ANN_queries<Flann>(
+    points, queries, k, epsilon, "Flann - randomized kd-trees - 16 trees", p_ground_truth, flann::KDTreeIndexParams(16), &ground_truth_for_flann, &gt_queries));
+
+  perfs.push_back(test__ANN_queries<Flann>(
+    points, queries, k, epsilon, "Flann - hierarchical k-means", p_ground_truth, flann::KMeansIndexParams(), &ground_truth_for_flann, &gt_queries));
+
+  perfs.push_back(test__ANN_queries<Flann>(
+    points, queries, k, epsilon, "Flann - composite (4 kd-trees + k-means)", p_ground_truth, flann::CompositeIndexParams(4), &ground_truth_for_flann, &gt_queries));
+
+  perfs.push_back(test__ANN_queries<Flann>(
+    points, queries, k, epsilon, "Flann - composite (16 kd-trees + k-means)", p_ground_truth, flann::CompositeIndexParams(16), &ground_truth_for_flann, &gt_queries));
+
+  perfs.push_back(test__ANN_queries<Flann>(
+    points, queries, k, epsilon, "Flann - single kd-tree", p_ground_truth, flann::KDTreeSingleIndexParams()));
+
+  perfs.push_back(test__ANN_queries<Flann>(
+    points, queries, k, epsilon, "Flann - hierarchical clustering", p_ground_truth, flann::HierarchicalClusteringIndexParams(), &ground_truth_for_flann, &gt_queries));
 #endif
 
   //===========================================================================
@@ -194,32 +299,21 @@ void run_tests(
     << "Dimension: " << ambient_dim << "\n"
     << "Number of points: " << points.size() << "\n"
     << "Number of queries: " << queries.size() << "\n"
-    << "Computation times in seconds (build + queries): \n\n";
+    << "Computation times in seconds: build + queries/s + memory (MB)\n\n";
   
   int c = 0;
-  for (auto timing : timings)
+  for (auto perf : perfs)
   {
     //std::cerr << (c % 2 ? white : black_on_white);
     std::cerr << std::left << "  "
-      << std::setw(50) << std::setfill(' ') << timing.first
-      << std::setw(10) << std::setfill(' ') << timing.second.first
-      << std::setw(10) << std::setfill(' ') << timing.second.second << "\n\n";
+      << std::setw(50) << std::setfill(' ') << std::get<0>(perf)
+      << std::setw(20) << std::setfill(' ') << std::get<1>(perf)
+      << std::setw(20) << std::setfill(' ') << std::get<2>(perf)
+      << std::setw(20) << std::setfill(' ') << std::get<3>(perf) << "\n\n";
     ++c;
   }
   std::cerr << white;
   std::cerr << "================================================\n";
-
-  //===========================================================================
-  // Export info
-  //===========================================================================
-  /*SET_PERFORMANCE_DATA("Init_time", init_time);
-  SET_PERFORMANCE_DATA("Comput_time", computation_time);
-  SET_PERFORMANCE_DATA("Perturb_successful",
-                       (perturb_success ? 1 : 0));
-  SET_PERFORMANCE_DATA("Perturb_time", perturb_time);
-  SET_PERFORMANCE_DATA("Perturb_steps", num_perturb_steps);
-  SET_PERFORMANCE_DATA("Info", "");
-  */
 }
 
 int main() {
@@ -273,8 +367,8 @@ int main() {
         std::size_t num_points;
         int ambient_dim;
         double epsilon;
-        double time_limit;
         int num_queries;
+        int k;
         int num_iteration;
         sstr >> input;
         sstr >> param1;
@@ -283,8 +377,8 @@ int main() {
         sstr >> num_points;
         sstr >> ambient_dim;
         sstr >> epsilon;
-        sstr >> time_limit;
         sstr >> num_queries;
+        sstr >> k;
         sstr >> num_iteration;
 
         for (int j = 0; j < num_iteration; ++j) {
@@ -330,6 +424,9 @@ int main() {
             points = Gudhi::generate_points_on_sphere_d<Kernel>(num_points, ambient_dim,
                                                                 std::atof(param1.c_str()),  // radius
                                                                 std::atof(param2.c_str()));  // radius_noise_percentage
+          } else if (input == "generate_points_in_cube_d") {
+            points = Gudhi::generate_points_in_cube_d<Kernel>(num_points, ambient_dim,
+                                                              std::atof(param1.c_str()));  // side length
           } else if (input == "generate_two_spheres_d") {
             points = Gudhi::generate_points_on_two_spheres_d<Kernel>(num_points, ambient_dim,
                                                                      std::atof(param1.c_str()),
@@ -361,11 +458,24 @@ int main() {
             points = Gudhi::generate_points_on_klein_bottle_variant_5D<Kernel>(num_points,
                                                                                std::atof(param1.c_str()), std::atof(param2.c_str()));
           } else {
-            Gudhi::Points_off_reader<Point> off_reader(input);
-            if (!off_reader.is_valid())
-              std::cerr << "Unable to read file " << input << "\n";
-            else
-              points = off_reader.get_point_cloud();
+            // Contains tangent space basis
+            if (input.substr(input.size() - 5) == "fvecs") {
+              load_points_from_fvecs_file<Kernel>(input, std::back_inserter(points), ONLY_THE_FIRST_N_POINTS);
+            }
+            else {
+              Gudhi::Points_off_reader<Point> off_reader(input);
+              if (!off_reader.is_valid())
+                std::cerr << "Unable to read file " << input << "\n";
+              else
+              {
+                points = off_reader.get_point_cloud();
+                if (ONLY_THE_FIRST_N_POINTS > 0 && points.size() > ONLY_THE_FIRST_N_POINTS)
+                {
+                  points.resize(ONLY_THE_FIRST_N_POINTS);
+                  points.shrink_to_fit();
+                }
+              }
+            }
           }
 
 #ifdef GUDHI_TC_PROFILING
@@ -384,15 +494,13 @@ int main() {
                 << "****************************************\n";
 #endif
 
-            run_tests(ambient_dim, points, num_queries, epsilon, time_limit, input.c_str());
+            run_tests(ambient_dim, points, num_queries, k, epsilon, input.c_str());
 
-            std::cerr << "TC #" << i++ << " done.\n";
+            std::cerr << "Run #" << i++ << " done.\n";
             std::cerr << "\n---------------------------------\n";
           } else {
-            std::cerr << "TC #" << i++ << ": no points loaded.\n";
+            std::cerr << "Run #" << i++ << ": no points loaded.\n";
           }
-
-          XML_perf_data::commit();
         }
       }
     }

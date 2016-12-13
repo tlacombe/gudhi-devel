@@ -1,31 +1,43 @@
-#------------------------------------------------------------------------------------------------------------------------------------------------------
-# Input															PARAM1	PARAM2	PARAM3	NUM_P	AMB		EPS  	TIME_LIMIT	NUM_QUERIES NUM_ITER
-#------------------------------------------------------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------------------------------------
+# Input															PARAM1	PARAM2	PARAM3	NUM_P	AMB		EPS  	NUM_QUERIES K	NUM_ITER
+#------------------------------------------------------------------------------------------------------------------------------------------
 
-#---------------------------------------------------------- Spatial search benchmarking ---------------------------------------------------------------
-#generate_torus_3D   											2		1		Y		100000  3		0.   	3600  		1000 		1
-#data/buddha_100kv.off 											-		-		-		0		3 		0.   	3600 		1000 		1
-#generate_torus_d    											N		-		-		10000	600		0.   	3600   		1000 		1
-#generate_torus_d    											N		-		-		100000	12		0.   	3600   		1000 		1
-#data/SO3_50000.off  											-		-		-		0		9 		0.   	3600		1000 		1
-#data/Cy8.off	 												-		-		-		0		24 		0.   	3600		1000 		1
-#data/fractal_9_5_2_random_edge_list.txt_0.19795_512p_d259.off	-		-		-		0		259		0.01  	3600		1000 		1
-#generate_sphere_d												0.5 	-		-		1000	5000	0.   	3600		1000 		1
-#generate_sphere_d												0.5 	-		-		10000	3		0.   	3600		1000 		1
-#generate_sphere_d												0.5 	-		-		10000	4		0.   	3600		1000 		1
-#generate_sphere_d												0.5 	-		-		10000	5		0.   	3600		1000 		1
-#generate_sphere_d												0.5 	-		-		10000	6		0.   	3600		1000 		1
-#generate_sphere_d												0.5 	-		-		10000	7		0.   	3600		1000 		1
-#generate_sphere_d												0.5 	-		-		10000	24		0.   	3600		1000 		1
-#generate_klein_bottle_4D										4		3		-		1000000	4		0.01   	3600 		1000		1
+#---------------------------------------------------------- Spatial search benchmarking ---------------------------------------------------
+#generate_torus_3D   											2		1		Y		10000  3		0.2   	10000 		10		1
+#generate_torus_3D   											2		1		Y		100000 3		0.   	10000 		10		1
+#data/buddha_100kv.off 											-		-		-		0		3 		0.   	10000 		10		1
+#generate_torus_d    											N		-		-		10000	600		0.   	1000 		10		1
+#generate_torus_d    											N		-		-		100000	12		0.   	1000 		10		1
+#data/SO3_50000.off  											-		-		-		0		9 		0.   	1000 		10		1
+#data/Cy8.off	 												-		-		-		0		24 		0.   	1000 		10		1
+#data/fractal_9_5_2_random_edge_list.txt_0.19795_512p_d259.off	-		-		-		0		259		0.01  	1000 		10		1
 
-#---------------------------------------------------------- Very small cases for Debug mode -----------------------------------------------------------
-generate_sphere_d												4		-		-		20		3		0.   	3600		2			1
-#generate_sphere_d												3		10		-		70		3		0.   	3600		5			1
-#generate_sphere_d												3		-		-		1000 	3		0.   	3600		5			1
-#generate_sphere_d												3		-		-		10		4		0.   	3600		5			1
-#generate_sphere_d												3		-		-		70		5		0.   	3600		5			1
-#generate_klein_bottle_4D										4		3		-		70  	4		0.   	3600		5			1
-#generate_klein_bottle_variant_5D								4		3		-		70  	5		0.   	3600		5			1
-#data/SO3_10000.off  											-		-		-		0		9 		0.   	3600		5			1
-#generate_moment_curve											0		1		-		30  	3		0.   	3600		5			1
+#generate_sphere_d												0.5 	-		-		1000	5000	0.   	1000 		10		1
+#generate_sphere_d												0.5 	-		-		10000	3		0.   	1000 		10		1
+#generate_sphere_d												0.5 	-		-		10000	4		0.   	1000 		10		1
+#generate_sphere_d												0.5 	-		-		10000	5		0.   	1000 		10		1
+#generate_sphere_d												0.5 	-		-		10000	6		0.   	1000 		10		1
+#generate_sphere_d												0.5 	-		-		10000	7		0.   	1000 		10		1
+#generate_sphere_d												0.5 	-		-		10000	24		0.   	1000 		10		1
+#generate_sphere_d												0.5 	-		-		10000	1000	0.   	1000 		10		1
+
+#generate_points_in_cube_d										2.0 	-		-		10000	100		0.   	1000 		10		1
+#generate_klein_bottle_4D										4		3		-		1000000	4		0.01   	1000		10		1
+
+#data/sift_base.fvecs     										-		-		-		0		128		0.  	2   		10		1 #1M points
+data/sift_base.fvecs     										-		-		-		0		128		0.2  	2000   		10		1 #1M points
+#data/sift_base.fvecs     										-		-		-		0		128		0.01  	1000 		10		1 #1M points
+#data/sift_base.fvecs     										-		-		-		0		128		0.1  	1000 		10		1 #1M points
+#data/gist_base.fvecs     										-		-		-		0		960		0.01  	1000 		10		1 #1M points - GUDHI Kd_tree_search crashes
+#data/gist_query.fvecs     										-		-		-		0		960		0.01  	1000 		10		1
+
+#---------------------------------------------------------- Very small cases for Debug mode -----------------------------------------------
+#generate_sphere_d												4		-		-		20		3		0.   	2			10		1
+#generate_sphere_d												3		10		-		70		3		0.   	5			10		1
+#generate_sphere_d												3		-		-		1000 	3		0.   	5			10		1
+#generate_sphere_d												3		-		-		10		4		0.   	5			10		1
+#generate_sphere_d												3		-		-		70		5		0.   	5			10		1
+#generate_klein_bottle_4D										4		3		-		70  	4		0.   	5			10		1
+#generate_klein_bottle_variant_5D								4		3		-		70  	5		0.   	5			10		1
+#data/SO3_10000.off  											-		-		-		0		9 		0.   	5			10		1
+#generate_moment_curve											0		1		-		30  	3		0.   	5			10		1

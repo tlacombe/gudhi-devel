@@ -27,6 +27,7 @@
 #include <CGAL/Epick_d.h>
 
 #include <vector>
+#include <utility>
 
 namespace gss = Gudhi::spatial_searching;
 
@@ -39,23 +40,38 @@ class GUDHI_Kd_tree_search
   typedef gss::Kd_tree_search<K, Points>              Points_ds;
 
 public:
-  GUDHI_Kd_tree_search(Points const& points, double /*epsilon*/)
+  GUDHI_Kd_tree_search(Points const& points, double /*epsilon*/ = 0.)
     : m_tree(points)
   {}
 
-  void query_k_nearest_neighbors(
+  // Returns the sum of the indices
+  std::size_t query_k_nearest_neighbors(
     Point const& p,
     unsigned int k,
-    double eps = 0.) const
+    double eps = 0.,
+    std::vector<std::pair<std::size_t, double>> *result = NULL) const
   {
     Points_ds::KNS_range neighbors = m_tree.query_k_nearest_neighbors(p, k, true, eps);
+
 #ifdef PRINT_FOUND_NEIGHBORS
     std::cerr << "Query:\n";
     for (auto nb : neighbors)
-    {
       std::cerr << "  " << nb.first << " : " << nb.second << "\n";
-    }
 #endif
+
+    std::size_t sum = 0;
+    if (result) {
+      for (auto nb : neighbors)
+      {
+        sum += nb.first;
+        result->push_back(std::make_pair(nb.first, nb.second));
+      }
+    }
+    else {
+      for (auto nb : neighbors)
+        sum += nb.first;
+    }
+    return sum;
   }
 
 private:

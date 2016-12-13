@@ -27,6 +27,7 @@
 #include <CGAL/Epick_d.h>
 
 #include <vector>
+#include <utility>
 
  // "dataset to kd-tree" adaptor class
 template <typename K, typename Point_container_>
@@ -119,10 +120,11 @@ public:
     m_kd_tree.buildIndex();
   }
 
-  void query_k_nearest_neighbors(
+  std::size_t query_k_nearest_neighbors(
     Point const& p,
     unsigned int k,
-    double eps = 0.) const
+    double eps = 0.,
+    std::vector<std::pair<std::size_t, double>> *result = NULL) const
   {
     size_t *neighbor_indices = new size_t[k];
     double *squared_distance = new double[k];
@@ -137,12 +139,23 @@ public:
       nanoflann::SearchParams(32, eps));
 
 #ifdef PRINT_FOUND_NEIGHBORS
+    std::cerr << "Query:\n";
     for (int i = 0 ; i < k ; ++i)
-    {
-      std::cerr << neighbor_indices[i]
-        << " (" << squared_distance[i] << ")\n";
-    }
+      std::cerr << "  " << neighbor_indices[i] << " : " << squared_distance[i] << "\n";
 #endif
+
+    std::size_t sum = 0;
+    if (result) {
+      for (int i = 0; i < k; ++i) {
+        sum += neighbor_indices[i];
+        result->push_back(std::make_pair(neighbor_indices[i], squared_distance[i]));
+      }
+    }
+    else {
+      for (int i = 0; i < k; ++i)
+        sum += neighbor_indices[i];
+    }
+    return sum;
   }
 
   /*void query_ball(const Point &sp,

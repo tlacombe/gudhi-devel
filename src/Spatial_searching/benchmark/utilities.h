@@ -27,7 +27,16 @@
 #define SET_PERFORMANCE_DATA(value_name, value) \
         XML_perf_data::set(value_name, value);
 
+#include <fstream>
 #include <sstream>
+
+template<typename Pair>
+struct Second_of_pair
+{
+  typedef typename Pair::second_type result_type;
+  result_type operator()(Pair p) const { return p.second; }
+};
+
 
 class XML_perf_data {
 public:
@@ -49,8 +58,8 @@ public:
     get().set_data(name, value);
   }
 
-  static void commit() {
-    get().commit_current_element();
+  static void commit(bool clear_current_element = true) {
+    get().commit_current_element(clear_current_element);
   }
 
 protected:
@@ -73,12 +82,17 @@ protected:
     subelements.push_back("Epsilon");
     subelements.push_back("Algorithm");
     subelements.push_back("Type_of_test");
+    subelements.push_back("Num_queries");
+    subelements.push_back("K");
     subelements.push_back("Time1_label");
     subelements.push_back("Time1");
     subelements.push_back("Time2_label");
     subelements.push_back("Time2");
     subelements.push_back("Time3_label");
     subelements.push_back("Time3");
+    subelements.push_back("Mem_MB");
+    subelements.push_back("Actual_eps");
+    subelements.push_back("Actual_recall");
     subelements.push_back("Info");
 
     return subelements;
@@ -95,38 +109,45 @@ protected:
     set_data(name, sstr.str());
   }
 
-  void commit_current_element() {
+  void commit_current_element(bool clear_current_element = true) {
     m_xml.add_element(m_current_element);
-    m_current_element.clear();
+    if (clear_current_element)
+      m_current_element.clear();
   }
 
   XML_exporter m_xml;
   XML_exporter::Element_with_map m_current_element;
 };
 
-template<
-  typename Kernel, typename OutputIteratorPoints>
-  bool load_points_from_file(
-    const std::string &filename,
-    OutputIteratorPoints points,
-    std::size_t only_first_n_points = std::numeric_limits<std::size_t>::max()) {
+template<typename Kernel, typename OutputIteratorPoints>
+bool load_points_from_fvecs_file(const std::string &filename, OutputIteratorPoints points, int only_the_first_n_points = -1)
+{
   typedef typename Kernel::Point_d Point;
 
-  std::ifstream in(filename);
+  std::ifstream in(filename, std::ios::binary);
   if (!in.is_open()) {
     std::cerr << "Could not open '" << filename << "'" << std::endl;
     return false;
   }
 
   Kernel k;
-  Point p;
-  int num_ppints;
-  in >> num_ppints;
+  unsigned long pt_dim = 0;
 
-  std::size_t i = 0;
-  while (i < only_first_n_points && in >> p) {
-    *points++ = p;
-    ++i;
+  in.read(reinterpret_cast<char*>(&pt_dim), 4);
+  std::vector<float> current_pt;
+  current_pt.reserve(pt_dim);
+  for (int c = 0; !in.fail() && c != only_the_first_n_points; ++c) {
+
+    for (int j = 0; j < pt_dim; ++j)
+    {
+      float coord = 0.f;
+      in.read(reinterpret_cast<char*>(&coord), 4);
+      current_pt.push_back(coord);
+    }
+
+    *points++ = Point(current_pt.begin(), current_pt.end());
+    current_pt.clear();
+    in.read(reinterpret_cast<char*>(&pt_dim), 4);
   }
 
 #ifdef DEBUG_TRACES
@@ -134,6 +155,49 @@ template<
 #endif
 
   return true;
+}
+
+// Range_of_query_results(2) is a range of ranges of std::pair<std::size_t, double> (index, squared distance)
+// Returns a pair<epsilon, recall>
+template <typename Range_of_query_results, typename Range_of_query_results2>
+std::pair<double, double> compute_actual_epsilon(
+  Range_of_query_results const& results, 
+  Range_of_query_results2 const& ground_truth)
+{
+  double worst_ratio = 0.;
+  std::size_t num_correct_answers = 0;
+  // For each query
+  auto ground_truth_query_result = ground_truth.begin();
+  for (auto const& actual_result_for_query : results)
+  {
+    // For each neighbor
+    auto ground_truth_res = ground_truth_query_result->begin();
+    for (auto const& index_and_sqdist : actual_result_for_query)
+    {
+      // Is this found neighbor among the true k-nearest neighbors
+      for (auto r : *ground_truth_query_result) {
+        if (r.first == index_and_sqdist.first) {
+          ++num_correct_answers;
+          break;
+        }
+      }
+
+      // Skip the case where the query is a point itself => impossible to compute epsilon
+      if (ground_truth_res->second < 1e-10) {
+        ++ground_truth_res;
+        continue;
+      }
+      double ratio = index_and_sqdist.second / ground_truth_res->second;
+      if (ratio > worst_ratio)
+        worst_ratio = ratio;
+      ++ground_truth_res;
+    }
+    ++ground_truth_query_result;
+  }
+  double actual_eps = std::sqrt(worst_ratio) - 1.;
+  double recall = static_cast<double>(num_correct_answers) / (results.size()*results.begin()->size());
+  //std::cerr << "Actual epsilon = " << actual_eps << "\n";
+  return std::make_pair(actual_eps, recall);
 }
 
 #endif // UTILITIES_264161_

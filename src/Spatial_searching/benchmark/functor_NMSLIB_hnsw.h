@@ -29,12 +29,14 @@
 #include <params.h>
 #include <object.h>
 #include <knnquery.h>
+#include <knnqueue.h>
 #include <space/space_vector.h>
 #include <factory/space/space_lp.h>
 #include <method/hnsw.h>
 
 #include <memory>
 #include <vector>
+#include <utility>
 
 namespace nms = similarity;
 
@@ -44,7 +46,7 @@ class NMSLIB_hnsw
   typedef typename K::Point_d                             Point;
   typedef std::vector<Point>                              Points;
 
-  typedef double                                          Dist_type; // CJTODO
+  typedef double                                          Dist_type;
   typedef std::unique_ptr<nms::SpaceLp<Dist_type>>        Space;
   typedef nms::Hnsw<Dist_type>                            Hnsw;
 
@@ -54,32 +56,86 @@ public:
     m_points(create_points_vector(points)),
     m_hnsw(/*PrintProgress =*/ false, *m_space, m_points)
   {
+    // ann-benchmark uses: (M, post, efSearch)
+    // (32, 2, [20, 30, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 200, 300, 400]),
+    // (20, 2, [2, 5, 10, 15, 20, 30, 40, 50, 70, 80, 120, 200, 400]),
+    //  (12, 0, [1, 2, 5, 10, 15, 20, 30, 40, 50, 70, 80, 120]),
+    //  (4, 0, [1, 2, 5, 10, 20, 30, 50, 70, 90, 120]),
+    //  (8, 0, [1, 2, 5, 10, 20, 30, 50, 70, 90, 120, 160])
     nms::AnyParams index_params({
-      "M=10",
-      "efConstruction=20",
-      "indexThreadQty=1",
-      "searchMethod=0" });
+      "M=8",               // 5-100 (higer = better). 
+                            // The size of the initial set of potential neighbors for the indexing
+                            // phase. The set may be further pruned so that the overall number
+                            // of neighbors does not exceed maxM0(for the ground layer)
+                            // or maxM (for all layers but the ground one).
+      "post=0",             // 0 or 2.
+                            // The post=2 adds an additional post-processing step to symmetrize 
+                            // the index. It is not documented yet in nmslib and do not presented in
+                            // the paper on HNSW. In short, two indexes is built with different order 
+                            // of the data(direct and reverse), with following union of the produced 
+                            // connections. It does not affect directly the query time parameters, such as ef.
+                            // On overall, it leads to a roughly twice as long construction time, while 
+                            // in the end adding extra search performance at high recalls(up to several
+                            // tens of percent in tests on 1M sift at ~0.999 recall, the gain smaller for 
+                            // less recall).So if you want to get maximum performance at search you 
+                            // should use post = 2.
+
+      "efConstruction=400", // 100-2000 (higher = better). 
+                            // The depth of the search that is used to find neighbors during indexing
+                            // (this parameter is used only for the search in the ground layer).
+                            // *** ann-benchmark uses: 400 ***
+      "indexThreadQty=1",   // Number of threads.
+      "searchMethod=0" });  // Undocumented. Default: 0.
     m_hnsw.CreateIndex(index_params);
 
     nms::AnyParams query_time_params({
-      //"algoType=2",
-      "efSearch=100" }); /// ???
+      //"algoType=v1merge", // "old" or "v1merge". Undocumented.
+      "efSearch=100" });    // 100-2000 (higher = better).
+                            // Same as "ef". The search depth: specifically, a sub-search is stopped, when it
+                            // cannot find a point closer than efSearch points (seen so far) closest to the query.
     m_hnsw.SetQueryTimeParams(query_time_params);
   }
 
-  void query_k_nearest_neighbors(
+  std::size_t query_k_nearest_neighbors(
     Point const& p,
     unsigned int k,
-    double eps = 0.) const
+    double eps = 0.,
+    std::vector<std::pair<std::size_t, double>> *result = NULL) const
   {
     int dummy = 0;
     nms::Object *pt = create_point(p);
     nms::KNNQuery<Dist_type> q(*m_space, pt, k, eps);
     m_hnsw.Search(&q, dummy);
-#ifdef PRINT_FOUND_NEIGHBORS
-    q.Print();
-#endif
     delete pt;
+
+#ifdef PRINT_FOUND_NEIGHBORS
+    std::cerr << "Query:\n";
+    nms::KNNQueue<Dist_type> *res2 = q.Result()->Clone();
+    while (!res2->Empty()) {
+      std::cerr << "  " << res2->TopObject()->id() << " : " << res2->TopDistance()*res2->TopDistance() << "\n";
+      res2->Pop();
+    }
+#endif
+
+    std::size_t sum = 0;
+    nms::KNNQueue<Dist_type> *res = q.Result()->Clone();
+    if (result) {
+      result->resize(k);
+      int i = k - 1;
+      while (!res->Empty()) {
+        sum += res->TopObject()->id();
+        (*result)[i] = std::make_pair(res->TopObject()->id(), res->TopDistance()*res->TopDistance());
+        res->Pop();
+        --i;
+      }
+    }
+    else {
+      while (!res->Empty()) {
+        sum += res->TopObject()->id();
+        res->Pop();
+      }
+    }
+    return sum;
   }
 
 private:
