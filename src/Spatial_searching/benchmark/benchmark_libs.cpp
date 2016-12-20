@@ -20,7 +20,7 @@ can be processed in Excel, for example.
 #else // RELEASE
 //# define PRINT_FOUND_NEIGHBORS
 # define CHECK_ACTUAL_EPSILON
-//# define LOOP_ON_VARIOUS_PRECISIONS
+# define LOOP_ON_VARIOUS_PRECISIONS
 #endif
 
 #define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH
@@ -29,7 +29,8 @@ can be processed in Excel, for example.
 //#undef GUDHI_ANN_IS_AVAILABLE
 #undef GUDHI_FLANN_IS_AVAILABLE
 #undef GUDHI_COVERTREE_DNCRANE_IS_AVAILABLE  // DNCrane and Manzil cannot be used at the same time
-#undef GUDHI_COVERTREE_MANZIL_IS_AVAILABLE
+//#undef GUDHI_COVERTREE_MANZIL_IS_AVAILABLE
+//#undef GUDHI_FALCONN_IS_AVAILABLE
 
 const int ONLY_THE_FIRST_N_POINTS = 100000; // 0 = no limit
 
@@ -66,6 +67,11 @@ const int ONLY_THE_FIRST_N_POINTS = 100000; // 0 = no limit
 #ifdef GUDHI_COVERTREE_DNCRANE_IS_AVAILABLE
 #include "functor_Cover_tree_DNCrane.h"
 #endif
+
+#ifdef GUDHI_FALCONN_IS_AVAILABLE
+#include "functor_FALCONN.h"
+#endif
+
 #include <gudhi/console_color.h>
 #include <gudhi/Points_off_io.h>
 #include <gudhi/Debug_utils.h>
@@ -290,11 +296,10 @@ void run_tests(
   // CGAL/GUDHI
   //---------------------------------------------------------------------------
 
-#ifdef LOOP_ON_VARIOUS_PRECISIONS
-  for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
-#endif
-
 #ifndef GUDHI_DO_NOT_TEST_KD_TREE_SEARCH
+# ifdef LOOP_ON_VARIOUS_PRECISIONS
+  for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
+# endif
   perfs.push_back(test__ANN_queries<GUDHI_Kd_tree_search>(
     points, queries, k, epsilon, "GUDHI Kd_tree_search", "", p_ground_truth));
 #endif
@@ -432,6 +437,19 @@ void run_tests(
 #ifdef GUDHI_COVERTREE_MANZIL_IS_AVAILABLE
   perfs.push_back(test__ANN_queries<Cover_tree_Manzil>(
     points, queries, k, epsilon, "Cover-tree Manzil", "", p_ground_truth));
+#endif
+
+  //---------------------------------------------------------------------------
+  // FALCONN
+  //---------------------------------------------------------------------------
+
+#ifdef GUDHI_FALCONN_IS_AVAILABLE
+  int num_probes = 32; // either 1, or >= 10
+# ifdef LOOP_ON_VARIOUS_PRECISIONS
+  for (num_probes = 1 ; num_probes <= 251 ; num_probes += 25)
+# endif
+  perfs.push_back(test__ANN_queries<Falconn>(
+    points, queries, k, epsilon, "FALCONN", "", p_ground_truth, num_probes));
 #endif
 
   //===========================================================================

@@ -54,6 +54,10 @@ if(CGAL_FOUND)
 	  # Cover-tree parallel
 	  include_directories("D:/INRIA/Libs/cover_tree_manzil/src") # CJTODO TEMP
       add_definitions(-DGUDHI_COVERTREE_MANZIL_IS_AVAILABLE)
+	  
+	  # FALCONN (LSH)
+	  include_directories("D:/INRIA/Libs/FALCONN-1.2.2/src/include") # CJTODO TEMP
+      add_definitions(-DGUDHI_FALCONN_IS_AVAILABLE)
       
     endif(EIGEN3_FOUND)
   endif (NOT CGAL_VERSION VERSION_LESS 4.8.0)
