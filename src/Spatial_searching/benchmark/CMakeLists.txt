@@ -29,7 +29,7 @@ if(CGAL_FOUND)
         debug "D:/INRIA/Libs/nmslib-1.5.3/similarity_search/x64/Debug/MainLib/NonMetricSpaceLib.lib")
       add_definitions(-DGUDHI_NMSLIB_IS_AVAILABLE)
       
-      #FLANN
+      # FLANN
       # Use the static version ("_s") because the dynamic version is not correctly built on MSVC 
       # (no flann_cpp.lib generated because no exported functions)
       include_directories("D:/INRIA/Libs/flann-4.9.1/src/cpp") # CJTODO TEMP
@@ -38,9 +38,17 @@ if(CGAL_FOUND)
         debug "D:/INRIA/Libs/flann-4.9.1/msvc/lib/Debug/flann_cpp_s.lib")
       add_definitions(-DGUDHI_FLANN_IS_AVAILABLE)
       
-      #Nanoflann
+      # Nanoflann
       include_directories("D:\INRIA\Libs\nanoflann-1.2.2\include") # CJTODO TEMP
       add_definitions(-DGUDHI_NANOFLANN_IS_AVAILABLE)
+	  
+	  # Cover-tree DNCrane
+	  include_directories("D:\INRIA\Libs\cover_tree_dncrane") # CJTODO TEMP
+      add_definitions(-DGUDHI_COVERTREE_DNCRANE_IS_AVAILABLE)
+      
+	  # Cover-tree parallel
+	  include_directories("D:\INRIA\Libs\cover_tree_manzil\src") # CJTODO TEMP
+      add_definitions(-DGUDHI_COVERTREE_MANZIL_IS_AVAILABLE)
       
     endif(EIGEN3_FOUND)
   endif (NOT CGAL_VERSION VERSION_LESS 4.8.0)

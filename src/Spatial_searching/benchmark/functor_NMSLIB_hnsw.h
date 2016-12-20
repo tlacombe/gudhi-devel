@@ -51,11 +51,14 @@ class NMSLIB_hnsw
   typedef nms::Hnsw<Dist_type>                            Hnsw;
 
 public:
-  NMSLIB_hnsw(Points const& points, double /*epsilon*/)
+  // M, post, etc.: see below
+  NMSLIB_hnsw(Points const& points, double /*epsilon*/, int M = 16, int post = 0, int efConstruction = 200, int efSearch = 100)
   : m_space(std::unique_ptr<nms::SpaceLp<Dist_type>>(static_cast<nms::SpaceLp<Dist_type>*>(nms::CreateL2<Dist_type>(nms::AnyParams())))),
     m_points(create_points_vector(points)),
     m_hnsw(/*PrintProgress =*/ false, *m_space, m_points)
   {
+    std::cerr << "M=" << M << ", post=" << post << ", efConstruction=" << efConstruction << ", efSearch=" << efSearch << "\n";
+
     // ann-benchmark uses: (M, post, efSearch)
     // (32, 2, [20, 30, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 200, 300, 400]),
     // (20, 2, [2, 5, 10, 15, 20, 30, 40, 50, 70, 80, 120, 200, 400]),
@@ -63,36 +66,52 @@ public:
     //  (4, 0, [1, 2, 5, 10, 20, 30, 50, 70, 90, 120]),
     //  (8, 0, [1, 2, 5, 10, 20, 30, 50, 70, 90, 120, 160])
     nms::AnyParams index_params({
-      "M=8",               // 5-100 (higer = better). 
-                            // The size of the initial set of potential neighbors for the indexing
-                            // phase. The set may be further pruned so that the overall number
-                            // of neighbors does not exceed maxM0(for the ground layer)
-                            // or maxM (for all layers but the ground one).
-      "post=0",             // 0 or 2.
-                            // The post=2 adds an additional post-processing step to symmetrize 
-                            // the index. It is not documented yet in nmslib and do not presented in
-                            // the paper on HNSW. In short, two indexes is built with different order 
-                            // of the data(direct and reverse), with following union of the produced 
-                            // connections. It does not affect directly the query time parameters, such as ef.
-                            // On overall, it leads to a roughly twice as long construction time, while 
-                            // in the end adding extra search performance at high recalls(up to several
-                            // tens of percent in tests on 1M sift at ~0.999 recall, the gain smaller for 
-                            // less recall).So if you want to get maximum performance at search you 
-                            // should use post = 2.
-
-      "efConstruction=400", // 100-2000 (higher = better). 
-                            // The depth of the search that is used to find neighbors during indexing
-                            // (this parameter is used only for the search in the ground layer).
-                            // *** ann-benchmark uses: 400 ***
-      "indexThreadQty=1",   // Number of threads.
-      "searchMethod=0" });  // Undocumented. Default: 0.
+      // 5-100 (higer = better).
+      // Performance impact: 
+      // * built time = small impact
+      // * query time = medium impact
+      // The size of the initial set of potential neighbors for the indexing
+      // phase. The set may be further pruned so that the overall number
+      // of neighbors does not exceed maxM0(for the ground layer)
+      // or maxM (for all layers but the ground one).
+      std::string("M=") + std::to_string(M),
+      // 0 or 2.
+      // The post=2 adds an additional post-processing step to symmetrize 
+      // the index. It is not documented yet in nmslib and do not presented in
+      // the paper on HNSW. In short, two indexes is built with different order 
+      // of the data(direct and reverse), with following union of the produced 
+      // connections. It does not affect directly the query time parameters, such as ef.
+      // On overall, it leads to a roughly twice as long construction time, while 
+      // in the end adding extra search performance at high recalls(up to several
+      // tens of percent in tests on 1M sift at ~0.999 recall, the gain smaller for 
+      // less recall).So if you want to get maximum performance at search you 
+      // should use post = 2.
+      std::string("post=") + std::to_string(post),
+      // 100-2000 (higher = better).
+      // Performance impact: 
+      // * built time = big impact (~linear)
+      // * query time = no impact
+      // The depth of the search that is used to find neighbors during indexing
+      // (this parameter is used only for the search in the ground layer).
+      // *** ann-benchmark uses: 400 ***
+      std::string("efConstruction=") + std::to_string(efConstruction),
+      // Number of threads.
+      "indexThreadQty=1",
+      // Undocumented. Default: 0.
+      "searchMethod=0" });
     m_hnsw.CreateIndex(index_params);
 
     nms::AnyParams query_time_params({
-      //"algoType=v1merge", // "old" or "v1merge". Undocumented.
-      "efSearch=100" });    // 100-2000 (higher = better).
-                            // Same as "ef". The search depth: specifically, a sub-search is stopped, when it
-                            // cannot find a point closer than efSearch points (seen so far) closest to the query.
+      // "old" or "v1merge". Undocumented.
+      //"algoType=v1merge",
+
+      // 100-2000 (higher = better).
+      // Performance impact: 
+      // * built time = no impact
+      // * query time = big impact (almost linear, depending on other params)
+      // Same as "ef". The search depth: specifically, a sub-search is stopped, when it
+      // cannot find a point closer than efSearch points (seen so far) closest to the query.
+      std::string("efSearch=") + std::to_string(efSearch)});
     m_hnsw.SetQueryTimeParams(query_time_params);
   }
 

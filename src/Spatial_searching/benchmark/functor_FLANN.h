@@ -39,12 +39,14 @@ class Flann
   
 public:
   
-  Flann(Points const& points, Coord_type epsilon, flann::IndexParams const& index_params, 
+  // checks: this parameter will be ignored (recomputed) if ground_truth != NULL
+  Flann(Points const& points, Coord_type epsilon, flann::IndexParams const& index_params,
+    int checks = 32,
     std::vector<std::vector<std::pair<std::size_t, double>>> const *ground_truth = NULL,
     std::vector<Point> const* gt_queries = NULL)
     : m_points(create_points_vector(points))
     , m_index(m_points, index_params)
-    , m_checks(32)
+    , m_checks(checks)
   {
     m_index.buildIndex();
     if (ground_truth)
@@ -103,7 +105,7 @@ public:
       }
 
       // Check for worst epsilon
-      worst_eps = compute_actual_epsilon(results, ground_truth).first;
+      worst_eps = compute_actual_precision(results, ground_truth).first;
     }
     std::cerr << "m_checks = " << m_checks << "\n";
     std::cerr << "Auto-tuning FLANN precision: done!\n";

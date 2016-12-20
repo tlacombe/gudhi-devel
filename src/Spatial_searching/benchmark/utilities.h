@@ -81,6 +81,7 @@ protected:
     subelements.push_back("Num_points");
     subelements.push_back("Epsilon");
     subelements.push_back("Algorithm");
+    subelements.push_back("Algo_params");
     subelements.push_back("Type_of_test");
     subelements.push_back("Num_queries");
     subelements.push_back("K");
@@ -160,7 +161,7 @@ bool load_points_from_fvecs_file(const std::string &filename, OutputIteratorPoin
 // Range_of_query_results(2) is a range of ranges of std::pair<std::size_t, double> (index, squared distance)
 // Returns a pair<epsilon, recall>
 template <typename Range_of_query_results, typename Range_of_query_results2>
-std::pair<double, double> compute_actual_epsilon(
+std::pair<double, double> compute_actual_precision(
   Range_of_query_results const& results, 
   Range_of_query_results2 const& ground_truth)
 {
