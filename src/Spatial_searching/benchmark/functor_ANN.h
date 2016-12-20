@@ -40,7 +40,7 @@ class Ann
 public:
   
   // checks: this parameter will be ignored (recomputed) if ground_truth != NULL
-  Ann(Points const& points, Coord_type epsilon,
+  Ann(Points const& points, Coord_type /*epsilon*/,
     std::vector<std::vector<std::pair<std::size_t, double>>> const *ground_truth = NULL,
     std::vector<Point> const* gt_queries = NULL)
     : m_points(create_points_vector(points))
