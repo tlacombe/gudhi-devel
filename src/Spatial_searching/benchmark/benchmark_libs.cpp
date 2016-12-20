@@ -19,15 +19,16 @@ can be processed in Excel, for example.
 
 #else // RELEASE
 //# define PRINT_FOUND_NEIGHBORS
-//# define CHECK_ACTUAL_EPSILON
+# define CHECK_ACTUAL_EPSILON
 //# define LOOP_ON_VARIOUS_PRECISIONS
 #endif
 
 #define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH
 #undef GUDHI_NMSLIB_IS_AVAILABLE
 #undef GUDHI_NANOFLANN_IS_AVAILABLE
+//#undef GUDHI_ANN_IS_AVAILABLE
 #undef GUDHI_FLANN_IS_AVAILABLE
-//#undef GUDHI_COVERTREE_DNCRANE_IS_AVAILABLE  // DNCrane and Manzil cannot be used at the same time
+#undef GUDHI_COVERTREE_DNCRANE_IS_AVAILABLE  // DNCrane and Manzil cannot be used at the same time
 #undef GUDHI_COVERTREE_MANZIL_IS_AVAILABLE
 
 const int ONLY_THE_FIRST_N_POINTS = 100000; // 0 = no limit
@@ -52,6 +53,10 @@ const int ONLY_THE_FIRST_N_POINTS = 100000; // 0 = no limit
 
 #ifdef GUDHI_FLANN_IS_AVAILABLE
 #include "functor_FLANN.h"
+#endif
+
+#ifdef GUDHI_ANN_IS_AVAILABLE
+#include "functor_ANN.h"
 #endif
 
 #ifdef GUDHI_COVERTREE_MANZIL_IS_AVAILABLE
@@ -304,6 +309,18 @@ void run_tests(
 # endif
   perfs.push_back(test__ANN_queries<Nanoflann>(
     points, queries, k, epsilon, "Nanoflann", "", p_ground_truth));
+#endif
+
+  //---------------------------------------------------------------------------
+  // ANN
+  //---------------------------------------------------------------------------
+
+#ifdef GUDHI_ANN_IS_AVAILABLE
+# ifdef LOOP_ON_VARIOUS_PRECISIONS
+  for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
+# endif
+    perfs.push_back(test__ANN_queries<Ann>(
+      points, queries, k, epsilon, "ANN", "", p_ground_truth));
 #endif
 
   //---------------------------------------------------------------------------

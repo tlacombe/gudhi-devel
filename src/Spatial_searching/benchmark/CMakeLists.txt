@@ -29,6 +29,11 @@ if(CGAL_FOUND)
         debug "D:/INRIA/Libs/nmslib-1.5.3/similarity_search/x64/Debug/MainLib/NonMetricSpaceLib.lib")
       add_definitions(-DGUDHI_NMSLIB_IS_AVAILABLE)
       
+      # ANN
+      include_directories("D:/INRIA/Libs/ann_1.1.2/include") # CJTODO TEMP
+	  target_link_libraries(Spatial_searching_benchmark "D:/INRIA/Libs/ann_1.1.2/lib/ANN64.lib")
+      add_definitions(-DGUDHI_ANN_IS_AVAILABLE)
+      
       # FLANN
       # Use the static version ("_s") because the dynamic version is not correctly built on MSVC 
       # (no flann_cpp.lib generated because no exported functions)
@@ -39,15 +44,15 @@ if(CGAL_FOUND)
       add_definitions(-DGUDHI_FLANN_IS_AVAILABLE)
       
       # Nanoflann
-      include_directories("D:\INRIA\Libs\nanoflann-1.2.2\include") # CJTODO TEMP
+      include_directories("D:/INRIA/Libs/nanoflann-1.2.2/include") # CJTODO TEMP
       add_definitions(-DGUDHI_NANOFLANN_IS_AVAILABLE)
 	  
 	  # Cover-tree DNCrane
-	  include_directories("D:\INRIA\Libs\cover_tree_dncrane") # CJTODO TEMP
+	  include_directories("D:/INRIA/Libs/cover_tree_dncrane") # CJTODO TEMP
       add_definitions(-DGUDHI_COVERTREE_DNCRANE_IS_AVAILABLE)
       
 	  # Cover-tree parallel
-	  include_directories("D:\INRIA\Libs\cover_tree_manzil\src") # CJTODO TEMP
+	  include_directories("D:/INRIA/Libs/cover_tree_manzil/src") # CJTODO TEMP
       add_definitions(-DGUDHI_COVERTREE_MANZIL_IS_AVAILABLE)
       
     endif(EIGEN3_FOUND)
