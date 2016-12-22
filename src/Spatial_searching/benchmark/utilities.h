@@ -165,6 +165,12 @@ std::pair<double, double> compute_actual_precision(
   Range_of_query_results const& results, 
   Range_of_query_results2 const& ground_truth)
 {
+  if (results.size() == 0)
+  {
+    std::cerr << red << "WARNING: compute_actual_precision => results is empty.\n" << white;
+    return std::make_pair(0., 1.);
+  }
+
   double worst_ratio = 0.;
   std::size_t num_correct_answers = 0;
   // For each query

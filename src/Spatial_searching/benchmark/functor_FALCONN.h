@@ -40,7 +40,7 @@ class Falconn
   
 public:
   
-  // checks: this parameter will be ignored (recomputed) if ground_truth != NULL
+  // num_probes: if -1, use the default value. Otherwise, must be >= 10.
   Falconn(Points const& points, Coord_type /*epsilon*/, int num_probes,
     std::vector<std::vector<std::pair<std::size_t, double>>> const *ground_truth = NULL,
     std::vector<Point> const* gt_queries = NULL)
@@ -50,7 +50,8 @@ public:
     , m_table(falconn::construct_table<Falconn_point>(m_points, get_params(m_points.size(), m_dim)))
     , m_original_points(points)
   {
-    m_table->set_num_probes(num_probes); // CJTODO
+    if (num_probes > 0)
+      m_table->set_num_probes(num_probes);
   }
 
   std::size_t query_k_nearest_neighbors(
