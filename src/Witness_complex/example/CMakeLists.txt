@@ -9,6 +9,15 @@ if(CGAL_FOUND)
 
       add_executable( Witness_complex_bench_rwit ../bench/bench_rwit.cpp )
       target_link_libraries(Witness_complex_bench_rwit ${Boost_PROGRAM_OPTIONS_LIBRARY})
+      if (TBB_FOUND)
+        target_link_libraries(Witness_complex_bench_rwit ${TBB_LIBRARIES})
+      endif()
+
+      add_executable( Witness_complex_bings_house ../bench/bings_house.cpp )
+      target_link_libraries(Witness_complex_bings_house ${Boost_PROGRAM_OPTIONS_LIBRARY})
+      if (TBB_FOUND)
+        target_link_libraries(Witness_complex_bings_house ${TBB_LIBRARIES})
+      endif()
 
       add_executable( Witness_complex_rips_persistence ../bench/rips_persistence.cpp )
       target_link_libraries(Witness_complex_rips_persistence ${Boost_PROGRAM_OPTIONS_LIBRARY})
