@@ -34,6 +34,8 @@
 #include <factory/space/space_lp.h>
 #include <method/small_world_rand.h>
 
+#include <CGAL/Epick_d.h>
+
 #include <memory>
 #include <vector>
 #include <utility>

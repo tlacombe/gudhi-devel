@@ -29,10 +29,11 @@ can be processed in Excel, for example.
 //#undef GUDHI_ANN_IS_AVAILABLE
 #undef GUDHI_FLANN_IS_AVAILABLE
 #undef GUDHI_COVERTREE_DNCRANE_IS_AVAILABLE  // DNCrane and Manzil cannot be used at the same time
-//#undef GUDHI_COVERTREE_MANZIL_IS_AVAILABLE
-//#undef GUDHI_FALCONN_IS_AVAILABLE
+#undef GUDHI_COVERTREE_MANZIL_IS_AVAILABLE
+#undef GUDHI_FALCONN_IS_AVAILABLE
+#undef GUDHI_KD_GERAF_IS_AVAILABLE
 
-const int ONLY_THE_FIRST_N_POINTS = 100000; // 0 = no limit
+const int ONLY_THE_FIRST_N_POINTS = 200000; // 0 = no limit
 
 #include <cstddef>
 
@@ -70,6 +71,10 @@ const int ONLY_THE_FIRST_N_POINTS = 100000; // 0 = no limit
 
 #ifdef GUDHI_FALCONN_IS_AVAILABLE
 #include "functor_FALCONN.h"
+#endif
+
+#ifdef GUDHI_KD_GERAF_IS_AVAILABLE
+#include "functor_kd_GeRaF.h"
 #endif
 
 #include <gudhi/console_color.h>
@@ -160,7 +165,7 @@ std::tuple<std::string, double, double, std::size_t> test__ANN_queries(
       std::cerr << green << "OK: Actual epsilon = " << actual_eps_and_recall.first << " <= " << epsilon << white << "\n";
 
     if (actual_eps_and_recall.second < 1. - epsilon)
-      std::cerr << red << "WARNING: Actual recall = " << actual_eps_and_recall.second << " > " << 1. - epsilon << white << "\n";
+      std::cerr << red << "WARNING: Actual recall = " << actual_eps_and_recall.second << " < " << 1. - epsilon << white << "\n";
     else
       std::cerr << green << "OK: Actual recall = " << actual_eps_and_recall.second << " >= " << 1. - epsilon << white << "\n";
 
@@ -324,8 +329,16 @@ void run_tests(
 # ifdef LOOP_ON_VARIOUS_PRECISIONS
   for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
 # endif
-    perfs.push_back(test__ANN_queries<Ann>(
-      points, queries, k, epsilon, "ANN", "", p_ground_truth));
+  {
+    perfs.push_back(test__ANN_queries<Ann<ANNkd_tree, false>>(
+      points, queries, k, epsilon, "ANN (kd+std)", "", p_ground_truth));
+    perfs.push_back(test__ANN_queries<Ann<ANNkd_tree, true>>(
+      points, queries, k, epsilon, "ANN (kd+prio)", "", p_ground_truth));
+    perfs.push_back(test__ANN_queries<Ann<ANNbd_tree, false>>(
+      points, queries, k, epsilon, "ANN (bd+std)", "", p_ground_truth));
+    perfs.push_back(test__ANN_queries<Ann<ANNbd_tree, true>>(
+      points, queries, k, epsilon, "ANN (bd+prio)", "", p_ground_truth));
+  }
 #endif
 
   //---------------------------------------------------------------------------
@@ -446,10 +459,25 @@ void run_tests(
 #ifdef GUDHI_FALCONN_IS_AVAILABLE
   int num_probes = 32; // either 1, or >= 10
 # ifdef LOOP_ON_VARIOUS_PRECISIONS
-  for (num_probes = 1 ; num_probes <= 251 ; num_probes += 25)
+  for (num_probes = 16 ; num_probes <= 4096 ; num_probes *= 4)
 # endif
   perfs.push_back(test__ANN_queries<Falconn>(
-    points, queries, k, epsilon, "FALCONN", "", p_ground_truth, num_probes));
+    points, queries, k, epsilon, "FALCONN", 
+    std::string("num_probes=") + std::to_string(num_probes),
+    p_ground_truth, num_probes));
+#endif
+
+  //---------------------------------------------------------------------------
+  // kd-GeRaF
+  //---------------------------------------------------------------------------
+
+#ifdef GUDHI_KD_GERAF_IS_AVAILABLE
+  int num_probes = 32; // either 1, or >= 10
+# ifdef LOOP_ON_VARIOUS_PRECISIONS
+  for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
+# endif
+    perfs.push_back(test__ANN_queries<Kd_GeRaF>(
+      points, queries, k, epsilon, "kd-GeRaF", "", p_ground_truth));
 #endif
 
   //===========================================================================

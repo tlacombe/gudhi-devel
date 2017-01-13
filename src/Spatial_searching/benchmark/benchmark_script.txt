@@ -45,5 +45,15 @@
 #generate_sphere_d												0.5 	-		-		100000	10		0.   	10000 		10		1
 #generate_sphere_d												0.5 	-		-		100000	20		0.   	10000 		10		1
 #generate_sphere_d												0.5 	-		-		100000	30		0.   	10000 		10		1
-data/SO3_50000.off  											-		-		-		0		9 		0.   	10000  		10		1
-#data/sift_base.fvecs     										-		-		-		0		128		0.  	2000   		10		1 #1M points
+#data/SO3_50000.off  											-		-		-		0		9 		0.   	10000  		10		1
+#data/sift_base.fvecs     										-		-		-		0		128		0.  	2000   		10		1 # 1M points
+
+#---------------------------------------- 01/2017 KNN search benchmarking (ONLY_THE_FIRST_N_POINTS = 200000) -------------------------------
+#generate_sphere_d												0.5 	-		-		100000	10		0.   	20000 		1		1
+#generate_sphere_d												0.5 	-		-		100000	20		0.   	20000 		1		1
+#generate_sphere_d												0.5 	-		-		100000	30		0.   	20000 		1		1
+#data/SO3_50000.off  											-		-		-		0		9 		0.   	20000  		1		1
+#data/sift_base.fvecs     										-		-		-		0		128		0.  	4000   		1		1 # 1M points
+#data/Alvarez_surface_deg5_k2_D8_112K.txt    					-       -       -       0       8       0.  	20000  		1   	1
+#data/Cy8.off	 												-		-		-		0		24 		0.   	20000 		1		1 # 6040 points
+generate_torus_d    											N		-		-		10000	30		0.   	20000 		1		1

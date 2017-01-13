@@ -29,6 +29,9 @@
 #include <vector>
 #include <utility>
 
+// Tree: ANNbruteForce, ANNkd_tree or ANNbd_tree
+// use_priority_search: choose between standard search or priority search (see doc p.21)
+template <typename Tree = ANNkd_tree, bool use_priority_search = false>
 class Ann
 {
   typedef CGAL::Epick_d<CGAL::Dynamic_dimension_tag>  K;
@@ -48,6 +51,11 @@ public:
     , m_tree(m_points, points.size(), m_dim)
   {}
 
+  ~Ann()
+  {
+    annDeallocPts(m_points);
+  }
+
   std::size_t query_k_nearest_neighbors(
     Point const& p,
     unsigned int k,
@@ -57,13 +65,24 @@ public:
     std::vector<int> neighbors_indices(k);
     std::vector<double> neighbors_sq_distances(k);
 
-    m_tree.annkSearch(                // search
-      create_point(p),                // query point
-      k,                              // number of near neighbors
-      neighbors_indices.data(),       // nearest neighbors (returned)
-      neighbors_sq_distances.data(),  // distance (returned)
-      eps);                             // error bound
-
+    if (use_priority_search)
+    {
+      m_tree.annkPriSearch(             // search
+        create_point(p),                // query point
+        k,                              // number of near neighbors
+        neighbors_indices.data(),       // nearest neighbors (returned)
+        neighbors_sq_distances.data(),  // distance (returned)
+        eps);                           // error bound
+    }
+    else
+    {
+      m_tree.annkSearch(                // search
+        create_point(p),                // query point
+        k,                              // number of near neighbors
+        neighbors_indices.data(),       // nearest neighbors (returned)
+        neighbors_sq_distances.data(),  // distance (returned)
+        eps);                           // error bound
+    }
 
 #ifdef PRINT_FOUND_NEIGHBORS
     std::cerr << "Query:\n";
