@@ -109,6 +109,8 @@ public:
     }
     std::cerr << "m_checks = " << m_checks << "\n";
     std::cerr << "Auto-tuning FLANN precision: done!\n";
+
+    delete[] queries2.ptr();
   }
 
   // WARNING: eps is ONLY used by KDTreeSingleIndex
@@ -125,7 +127,9 @@ public:
 
     flann::SearchParams sp(m_checks, eps);
     sp.cores = 1;
-    m_index.knnSearch(create_point(p), indices, dists, k, sp);
+    auto pp = create_point(p);
+    m_index.knnSearch(pp, indices, dists, k, sp);
+    delete[] pp.ptr();
 
 #ifdef PRINT_FOUND_NEIGHBORS
     std::cerr << "Query:\n";

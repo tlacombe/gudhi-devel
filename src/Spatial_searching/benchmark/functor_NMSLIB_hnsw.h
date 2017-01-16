@@ -117,6 +117,12 @@ public:
     m_hnsw.SetQueryTimeParams(query_time_params);
   }
 
+  ~NMSLIB_hnsw()
+  {
+    for (auto p : m_points)
+      delete p;
+  }
+
   std::size_t query_k_nearest_neighbors(
     Point const& p,
     unsigned int k,

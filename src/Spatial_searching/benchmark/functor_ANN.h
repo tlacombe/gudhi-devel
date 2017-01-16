@@ -65,10 +65,12 @@ public:
     std::vector<int> neighbors_indices(k);
     std::vector<double> neighbors_sq_distances(k);
 
+    auto pt = create_point(p);
+
     if (use_priority_search)
     {
       m_tree.annkPriSearch(             // search
-        create_point(p),                // query point
+        pt,                // query point
         k,                              // number of near neighbors
         neighbors_indices.data(),       // nearest neighbors (returned)
         neighbors_sq_distances.data(),  // distance (returned)
@@ -77,12 +79,14 @@ public:
     else
     {
       m_tree.annkSearch(                // search
-        create_point(p),                // query point
+        pt,                // query point
         k,                              // number of near neighbors
         neighbors_indices.data(),       // nearest neighbors (returned)
         neighbors_sq_distances.data(),  // distance (returned)
         eps);                           // error bound
     }
+
+    annDeallocPt(pt);
 
 #ifdef PRINT_FOUND_NEIGHBORS
     std::cerr << "Query:\n";
