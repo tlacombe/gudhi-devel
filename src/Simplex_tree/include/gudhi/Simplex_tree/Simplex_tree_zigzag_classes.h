@@ -1,4 +1,4 @@
-// #include <iostream>
+#include <iostream>
 
 /** Represents an edge for zigzag filtrations for flag complexes. 
   * The edge must have two endpoints, encoded by Vertex_handles, a filtration 
@@ -51,6 +51,10 @@ class Flagzigzagfiltration_simplex_iterator
 
     Flagzigzagfiltration_simplex_iterator(FlagZigzagFilteredComplex * cpx)
     {
+      num_E    = cpx->zigzag_edge_filtration_->size();
+      curr_edg = 1;
+
+
       are_we_done    = false;
       cpx_           = cpx;
       counter_insert = 0;
@@ -160,8 +164,18 @@ class Flagzigzagfiltration_simplex_iterator
        //partial_zzfil_ contains at least the new edge
         sh_it_ = partial_zzfil_.begin(); 
         ++edge_it_;
+
+        if(curr_edg++ % 1000 == 0) {
+          std::cout << "------------------- " << curr_edg << " / " << num_E << std::endl;
+        }
       }
     }
+
+
+///////////////to remove
+    int num_E;
+    int curr_edg;
+
 
 //complex getting manipulated
   FlagZigzagFilteredComplex                      * cpx_; 

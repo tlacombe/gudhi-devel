@@ -117,12 +117,13 @@ endif()
 
   include_directories(src/Zigzag_persistence/include/)
 
-  # add_subdirectory(src/common/example)
-  # add_subdirectory(src/common/test)
-  # add_subdirectory(src/Simplex_tree/test)
+  add_subdirectory(src/common/example)
+  add_subdirectory(src/common/test)
+  add_subdirectory(src/Simplex_tree/test)
   add_subdirectory(src/Simplex_tree/example)
-  # add_subdirectory(src/Persistent_cohomology/test)
-  # add_subdirectory(src/Persistent_cohomology/example)
+  add_subdirectory(src/Persistent_cohomology/test)
+  add_subdirectory(src/Persistent_cohomology/example)
+  add_subdirectory(src/Point_geometry/example)
   # add_subdirectory(src/Skeleton_blocker/test) 
   # add_subdirectory(src/Skeleton_blocker/example) 
   # add_subdirectory(src/Contraction/example)
@@ -130,16 +131,10 @@ endif()
   # add_subdirectory(src/Witness_complex/example)
   # add_subdirectory(src/Bitmap_cubical_complex/test)
   # add_subdirectory(src/Bitmap_cubical_complex/example)
-  # add_subdirectory(src/Alpha_complex/example)
-  # add_subdirectory(src/Alpha_complex/test)
+  add_subdirectory(src/Alpha_complex/example)
+  add_subdirectory(src/Alpha_complex/test)
 
   add_subdirectory(src/Zigzag_persistence/example)
-
-  #current branch zigzag 
-  # add_subdirectory(src/Zigzag_persistence/include/)
-  # add_subdirectory(src/Zigzag_persistence/example/)
-  # add_subdirectory(src/Zigzag_persistence/test/)
-  # end zigzag branch
   
   # data points generator
   add_subdirectory(data/points/generator)
