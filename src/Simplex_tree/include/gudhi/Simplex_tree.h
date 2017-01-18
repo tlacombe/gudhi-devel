@@ -260,8 +260,6 @@ class Simplex_tree {
   typedef Simplex_tree_simplex_vertex_iterator<Simplex_tree> Simplex_vertex_iterator;
   /** \brief Range over the vertices of a simplex. */
   typedef boost::iterator_range<Simplex_vertex_iterator> Simplex_vertex_range;
-  /** \brief Range over the cofaces of a simplex. */
-  typedef std::vector<Simplex_handle> Cofaces_simplex_range;
   /** \brief Iterator over the simplices of the boundary of a simplex.
    *
    * 'value_type' is Simplex_handle. */
@@ -949,7 +947,63 @@ class Simplex_tree {
     }
   }
 
- public:
+  //----------------------------------------------
+  /** Fast search of cofaces
+   * This function uses the hooks stored in the Nodes of the simplex tree,
+   * if link_simplices_through_max_vertex = true.
+   * todo
+   */
+  void fast_cofaces_search()
+  {
+    //todo
+  }
+
+/* Given a simplex handle in a simplex tree cpx_, traverse the tree upwards 
+ * to find vertex u_. Does not test sh itself. Used for filter_iterator when 
+ * traversing vh_siblings_[v] looking for cofaces of {u,v}.
+ */
+ template<class SimplexTree>
+ class is_coface {
+    typedef typename SimplexTree::Vertex_handle  Vertex_handle;
+    typedef typename SimplexTree::Simplex_handle Simplex_handle;
+
+  public:
+    is_coface() : cpx_(NULL) {}
+    is_coface(SimplexTree *cpx, std::vector<Vertex_handle> simp) 
+    : cpx_(cpx), simp_(simp) {}
+
+    //Returns true iff traversing the Node upwards to the root reads a 
+    //coface of simp_
+    bool operator()(typename SimplexTree::Hooks_simplex_base &curr_hooks) {
+      Node & curr_node = static_cast<Node&>(curr_hooks);
+      auto vertex_it = simp_.begin();
+      //first Node must always have label simp_.begin() 
+      auto curr_sib = cpx_->self_siblings(curr_node,*vertex_it);
+      if(++vertex_it == simp_.end()) { return true; }      
+      while(curr_sib->oncles() != NULL) {
+        if(curr_sib->parent() == *vertex_it) {
+          if(++vertex_it == simp_.end()) { return true; }
+        }
+        curr_sib = curr_sib->oncles();
+      }
+      return false;
+    }
+
+  private:
+    SimplexTree  * cpx_;
+    std::vector<Vertex_handle>  simp_; //vertices of simplex, reverse ordered
+  };
+
+typedef is_coface < Simplex_tree > is_coface_predicate;
+
+public:
+  /** \brief Range over the cofaces of a simplex. */
+  typedef typename std::conditional<Options::link_simplices_through_max_vertex
+                    , boost::filter_iterator< 
+                                        is_coface_predicate
+                                      , typename List_max_vertex::iterator > 
+                    , std::vector<Simplex_handle> 
+                                             >::type   Cofaces_simplex_range;
   /** \brief Compute the star of a n simplex
    * \param simplex represent the simplex of which we search the star
    * \return Vector of Simplex_handle, empty vector if no cofaces found.
@@ -978,7 +1032,12 @@ class Simplex_tree {
     // must be sorted in decreasing order
     assert(std::is_sorted(copy.begin(), copy.end(), std::greater<Vertex_handle>()));
     bool star = codimension == 0;
-    rec_coface(copy, &root_, 1, cofaces, star, codimension + static_cast<int>(copy.size()));
+    if(Options::link_simplices_through_max_vertex) { 
+      fast_cofaces_search(/*todo*/);
+    }
+    else {
+      rec_coface(copy, &root_, 1, cofaces, star, codimension + static_cast<int>(copy.size()));
+  }
     return cofaces;
   }
 
