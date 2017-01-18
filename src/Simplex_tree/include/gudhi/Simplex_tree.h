@@ -36,6 +36,8 @@
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/range/adaptor/reversed.hpp>
+#include <boost/intrusive/list.hpp>
+#include <boost/iterator/filter_iterator.hpp>
 
 #ifdef GUDHI_USE_TBB
 #include <tbb/parallel_sort.h>
@@ -127,10 +129,105 @@ class Simplex_tree {
   typedef typename std::conditional<Options::store_filtration, Filtration_simplex_base_real,
     Filtration_simplex_base_dummy>::type Filtration_simplex_base;
 
+/* 
+ * Stores members hooks in Node class in order to maintain them
+ * in a map for fast coface location.
+ */
+  typedef boost::intrusive::list_member_hook< //allows .unlink()
+              boost::intrusive::link_mode< boost::intrusive::auto_unlink > 
+                                            >                    Member_hook_t;
+  struct Hooks_simplex_base_dummy {
+  };
+  // To do on Hooks_simplex_base_cofaces:
+  //make the class movable but not copiable
+  //translate the boost macros into C++11 syntax (boost independent)
+  //update the Node concept and the doc
+  struct Hooks_simplex_base_cofaces {
+  private:
+    BOOST_COPYABLE_AND_MOVABLE(Hooks_simplex_base_cofaces)
+  public:
+    Hooks_simplex_base_cofaces() {}
+    //the copy constructor, inherited by the Node class, exchanges hooks, 
+    //and make the ones of this invalid.
+    //this is used when stored in a map like DS, using copies when 
+    //performing insertions and rebalancing of the rbtree
+    Hooks_simplex_base_cofaces(const Hooks_simplex_base_cofaces & other)
+    { list_max_vertex_hook_.swap_nodes(other.list_max_vertex_hook_);  }
+    //copy assignment
+    Hooks_simplex_base_cofaces& operator=(
+        BOOST_COPY_ASSIGN_REF(Hooks_simplex_base_cofaces) other) 
+    {
+      list_max_vertex_hook_.swap_nodes(other.list_max_vertex_hook_); 
+      return *this;
+    }
+    //move constructor
+    Hooks_simplex_base_cofaces(BOOST_RV_REF(Hooks_simplex_base_cofaces) other) 
+    { list_max_vertex_hook_.swap_nodes(other.list_max_vertex_hook_); }
+    //move assignment
+    Hooks_simplex_base_cofaces& operator=(
+      BOOST_RV_REF(Hooks_simplex_base_cofaces) other)
+    {
+      list_max_vertex_hook_.swap_nodes(other.list_max_vertex_hook_); 
+      return *this;
+    }
+    void unlink_hooks() { list_max_vertex_hook_.unlink(); }
+    mutable Member_hook_t          list_max_vertex_hook_;
+  };
+//intrusive list of Nodes using the hooks
+  typedef boost::intrusive::member_hook< 
+            Hooks_simplex_base_cofaces
+          , Member_hook_t
+          , &Hooks_simplex_base_cofaces::list_max_vertex_hook_ > 
+                                                            List_member_hook_t;
+  typedef boost::intrusive::list< Hooks_simplex_base_cofaces
+                                , List_member_hook_t 
+                                , boost::intrusive::constant_time_size<false> 
+                                >                              List_max_vertex;
+//type of hooks stored in each Node
+  typedef typename std::conditional< Options::link_simplices_through_max_vertex
+                                   , Hooks_simplex_base_cofaces
+                                   , Hooks_simplex_base_dummy >::type 
+                                                            Hooks_simplex_base;
+//the zigzag persistence cohomology algorithm requires to store a 
+//void * in each simplex.
+  struct Annotation_simplex_base_zzpersistence {
+    Annotation_simplex_base_zzpersistence() : ann_(NULL) {}
+    Annotation_simplex_base_zzpersistence(void *ann) : ann_(ann) {}
+    void *annotation() { return ann_; }
+    void assign_annotation(void * ann) {ann_ = ann;}
+
+    void * ann_;
+  };                                                            
+  struct Annotation_simplex_base_dummy {
+    Annotation_simplex_base_dummy() {}
+    Annotation_simplex_base_dummy(void *ann) {}
+    void * annotation() { return NULL; }
+    void assign_annotation(void * ann) {}
+  };                                                            
+
+  typedef typename std::conditional< Options::store_annotation_vector
+                                   , Annotation_simplex_base_zzpersistence
+                                   , Annotation_simplex_base_dummy >::type 
+                                                       Annotation_simplex_base;
+
  public:
   /** \brief Handle type to a simplex contained in the simplicial complex represented
    * by the simplex tree. */
   typedef typename Dictionary::iterator Simplex_handle;
+
+  /** \brief Returns a void * stored in each simplex if the 
+    * SimplexTreeOptions store_annotation_vector is true.
+    */
+  void * simplex_annotation(Simplex_handle sh) {
+    return sh->second.annotation();
+  }
+  /** \brief Assign the value ann to the void * pointer 
+    * stored in each simplex if the 
+    * SimplexTreeOptions store_annotation_vector is true.
+    */
+  void assign_simplex_annotation(Simplex_handle sh, void * ann) {
+    sh->second.assign_annotation(ann);
+  }
 
  private:
   typedef typename Dictionary::iterator Dictionary_it;
@@ -1278,6 +1375,8 @@ struct Simplex_tree_options_full_featured {
   static const bool store_key = true;
   static const bool store_filtration = true;
   static const bool contiguous_vertices = false;
+  static const bool link_simplices_through_max_vertex = false;
+  static const bool store_annotation_vector = false;
 };
 
 /** Model of SimplexTreeOptions, faster than `Simplex_tree_options_full_featured` but note the unsafe
@@ -1294,6 +1393,26 @@ struct Simplex_tree_options_fast_persistence {
   static const bool store_key = true;
   static const bool store_filtration = true;
   static const bool contiguous_vertices = true;
+  static const bool link_simplices_through_max_vertex = false;
+  static const bool store_annotation_vector = false;
+};
+
+/** Model of SimplexTreeOptions, with a zigzag_indexing_tag. 
+    Note the unsafe `contiguous_vertices` option.
+ * 
+ * Maximum number of simplices to compute persistence is <CODE>  
+ * std::numeric_limits<std::uint32_t>::max()</CODE>
+ * (about 4 billions of simplices). */
+struct Simplex_tree_options_zigzag_persistence {
+  typedef zigzag_indexing_tag Indexing_tag;
+  typedef int Vertex_handle;
+  typedef float Filtration_value;
+  typedef int Simplex_key;
+  static const bool store_key = true;
+  static const bool store_filtration = true;
+  static const bool contiguous_vertices = false;
+  static const bool link_simplices_through_max_vertex = true;
+  static const bool store_annotation_vector = true;
 };
 
 /** @} */  // end defgroup simplex_tree

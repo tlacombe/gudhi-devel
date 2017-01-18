@@ -24,16 +24,15 @@
 #define SIMPLEX_TREE_INDEXING_TAG_H_
 
 namespace Gudhi {
-
 /** \brief Tag for a linear ordering of simplices. 
  *
  * \implements IndexingTag
  */
 struct linear_indexing_tag {
 };
-
 /* \brief Tag for a zigzag ordering of simplices. */
-//  struct zigzag_indexing_tag {};
+ struct zigzag_indexing_tag {
+ };
 }  // namespace Gudhi
 
 #endif  // SIMPLEX_TREE_INDEXING_TAG_H_
