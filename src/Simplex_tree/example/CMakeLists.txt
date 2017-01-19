@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.6)
 project(Simplex_tree_examples)
 
+add_executable ( simplex_tree_fast_cofaces simplex_tree_fast_cofaces.cpp )
+
 add_executable ( simplex_tree_from_cliques_of_graph simplex_tree_from_cliques_of_graph.cpp )
 if (TBB_FOUND)
   target_link_libraries(simplex_tree_from_cliques_of_graph ${TBB_LIBRARIES})

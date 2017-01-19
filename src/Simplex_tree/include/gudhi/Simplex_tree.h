@@ -51,6 +51,7 @@
 #include <initializer_list>
 #include <algorithm>  // for std::max
 #include <cstdint>  // for std::uint32_t
+#include <type_traits> // for std::enable_if
 
 namespace Gudhi {
 
@@ -138,7 +139,7 @@ class Simplex_tree {
                                             >                    Member_hook_t;
   struct Hooks_simplex_base_dummy {
   };
-  // To do on Hooks_simplex_base_cofaces:
+  // todo on Hooks_simplex_base_cofaces:
   //make the class movable but not copiable
   //translate the boost macros into C++11 syntax (boost independent)
   //update the Node concept and the doc
@@ -188,6 +189,11 @@ class Simplex_tree {
                                    , Hooks_simplex_base_cofaces
                                    , Hooks_simplex_base_dummy >::type 
                                                             Hooks_simplex_base;
+
+  // typedef std::vector< List_max_vertex >     Fast_cofaces_ds;
+  // Fast_cofaces_ds                            vh_siblings_;
+
+
 //the zigzag persistence cohomology algorithm requires to store a 
 //void * in each simplex.
   struct Annotation_simplex_base_zzpersistence {
@@ -948,16 +954,6 @@ class Simplex_tree {
   }
 
   //----------------------------------------------
-  /** Fast search of cofaces
-   * This function uses the hooks stored in the Nodes of the simplex tree,
-   * if link_simplices_through_max_vertex = true.
-   * todo
-   */
-  void fast_cofaces_search()
-  {
-    //todo
-  }
-
 /* Given a simplex handle in a simplex tree cpx_, traverse the tree upwards 
  * to find vertex u_. Does not test sh itself. Used for filter_iterator when 
  * traversing vh_siblings_[v] looking for cofaces of {u,v}.
@@ -996,31 +992,45 @@ class Simplex_tree {
 
 typedef is_coface < Simplex_tree > is_coface_predicate;
 
+
+typedef std::vector<Simplex_handle> Brute_force_cofaces_simplex_range;
+typedef typename Brute_force_cofaces_simplex_range::iterator 
+                                    Brute_force_cofaces_simplex_iterator;
+
+typedef boost::filter_iterator< is_coface_predicate
+                              , typename List_max_vertex::iterator > 
+                                    Optimized_cofaces_simplex_iterator;
+typedef boost::iterator_range< Optimized_cofaces_simplex_iterator > 
+                                    Optimized_cofaces_simplex_range;
+
 public:
+  /** \brief Iterator over the cofaces of a simplex.*/
+  typedef typename std::conditional<Options::link_simplices_through_max_vertex
+                    , Optimized_cofaces_simplex_iterator
+                    , Brute_force_cofaces_simplex_iterator >::type 
+                                    Cofaces_simplex_iterator;
   /** \brief Range over the cofaces of a simplex. */
   typedef typename std::conditional<Options::link_simplices_through_max_vertex
-                    , boost::filter_iterator< 
-                                        is_coface_predicate
-                                      , typename List_max_vertex::iterator > 
-                    , std::vector<Simplex_handle> 
-                                             >::type   Cofaces_simplex_range;
+                    , Optimized_cofaces_simplex_range 
+                    , Brute_force_cofaces_simplex_range >::type 
+                                    Cofaces_simplex_range;
   /** \brief Compute the star of a n simplex
    * \param simplex represent the simplex of which we search the star
    * \return Vector of Simplex_handle, empty vector if no cofaces found.
    */
-
   Cofaces_simplex_range star_simplex_range(const Simplex_handle simplex) {
     return cofaces_simplex_range(simplex, 0);
   }
 
   /** \brief Compute the cofaces of a n simplex
    * \param simplex represent the n-simplex of which we search the n+codimension cofaces
-   * \param codimension The function returns the n+codimension-cofaces of the n-simplex. If codimension = 0, 
+   * \param codimension The function returns the (n+codimension)-cofaces of the n-simplex. If codimension = 0, 
    * return all cofaces (equivalent of star function)
    * \return Vector of Simplex_handle, empty vector if no cofaces found.
    */
 
-  Cofaces_simplex_range cofaces_simplex_range(const Simplex_handle simplex, int codimension) {
+  typename std::enable_if<!Options::link_simplices_through_max_vertex, Cofaces_simplex_range>::type 
+    cofaces_simplex_range(const Simplex_handle simplex, int codimension) {
     Cofaces_simplex_range cofaces;
     // codimension must be positive or null integer
     assert(codimension >= 0);
@@ -1037,9 +1047,30 @@ public:
     }
     else {
       rec_coface(copy, &root_, 1, cofaces, star, codimension + static_cast<int>(copy.size()));
-  }
+    }
     return cofaces;
   }
+  /** Fast search of cofaces
+   * This function uses the hooks stored in the Nodes of the simplex tree,
+   * if link_simplices_through_max_vertex = true.
+   * todo
+   */
+  typename std::enable_if<Options::link_simplices_through_max_vertex, Cofaces_simplex_range>::type 
+    cofaces_simplex_range(const Simplex_handle simplex, int codimension) {
+      auto pred = is_coface_predicate(...);
+      return Cofaces_simplex_range(
+                            boost::make_filter_iterator<>(pred,)
+        ...);
+
+//todo initialise hooks when inserting Node -> defined in Node
+//todo unlink when removing/copying Nodes
+//todo store the pointer to the beginning of each least...Start at Node_vertices?
+
+// template <class Predicate, class Iterator>
+// filter_iterator<Predicate,Iterator>
+// make_filter_iterator(Iterator x, Iterator end = Iterator());
+
+    }
 
  private:
   /** \brief Returns true iff the list of vertices of sh1

@@ -2,7 +2,7 @@
  *    (Geometric Understanding in Higher Dimensions) is a generic C++
  *    library for computational topology.
  *
- *    Author(s):       Vincent Rouvreau
+ *    Author(s):       Clément Maria
  *
  *    Copyright (C) 2014  INRIA Sophia Antipolis-Méditerranée (France)
  *
@@ -29,8 +29,9 @@
 
 using namespace Gudhi;
 
+typedef Simplex_tree<Simplex_tree_options_zigzag_persistence> typeST;
 typedef std::vector< Vertex_handle > typeVectorVertex;
-typedef std::pair< Simplex_tree<>::Simplex_handle, bool > typePairSimplexBool;
+typedef std::pair< typeST::Simplex_handle, bool > typePairSimplexBool;
 
 int main(int argc, char * const argv[]) {
   const Filtration_value FIRST_FILTRATION_VALUE = 0.1;
@@ -42,7 +43,7 @@ int main(int argc, char * const argv[]) {
   std::cout << "********************************************************************" << std::endl;
   std::cout << "EXAMPLE OF SIMPLE INSERTION" << std::endl;
   // Construct the Simplex Tree
-  Simplex_tree<> simplexTree;
+  typeST simplexTree;
 
   /* Simplex to be inserted:  */
   /*    1                     */
@@ -212,7 +213,7 @@ int main(int argc, char * const argv[]) {
   // ------------------------------------------------------------------------------------------------------------------
   // Find in the simplex_tree
   // ------------------------------------------------------------------------------------------------------------------
-  Simplex_tree<>::Simplex_handle simplexFound = simplexTree.find(secondSimplexVector);
+  typeST::Simplex_handle simplexFound = simplexTree.find(secondSimplexVector);
   std::cout << "**************IS THE SIMPLEX {1} IN THE SIMPLEX TREE ?\n";
   if (simplexFound != simplexTree.null_simplex())
     std::cout << "***+ YES IT IS!\n";
