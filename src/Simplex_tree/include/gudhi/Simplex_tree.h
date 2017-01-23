@@ -189,9 +189,43 @@ class Simplex_tree {
                                    , Hooks_simplex_base_cofaces
                                    , Hooks_simplex_base_dummy >::type 
                                                             Hooks_simplex_base;
+  
 
-  // typedef std::vector< List_max_vertex >     Fast_cofaces_ds;
-  // Fast_cofaces_ds                            vh_siblings_;
+public:
+    /** \brief Handle type to a simplex contained in the simplicial complex represented
+   * by the simplex tree. */
+  typedef typename Dictionary::iterator Simplex_handle;
+
+private:
+
+  template< typename SimplexTree > 
+  struct cofaces_data_structure_dummy {
+    cofaces_data_structure_dummy() {};
+    void insert(typename SimplexTree::Simplex_handle sh) {}
+  };
+
+  template< typename SimplexTree > 
+  struct cofaces_data_structure_optimized {
+    cofaces_data_structure_optimized() {};
+    //insert a Node in the hook list corresponding to its label
+    void insert(typename SimplexTree::Simplex_handle sh) {
+      nodes_per_max_vertex_[sh->first].push_back(sh->second);
+    }
+    typename SimplexTree::List_max_vertex & access(Vertex_handle v) {
+      return nodes_per_max_vertex_[v];
+    }
+
+    //map Vertex_handle v -> list of Nodes labeled v.
+    std::vector< typename SimplexTree::List_max_vertex > 
+                                                        nodes_per_max_vertex_;
+  };
+
+  typedef typename std::conditional< Options::link_simplices_through_max_vertex
+                       , cofaces_data_structure_optimized< Simplex_tree >
+                       , cofaces_data_structure_dummy< Simplex_tree > >::type 
+                                                      Cofaces_data_structure;
+//todo initialize and update everytime -> done, check validity
+  Cofaces_data_structure    cofaces_data_structure_;
 
 
 //the zigzag persistence cohomology algorithm requires to store a 
@@ -211,15 +245,13 @@ class Simplex_tree {
     void assign_annotation(void * ann) {}
   };                                                            
 
+
+ public:
+
   typedef typename std::conditional< Options::store_annotation_vector
                                    , Annotation_simplex_base_zzpersistence
                                    , Annotation_simplex_base_dummy >::type 
                                                        Annotation_simplex_base;
-
- public:
-  /** \brief Handle type to a simplex contained in the simplicial complex represented
-   * by the simplex tree. */
-  typedef typename Dictionary::iterator Simplex_handle;
 
   /** \brief Returns a void * stored in each simplex if the 
     * SimplexTreeOptions store_annotation_vector is true.
@@ -236,6 +268,13 @@ class Simplex_tree {
   }
 
  private:
+
+  //update all extra data structures in the Simplex_tree, include fast 
+  //cofaces locator, after the successful insertion of a simplex.
+  void update_simplex_tree_after_node_insertion(Simplex_handle sh) {
+    cofaces_data_structure_.insert(sh);
+  }
+
   typedef typename Dictionary::iterator Dictionary_it;
   typedef typename Dictionary_it::value_type Dit_value_t;
 
@@ -413,8 +452,10 @@ class Simplex_tree {
       if (has_children(sh_source)) {
         Siblings * newsib = new Siblings(sib, sh_source->first);
         newsib->members_.reserve(sh_source->second.children()->members().size());
-        for (auto & child : sh_source->second.children()->members())
-          newsib->members_.emplace_hint(newsib->members_.end(), child.first, Node(newsib, child.second.filtration()));
+        for (auto & child : sh_source->second.children()->members()) {
+          Simplex_handle new_sh = newsib->members_.emplace_hint(newsib->members_.end(), child.first, Node(newsib, child.second.filtration()));
+          update_simplex_tree_after_node_insertion(new_sh);
+        }
         rec_copy(newsib, sh_source->second.children());
         sh->second.assign_children(newsib);
       }
@@ -686,12 +727,18 @@ class Simplex_tree {
     auto vi = simplex.begin();
     for (; vi != simplex.end() - 1; ++vi) {
       res_insert = curr_sib->members_.emplace(*vi, Node(curr_sib, filtration));
+      if(res_insert.second) {
+        update_simplex_tree_after_node_insertion(res_insert.first);
+      }
       if (!(has_children(res_insert.first))) {
         res_insert.first->second.assign_children(new Siblings(curr_sib, *vi));
       }
       curr_sib = res_insert.first->second.children();
     }
     res_insert = curr_sib->members_.emplace(*vi, Node(curr_sib, filtration));
+    if(res_insert.second) {
+      update_simplex_tree_after_node_insertion(res_insert.first);
+    }
     if (!res_insert.second) {
       // if already in the complex
       if (res_insert.first->second.filtration() > filtration) {
@@ -954,9 +1001,15 @@ class Simplex_tree {
   }
 
   //----------------------------------------------
-/* Given a simplex handle in a simplex tree cpx_, traverse the tree upwards 
- * to find vertex u_. Does not test sh itself. Used for filter_iterator when 
- * traversing vh_siblings_[v] looking for cofaces of {u,v}.
+/* Predicate to check whether an input SimplexTree::Node represents a 
+ * coface of codimension codim_ of a simplex simp_, 
+ * stored as a std::vector of SimplexTree::Vertex_handle.
+ * If the codimension codim is 0, returns true for all cofaces.
+ *
+ * Given a SimplexHandle in a simplex tree cpx_, traverse the tree upwards 
+ * to find the sequence of Vertex_handle of simp_. Does not test sh itself. 
+ * Used for filter_iterator in the optimized algorithm for
+ * cofaces_simplex_range.
  */
  template<class SimplexTree>
  class is_coface {
@@ -965,11 +1018,11 @@ class Simplex_tree {
 
   public:
     is_coface() : cpx_(NULL) {}
-    is_coface(SimplexTree *cpx, std::vector<Vertex_handle> simp) 
-    : cpx_(cpx), simp_(simp) {}
+    is_coface(SimplexTree *cpx, std::vector<Vertex_handle> simp, int codim) 
+    : cpx_(cpx), simp_(simp), codim_(codim) {}
 
     //Returns true iff traversing the Node upwards to the root reads a 
-    //coface of simp_
+    //coface of simp_ of codimension codim_
     bool operator()(typename SimplexTree::Hooks_simplex_base &curr_hooks) {
       Node & curr_node = static_cast<Node&>(curr_hooks);
       auto vertex_it = simp_.begin();
@@ -978,7 +1031,10 @@ class Simplex_tree {
       if(++vertex_it == simp_.end()) { return true; }      
       while(curr_sib->oncles() != NULL) {
         if(curr_sib->parent() == *vertex_it) {
-          if(++vertex_it == simp_.end()) { return true; }
+          if(++vertex_it == simp_.end()) { 
+            //todo codimension criterion
+            return true; 
+          }
         }
         curr_sib = curr_sib->oncles();
       }
@@ -986,7 +1042,8 @@ class Simplex_tree {
     }
 
   private:
-    SimplexTree  * cpx_;
+    int                         codim_;
+    SimplexTree               * cpx_;
     std::vector<Vertex_handle>  simp_; //vertices of simplex, reverse ordered
   };
 
@@ -1028,10 +1085,9 @@ public:
    * return all cofaces (equivalent of star function)
    * \return Vector of Simplex_handle, empty vector if no cofaces found.
    */
-
-  typename std::enable_if<!Options::link_simplices_through_max_vertex, Cofaces_simplex_range>::type 
-    cofaces_simplex_range(const Simplex_handle simplex, int codimension) {
-    Cofaces_simplex_range cofaces;
+  Brute_force_cofaces_simplex_range 
+  cofaces_simplex_range(const Simplex_handle simplex, int codimension) {
+    Brute_force_cofaces_simplex_range cofaces;
     // codimension must be positive or null integer
     assert(codimension >= 0);
     Simplex_vertex_range rg = simplex_vertex_range(simplex);
@@ -1042,12 +1098,7 @@ public:
     // must be sorted in decreasing order
     assert(std::is_sorted(copy.begin(), copy.end(), std::greater<Vertex_handle>()));
     bool star = codimension == 0;
-    if(Options::link_simplices_through_max_vertex) { 
-      fast_cofaces_search(/*todo*/);
-    }
-    else {
-      rec_coface(copy, &root_, 1, cofaces, star, codimension + static_cast<int>(copy.size()));
-    }
+    rec_coface(copy, &root_, 1, cofaces, star, codimension + static_cast<int>(copy.size()));
     return cofaces;
   }
   /** Fast search of cofaces
@@ -1055,13 +1106,29 @@ public:
    * if link_simplices_through_max_vertex = true.
    * todo
    */
-  typename std::enable_if<Options::link_simplices_through_max_vertex, Cofaces_simplex_range>::type 
-    cofaces_simplex_range(const Simplex_handle simplex, int codimension) {
-      auto pred = is_coface_predicate(...);
-      return Cofaces_simplex_range(
-                            boost::make_filter_iterator<>(pred,)
-        ...);
 
+  Optimized_cofaces_simplex_range   
+  opt_cofaces_simplex_range(const Simplex_handle simplex, int codimension) {
+    assert(codimension >= 0);
+    Simplex_vertex_range rg = simplex_vertex_range(simplex);
+    std::vector<Vertex_handle> copy(rg.begin(), rg.end());
+    // if (codimension + static_cast<int>(copy.size()) > dimension_ + 1 ||
+    //     (codimension == 0 && static_cast<int>(copy.size()) > dimension_))  // n+codimension greater than dimension_
+    //   return cofaces;
+    // must be sorted in decreasing order
+    assert(std::is_sorted(copy.begin(), copy.end(), std::greater<Vertex_handle>()));
+    // bool star = codimension == 0;      
+
+    is_coface_predicate pred = is_coface_predicate(this,copy,codimension);
+    return Optimized_cofaces_simplex_range(
+              boost::make_filter_iterator< is_coface_predicate, Optimized_cofaces_simplex_iterator >
+                   ( pred
+                   , cofaces_data_structure_.access(simplex).begin() )
+            , boost::make_filter_iterator< is_coface_predicate, Optimized_cofaces_simplex_iterator >
+                   ( pred
+                   , cofaces_data_structure_.access(simplex).end() )
+                   );
+  }
 //todo initialise hooks when inserting Node -> defined in Node
 //todo unlink when removing/copying Nodes
 //todo store the pointer to the beginning of each least...Start at Node_vertices?
@@ -1070,8 +1137,7 @@ public:
 // filter_iterator<Predicate,Iterator>
 // make_filter_iterator(Iterator x, Iterator end = Iterator());
 
-    }
-
+  
  private:
   /** \brief Returns true iff the list of vertices of sh1
    * is smaller than the list of vertices of sh2 w.r.t.
@@ -1157,9 +1223,11 @@ public:
         v_it_end;
     for (std::tie(v_it, v_it_end) = boost::vertices(skel_graph); v_it != v_it_end;
          ++v_it) {
+      Simplex_handle new_sh = 
       root_.members_.emplace_hint(
                                   root_.members_.end(), *v_it,
                                   Node(&root_, boost::get(vertex_filtration_t(), skel_graph, *v_it)));
+      update_simplex_tree_after_node_insertion(new_sh);
     }
     typename boost::graph_traits<OneSkeletonGraph>::edge_iterator e_it,
         e_it_end;
@@ -1174,10 +1242,12 @@ public:
           sh->second.assign_children(new Siblings(&root_, sh->first));
         }
 
+        Simplex_handle new_sh = 
         sh->second.children()->members().emplace(
                                                  v,
                                                  Node(sh->second.children(),
                                                       boost::get(edge_filtration_t(), skel_graph, *e_it)));
+        update_simplex_tree_after_node_insertion(new_sh);
       }
     }
   }
@@ -1232,6 +1302,9 @@ public:
           Siblings * new_sib = new Siblings(siblings,  // oncles
                                             s_h->first,  // parent
                                             inter);  // boost::container::ordered_unique_range_t
+          for(auto & sh : new_sib->members()) {
+            update_simplex_tree_after_node_insertion(sh);
+          }
           inter.clear();
           s_h->second.assign_children(new_sib);
           siblings_expansion(new_sib, k - 1);
