@@ -44,6 +44,8 @@ int main(int argc, char * const argv[]) {
   // Construct the Simplex Tree
   typeST st;
 
+
+
   start = clock();
   auto g = read_graph(filegraph);
   // insert the graph in the simplex tree as 1-skeleton

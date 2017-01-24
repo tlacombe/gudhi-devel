@@ -209,15 +209,16 @@ private:
     cofaces_data_structure_optimized() {};
     //insert a Node in the hook list corresponding to its label
     void insert(typename SimplexTree::Simplex_handle sh) {
-      nodes_per_max_vertex_[sh->first].push_back(sh->second);
+      auto res_insert = nodes_per_max_vertex_.emplace(sh->first,typename SimplexTree::List_max_vertex());
+      res_insert.first->second.push_back(sh->second);
     }
     typename SimplexTree::List_max_vertex & access(Vertex_handle v) {
       return nodes_per_max_vertex_[v];
     }
 
     //map Vertex_handle v -> list of Nodes labeled v.
-    std::vector< typename SimplexTree::List_max_vertex > 
-                                                        nodes_per_max_vertex_;
+    std::map< typename SimplexTree::Vertex_handle, 
+              typename SimplexTree::List_max_vertex > nodes_per_max_vertex_;
   };
 
   typedef typename std::conditional< Options::link_simplices_through_max_vertex
@@ -1128,10 +1129,10 @@ public:
 
     is_coface_predicate pred(this,copy,codimension);
     Optimized_cofaces_simplex_iterator first(pred
-                      ,cofaces_data_structure_.access(simplex->first).begin()
+                      , cofaces_data_structure_.access(simplex->first).begin()
                       , cofaces_data_structure_.access(simplex->first).end() );
     Optimized_cofaces_simplex_iterator last(pred
-                      ,cofaces_data_structure_.access(simplex->first).end()
+                      , cofaces_data_structure_.access(simplex->first).end()
                       , cofaces_data_structure_.access(simplex->first).end() );
     return Optimized_cofaces_simplex_range(first,last);
   }
