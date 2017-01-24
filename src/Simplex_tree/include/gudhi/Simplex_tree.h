@@ -899,6 +899,13 @@ private:
       return sh->second.children();
   }
 
+  Siblings* self_siblings(Node node, Vertex_handle v) {
+    if (node.children()->parent() == v)
+      return node.children()->oncles();
+    else
+      return node.children();
+  }
+
  public:
   /** Returns a pointer to the root nodes of the simplex tree. */
   Siblings * root() {
@@ -1019,7 +1026,7 @@ private:
   public:
     is_coface() : cpx_(NULL) {}
     is_coface(SimplexTree *cpx, std::vector<Vertex_handle> simp, int codim) 
-    : cpx_(cpx), simp_(simp), codim_(codim) {}
+    : codim_(codim), cpx_(cpx), simp_(simp) {}
 
     //Returns true iff traversing the Node upwards to the root reads a 
     //coface of simp_ of codimension codim_
@@ -1119,24 +1126,18 @@ public:
     assert(std::is_sorted(copy.begin(), copy.end(), std::greater<Vertex_handle>()));
     // bool star = codimension == 0;      
 
-    is_coface_predicate pred = is_coface_predicate(this,copy,codimension);
-    return Optimized_cofaces_simplex_range(
-              boost::make_filter_iterator< is_coface_predicate, Optimized_cofaces_simplex_iterator >
-                   ( pred
-                   , cofaces_data_structure_.access(simplex).begin() )
-            , boost::make_filter_iterator< is_coface_predicate, Optimized_cofaces_simplex_iterator >
-                   ( pred
-                   , cofaces_data_structure_.access(simplex).end() )
-                   );
+    is_coface_predicate pred(this,copy,codimension);
+    Optimized_cofaces_simplex_iterator first(pred
+                      ,cofaces_data_structure_.access(simplex->first).begin()
+                      , cofaces_data_structure_.access(simplex->first).end() );
+    Optimized_cofaces_simplex_iterator last(pred
+                      ,cofaces_data_structure_.access(simplex->first).end()
+                      , cofaces_data_structure_.access(simplex->first).end() );
+    return Optimized_cofaces_simplex_range(first,last);
   }
 //todo initialise hooks when inserting Node -> defined in Node
 //todo unlink when removing/copying Nodes
 //todo store the pointer to the beginning of each least...Start at Node_vertices?
-
-// template <class Predicate, class Iterator>
-// filter_iterator<Predicate,Iterator>
-// make_filter_iterator(Iterator x, Iterator end = Iterator());
-
   
  private:
   /** \brief Returns true iff the list of vertices of sh1
@@ -1227,7 +1228,7 @@ public:
       root_.members_.emplace_hint(
                                   root_.members_.end(), *v_it,
                                   Node(&root_, boost::get(vertex_filtration_t(), skel_graph, *v_it)));
-      update_simplex_tree_after_node_insertion(new_sh);
+      update_simplex_tree_after_node_insertion(new_sh); //insertion must not fail
     }
     typename boost::graph_traits<OneSkeletonGraph>::edge_iterator e_it,
         e_it_end;
@@ -1242,12 +1243,14 @@ public:
           sh->second.assign_children(new Siblings(&root_, sh->first));
         }
 
-        Simplex_handle new_sh = 
+        auto res_insert = 
         sh->second.children()->members().emplace(
                                                  v,
                                                  Node(sh->second.children(),
                                                       boost::get(edge_filtration_t(), skel_graph, *e_it)));
-        update_simplex_tree_after_node_insertion(new_sh);
+        if(res_insert.second) {
+          update_simplex_tree_after_node_insertion(res_insert.first);
+        }
       }
     }
   }
@@ -1302,7 +1305,8 @@ public:
           Siblings * new_sib = new Siblings(siblings,  // oncles
                                             s_h->first,  // parent
                                             inter);  // boost::container::ordered_unique_range_t
-          for(auto & sh : new_sib->members()) {
+          for(auto sh = new_sib->members().begin(); 
+                   sh != new_sib->members().end(); ++sh) {
             update_simplex_tree_after_node_insertion(sh);
           }
           inter.clear();

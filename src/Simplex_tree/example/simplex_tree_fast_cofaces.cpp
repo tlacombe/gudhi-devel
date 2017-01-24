@@ -114,7 +114,7 @@ int main(int argc, char * const argv[]) {
     }
 
     std::cout << "Star: \n";
-    for(auto c_simplex : st.cofaces_simplex_range(f_simplex)) {
+    for(auto c_simplex : st.opt_cofaces_simplex_range(f_simplex,0)) {
       std::cout << "      " << "[" << st.filtration(f_simplex) << "] ";
       for (auto vertex : st.simplex_vertex_range(f_simplex)) {
         std::cout << vertex << " ";
