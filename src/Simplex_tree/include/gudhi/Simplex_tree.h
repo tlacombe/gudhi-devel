@@ -88,7 +88,7 @@ class Simplex_tree {
    * Must be a signed integer type. It admits a total order <. */
   typedef typename Options::Vertex_handle Vertex_handle;
 
-  /* Type of node in the simplex tree. */
+  /* Type of node in the simplex tree. Must be called by reference only. */
   typedef Simplex_tree_node_explicit_storage<Simplex_tree> Node;
   /* Type of dictionary Vertex_handle -> Node for traversing the simplex tree. */
   // Note: this wastes space when Vertex_handle is 32 bits and Node is aligned on 64 bits. It would be better to use a
@@ -158,6 +158,7 @@ class Simplex_tree {
     Hooks_simplex_base_cofaces& operator=(
         BOOST_COPY_ASSIGN_REF(Hooks_simplex_base_cofaces) other) 
     {
+      std::cout << "Copy hooks. \n";
       list_max_vertex_hook_.swap_nodes(other.list_max_vertex_hook_); 
       return *this;
     }
@@ -206,20 +207,62 @@ private:
 
   template< typename SimplexTree > 
   struct cofaces_data_structure_optimized {
+
     cofaces_data_structure_optimized() {};
     //insert a Node in the hook list corresponding to its label
     void insert(typename SimplexTree::Simplex_handle sh) {
-      auto res_insert = nodes_per_max_vertex_.emplace(sh->first,typename SimplexTree::List_max_vertex());
-      res_insert.first->second.push_back(sh->second);
+      std::cout << "Try inserting list at v = " << sh->first << "\n";
+      auto it = nodes_per_max_vertex_.find(sh->first);
+      if(it == nodes_per_max_vertex_.end()) {
+        it = (nodes_per_max_vertex_.emplace(std::make_pair(sh->first, new typename SimplexTree::List_max_vertex()))).first;
+      }
+      // auto res_insert = nodes_per_max_vertex_.try_emplace(std::make_pair(sh->first, new typename SimplexTree::List_max_vertex()));
+      // if(res_insert.second) {std::cout << "........success \n";}
+      // else {std::cout << "........failure \n";} 
+      it->second->push_back(sh->second);
+      // std::cout << "new size list = " << res_insert.first->second->size() << "\n";
     }
-    typename SimplexTree::List_max_vertex & access(Vertex_handle v) {
+    typename SimplexTree::List_max_vertex * access(Vertex_handle v) {
       return nodes_per_max_vertex_[v];
     }
 
     //map Vertex_handle v -> list of Nodes labeled v.
     std::map< typename SimplexTree::Vertex_handle, 
-              typename SimplexTree::List_max_vertex > nodes_per_max_vertex_;
+              typename SimplexTree::List_max_vertex *> nodes_per_max_vertex_;
   };
+
+
+////////////////////////////////////////
+public:
+    void test_ds()
+    {
+      for(auto pp : cofaces_data_structure_.nodes_per_max_vertex_) {
+        std::cout << "List " << pp.first << "\n";
+        std::cout << "of size " << pp.second->size() << "\n";
+        // for(auto & curr_hooks : *(pp.second)) {
+          for(auto it = pp.second->begin();
+                   it != pp.second->end(); ++it) {
+          // std::cout << "X \n";
+          Node & curr_node = static_cast<Node&>(*it);
+
+          // if(curr_node.children() == NULL) { std::cout << "NULL\n"; }
+          // else {std::cout << "!NULL\n"; }
+  
+          // std::cout << "children's parent is " << curr_node.children()->parent() << "\n";
+          Siblings * curr_sib = self_siblings(curr_node,pp.first);
+          Simplex_handle sh = curr_sib->members().find(pp.first);
+          if(sh == curr_sib->members().end()) { std::cout << "Cannot find Node...\n";}
+          std::cout << "----------";
+          for(auto v : simplex_vertex_range(sh)) { std::cout << v << " "; }
+          std::cout << "----------\n";
+        }
+        std::cout << "\n";
+      }
+    }
+////////////////////////////////////////
+
+
+
 
   typedef typename std::conditional< Options::link_simplices_through_max_vertex
                        , cofaces_data_structure_optimized< Simplex_tree >
@@ -900,7 +943,7 @@ private:
       return sh->second.children();
   }
 
-  Siblings* self_siblings(Node node, Vertex_handle v) {
+  Siblings* self_siblings(Node & node, Vertex_handle v) {
     if (node.children()->parent() == v)
       return node.children()->oncles();
     else
@@ -1032,20 +1075,43 @@ private:
     //Returns true iff traversing the Node upwards to the root reads a 
     //coface of simp_ of codimension codim_
     bool operator()(typename SimplexTree::Hooks_simplex_base &curr_hooks) {
+      
+      std::cout << "=============Enter\n";
+
+      int dim = 0;
       Node & curr_node = static_cast<Node&>(curr_hooks);
       auto vertex_it = simp_.begin();
       //first Node must always have label simp_.begin() 
+      std::cout << "A\n";
       auto curr_sib = cpx_->self_siblings(curr_node,*vertex_it);
+      std::cout << "B\n";
+      std::cout << "hey \n";
+
+///////////////////////
+      Simplex_handle sh = curr_sib->members().find(*vertex_it);
+      std::cout << "----------";
+      for(auto v : cpx_->simplex_vertex_range(sh)) { std::cout << v << " "; }
+      std::cout << "----------\n";
+///////////////////////
+
+
       if(++vertex_it == simp_.end()) { return true; }      
-      while(curr_sib->oncles() != NULL) {
+      while(curr_sib->oncles() != NULL) { //todo is NULL valid?
         if(curr_sib->parent() == *vertex_it) {
           if(++vertex_it == simp_.end()) { 
             //todo codimension criterion
-            return true; 
+            while(curr_sib->oncles() != NULL) { 
+              curr_sib = curr_sib->oncles(); 
+              ++dim; 
+            }
+            return dim == simp_.size()+codim_-1;
+            // return true; 
           }
         }
         curr_sib = curr_sib->oncles();
+        ++dim;
       }
+      std::cout << "=============END false\n";
       return false;
     }
 
@@ -1127,13 +1193,23 @@ public:
     assert(std::is_sorted(copy.begin(), copy.end(), std::greater<Vertex_handle>()));
     // bool star = codimension == 0;      
 
+    // std::cout << "-----list of vertices =   "; 
+    // for(auto v : copy) std::cout << v << " ";
+    // std::cout << std::endl;
+    // std::cout << "-----max vertex =         ";
+    // Vertex_handle max_v = *(copy.begin()); 
+    // std::cout << max_v << std::endl;
+    // std::cout << "-----size of max_v list = ";
+    // std::cout << cofaces_data_structure_.access(max_v).size() << std::endl;
+
+
     is_coface_predicate pred(this,copy,codimension);
     Optimized_cofaces_simplex_iterator first(pred
-                      , cofaces_data_structure_.access(simplex->first).begin()
-                      , cofaces_data_structure_.access(simplex->first).end() );
+                    , cofaces_data_structure_.access(simplex->first)->begin()
+                    , cofaces_data_structure_.access(simplex->first)->end() );
     Optimized_cofaces_simplex_iterator last(pred
-                      , cofaces_data_structure_.access(simplex->first).end()
-                      , cofaces_data_structure_.access(simplex->first).end() );
+                    , cofaces_data_structure_.access(simplex->first)->end()
+                    , cofaces_data_structure_.access(simplex->first)->end() );
     return Optimized_cofaces_simplex_range(first,last);
   }
 //todo initialise hooks when inserting Node -> defined in Node

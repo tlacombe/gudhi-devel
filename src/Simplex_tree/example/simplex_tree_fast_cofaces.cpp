@@ -98,6 +98,17 @@ int main(int argc, char * const argv[]) {
 
   std::cout << std::endl << std::endl;
 
+
+
+  std::cout << "\n \n \n";
+  std::cout << "=============================\n";
+  st.test_ds();
+  std::cout << "=============================\n";
+  std::cout << "\n \n \n";
+
+
+
+
   std::cout << "Iterator on Simplices in the filtration, their boundary simplices, and their star:" << std::endl;
   for (auto f_simplex : st.filtration_simplex_range()) {
     std::cout << "   " << "[" << st.filtration(f_simplex) << "] ";
@@ -122,7 +133,11 @@ int main(int argc, char * const argv[]) {
         std::cout << vertex << " ";
       }
       std::cout << std::endl; 
+      std::cout << "end star\n";
     }
   }
+
+
+    
   return 0;
 }
