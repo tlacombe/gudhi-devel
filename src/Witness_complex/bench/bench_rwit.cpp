@@ -103,7 +103,7 @@ void program_options(int argc, char * const argv[]
       ("landmarks,L", po::value<int>(&nbL)->default_value(0),
        "Number of landmarks.")
       ( "landmark-file,l", po::value<std::string>(&landmark_file),
-        "Name of a fike containing landmarks")
+        "Name of a file containing landmarks")
       ("alpha2_s,A", po::value<double>(&alpha2_s)->default_value(0),
        "Relaxation parameter for the strong complex.")
       ("alpha2_w,a", po::value<double>(&alpha2_w)->default_value(0),
@@ -266,8 +266,8 @@ void rw_experiment(Point_Vector & point_vector, int nbL, FT alpha2, int limD, FT
 
   Dim_lists<STree> simplices(simplex_tree, limD); 
   
-  // std::vector<Simplex_handle> simplices;
-  /*
+  //std::vector<Simplex_handle> simplices;
+  
   std::cout << "Starting collapses...\n";
   simplices.collapse();
   simplices.output_simplices();
@@ -278,12 +278,12 @@ void rw_experiment(Point_Vector & point_vector, int nbL, FT alpha2, int limD, FT
     for (int v: collapsed_tree.simplex_vertex_range(sh))
       vertices.push_back(v);
     collapsed_tree.insert_simplex(vertices);
-  } 
-  std::vector<int> landmarks_ind(nbL); 
-  for (unsigned i = 0; i != nbL; ++i) {
-    if (distances[i][0] == 0)
-      landmarks_ind[knn[i][0]] = i;
   }
+  std::vector<int> landmarks_ind(nbL); 
+  // for (unsigned i = 0; i != nbL; ++i) {
+  //   if (distances[i][0] == 0)
+  //     landmarks_ind[knn[i][0]] = i;
+  // }
   //write_witness_mesh(point_vector, landmarks_ind, simplex_tree, simplices, false, true);
   write_witness_mesh(point_vector, landmarks_ind, simplex_tree, simplex_tree.complex_simplex_range(), false, true, mesh_filename+"_before_collapse.mesh");
   
@@ -292,7 +292,7 @@ void rw_experiment(Point_Vector & point_vector, int nbL, FT alpha2, int limD, FT
   pcoh2.init_coefficients( p ); //initilizes the coefficient field for homology
   pcoh2.compute_persistent_cohomology( alpha2/10 );
   pcoh2.output_diagram();
-  */
+  
   /*
   chi = 0;
   for (auto sh: simplices)
@@ -574,16 +574,17 @@ int experiment1 (int argc, char * const argv[])
   //std::cout << "Ambient dimension is " << point_vector[0].size() << ".\n";
   //std::cout << "Limit dimension for the complexes is " << limD << ".\n";
 
-  if (landmark_file == "")
-    sparsify_until(point_vector,  mu_epsilon, nbL, landmarks);
-  else
-    read_points_cust(landmark_file, landmarks);
-  nbL = landmarks.size();
+  // if (landmark_file == "")
+  //   sparsify_until(point_vector,  mu_epsilon, nbL, landmarks);
+  // else
+  //   read_points_cust(landmark_file, landmarks);
+  // nbL = landmarks.size();
   STree simplex_tree;
-  std::vector<std::vector< int > > knn;
-  std::vector<std::vector< FT > > distances;
+  // std::vector<std::vector< int > > knn;
+  // std::vector<std::vector< FT > > distances;
 
-  run_comparison(landmarks, point_vector, limD, alpha2_s, alpha2_w, desired_homology);
+  rw_experiment(point_vector, nbL, alpha2_s, limD, mu_epsilon, experiment_name);
+  //run_comparison(landmarks, point_vector, limD, alpha2_s, alpha2_w, desired_homology);
   return 0;
 }
 

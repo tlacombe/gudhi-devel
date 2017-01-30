@@ -1,5 +1,5 @@
 #include <gudhi/Simplex_tree.h>
-#include <gudhi/Witness_complex.h>
+#include <gudhi/Euclidean_witness_complex.h>
 #include <gudhi/Persistent_cohomology.h>
 #include <gudhi/Points_off_io.h>
 #include <gudhi/pick_n_random_points.h>
@@ -19,7 +19,7 @@ typedef CGAL::Epick_d<CGAL::Dynamic_dimension_tag> K;
 typedef typename K::Point_d Point_d;
 
 typedef typename std::vector<Point_d> Point_vector;
-typedef typename Gudhi::witness_complex::Witness_complex<K> Witness_complex;
+typedef typename Gudhi::witness_complex::Euclidean_witness_complex<K> Witness_complex;
 typedef Gudhi::Simplex_tree<> SimplexTree;
 
 typedef int Vertex_handle;
@@ -62,7 +62,7 @@ int main(int argc, char * argv[]) {
   Witness_complex witness_complex(landmarks,
                                   witnesses);
   
-  witness_complex.create_complex(simplex_tree, max_squared_alpha);
+  witness_complex.create_complex(simplex_tree, max_squared_alpha, lim_d);
   
   std::cout << "The complex contains " << simplex_tree.num_simplices() << " simplices \n";
   std::cout << "   and has dimension " << simplex_tree.dimension() << " \n";
@@ -115,7 +115,7 @@ void program_options(int argc, char * argv[]
       ("output-file,o", po::value<std::string>(&filediag)->default_value(std::string()),
        "Name of file in which the persistence diagram is written. Default print in std::cout")
       ("max-sq-alpha,a", po::value<Filtration_value>(&max_squared_alpha)->default_value(std::numeric_limits<Filtration_value>::infinity()),
-       "Maximal length of an edge for the Rips complex construction.")
+       "Maximal squared relaxation parameter.")
       ("field-charac,p", po::value<int>(&p)->default_value(11),
        "Characteristic p of the coefficient field Z/pZ for computing homology.")
       ("min-persistence,m", po::value<Filtration_value>(&min_persistence)->default_value(0),

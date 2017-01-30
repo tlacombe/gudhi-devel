@@ -22,45 +22,92 @@
 
    De Silva and Carlsson in their paper \cite de2004topological differentiate **weak witnessing** and **strong witnessing**:
 
-   - *weak*:   \f$ \sigma \subset L \f$ is witnessed by \f$ w \in W\f$ if \f$ \forall l \in \sigma,\ \forall l' \in L \setminus \sigma,\ d(w,l) \leq d(w,l') \f$
-   - *strong*: \f$ \sigma \subset L \f$ is witnessed by \f$ w \in W\f$ if \f$ \forall l \in \sigma,\ \forall l' \in L,\ d(w,l) \leq d(w,l') \f$
+   - *weak*:   \f$ \sigma \subset L \f$ is witnessed by \f$ w \in W\f$ if \f$ \forall l \in \sigma,\ \forall l' \in \mathbf{L \setminus \sigma},\ d(w,l) \leq d(w,l') \f$
+   - *strong*: \f$ \sigma \subset L \f$ is witnessed by \f$ w \in W\f$ if \f$ \forall l \in \sigma,\ \forall l' \in \mathbf{L},\ d(w,l) \leq d(w,l') \f$
 
    where \f$ d(.,.) \f$ is a distance function.
 
    Both definitions can be relaxed by a real value \f$\alpha\f$:
 
-   - *weak*:   \f$ \sigma \subset L \f$ is \f$\alpha\f$-witnessed by \f$ w \in W\f$ if \f$ \forall l \in \sigma,\ \forall l' \in L \setminus \sigma,\ d(w,l)^2 \leq d(w,l')^2 + \alpha^2 \f$
-   - *strong*: \f$ \sigma \subset L \f$ is \f$\alpha\f$-witnessed by \f$ w \in W\f$ if \f$ \forall l \in \sigma,\ \forall l' \in L,\ d(w,l)^2 \leq d(w,l')^2 + \alpha^2 \f$
+   - *weak*:   \f$ \sigma \subset L \f$ is \f$\alpha\f$-witnessed by \f$ w \in W\f$ if \f$ \forall l \in \sigma,\ \forall l' \in \mathbf{L \setminus \sigma},\ d(w,l)^2 \leq d(w,l')^2 + \alpha^2 \f$
+   - *strong*: \f$ \sigma \subset L \f$ is \f$\alpha\f$-witnessed by \f$ w \in W\f$ if \f$ \forall l \in \sigma,\ \forall l' \in \mathbf{L},\ d(w,l)^2 \leq d(w,l')^2 + \alpha^2 \f$
 
    which leads to definitions of **weak relaxed witness complex** (or just relaxed witness complex for short) and **strong relaxed witness complex** respectively.
+
+   \image html "swit.svg" "Strongly witnessed simplex"
+
+   In particular case of 0-relaxation, weak complex corresponds to **witness complex** introduced in \cite de2004topological, whereas 0-relaxed strong witness complex consists of just vertices and is not very interesting.
+   Hence for small relaxation weak version is preferable.
+   However, to capture the homotopy type (for example using Gudhi::persistent_cohomology::Persistent_cohomology) it is often necessary to work with higher filtration values. In this case strong relaxed witness complex is faster to compute and offers similar results.
 
    \section witnessimplementation Implementation
    
    The two complexes described above are implemented in the corresponding classes 
    - Gudhi::witness_complex::Witness_complex
+   - Gudhi::witness_complex::Euclidean_witness_complex
    - Gudhi::witness_complex::Strong_witness_complex
+   - Gudhi::witness_complex::Euclidean_strong_witness_complex
 
-   The construction of both of them follow the same scheme:
+   The construction of the Euclidean versions of complexes follow the same scheme:
    1. Construct a search tree on landmarks (for that Gudhi::spatial_searching::Kd_tree_search is used internally).
-   2. Construct lists of nearest landmarks for each witness (special internal structure Gudhi::witness_complex::Active_witness is used internally).
+   2. Construct lists of nearest landmarks for each witness (special structure Gudhi::witness_complex::Active_witness is used internally).
    3. Construct the witness complex for nearest landmark lists.
 
-   The constructors take on the step 1, while the function 'create_complex' executes the steps 2 and 3.
+   In the non-Euclidean classes, the lists of nearest landmarks are supposed to be given as input.
+
+   The constructors take on the steps 1 and 2, while the function 'create_complex' executes the step 3.
 
    \section witnessexample1 Example 1: Constructing weak relaxed witness complex from an off file
 
    Let's start with a simple example, which reads an off point file and computes a weak witness complex.
 
-   \include Witness_complex/example_witness_complex_off.cpp
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
+   
+#include <gudhi/Simplex_tree.h>
+#include <gudhi/Euclidean_witness_complex.h>
+#include <gudhi/pick_n_random_points.h>
+#include <gudhi/Points_off_io.h>
+
+#include <CGAL/Epick_d.h>
+
+#include <string>
+#include <vector>
+
+typedef CGAL::Epick_d<CGAL::Dynamic_dimension_tag> K;
+typedef typename K::Point_d Point_d;
+typedef typename Gudhi::witness_complex::Euclidean_witness_complex<K> Witness_complex;
+typedef std::vector< Vertex_handle > typeVectorVertex;
+typedef std::vector< Point_d > Point_vector;
+
+int main(int argc, char * const argv[]) {
+  std::string file_name = argv[1];
+  int nbL = atoi(argv[2]), lim_dim = atoi(argv[4]);
+  double alpha2 = atof(argv[3]);
+  Gudhi::Simplex_tree<> simplex_tree;
+
+  // Read the point file
+  Point_vector point_vector, landmarks;
+  Gudhi::Points_off_reader<Point_d> off_reader(file_name);
+  point_vector = Point_vector(off_reader.get_point_cloud());
+
+  // Choose landmarks
+  Gudhi::subsampling::pick_n_random_points(point_vector, nbL, std::back_inserter(landmarks));
+
+  // Compute witness complex
+  Witness_complex witness_complex(landmarks,
+                                  point_vector);
+
+  witness_complex.create_complex(simplex_tree, alpha2, lim_dim);
+}
+
+   
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
    \section witnessexample2 Example2: Computing persistence using strong relaxed witness complex
 
    Here is an example of constructing a strong witness complex filtration and computing persistence on it:
 
    \include Witness_complex/example_strong_witness_persistence.cpp
-
-   *\image html "bench_Cy8.png" "Running time as function on number of landmarks" width=10cm
-   *\image html "bench_sphere.png" "Running time as function on number of witnesses for |L|=300" width=10cm
 
    \copyright GNU General Public License v3.
 

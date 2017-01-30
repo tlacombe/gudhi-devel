@@ -54,18 +54,27 @@ class Active_witness_iterator
   
   Active_witness *aw_;
   Pair_iterator lh_; // landmark handle
-  //INS_iterator iterator_last;
-  //INS_iterator iterator_end;
+  bool is_end_; // true only if the pointer is end and there are no more neighbors to add
 
 public:
   Active_witness_iterator(Active_witness* aw)
-    : aw_(aw), lh_(aw_->end_pointer)
+    : aw_(aw), lh_(aw_->nearest_landmark_table_.end()), is_end_(true)
   {
   }
 
-  Active_witness_iterator(Active_witness* aw, Pair_iterator lh)
+  Active_witness_iterator(Active_witness* aw, const Pair_iterator& lh)
     : aw_(aw), lh_(lh)
   {
+    is_end_ = false;
+    if (lh_ == aw_->nearest_landmark_table_.end()) {
+      if (aw_->iterator_next_ == aw_->iterator_end_)
+        is_end_ = true;
+      else {
+        aw_->nearest_landmark_table_.push_back(*aw_->iterator_next_);
+        lh_ = --aw_->nearest_landmark_table_.end();
+        ++(aw_->iterator_next_);
+      }
+    }
   }
   
 private :
@@ -77,32 +86,26 @@ private :
 
   bool equal(const Iterator& other) const
   {
-    return (lh_ == other.lh_);
+    return (is_end_ == other.is_end_) || (lh_ == other.lh_);
   }
   
   void increment()
   {
-    // if neighbor search is at its end, check if lh_++ is end
-    if (aw_->iterator_last_ == aw_->iterator_end_) {
-      if (lh_++ == aw_->nearest_landmark_table_.end()) {
-        lh_ = aw_->end_pointer;
-        return;
-      }
-      return;
-    }
+    // the neighbor search can't be at the end iterator of a list
+    GUDHI_CHECK(!is_end_ && lh_ != aw_->nearest_landmark_table_.end(), std::logic_error("Wrong active witness increment."));
     // if the id of the current landmark is the same as the last one
-    if (lh_->first == aw_->iterator_last_->first) {
-      // if the next iterator is end, lh_it = end pointer
-      if (++(aw_->iterator_last_) == aw_->iterator_end_) {
-        lh_ = aw_->end_pointer;
-        return;
-      }
-      else 
-        aw_->nearest_landmark_table_.push_back(*(aw_->iterator_last_));
-    }
-    lh_++;
-  }
 
+    lh_++;
+    if (lh_ == aw_->nearest_landmark_table_.end()) {
+      if (aw_->iterator_next_ == aw_->iterator_end_)
+        is_end_ = true;
+      else {
+        aw_->nearest_landmark_table_.push_back(*aw_->iterator_next_);
+        lh_ = std::prev(aw_->nearest_landmark_table_.end());
+        ++(aw_->iterator_next_);
+      }
+    }
+  }
 };
 
 }

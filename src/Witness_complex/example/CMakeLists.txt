@@ -28,6 +28,7 @@ if(CGAL_FOUND)
       add_executable( generate_subsamplings ../bench/generate_subsamplings.cpp )
 
       add_executable( Witness_complex_example_off example_witness_complex_off.cpp )
+      add_executable( Witness_complex_example_strong_off example_strong_witness_complex_off.cpp )
       add_executable ( Witness_complex_example_sphere example_witness_complex_sphere.cpp )
 
       add_executable ( Witness_complex_example_witness_persistence example_witness_complex_persistence.cpp )
@@ -35,9 +36,12 @@ if(CGAL_FOUND)
 
       add_executable ( Witness_complex_example_strong_witness_persistence example_strong_witness_persistence.cpp )
       target_link_libraries(Witness_complex_example_strong_witness_persistence ${Boost_PROGRAM_OPTIONS_LIBRARY})
+
+      add_executable ( Witness_complex_example_nearest_landmark_table example_nearest_landmark_table.cpp )
       if (TBB_FOUND)
         target_link_libraries(Witness_complex_example_witness_persistence ${TBB_LIBRARIES})
         target_link_libraries(Witness_complex_example_strong_witness_persistence ${TBB_LIBRARIES})
+        target_link_libraries(Witness_complex_example_nearest_landmark_table ${TBB_LIBRARIES})
       endif()
 
       add_test(Witness_complex_test_torus_persistence

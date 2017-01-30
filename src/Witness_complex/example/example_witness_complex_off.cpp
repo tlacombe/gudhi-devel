@@ -2,7 +2,7 @@
 #include <sys/stat.h>
 
 #include <gudhi/Simplex_tree.h>
-#include <gudhi/Witness_complex.h>
+#include <gudhi/Euclidean_witness_complex.h>
 #include <gudhi/pick_n_random_points.h>
 #include <gudhi/Points_off_io.h>
 
@@ -16,12 +16,12 @@
 
 typedef CGAL::Epick_d<CGAL::Dynamic_dimension_tag> K;
 typedef typename K::Point_d Point_d;
-typedef typename Gudhi::witness_complex::Witness_complex<K> Witness_complex;
+typedef typename Gudhi::witness_complex::Euclidean_witness_complex<K> Witness_complex;
 typedef std::vector< Vertex_handle > typeVectorVertex;
 typedef std::vector< Point_d > Point_vector;
 
 int main(int argc, char * const argv[]) {
-  if (argc != 4) {
+  if (argc != 5) {
     std::cerr << "Usage: " << argv[0]
         << " path_to_point_file number_of_landmarks max_squared_alpha limit_dimension\n";
     return 0;

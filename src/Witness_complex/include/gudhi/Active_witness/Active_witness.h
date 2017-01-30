@@ -44,18 +44,15 @@ public:
   typedef Active_witness_iterator< ActiveWitness, Id_distance_pair, INS_iterator > iterator;
   typedef typename std::list<Id_distance_pair> Table;
 
-  Table end_element_table_ = {Id_distance_pair(-1,0)};
-  typename Table::iterator end_pointer = end_element_table_.begin();
-
   Table nearest_landmark_table_;
   INS_range    search_range_;
-  INS_iterator iterator_last_;
+  INS_iterator iterator_next_;
   INS_iterator iterator_end_;
 
-  Active_witness(INS_range search_range)
-    : search_range_(search_range), iterator_last_(search_range.begin()), iterator_end_(search_range.end())
+  Active_witness(const INS_range& search_range)
+    : search_range_(search_range), iterator_next_(search_range_.begin()), iterator_end_(search_range_.end())
   {
-    nearest_landmark_table_.push_back(*iterator_last_);
+    //nearest_landmark_table_.push_back(*iterator_last_);
   }
  
   iterator begin()

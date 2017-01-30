@@ -41,6 +41,7 @@
 #include <string>
 
 #include <CGAL/Epick_d.h>
+#include <CGAL/Delaunay_triangulation.h>
 
 #include <boost/tuple/tuple.hpp>
 #include <boost/iterator/zip_iterator.hpp>
@@ -667,100 +668,39 @@ int experiment3(int argc, char * const argv[])
 void generate_bings_house(Point_Vector& landmarks, Point_Vector& witnesses)
 {
   Point_Vector landmarks_temp;
-  // first floor
-  landmarks_temp.push_back(Point_d(std::vector<FT>({0,0,0})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({1,0,0})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({2,0,0})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({3,0,0})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({0,1,0})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({1,1,0})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({2,1,0})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({3,1,0})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({4,1,0})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({0,2,0})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({1,2,0})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({2,2,0})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({3,2,0})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({4,2,0})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({5,2,0})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({0,3,0})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({1,3,0})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({2,3,0})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({3,3,0})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({4,3,0})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({5,3,0})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({1,4,0})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({2,4,0})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({3,4,0})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({4,4,0})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({5,4,0})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({2,5,0})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({3,5,0})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({4,5,0})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({5,5,0})));
-  // second floor
-  landmarks_temp.push_back(Point_d(std::vector<FT>({0,0,1})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({1,0,1})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({2,0,1})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({3,0,1})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({0,1,1})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({1,1,1})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({2,1,1})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({3,1,1})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({4,1,1})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({0,2,1})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({1,2,1})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({2,2,1})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({3,2,1})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({4,2,1})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({5,2,1})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({0,3,1})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({1,3,1})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({2,3,1})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({3,3,1})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({4,3,1})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({5,3,1})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({1,4,1})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({2,4,1})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({3,4,1})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({4,4,1})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({5,4,1})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({2,5,1})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({3,5,1})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({4,5,1})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({5,5,1})));
-  // roof
-  landmarks_temp.push_back(Point_d(std::vector<FT>({0,0,2})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({1,0,2})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({2,0,2})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({3,0,2})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({0,1,2})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({1,1,2})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({2,1,2})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({3,1,2})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({4,1,2})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({0,2,2})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({1,2,2})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({2,2,2})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({3,2,2})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({4,2,2})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({5,2,2})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({0,3,2})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({1,3,2})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({2,3,2})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({3,3,2})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({4,3,2})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({5,3,2})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({1,4,2})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({2,4,2})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({3,4,2})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({4,4,2})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({5,4,2})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({2,5,2})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({3,5,2})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({4,5,2})));
-  landmarks_temp.push_back(Point_d(std::vector<FT>({5,5,2})));
-
+  // two floors and roof
+  for (double k = 0; k < 2.5; k += 1) {
+    landmarks_temp.push_back(Point_d(std::vector<FT>({0,0,k})));
+    landmarks_temp.push_back(Point_d(std::vector<FT>({1,0,k})));
+    landmarks_temp.push_back(Point_d(std::vector<FT>({2,0,k})));
+    landmarks_temp.push_back(Point_d(std::vector<FT>({3,0,k})));
+    landmarks_temp.push_back(Point_d(std::vector<FT>({0,1,k})));
+    landmarks_temp.push_back(Point_d(std::vector<FT>({1,1,k})));
+    landmarks_temp.push_back(Point_d(std::vector<FT>({2,1,k})));
+    landmarks_temp.push_back(Point_d(std::vector<FT>({3,1,k})));
+    landmarks_temp.push_back(Point_d(std::vector<FT>({4,1,k})));
+    landmarks_temp.push_back(Point_d(std::vector<FT>({0,2,k})));
+    landmarks_temp.push_back(Point_d(std::vector<FT>({1,2,k})));
+    landmarks_temp.push_back(Point_d(std::vector<FT>({2,2,k})));
+    landmarks_temp.push_back(Point_d(std::vector<FT>({3,2,k})));
+    landmarks_temp.push_back(Point_d(std::vector<FT>({4,2,k})));
+    landmarks_temp.push_back(Point_d(std::vector<FT>({5,2,k})));
+    landmarks_temp.push_back(Point_d(std::vector<FT>({0,3,k})));
+    landmarks_temp.push_back(Point_d(std::vector<FT>({1,3,k})));
+    landmarks_temp.push_back(Point_d(std::vector<FT>({2,3,k})));
+    landmarks_temp.push_back(Point_d(std::vector<FT>({3,3,k})));
+    landmarks_temp.push_back(Point_d(std::vector<FT>({4,3,k})));
+    landmarks_temp.push_back(Point_d(std::vector<FT>({5,3,k})));
+    landmarks_temp.push_back(Point_d(std::vector<FT>({1,4,k})));
+    landmarks_temp.push_back(Point_d(std::vector<FT>({2,4,k})));
+    landmarks_temp.push_back(Point_d(std::vector<FT>({3,4,k})));
+    landmarks_temp.push_back(Point_d(std::vector<FT>({4,4,k})));
+    landmarks_temp.push_back(Point_d(std::vector<FT>({5,4,k})));
+    landmarks_temp.push_back(Point_d(std::vector<FT>({2,5,k})));
+    landmarks_temp.push_back(Point_d(std::vector<FT>({3,5,k})));
+    landmarks_temp.push_back(Point_d(std::vector<FT>({4,5,k})));
+    landmarks_temp.push_back(Point_d(std::vector<FT>({5,5,k})));
+  }
   //apply diagonal distortion
   FT v1_x = sqrt(3)/2;
   FT v1_y = 0;
@@ -779,12 +719,96 @@ void generate_bings_house(Point_Vector& landmarks, Point_Vector& witnesses)
     landmarks.push_back(Point_d(distorted_point));
   }
 
-  //Point_Vector witnesses
-  witnesses.push_back(Point_d(std::vector<FT>({
-          (v1_x + v2_x + v3_x)/3,
-          (v1_y + v2_y + v3_y)/3,
-          (v1_z + v2_z + v3_z)/3
-        })));   
+  //!! 3-witnesses
+  /*
+  // close (0,0,0) -- opposite (1,1,1)
+  std::vector<FT> w1 = {
+          (v1_x + v2_x + v3_x)/4,
+          (v1_y + v2_y + v3_y)/4,
+          (v1_z + v2_z + v3_z)/4 },
+  // center -- opposite (0,0,0), (1,1,0), (1,0,1), (0,1,1)
+                  w0 = {
+          (2*v1_x + 2*v2_x + 2*v3_x)/4,
+          (2*v1_y + 2*v2_y + 2*v3_y)/4,
+          (2*v1_z + 2*v2_z + 2*v3_z)/4 },
+  // close (0,1,1) -- opposite (1,0,0)
+                  w2 = {
+          (v1_x + 3*v2_x + 3*v3_x)/4,
+          (v1_y + 3*v2_y + 3*v3_y)/4,
+          (v1_z + 3*v2_z + 3*v3_z)/4 },
+  // close (1,0,1) -- opposite (0,1,0)
+                  w3 = {
+          (3*v1_x + v2_x + 3*v3_x)/4,
+          (3*v1_y + v2_y + 3*v3_y)/4,
+          (3*v1_z + v2_z + 3*v3_z)/4 },
+  // close (1,1,0) -- opposite (0,0,1)
+                  w4 = {
+          (3*v1_x + 3*v2_x + v3_x)/4,
+          (3*v1_y + 3*v2_y + v3_y)/4,
+          (3*v1_z + 3*v2_z + v3_z)/4 };
+  */
+  // close (1,1,1) -- opposite (0,0,0)
+  std::vector<FT> w1 = {
+          (3*v1_x + 3*v2_x + 3*v3_x)/4,
+          (3*v1_y + 3*v2_y + 3*v3_y)/4,
+          (3*v1_z + 3*v2_z + 3*v3_z)/4 },
+  // center -- opposite (1,1,1), (1,0,0), (0,0,1), (0,1,0)
+                  w0 = {
+          (2*v1_x + 2*v2_x + 2*v3_x)/4,
+          (2*v1_y + 2*v2_y + 2*v3_y)/4,
+          (2*v1_z + 2*v2_z + 2*v3_z)/4 },
+  // close (0,0,1) -- opposite (1,1,0)
+                  w2 = {
+          (v1_x + v2_x + 3*v3_x)/4,
+          (v1_y + v2_y + 3*v3_y)/4,
+          (v1_z + v2_z + 3*v3_z)/4 },
+  // close (1,0,0) -- opposite (0,1,1)
+                  w3 = {
+          (3*v1_x + v2_x + v3_x)/4,
+          (3*v1_y + v2_y + v3_y)/4,
+          (3*v1_z + v2_z + v3_z)/4 },
+  // close (0,1,0) -- opposite (1,0,1)
+                  w4 = {
+          (v1_x + 3*v2_x + v3_x)/4,
+          (v1_y + 3*v2_y + v3_y)/4,
+          (v1_z + 3*v2_z + v3_z)/4 };  
+  for (unsigned k = 0; k < 2; ++k) {   // two floors
+    for (unsigned j = 0; j < 3; ++j) { // line 0 - 3 blocks
+      witnesses.push_back(Point_d(std::vector<FT>({w0[0] + j*v2_x + k*v3_x, w0[1] + j*v2_y + k*v3_y, w0[2] + j*v2_z + k*v3_z})));
+      witnesses.push_back(Point_d(std::vector<FT>({w1[0] + j*v2_x + k*v3_x, w1[1] + j*v2_y + k*v3_y, w1[2] + j*v2_z + k*v3_z})));
+      witnesses.push_back(Point_d(std::vector<FT>({w2[0] + j*v2_x + k*v3_x, w2[1] + j*v2_y + k*v3_y, w2[2] + j*v2_z + k*v3_z})));
+      witnesses.push_back(Point_d(std::vector<FT>({w3[0] + j*v2_x + k*v3_x, w3[1] + j*v2_y + k*v3_y, w3[2] + j*v2_z + k*v3_z})));
+      witnesses.push_back(Point_d(std::vector<FT>({w4[0] + j*v2_x + k*v3_x, w4[1] + j*v2_y + k*v3_y, w4[2] + j*v2_z + k*v3_z})));
+    }
+    for (unsigned j = 0; j < 4; ++j) { // line 1 - 4 blocks // side note: v1_y=0 and v1_z=0
+      witnesses.push_back(Point_d(std::vector<FT>({w0[0] + v1_x + j*v2_x + k*v3_x, w0[1] + j*v2_y + k*v3_y, w0[2] + j*v2_z + k*v3_z})));
+      witnesses.push_back(Point_d(std::vector<FT>({w1[0] + v1_x + j*v2_x + k*v3_x, w1[1] + j*v2_y + k*v3_y, w1[2] + j*v2_z + k*v3_z})));
+      witnesses.push_back(Point_d(std::vector<FT>({w2[0] + v1_x + j*v2_x + k*v3_x, w2[1] + j*v2_y + k*v3_y, w2[2] + j*v2_z + k*v3_z})));
+      witnesses.push_back(Point_d(std::vector<FT>({w3[0] + v1_x + j*v2_x + k*v3_x, w3[1] + j*v2_y + k*v3_y, w3[2] + j*v2_z + k*v3_z})));
+      witnesses.push_back(Point_d(std::vector<FT>({w4[0] + v1_x + j*v2_x + k*v3_x, w4[1] + j*v2_y + k*v3_y, w4[2] + j*v2_z + k*v3_z})));
+    }
+    for (unsigned j = 0; j < 5; ++j) { // line 2 - 5 blocks // side note: v1_y=0 and v1_z=0
+      witnesses.push_back(Point_d(std::vector<FT>({w0[0] + 2*v1_x + j*v2_x + k*v3_x, w0[1] + j*v2_y + k*v3_y, w0[2] + j*v2_z + k*v3_z})));
+      witnesses.push_back(Point_d(std::vector<FT>({w1[0] + 2*v1_x + j*v2_x + k*v3_x, w1[1] + j*v2_y + k*v3_y, w1[2] + j*v2_z + k*v3_z})));
+      witnesses.push_back(Point_d(std::vector<FT>({w2[0] + 2*v1_x + j*v2_x + k*v3_x, w2[1] + j*v2_y + k*v3_y, w2[2] + j*v2_z + k*v3_z})));
+      witnesses.push_back(Point_d(std::vector<FT>({w3[0] + 2*v1_x + j*v2_x + k*v3_x, w3[1] + j*v2_y + k*v3_y, w3[2] + j*v2_z + k*v3_z})));
+      witnesses.push_back(Point_d(std::vector<FT>({w4[0] + 2*v1_x + j*v2_x + k*v3_x, w4[1] + j*v2_y + k*v3_y, w4[2] + j*v2_z + k*v3_z})));
+    }
+    for (unsigned j = 1; j < 5; ++j) { // line 3 - 4 blocks // side note: v1_y=0 and v1_z=0
+      witnesses.push_back(Point_d(std::vector<FT>({w0[0] + 3*v1_x + j*v2_x + k*v3_x, w0[1] + j*v2_y + k*v3_y, w0[2] + j*v2_z + k*v3_z})));
+      witnesses.push_back(Point_d(std::vector<FT>({w1[0] + 3*v1_x + j*v2_x + k*v3_x, w1[1] + j*v2_y + k*v3_y, w1[2] + j*v2_z + k*v3_z})));
+      witnesses.push_back(Point_d(std::vector<FT>({w2[0] + 3*v1_x + j*v2_x + k*v3_x, w2[1] + j*v2_y + k*v3_y, w2[2] + j*v2_z + k*v3_z})));
+      witnesses.push_back(Point_d(std::vector<FT>({w3[0] + 3*v1_x + j*v2_x + k*v3_x, w3[1] + j*v2_y + k*v3_y, w3[2] + j*v2_z + k*v3_z})));
+      witnesses.push_back(Point_d(std::vector<FT>({w4[0] + 3*v1_x + j*v2_x + k*v3_x, w4[1] + j*v2_y + k*v3_y, w4[2] + j*v2_z + k*v3_z})));
+    }
+    for (unsigned j = 2; j < 5; ++j) { // line 4 - 3 blocks // side note: v1_y=0 and v1_z=0
+      witnesses.push_back(Point_d(std::vector<FT>({w0[0] + 4*v1_x + j*v2_x + k*v3_x, w0[1] + j*v2_y + k*v3_y, w0[2] + j*v2_z + k*v3_z})));
+      witnesses.push_back(Point_d(std::vector<FT>({w1[0] + 4*v1_x + j*v2_x + k*v3_x, w1[1] + j*v2_y + k*v3_y, w1[2] + j*v2_z + k*v3_z})));
+      witnesses.push_back(Point_d(std::vector<FT>({w2[0] + 4*v1_x + j*v2_x + k*v3_x, w2[1] + j*v2_y + k*v3_y, w2[2] + j*v2_z + k*v3_z})));
+      witnesses.push_back(Point_d(std::vector<FT>({w3[0] + 4*v1_x + j*v2_x + k*v3_x, w3[1] + j*v2_y + k*v3_y, w3[2] + j*v2_z + k*v3_z})));
+      witnesses.push_back(Point_d(std::vector<FT>({w4[0] + 4*v1_x + j*v2_x + k*v3_x, w4[1] + j*v2_y + k*v3_y, w4[2] + j*v2_z + k*v3_z})));
+    }
+  }
 }
 
 int main (int argc, char * const argv[])
@@ -793,5 +817,10 @@ int main (int argc, char * const argv[])
   generate_bings_house(landmarks, witnesses);
   write_points("bings_house_distorted.points", landmarks);
   write_points("bings_house_distorted.witnesses", witnesses);
+
+  /* cgal check of the Delaunay triangulation */
+  CGAL::Delaunay_triangulation<K> del(3);
+  del.insert(landmarks.begin(), landmarks.end());
+  write_delaunay_mesh(del, landmarks[0], false);
 }
  
