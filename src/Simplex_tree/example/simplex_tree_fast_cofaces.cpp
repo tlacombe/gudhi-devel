@@ -107,6 +107,18 @@ int main(int argc, char * const argv[]) {
   std::cout << "\n \n \n";
 
 
+  std::cout << "\n \n \n";
+  std::cout << "=============================\n";
+  st.test_ds();
+  std::cout << "=============================\n";
+  std::cout << "\n \n \n";
+
+  std::cout << "\n \n \n";
+  std::cout << "=============================\n";
+  st.test_ds();
+  std::cout << "=============================\n";
+  std::cout << "\n \n \n";
+
 
 
   std::cout << "Iterator on Simplices in the filtration, their boundary simplices, and their star:" << std::endl;
@@ -128,13 +140,14 @@ int main(int argc, char * const argv[]) {
 
     std::cout << "Star: \n";
     for(auto c_simplex : st.opt_cofaces_simplex_range(f_simplex,0)) {
-      std::cout << "      " << "[" << st.filtration(f_simplex) << "] ";
-      for (auto vertex : st.simplex_vertex_range(f_simplex)) {
+      std::cout << "      " << "[" << st.filtration(c_simplex) << "] ";
+      for (auto vertex : st.simplex_vertex_range(c_simplex)) {
         std::cout << vertex << " ";
       }
       std::cout << std::endl; 
-      std::cout << "end star\n";
     }
+    std::cout << "end star\n";
+
   }
 
 

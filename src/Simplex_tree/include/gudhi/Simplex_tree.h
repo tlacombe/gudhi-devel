@@ -153,22 +153,27 @@ class Simplex_tree {
     //this is used when stored in a map like DS, using copies when 
     //performing insertions and rebalancing of the rbtree
     Hooks_simplex_base_cofaces(const Hooks_simplex_base_cofaces & other)
-    { list_max_vertex_hook_.swap_nodes(other.list_max_vertex_hook_);  }
+    { 
+      std::cout << "A Copy hooks. \n";
+      list_max_vertex_hook_.swap_nodes(other.list_max_vertex_hook_);  }
     //copy assignment
     Hooks_simplex_base_cofaces& operator=(
         BOOST_COPY_ASSIGN_REF(Hooks_simplex_base_cofaces) other) 
     {
-      std::cout << "Copy hooks. \n";
+      std::cout << "B Copy hooks. \n";
       list_max_vertex_hook_.swap_nodes(other.list_max_vertex_hook_); 
       return *this;
     }
     //move constructor
     Hooks_simplex_base_cofaces(BOOST_RV_REF(Hooks_simplex_base_cofaces) other) 
-    { list_max_vertex_hook_.swap_nodes(other.list_max_vertex_hook_); }
+    { 
+      std::cout << "C Copy hooks. \n";
+      list_max_vertex_hook_.swap_nodes(other.list_max_vertex_hook_); }
     //move assignment
     Hooks_simplex_base_cofaces& operator=(
       BOOST_RV_REF(Hooks_simplex_base_cofaces) other)
     {
+      std::cout << "D Copy hooks. \n";
       list_max_vertex_hook_.swap_nodes(other.list_max_vertex_hook_); 
       return *this;
     }
@@ -1051,75 +1056,7 @@ public:
     }
   }
 
-  //----------------------------------------------
-/* Predicate to check whether an input SimplexTree::Node represents a 
- * coface of codimension codim_ of a simplex simp_, 
- * stored as a std::vector of SimplexTree::Vertex_handle.
- * If the codimension codim is 0, returns true for all cofaces.
- *
- * Given a SimplexHandle in a simplex tree cpx_, traverse the tree upwards 
- * to find the sequence of Vertex_handle of simp_. Does not test sh itself. 
- * Used for filter_iterator in the optimized algorithm for
- * cofaces_simplex_range.
- */
- template<class SimplexTree>
- class is_coface {
-    typedef typename SimplexTree::Vertex_handle  Vertex_handle;
-    typedef typename SimplexTree::Simplex_handle Simplex_handle;
 
-  public:
-    is_coface() : cpx_(NULL) {}
-    is_coface(SimplexTree *cpx, std::vector<Vertex_handle> simp, int codim) 
-    : codim_(codim), cpx_(cpx), simp_(simp) {}
-
-    //Returns true iff traversing the Node upwards to the root reads a 
-    //coface of simp_ of codimension codim_
-    bool operator()(typename SimplexTree::Hooks_simplex_base &curr_hooks) {
-      
-      std::cout << "=============Enter\n";
-
-      int dim = 0;
-      Node & curr_node = static_cast<Node&>(curr_hooks);
-      auto vertex_it = simp_.begin();
-      //first Node must always have label simp_.begin() 
-      std::cout << "A\n";
-      auto curr_sib = cpx_->self_siblings(curr_node,*vertex_it);
-      std::cout << "B\n";
-      std::cout << "hey \n";
-
-///////////////////////
-      Simplex_handle sh = curr_sib->members().find(*vertex_it);
-      std::cout << "----------";
-      for(auto v : cpx_->simplex_vertex_range(sh)) { std::cout << v << " "; }
-      std::cout << "----------\n";
-///////////////////////
-
-
-      if(++vertex_it == simp_.end()) { return true; }      
-      while(curr_sib->oncles() != NULL) { //todo is NULL valid?
-        if(curr_sib->parent() == *vertex_it) {
-          if(++vertex_it == simp_.end()) { 
-            //todo codimension criterion
-            while(curr_sib->oncles() != NULL) { 
-              curr_sib = curr_sib->oncles(); 
-              ++dim; 
-            }
-            return dim == simp_.size()+codim_-1;
-            // return true; 
-          }
-        }
-        curr_sib = curr_sib->oncles();
-        ++dim;
-      }
-      std::cout << "=============END false\n";
-      return false;
-    }
-
-  private:
-    int                         codim_;
-    SimplexTree               * cpx_;
-    std::vector<Vertex_handle>  simp_; //vertices of simplex, reverse ordered
-  };
 
 typedef is_coface < Simplex_tree > is_coface_predicate;
 

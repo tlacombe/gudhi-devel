@@ -4,7 +4,7 @@
  *
  *    Author(s):       Clément Maria
  *
- *    Copyright (C) 2014  INRIA Sophia Antipolis-Méditerranée (France)
+ *    Copyright (C) 2014
  *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -27,7 +27,11 @@
 #include <utility>  // for pair
 #include <vector>
 
-using namespace Gudhi;
+using Simplex_tree = Gudhi::Simplex_tree<>;
+using Vertex_handle = Simplex_tree::Vertex_handle;
+using Filtration_value = Simplex_tree::Filtration_value;
+using typeVectorVertex = std::vector< Vertex_handle >;
+using typePairSimplexBool = std::pair< Simplex_tree::Simplex_handle, bool >;
 
 typedef Simplex_tree<Simplex_tree_options_zigzag_persistence> typeST;
 typedef std::vector< Vertex_handle > typeVectorVertex;
