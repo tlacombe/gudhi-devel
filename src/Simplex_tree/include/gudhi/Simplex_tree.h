@@ -37,14 +37,14 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/range/adaptor/reversed.hpp>
 #include <boost/intrusive/list.hpp>
-#include <boost/iterator/filter_iterator.hpp>
+// #include <boost/iterator/filter_iterator.hpp>
 
 #ifdef GUDHI_USE_TBB
 #include <tbb/parallel_sort.h>
 #endif
 
 #include <utility>
-#include <vector>
+#include <vector> 
 #include <functional>  // for greater<>
 #include <stdexcept>
 #include <limits>  // Inf
@@ -154,26 +154,22 @@ class Simplex_tree {
     //performing insertions and rebalancing of the rbtree
     Hooks_simplex_base_cofaces(const Hooks_simplex_base_cofaces & other)
     { 
-      std::cout << "A Copy hooks. \n";
       list_max_vertex_hook_.swap_nodes(other.list_max_vertex_hook_);  }
     //copy assignment
     Hooks_simplex_base_cofaces& operator=(
         BOOST_COPY_ASSIGN_REF(Hooks_simplex_base_cofaces) other) 
     {
-      std::cout << "B Copy hooks. \n";
       list_max_vertex_hook_.swap_nodes(other.list_max_vertex_hook_); 
       return *this;
     }
     //move constructor
     Hooks_simplex_base_cofaces(BOOST_RV_REF(Hooks_simplex_base_cofaces) other) 
     { 
-      std::cout << "C Copy hooks. \n";
       list_max_vertex_hook_.swap_nodes(other.list_max_vertex_hook_); }
     //move assignment
     Hooks_simplex_base_cofaces& operator=(
       BOOST_RV_REF(Hooks_simplex_base_cofaces) other)
     {
-      std::cout << "D Copy hooks. \n";
       list_max_vertex_hook_.swap_nodes(other.list_max_vertex_hook_); 
       return *this;
     }
@@ -210,22 +206,18 @@ private:
     void insert(typename SimplexTree::Simplex_handle sh) {}
   };
 
+//to do: accelerate by using intrusive::map interface, storing the vertex directly in the Node. Issue with Simplex_handle type: create a fake type with ->first and ->second methods. 
   template< typename SimplexTree > 
   struct cofaces_data_structure_optimized {
 
     cofaces_data_structure_optimized() {};
     //insert a Node in the hook list corresponding to its label
     void insert(typename SimplexTree::Simplex_handle sh) {
-      std::cout << "Try inserting list at v = " << sh->first << "\n";
       auto it = nodes_per_max_vertex_.find(sh->first);
       if(it == nodes_per_max_vertex_.end()) {
         it = (nodes_per_max_vertex_.emplace(std::make_pair(sh->first, new typename SimplexTree::List_max_vertex()))).first;
       }
-      // auto res_insert = nodes_per_max_vertex_.try_emplace(std::make_pair(sh->first, new typename SimplexTree::List_max_vertex()));
-      // if(res_insert.second) {std::cout << "........success \n";}
-      // else {std::cout << "........failure \n";} 
       it->second->push_back(sh->second);
-      // std::cout << "new size list = " << res_insert.first->second->size() << "\n";
     }
     typename SimplexTree::List_max_vertex * access(Vertex_handle v) {
       return nodes_per_max_vertex_[v];
@@ -244,16 +236,9 @@ public:
       for(auto pp : cofaces_data_structure_.nodes_per_max_vertex_) {
         std::cout << "List " << pp.first << "\n";
         std::cout << "of size " << pp.second->size() << "\n";
-        // for(auto & curr_hooks : *(pp.second)) {
           for(auto it = pp.second->begin();
                    it != pp.second->end(); ++it) {
-          // std::cout << "X \n";
           Node & curr_node = static_cast<Node&>(*it);
-
-          // if(curr_node.children() == NULL) { std::cout << "NULL\n"; }
-          // else {std::cout << "!NULL\n"; }
-  
-          // std::cout << "children's parent is " << curr_node.children()->parent() << "\n";
           Siblings * curr_sib = self_siblings(curr_node,pp.first);
           Simplex_handle sh = curr_sib->members().find(pp.first);
           if(sh == curr_sib->members().end()) { std::cout << "Cannot find Node...\n";}
@@ -275,6 +260,8 @@ public:
                                                       Cofaces_data_structure;
 //todo initialize and update everytime -> done, check validity
   Cofaces_data_structure    cofaces_data_structure_;
+
+
 
 
 //the zigzag persistence cohomology algorithm requires to store a 
@@ -1058,16 +1045,17 @@ public:
 
 
 
-typedef is_coface < Simplex_tree > is_coface_predicate;
 
 
 typedef std::vector<Simplex_handle> Brute_force_cofaces_simplex_range;
 typedef typename Brute_force_cofaces_simplex_range::iterator 
                                     Brute_force_cofaces_simplex_iterator;
 
-typedef boost::filter_iterator< is_coface_predicate
-                              , typename List_max_vertex::iterator > 
-                                    Optimized_cofaces_simplex_iterator;
+typedef Simplex_tree_opt_cofaces_simplex_iterator< Simplex_tree > 
+                                            Optimized_cofaces_simplex_iterator;
+// typedef boost::filter_iterator< is_coface_predicate
+//                               , typename List_max_vertex::iterator > 
+//                                     Optimized_cofaces_simplex_iterator;
 typedef boost::iterator_range< Optimized_cofaces_simplex_iterator > 
                                     Optimized_cofaces_simplex_range;
 
@@ -1090,6 +1078,11 @@ public:
     return cofaces_simplex_range(simplex, 0);
   }
 
+  Cofaces_simplex_range cofaces_simplex_range(const Simplex_handle simplex, int codimension) {
+    return impl_cofaces_simplex_range(simplex, codimension, std::integral_constant<bool,Options::link_simplices_through_max_vertex>{});
+  }
+
+private:
   /** \brief Compute the cofaces of a n simplex
    * \param simplex represent the n-simplex of which we search the n+codimension cofaces
    * \param codimension The function returns the (n+codimension)-cofaces of the n-simplex. If codimension = 0, 
@@ -1097,7 +1090,7 @@ public:
    * \return Vector of Simplex_handle, empty vector if no cofaces found.
    */
   Brute_force_cofaces_simplex_range 
-  cofaces_simplex_range(const Simplex_handle simplex, int codimension) {
+  impl_cofaces_simplex_range(const Simplex_handle simplex, int codimension, std::false_type) {
     Brute_force_cofaces_simplex_range cofaces;
     // codimension must be positive or null integer
     assert(codimension >= 0);
@@ -1117,43 +1110,23 @@ public:
    * if link_simplices_through_max_vertex = true.
    * todo
    */
-
   Optimized_cofaces_simplex_range   
-  opt_cofaces_simplex_range(const Simplex_handle simplex, int codimension) {
+  impl_cofaces_simplex_range(const Simplex_handle simplex, int codimension, std::true_type) {
     assert(codimension >= 0);
     Simplex_vertex_range rg = simplex_vertex_range(simplex);
     std::vector<Vertex_handle> copy(rg.begin(), rg.end());
-    // if (codimension + static_cast<int>(copy.size()) > dimension_ + 1 ||
-    //     (codimension == 0 && static_cast<int>(copy.size()) > dimension_))  // n+codimension greater than dimension_
-    //   return cofaces;
     // must be sorted in decreasing order
     assert(std::is_sorted(copy.begin(), copy.end(), std::greater<Vertex_handle>()));
-    // bool star = codimension == 0;      
 
-    // std::cout << "-----list of vertices =   "; 
-    // for(auto v : copy) std::cout << v << " ";
-    // std::cout << std::endl;
-    // std::cout << "-----max vertex =         ";
-    // Vertex_handle max_v = *(copy.begin()); 
-    // std::cout << max_v << std::endl;
-    // std::cout << "-----size of max_v list = ";
-    // std::cout << cofaces_data_structure_.access(max_v).size() << std::endl;
-
-
-    is_coface_predicate pred(this,copy,codimension);
-    Optimized_cofaces_simplex_iterator first(pred
-                    , cofaces_data_structure_.access(simplex->first)->begin()
-                    , cofaces_data_structure_.access(simplex->first)->end() );
-    Optimized_cofaces_simplex_iterator last(pred
-                    , cofaces_data_structure_.access(simplex->first)->end()
-                    , cofaces_data_structure_.access(simplex->first)->end() );
-    return Optimized_cofaces_simplex_range(first,last);
+    return Optimized_cofaces_simplex_range(
+                  Optimized_cofaces_simplex_iterator(this, copy, codimension)
+                , Optimized_cofaces_simplex_iterator());
   }
 //todo initialise hooks when inserting Node -> defined in Node
 //todo unlink when removing/copying Nodes
 //todo store the pointer to the beginning of each least...Start at Node_vertices?
   
- private:
+
   /** \brief Returns true iff the list of vertices of sh1
    * is smaller than the list of vertices of sh2 w.r.t.
    * lexicographic order on the lists read in reverse.

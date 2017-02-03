@@ -2,9 +2,9 @@
  *    (Geometric Understanding in Higher Dimensions) is a generic C++
  *    library for computational topology.
  *
- *    Author(s):       Clément Maria
+ *    Author(s):       Vincent Rouvreau
  *
- *    Copyright (C) 2014
+ *    Copyright (C) 2014  INRIA Sophia Antipolis-Méditerranée (France)
  *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -27,15 +27,10 @@
 #include <utility>  // for pair
 #include <vector>
 
-using Simplex_tree = Gudhi::Simplex_tree<>;
-using Vertex_handle = Simplex_tree::Vertex_handle;
-using Filtration_value = Simplex_tree::Filtration_value;
-using typeVectorVertex = std::vector< Vertex_handle >;
-using typePairSimplexBool = std::pair< Simplex_tree::Simplex_handle, bool >;
+using namespace Gudhi;
 
-typedef Simplex_tree<Simplex_tree_options_zigzag_persistence> typeST;
 typedef std::vector< Vertex_handle > typeVectorVertex;
-typedef std::pair< typeST::Simplex_handle, bool > typePairSimplexBool;
+typedef std::pair< Simplex_tree<>::Simplex_handle, bool > typePairSimplexBool;
 
 int main(int argc, char * const argv[]) {
   const Filtration_value FIRST_FILTRATION_VALUE = 0.1;
@@ -47,7 +42,7 @@ int main(int argc, char * const argv[]) {
   std::cout << "********************************************************************" << std::endl;
   std::cout << "EXAMPLE OF SIMPLE INSERTION" << std::endl;
   // Construct the Simplex Tree
-  typeST simplexTree;
+  Simplex_tree<> simplexTree;
 
   /* Simplex to be inserted:  */
   /*    1                     */
@@ -217,7 +212,7 @@ int main(int argc, char * const argv[]) {
   // ------------------------------------------------------------------------------------------------------------------
   // Find in the simplex_tree
   // ------------------------------------------------------------------------------------------------------------------
-  typeST::Simplex_handle simplexFound = simplexTree.find(secondSimplexVector);
+  Simplex_tree<>::Simplex_handle simplexFound = simplexTree.find(secondSimplexVector);
   std::cout << "**************IS THE SIMPLEX {1} IN THE SIMPLEX TREE ?\n";
   if (simplexFound != simplexTree.null_simplex())
     std::cout << "***+ YES IT IS!\n";

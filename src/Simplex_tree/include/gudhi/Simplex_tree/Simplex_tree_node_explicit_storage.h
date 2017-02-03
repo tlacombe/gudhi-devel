@@ -57,10 +57,8 @@ struct Simplex_tree_node_explicit_storage : SimplexTree::Filtration_simplex_base
   , SimplexTree::Key_simplex_base(other) 
   , SimplexTree::Hooks_simplex_base(other)
   , SimplexTree::Annotation_simplex_base(other)
-  , children_(other.children_) {
-
-          std::cout << "Copy hookshooks. \n";
-  }
+  , children_(other.children_) 
+  {}
   /*
    * Assign children to the node
    */

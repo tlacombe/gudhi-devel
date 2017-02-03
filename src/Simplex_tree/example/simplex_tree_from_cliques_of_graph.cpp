@@ -4,7 +4,7 @@
  *
  *    Author(s):       Clément Maria
  *
- *    Copyright (C) 2014  INRIA
+ *    Copyright (C) 2014  INRIA Sophia Antipolis-Méditerranée (France)
  *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -26,15 +26,8 @@
 #include <iostream>
 #include <ctime>
 #include <string>
-#include <utility>  // for std::pair
 
 using namespace Gudhi;
-
-typedef int Vertex_handle;
-typedef double Filtration_value;
-typedef boost::adjacency_list < boost::vecS, boost::vecS, boost::undirectedS,
-                                boost::property < vertex_filtration_t, Filtration_value >,
-                                boost::property < edge_filtration_t, Filtration_value > > Graph_t;
 
 int main(int argc, char * const argv[]) {
   if (argc != 3) {
@@ -50,7 +43,7 @@ int main(int argc, char * const argv[]) {
   Simplex_tree<> st;
 
   start = clock();
-  auto g = read_graph<Graph_t, Filtration_value, Vertex_handle>(filegraph);
+  auto g = read_graph(filegraph);
   // insert the graph in the simplex tree as 1-skeleton
   st.insert_graph(g);
   end = clock();
