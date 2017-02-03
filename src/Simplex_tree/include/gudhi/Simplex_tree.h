@@ -130,9 +130,13 @@ class Simplex_tree {
   typedef typename std::conditional<Options::store_filtration, Filtration_simplex_base_real,
     Filtration_simplex_base_dummy>::type Filtration_simplex_base;
 
-/* 
- * Stores members hooks in Node class in order to maintain them
- * in a map for fast coface location.
+/* If SimplexTreeOptions::link_simplices_through_max_vertex is true, 
+ * store members hooks in Node class in order to maintain them
+ * in a list of Nodes representing vertices with same maximal Vertex_handle. 
+ * This allows to implement fast cofaces search.
+ *
+ * If SimplexTreeOptions::link_simplices_through_max_vertex is false, 
+ * store nothing.
  */
   typedef boost::intrusive::list_member_hook< //allows .unlink()
               boost::intrusive::link_mode< boost::intrusive::auto_unlink > 
@@ -206,7 +210,7 @@ private:
     void insert(typename SimplexTree::Simplex_handle sh) {}
   };
 
-//to do: accelerate by using intrusive::map interface, storing the vertex directly in the Node. Issue with Simplex_handle type: create a fake type with ->first and ->second methods. 
+//todo: accelerate by using intrusive::map interface, storing the vertex directly in the Node. Issue with Simplex_handle type: create a fake type with ->first and ->second methods. 
   template< typename SimplexTree > 
   struct cofaces_data_structure_optimized {
 
@@ -228,37 +232,11 @@ private:
               typename SimplexTree::List_max_vertex *> nodes_per_max_vertex_;
   };
 
-
-////////////////////////////////////////
-public:
-    void test_ds()
-    {
-      for(auto pp : cofaces_data_structure_.nodes_per_max_vertex_) {
-        std::cout << "List " << pp.first << "\n";
-        std::cout << "of size " << pp.second->size() << "\n";
-          for(auto it = pp.second->begin();
-                   it != pp.second->end(); ++it) {
-          Node & curr_node = static_cast<Node&>(*it);
-          Siblings * curr_sib = self_siblings(curr_node,pp.first);
-          Simplex_handle sh = curr_sib->members().find(pp.first);
-          if(sh == curr_sib->members().end()) { std::cout << "Cannot find Node...\n";}
-          std::cout << "----------";
-          for(auto v : simplex_vertex_range(sh)) { std::cout << v << " "; }
-          std::cout << "----------\n";
-        }
-        std::cout << "\n";
-      }
-    }
-////////////////////////////////////////
-
-
-
-
   typedef typename std::conditional< Options::link_simplices_through_max_vertex
                        , cofaces_data_structure_optimized< Simplex_tree >
                        , cofaces_data_structure_dummy< Simplex_tree > >::type 
                                                       Cofaces_data_structure;
-//todo initialize and update everytime -> done, check validity
+
   Cofaces_data_structure    cofaces_data_structure_;
 
 
@@ -1077,18 +1055,19 @@ public:
   Cofaces_simplex_range star_simplex_range(const Simplex_handle simplex) {
     return cofaces_simplex_range(simplex, 0);
   }
-
+  /** \brief Compute the cofaces of a n simplex
+   * \param simplex represent the n-simplex of which we search the n+codimension cofaces
+   * \param codimension The function returns the (n+codimension)-cofaces of the n-simplex. If codimension = 0, 
+   * return all cofaces (equivalent of star function), including the input 
+   * simplex itself.
+   */
   Cofaces_simplex_range cofaces_simplex_range(const Simplex_handle simplex, int codimension) {
     return impl_cofaces_simplex_range(simplex, codimension, std::integral_constant<bool,Options::link_simplices_through_max_vertex>{});
   }
 
 private:
-  /** \brief Compute the cofaces of a n simplex
-   * \param simplex represent the n-simplex of which we search the n+codimension cofaces
-   * \param codimension The function returns the (n+codimension)-cofaces of the n-simplex. If codimension = 0, 
-   * return all cofaces (equivalent of star function)
-   * \return Vector of Simplex_handle, empty vector if no cofaces found.
-   */
+   /* Brute force computation of cofaces. 
+    * Return Vector of Simplex_handle, empty vector if no cofaces found.*/
   Brute_force_cofaces_simplex_range 
   impl_cofaces_simplex_range(const Simplex_handle simplex, int codimension, std::false_type) {
     Brute_force_cofaces_simplex_range cofaces;
@@ -1105,10 +1084,9 @@ private:
     rec_coface(copy, &root_, 1, cofaces, star, codimension + static_cast<int>(copy.size()));
     return cofaces;
   }
-  /** Fast search of cofaces
+  /* Fast search of cofaces
    * This function uses the hooks stored in the Nodes of the simplex tree,
    * if link_simplices_through_max_vertex = true.
-   * todo
    */
   Optimized_cofaces_simplex_range   
   impl_cofaces_simplex_range(const Simplex_handle simplex, int codimension, std::true_type) {
@@ -1122,10 +1100,6 @@ private:
                   Optimized_cofaces_simplex_iterator(this, copy, codimension)
                 , Optimized_cofaces_simplex_iterator());
   }
-//todo initialise hooks when inserting Node -> defined in Node
-//todo unlink when removing/copying Nodes
-//todo store the pointer to the beginning of each least...Start at Node_vertices?
-  
 
   /** \brief Returns true iff the list of vertices of sh1
    * is smaller than the list of vertices of sh2 w.r.t.
@@ -1556,7 +1530,11 @@ struct Simplex_tree_options_fast_persistence {
  * 
  * Maximum number of simplices to compute persistence is <CODE>  
  * std::numeric_limits<std::uint32_t>::max()</CODE>
- * (about 4 billions of simplices). */
+ * (about 4 billions of simplices). 
+ *
+ * The link_simplices_through_max_vertex = true option allows fast computation
+ * of the cofaces of a simplex.
+ */
 struct Simplex_tree_options_zigzag_persistence {
   typedef zigzag_indexing_tag Indexing_tag;
   typedef int Vertex_handle;

@@ -433,7 +433,6 @@ public boost::iterator_facade<
     return (&(*it_) == &(*(other.it_)));
   }
 
-//should we put an intrinsic ds for Siblings.members() to make this cste time?
   Simplex_handle const& dereference() const {
     return sh_;
   }
@@ -589,7 +588,6 @@ public boost::iterator_facade<
   int            max_dim_cofaces_; //bound on the dimension of the cofaces
   Siblings *     sib_;
   bool           all_cofaces;
-  // Vertex_handle  max_v_; //largest vertex handle of simp
 };
 
 /* @} */  // end addtogroup simplex_tree
