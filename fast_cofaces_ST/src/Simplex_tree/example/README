@@ -1,0 +1,98 @@
+To build the example, run in a Terminal:
+
+cd /path-to-gudhi/
+cmake .
+cd /path-to-example/
+make
+
+
+Example of use :
+
+*** Simple simplex tree construction
+
+./simple_simplex_tree
+
+********************************************************************
+EXAMPLE OF SIMPLE INSERTION
+   * INSERT 0
+   + 0 INSERTED
+   * INSERT 1
+   + 1 INSERTED
+   * INSERT (0,1)
+   + (0,1) INSERTED
+   * INSERT 2
+   + 2 INSERTED
+   * INSERT (2,0)
+   + (2,0) INSERTED
+   * INSERT (2,1)
+   + (2,1) INSERTED
+   * INSERT (2,1,0)
+   + (2,1,0) INSERTED
+   * INSERT 3
+   + 3 INSERTED
+   * INSERT (3,0)
+   + (3,0) INSERTED
+   * INSERT 0 (already inserted)
+   - 0 NOT INSERTED
+   * INSERT (2,1,0) (already inserted)
+   - (2,1,0) NOT INSERTED
+********************************************************************
+* The complex contains 9 simplices
+   - dimension 2   - filtration 0.4
+* Iterator on Simplices in the filtration, with [filtration value]:
+   [0.1] 0 
+   [0.1] 1 
+   [0.1] 2 
+   [0.1] 3 
+   [0.2] 1 0 
+   [0.2] 2 0 
+   [0.2] 2 1 
+   [0.2] 3 0 
+   [0.3] 2 1 0 
+
+*** Simplex tree construction with Z/2Z coefficients on weighted graph Klein bottle file:
+
+./simplex_tree_from_cliques_of_graph ../../../data/points/Klein_bottle_complex.txt 2
+Insert the 1-skeleton in the simplex tree in 0 s. 
+Expand the simplex tree in 0 s. 
+Information of the Simplex Tree: 
+  Number of vertices = 10   Number of simplices = 82
+
+with Z/3Z coefficients:
+
+./simplex_tree_from_cliques_of_graph ../../../data/points/Klein_bottle_complex.txt 3
+
+Insert the 1-skeleton in the simplex tree in 0 s.
+Expand the simplex tree in 0 s.
+Information of the Simplex Tree:
+  Number of vertices = 10   Number of simplices = 106
+
+*** Simplex_tree computed and displayed from a 3D alpha complex:
+    [ Requires CGAL, GMP and GMPXX to be installed]
+
+./simplex_tree_from_alpha_shapes_3 ../../../data/points/bunny_5000
+
+*** Comparison of performance for cofaces computation
+simplex_tree_performance_cofaces_computation ../../../data/points/Kl.off 0.15 3
+
+---- Simplex tree with FAST cofaces option: 
+     Construct Rips complex in 0.086179 s. 
+     Information of the Simplex Tree: 
+        Number of vertices = 10000
+        Number of simplices = 323880
+     Compute the star of every simplex in the Simplex_tree:
+     Information of the cofaces computation: 
+        Average star size = 9.60793
+        Total time for computation = 1.48311 s. 
+        Average time per simplex = 4.5792e-06 s. 
+
+---- Simplex tree with SLOW cofaces option: 
+     Construct Rips complex in 0.048509 s. 
+     Information of the Simplex Tree: 
+        Number of vertices = 10000
+        Number of simplices = 323880
+     Compute the star of every simplex in the Simplex_tree:
+     Information of the cofaces computation: 
+        Average star size = 9.17156
+        Total time for computation = 209.901 s. 
+        Average time per simplex = 0.000648084 s. 
