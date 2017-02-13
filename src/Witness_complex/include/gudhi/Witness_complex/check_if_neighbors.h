@@ -8,8 +8,8 @@ template < typename SimplicialComplexForWitness,
            typename Simplex,
            typename VertexVector >
 bool check_if_neighbors(SimplicialComplexForWitness& sc,
-                        Simplex& simplex1,
-                        Simplex& simplex2,
+                        const Simplex& simplex1,
+                        const Simplex& simplex2,
                         VertexVector& coface
                         )
   {
