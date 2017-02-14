@@ -48,11 +48,11 @@ public:
   INS_range    search_range_;
   INS_iterator iterator_next_;
   INS_iterator iterator_end_;
-  std::size_t  no_of_witnessed_k_simplices;
+  std::size_t  no_of_witnessed_k_simplices_;
   
   Active_witness(const INS_range& search_range)
     : search_range_(search_range), iterator_next_(search_range_.begin()), iterator_end_(search_range_.end()),
-      no_of_witnessed_k_simplices(0)
+      no_of_witnessed_k_simplices_(0)
   {
     //nearest_landmark_table_.push_back(*iterator_last_);
   }
@@ -66,6 +66,22 @@ public:
   {
     return iterator(this);
   }
+
+  void decrease()
+  {
+    no_of_witnessed_k_simplices_--;
+  }
+
+  void increase()
+  {
+    no_of_witnessed_k_simplices_++;
+  }
+
+  std::size_t counter()
+  {
+    return no_of_witnessed_k_simplices_;
+  }
+  
 };
 
 }
