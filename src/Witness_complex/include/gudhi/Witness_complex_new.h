@@ -27,6 +27,7 @@
 #include <gudhi/Kd_tree_search.h>
 #include <gudhi/Active_witness/Active_witness.h>
 #include <gudhi/Active_witness/Witness_for_simplex.h>
+#include <gudhi/Active_witness/Sib_vertex_pair.h>
 #include <gudhi/Witness_complex/all_faces_in.h>
 #include <gudhi/Witness_complex/check_if_neighbors.h>
 #include <gudhi/Simplex_tree/Vertex_subtree_iterator.h>
@@ -111,7 +112,7 @@ private:
     typedef typename SimplicialComplexForWitness::Vertex_handle Vertex_handle;
     typedef typename SimplicialComplexForWitness::Simplex_handle Simplex_handle;
     typedef typename SimplicialComplexForWitness::Siblings Siblings;
-    typedef std::pair<Siblings*, Vertex_handle> Simplex_key;
+    typedef Sib_vertex_pair<SimplicialComplexForWitness, Vertex_handle> Simplex_key;
     typedef std::vector<Vertex_handle> Vertex_vector;
 
     typedef Gudhi::Simplex_tree_fixed_dimension_iterator<SimplicialComplexForWitness> Fixed_dimension_iterator;
@@ -144,7 +145,7 @@ private:
     //----------------------- TEST
     for (auto vw_pair: *prev_dim_map) {
       std::cout << "*";
-      for (auto v: complex.simplex_vertex_range(vw_pair.first.first->members().find(vw_pair.first.second)))
+      for (auto v: complex.simplex_vertex_range(vw_pair.first.simplex_handle()))
         std::cout << v;
       std::cout << "\n[";
       for (auto w: vw_pair.second) {
@@ -165,7 +166,7 @@ private:
     //----------------------- TEST
     for (auto vw_pair: *prev_dim_map) {
       std::cout << "*";
-      for (auto v: complex.simplex_vertex_range(vw_pair.first.first->members().find(vw_pair.first.second)))
+      for (auto v: complex.simplex_vertex_range(vw_pair.first.simplex_handle()))
         std::cout << v;
       std::cout << "\n[";
       for (auto w: vw_pair.second) {
@@ -178,15 +179,15 @@ private:
     }
 
     Landmark_id k = 2; /* current dimension in iterative construction */
-    // while (!active_witnesses.empty() && k <= 2) {
-    //   Simplex_witness_list_map* curr_dim_map = new Simplex_witness_list_map();
-    //   fill_simplices(max_alpha_square, k, complex, active_witnesses, prev_dim_map, curr_dim_map);
-    //   delete prev_dim_map;
-    //   prev_dim_map = curr_dim_map;
-    //   k++;
-    // }
+    while (!active_witnesses.empty() && k <= 2) {
+      Simplex_witness_list_map* curr_dim_map = new Simplex_witness_list_map();
+      fill_simplices(max_alpha_square, k, complex, active_witnesses, prev_dim_map, curr_dim_map);
+      delete prev_dim_map;
+      prev_dim_map = curr_dim_map;
+      k++;
+    }
 
-    // delete prev_dim_map;
+    delete prev_dim_map;
       
     //---------------------------
     
@@ -297,7 +298,7 @@ private:
     typedef typename SimplicialComplexForWitness::Simplex_handle Simplex_handle;
     typedef typename SimplicialComplexForWitness::Vertex_handle Vertex_handle;
     typedef typename SimplicialComplexForWitness::Siblings Siblings;
-    typedef std::pair<Siblings*, Vertex_handle> Simplex_key;
+    typedef Sib_vertex_pair<SimplicialComplexForWitness, Vertex_handle> Simplex_key;
     typedef std::vector<Vertex_handle> Vertex_vector;
     typedef typename SimplexWitnessMap::mapped_type Simplex_witness_list_map;
     typedef typename Simplex_witness_list_map::value_type Witness_list;
@@ -346,7 +347,7 @@ private:
     typedef typename SimplicialComplexForWitness::Simplex_handle Simplex_handle;
     typedef typename SimplicialComplexForWitness::Vertex_handle Vertex_handle;
     typedef typename SimplicialComplexForWitness::Siblings Siblings;
-    typedef std::pair<Siblings*, Vertex_handle> Simplex_key;
+    typedef Sib_vertex_pair<SimplicialComplexForWitness, Vertex_handle> Simplex_key;
     typedef std::vector<Vertex_handle> Vertex_vector;
     typedef typename SimplexWitnessMap::mapped_type Simplex_witness_list_map;
     typedef typename Simplex_witness_list_map::value_type Witness_list;
@@ -364,7 +365,7 @@ private:
             filtration_value = l_it->second - norelax_dist2;
           else
             norelax_dist2 = l_it->second;
-          auto sv_range = sc.simplex_vertex_range(vw_pair.first.first->members().find(vw_pair.first.second));
+          auto sv_range = sc.simplex_vertex_range(vw_pair.first.simplex_handle());
           Vertex_vector vertices(sv_range.begin(), sv_range.end());
           vertices.push_back(l_it->first);
           sc.insert_simplex(vertices, filtration_value);
@@ -379,7 +380,7 @@ private:
           l_it++;
         double norelax_dist2 = w.limit_distance_;
         for (; l_it != end && l_it->second - alpha2 <= norelax_dist2; ++l_it) {
-          auto sv_range = sc.simplex_vertex_range(vw_pair.first.first->members().find(vw_pair.first.second));
+          auto sv_range = sc.simplex_vertex_range(vw_pair.first.simplex_handle());
           Vertex_vector vertices(sv_range.begin(), sv_range.end());
           vertices.push_back(l_it->first);
           Simplex_handle sh = sc.find(vertices);
@@ -423,11 +424,11 @@ private:
     for (auto sw_pair: *prev_dim_map) {
       //----------------- TEST
       std::cout << "*";
-      for (auto v: sc.simplex_vertex_range(sw_pair.first))
+      for (auto v: sc.simplex_vertex_range(sw_pair.first.simplex_handle()))
         std::cout << v;
       std::cout << std::endl;
       //-----------------
-      auto v_it = sc.simplex_vertex_range(sw_pair.first).begin();
+      auto v_it = sc.simplex_vertex_range(sw_pair.first.simplex_handle()).begin();
       unsigned counter = 0; /* I need the first vertex before last */ 
       while (counter != k-2) {
         v_it++;
@@ -446,7 +447,7 @@ private:
         std::cout << std::endl;
         //-----------------
         Vertex_vector coface;
-        if (check_if_neighbors(sc, sw_pair.first, sh2, coface)) {
+        if (check_if_neighbors(sc, sw_pair.first.simplex_handle(), sh2, coface)) {
            //---------------TEST
             std::cout << "Coface: ";
             for (auto v: coface)
@@ -462,7 +463,7 @@ private:
         std::cout << std::endl;
         //-----------------
         Vertex_vector coface;
-        if (check_if_neighbors(sc, sw_pair.first, sh2, coface)) {
+        if (check_if_neighbors(sc, sw_pair.first.simplex_handle(), sh2, coface)) {
            //---------------TEST
             std::cout << "Coface: ";
             for (auto v: coface)
