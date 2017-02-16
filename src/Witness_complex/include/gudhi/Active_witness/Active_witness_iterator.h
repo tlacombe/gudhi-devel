@@ -57,6 +57,11 @@ class Active_witness_iterator
   bool is_end_; // true only if the pointer is end and there are no more neighbors to add
 
 public:
+
+  Active_witness_iterator()
+  {
+  }
+  
   Active_witness_iterator(Active_witness* aw)
     : aw_(aw), lh_(aw_->nearest_landmark_table_.end()), is_end_(true)
   {

@@ -94,15 +94,15 @@ BOOST_AUTO_TEST_CASE(simple_witness_complex) {
 
   // Weak witness complex: non-Euclidean version
   WitnessComplex witness_complex(nearest_landmark_table);
-  witness_complex.create_complex(complex_ne, 0);
+  // witness_complex.create_complex(complex_ne, 0);
 
-  std::cout << "complex.num_simplices() = " << complex_ne.num_simplices() << std::endl; 
-  BOOST_CHECK(complex_ne.num_simplices() == 24);
+  // std::cout << "complex.num_simplices() = " << complex_ne.num_simplices() << std::endl; 
+  // BOOST_CHECK(complex_ne.num_simplices() == 24);
 
-  //witness_complex.create_complex(relaxed_complex_ne, 8.01);
+  witness_complex.create_complex(relaxed_complex_ne, 8.01);
 
-  //std::cout << "relaxed_complex.num_simplices() = " << relaxed_complex_ne.num_simplices() << std::endl; 
-  //BOOST_CHECK(relaxed_complex_ne.num_simplices() == 239);
+  std::cout << "relaxed_complex.num_simplices() = " << relaxed_complex_ne.num_simplices() << std::endl; 
+  BOOST_CHECK(relaxed_complex_ne.num_simplices() == 239);
     
   
   // Strong complex : Euclidean version

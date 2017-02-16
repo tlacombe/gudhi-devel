@@ -44,6 +44,10 @@ public:
   Active_witness_iterator last_it_;
   AWL_iterator witness_;
   double limit_distance_;
+
+  Witness_for_simplex()
+  {
+  }
   
   Witness_for_simplex(Active_witness_iterator last_it, AWL_iterator witness, double limit_distance)
     : last_it_(last_it), witness_(witness), limit_distance_(limit_distance)
