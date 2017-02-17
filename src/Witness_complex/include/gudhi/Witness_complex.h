@@ -137,7 +137,8 @@ private:
           active_witnesses.erase(aw_it++); //First increase the iterator and then erase the previous element
         else
           aw_it++;
-      } 
+      }
+      std::cout << k << "-dim active witness list size = " << active_witnesses.size() << "\n";
       k++;
     }
     complex.set_dimension(k-1);
