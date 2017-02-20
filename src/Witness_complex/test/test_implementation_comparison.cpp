@@ -33,6 +33,10 @@ int main(int argc, char * const argv[]) {
     return 0;
   }
 
+  #ifndef DEBUG_TRACES
+  #define DEBUG_TRACES
+  #endif
+  
   std::string file_name = argv[1];
   int nbL = atoi(argv[2]), lim_dim = atoi(argv[4]);
   double alpha2 = atof(argv[3]);

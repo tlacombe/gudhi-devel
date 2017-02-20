@@ -125,13 +125,16 @@ private:
       std::vector<Landmark_id> simplex;
       simplex.reserve(k+1);
       while (aw_it != active_witnesses.end()) {
+        int num_simplices = 0;
         bool ok = add_all_faces_of_dimension(k,
                                              max_alpha_square,
                                              std::numeric_limits<double>::infinity(),
                                              aw_it->begin(),
                                              simplex,
                                              complex,
-                                             aw_it->end());
+                                             aw_it->end(),
+                                             num_simplices);
+        std::cout << num_simplices << " ";
         assert(simplex.empty());
         if (!ok)
           active_witnesses.erase(aw_it++); //First increase the iterator and then erase the previous element
@@ -160,7 +163,8 @@ private:
                                   typename ActiveWitness::iterator curr_l,
                                   std::vector<Landmark_id>& simplex,
                                   SimplicialComplexForWitness& sc,
-                                  typename ActiveWitness::iterator end) const
+                                  typename ActiveWitness::iterator end,
+                                  int& num_simplices) const
   {
     if (curr_l == end)
       return false;
@@ -177,7 +181,8 @@ private:
                                                       ++next_it,
                                                       simplex,
                                                       sc,
-                                                      end) || will_be_active;
+                                                      end,
+                                                      num_simplices) || will_be_active;
         }
         assert(!simplex.empty());
         simplex.pop_back();
@@ -191,7 +196,8 @@ private:
                                                     ++next_it,
                                                     simplex,
                                                     sc,
-                                                    end) || will_be_active;
+                                                    end,
+                                                    num_simplices) || will_be_active;
       } 
     else if (dim == 0)
       for (; l_it->second - alpha2 <= norelax_dist2 && l_it != end; ++l_it) {
@@ -203,13 +209,14 @@ private:
         if (all_faces_in(simplex, &filtration_value, sc)) {
           will_be_active = true;
           sc.insert_simplex(simplex, filtration_value);
+          num_simplices++;
         }
         assert(!simplex.empty());
         simplex.pop_back();
         // If norelax_dist is infinity, change to first omitted distance
         if (l_it->second < norelax_dist2)
           norelax_dist2 = l_it->second;
-      } 
+      }
     return will_be_active;
   }
 

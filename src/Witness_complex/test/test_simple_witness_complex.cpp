@@ -54,24 +54,24 @@ BOOST_AUTO_TEST_CASE(simple_witness_complex) {
 
   landmarks.push_back(Point_d(std::vector<FT>{-2,-2}));
   landmarks.push_back(Point_d(std::vector<FT>{-2, 0}));
-  landmarks.push_back(Point_d(std::vector<FT>{-2, 2}));
+  // landmarks.push_back(Point_d(std::vector<FT>{-2, 2}));
   landmarks.push_back(Point_d(std::vector<FT>{ 0,-2}));
-  landmarks.push_back(Point_d(std::vector<FT>{ 0, 2}));
-  landmarks.push_back(Point_d(std::vector<FT>{ 2,-2}));
-  landmarks.push_back(Point_d(std::vector<FT>{ 2, 0}));
-  landmarks.push_back(Point_d(std::vector<FT>{ 2, 2}));
+  // landmarks.push_back(Point_d(std::vector<FT>{ 0, 2}));
+  // landmarks.push_back(Point_d(std::vector<FT>{ 2,-2}));
+  // landmarks.push_back(Point_d(std::vector<FT>{ 2, 0}));
+  // landmarks.push_back(Point_d(std::vector<FT>{ 2, 2}));
   witnesses.push_back(Point_d(std::vector<FT>{-2,-1}));
-  witnesses.push_back(Point_d(std::vector<FT>{-2, 1}));
+  // witnesses.push_back(Point_d(std::vector<FT>{-2, 1}));
   witnesses.push_back(Point_d(std::vector<FT>{-1,-2}));
   witnesses.push_back(Point_d(std::vector<FT>{-1,-1}));
-  witnesses.push_back(Point_d(std::vector<FT>{-1, 1}));
-  witnesses.push_back(Point_d(std::vector<FT>{-1, 2}));
-  witnesses.push_back(Point_d(std::vector<FT>{ 1,-2}));
-  witnesses.push_back(Point_d(std::vector<FT>{ 1,-1}));
-  witnesses.push_back(Point_d(std::vector<FT>{ 1, 1}));
-  witnesses.push_back(Point_d(std::vector<FT>{ 1, 2}));
-  witnesses.push_back(Point_d(std::vector<FT>{ 2,-1}));
-  witnesses.push_back(Point_d(std::vector<FT>{ 2, 1}));
+  // witnesses.push_back(Point_d(std::vector<FT>{-1, 1}));
+  // witnesses.push_back(Point_d(std::vector<FT>{-1, 2}));
+  // witnesses.push_back(Point_d(std::vector<FT>{ 1,-2}));
+  // witnesses.push_back(Point_d(std::vector<FT>{ 1,-1}));
+  // witnesses.push_back(Point_d(std::vector<FT>{ 1, 1}));
+  // witnesses.push_back(Point_d(std::vector<FT>{ 1, 2}));
+  // witnesses.push_back(Point_d(std::vector<FT>{ 2,-1}));
+  // witnesses.push_back(Point_d(std::vector<FT>{ 2, 1}));
 
   Kd_tree landmark_tree(landmarks);
   Nearest_landmark_table nearest_landmark_table;
@@ -79,57 +79,57 @@ BOOST_AUTO_TEST_CASE(simple_witness_complex) {
     nearest_landmark_table.push_back(landmark_tree.query_incremental_nearest_neighbors(w));
 
   // Weak witness complex: Euclidean version
-  EuclideanWitnessComplex eucl_witness_complex(landmarks,
-                                               witnesses);
-  eucl_witness_complex.create_complex(complex, 0);
+  // EuclideanWitnessComplex eucl_witness_complex(landmarks,
+  //                                              witnesses);
+  // eucl_witness_complex.create_complex(complex, 0);
 
-  std::cout << "complex.num_simplices() = " << complex.num_simplices() << std::endl; 
-  BOOST_CHECK(complex.num_simplices() == 24);
+  // std::cout << "complex.num_simplices() = " << complex.num_simplices() << std::endl; 
+  // BOOST_CHECK(complex.num_simplices() == 24);
 
-  eucl_witness_complex.create_complex(relaxed_complex, 8.01);
+  // eucl_witness_complex.create_complex(relaxed_complex, 8.01);
 
-  std::cout << "relaxed_complex.num_simplices() = " << relaxed_complex.num_simplices() << std::endl; 
-  BOOST_CHECK(relaxed_complex.num_simplices() == 239);
-  // The corner simplex {0,2,5,7} and its cofaces are missing.
+  // std::cout << "relaxed_complex.num_simplices() = " << relaxed_complex.num_simplices() << std::endl; 
+  // BOOST_CHECK(relaxed_complex.num_simplices() == 239);
+  // // The corner simplex {0,2,5,7} and its cofaces are missing.
 
   // Weak witness complex: non-Euclidean version
   WitnessComplex witness_complex(nearest_landmark_table);
-  // witness_complex.create_complex(complex_ne, 0);
+  witness_complex.create_complex(complex_ne, 0);
 
-  // std::cout << "complex.num_simplices() = " << complex_ne.num_simplices() << std::endl; 
+  std::cout << "complex.num_simplices() = " << complex_ne.num_simplices() << std::endl; 
   // BOOST_CHECK(complex_ne.num_simplices() == 24);
 
-  witness_complex.create_complex(relaxed_complex_ne, 8.01);
+  //witness_complex.create_complex(relaxed_complex_ne, 8.01);
 
-  std::cout << "relaxed_complex.num_simplices() = " << relaxed_complex_ne.num_simplices() << std::endl; 
-  BOOST_CHECK(relaxed_complex_ne.num_simplices() == 239);
+  // std::cout << "relaxed_complex.num_simplices() = " << relaxed_complex_ne.num_simplices() << std::endl; 
+  // BOOST_CHECK(relaxed_complex_ne.num_simplices() == 239);
     
   
-  // Strong complex : Euclidean version
-  EuclideanStrongWitnessComplex eucl_strong_witness_complex(landmarks,
-                                                            witnesses);
+  // // Strong complex : Euclidean version
+  // EuclideanStrongWitnessComplex eucl_strong_witness_complex(landmarks,
+  //                                                           witnesses);
 
-  eucl_strong_witness_complex.create_complex(strong_relaxed_complex, 9.1);
-  eucl_strong_witness_complex.create_complex(strong_relaxed_complex2, 9.1, 2);
+  // eucl_strong_witness_complex.create_complex(strong_relaxed_complex, 9.1);
+  // eucl_strong_witness_complex.create_complex(strong_relaxed_complex2, 9.1, 2);
   
-  std::cout << "strong_relaxed_complex.num_simplices() = " << strong_relaxed_complex.num_simplices() << std::endl; 
-  BOOST_CHECK(strong_relaxed_complex.num_simplices() == 239);
+  // std::cout << "strong_relaxed_complex.num_simplices() = " << strong_relaxed_complex.num_simplices() << std::endl; 
+  // BOOST_CHECK(strong_relaxed_complex.num_simplices() == 239);
 
-  std::cout << "strong_relaxed_complex2.num_simplices() = " << strong_relaxed_complex2.num_simplices() << std::endl;
-  BOOST_CHECK(strong_relaxed_complex2.num_simplices() == 92);
+  // std::cout << "strong_relaxed_complex2.num_simplices() = " << strong_relaxed_complex2.num_simplices() << std::endl;
+  // BOOST_CHECK(strong_relaxed_complex2.num_simplices() == 92);
 
 
-  // Strong complex : non-Euclidean version
-  StrongWitnessComplex strong_witness_complex(nearest_landmark_table);
+  // // Strong complex : non-Euclidean version
+  // StrongWitnessComplex strong_witness_complex(nearest_landmark_table);
 
-  strong_witness_complex.create_complex(strong_relaxed_complex_ne, 9.1);
-  strong_witness_complex.create_complex(strong_relaxed_complex2_ne, 9.1, 2);
+  // strong_witness_complex.create_complex(strong_relaxed_complex_ne, 9.1);
+  // strong_witness_complex.create_complex(strong_relaxed_complex2_ne, 9.1, 2);
   
-  std::cout << "strong_relaxed_complex.num_simplices() = " << strong_relaxed_complex_ne.num_simplices() << std::endl; 
-  BOOST_CHECK(strong_relaxed_complex_ne.num_simplices() == 239);
+  // std::cout << "strong_relaxed_complex.num_simplices() = " << strong_relaxed_complex_ne.num_simplices() << std::endl; 
+  // BOOST_CHECK(strong_relaxed_complex_ne.num_simplices() == 239);
 
-  std::cout << "strong_relaxed_complex2.num_simplices() = " << strong_relaxed_complex2_ne.num_simplices() << std::endl;
-  BOOST_CHECK(strong_relaxed_complex2_ne.num_simplices() == 92);
+  // std::cout << "strong_relaxed_complex2.num_simplices() = " << strong_relaxed_complex2_ne.num_simplices() << std::endl;
+  // BOOST_CHECK(strong_relaxed_complex2_ne.num_simplices() == 92);
 
 
   // 8 vertices, 28 edges, 56 triangles
