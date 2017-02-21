@@ -1,6 +1,8 @@
 #ifndef CHECK_IF_NEIGHBORS_H_
 #define CHECK_IF_NEIGHBORS_H_
 
+#include <set>
+
 /* \brief Check if two k-dimensional simplices have
    a common facet in a simplicial complex.
  */
@@ -46,5 +48,28 @@ bool check_if_neighbors(SimplicialComplexForWitness& sc,
     }
     return (std::abs(stroke) == 0 && diff_count == 1);
   }
+
+// template < typename SimplicialComplexForWitness,
+//            typename Simplex,
+//            typename VertexVector >
+// bool check_if_neighbors(SimplicialComplexForWitness& sc,
+//                         const Simplex& simplex1,
+//                         const Simplex& simplex2,
+//                         VertexVector& coface
+//                         )
+//   {
+//     std::size_t k = sc.dimension(simplex1);
+//     std::set<typename SimplicialComplexForWitness::Vertex_handle> vertex_set;
+//     for (auto v: sc.simplex_vertex_range(simplex1))
+//       vertex_set.insert(v);
+//     for (auto v: sc.simplex_vertex_range(simplex2))
+//       vertex_set.insert(v);
+//     if (vertex_set.size() == k + 2) {
+//       coface = VertexVector(vertex_set.begin(), vertex_set.end());
+//       return true;
+//     }
+//     return false;
+//   }
+
 
 #endif

@@ -139,6 +139,8 @@ private:
     /* test */
     wit_complex.create_complex(reference_st, max_alpha_square, limit_dimension);
     std::cout << "reference_st.num_simplices() = " << reference_st.num_simplices() << std::endl;
+
+    std::cout << reference_st << std::endl;
     
     ActiveWitnessList active_witnesses;
     for (auto w: nearest_landmark_table_)
@@ -185,15 +187,28 @@ private:
     // }
 
     Landmark_id k = 2; /* current dimension in iterative construction */
-    while (!active_witnesses.empty() && k <= limit_dimension) {
-      Simplex_witness_list_map* curr_dim_map = new Simplex_witness_list_map();
-      fill_simplices(max_alpha_square, k, complex, active_witnesses, prev_dim_map, curr_dim_map);
 
-      delete prev_dim_map;
-      prev_dim_map = curr_dim_map;
-      std::cout << k << "-dim active witness list size = " << active_witnesses.size() << "\n";
-      k++;
+    /* test */
+    typedef Gudhi::Simplex_tree_vertex_subtree_iterator<SimplicialComplexForWitness> Vertex_subtree_iterator;
+    typedef boost::iterator_range<Vertex_subtree_iterator> Vertex_subtree_range;
+    for (auto v0: complex.complex_vertex_range()) {
+      std::cout << "*" << v0 << "\n";
+      for (auto sh: Vertex_subtree_range(Vertex_subtree_iterator(&complex, v0, 1), Vertex_subtree_iterator())) {
+        for (auto v: complex.simplex_vertex_range(sh))
+          std::cout << v << " ";
+        std::cout << std::endl;
+      }
     }
+    
+    // while (!active_witnesses.empty() && k <= limit_dimension) {
+    //   Simplex_witness_list_map* curr_dim_map = new Simplex_witness_list_map();
+    //   fill_simplices(max_alpha_square, k, complex, active_witnesses, prev_dim_map, curr_dim_map);
+
+    //   delete prev_dim_map;
+    //   prev_dim_map = curr_dim_map;
+    //   //std::cout << k << "-dim active witness list size = " << active_witnesses.size() << "\n";
+    //   k++;
+    // }
     delete prev_dim_map;
     complex.set_dimension(k-1);
     return true;
@@ -454,12 +469,18 @@ private:
           }
         }
         w.witness_->decrease();
-        if (w.witness_->counter() == 0)
-          aw_list.erase(w.witness_);
+        // if (w.witness_->counter() == 0)
+        //   aw_list.erase(w.witness_);
       }
     }
-    for (auto aw: aw_list)
-      std::cout << aw.counter() << " "; 
+    auto aw_it = aw_list.begin();
+    while (aw_it != aw_list.end()) {
+      std::cout << aw_it->counter() << " ";
+      if (aw_it->counter() == 0)
+        aw_list.erase(aw_it++);
+      else
+        aw_it++;
+    }
     std::cout << k << "-dim active witness list size = " << aw_list.size() << "\n";
     remove_non_witnessed_simplices(complex, curr_dim_map);
   }
@@ -498,7 +519,7 @@ private:
         curr_dim_map->erase(key);
       overall++;
     }
-    std::cout << "Attention! Mismatched simplices = " << mismatch << ". Overall = " << overall << "\n";
+    //std::cout << "Attention! Mismatched simplices = " << mismatch << ". Overall = " << overall << "\n";
   }
   
 };

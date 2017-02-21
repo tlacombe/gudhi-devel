@@ -54,24 +54,24 @@ BOOST_AUTO_TEST_CASE(simple_witness_complex) {
 
   landmarks.push_back(Point_d(std::vector<FT>{-2,-2}));
   landmarks.push_back(Point_d(std::vector<FT>{-2, 0}));
-  // landmarks.push_back(Point_d(std::vector<FT>{-2, 2}));
+  landmarks.push_back(Point_d(std::vector<FT>{-2, 2}));
   landmarks.push_back(Point_d(std::vector<FT>{ 0,-2}));
-  // landmarks.push_back(Point_d(std::vector<FT>{ 0, 2}));
-  // landmarks.push_back(Point_d(std::vector<FT>{ 2,-2}));
-  // landmarks.push_back(Point_d(std::vector<FT>{ 2, 0}));
-  // landmarks.push_back(Point_d(std::vector<FT>{ 2, 2}));
+  landmarks.push_back(Point_d(std::vector<FT>{ 0, 2}));
+  landmarks.push_back(Point_d(std::vector<FT>{ 2,-2}));
+  landmarks.push_back(Point_d(std::vector<FT>{ 2, 0}));
+  landmarks.push_back(Point_d(std::vector<FT>{ 2, 2}));
   witnesses.push_back(Point_d(std::vector<FT>{-2,-1}));
-  // witnesses.push_back(Point_d(std::vector<FT>{-2, 1}));
+  witnesses.push_back(Point_d(std::vector<FT>{-2, 1}));
   witnesses.push_back(Point_d(std::vector<FT>{-1,-2}));
   witnesses.push_back(Point_d(std::vector<FT>{-1,-1}));
-  // witnesses.push_back(Point_d(std::vector<FT>{-1, 1}));
-  // witnesses.push_back(Point_d(std::vector<FT>{-1, 2}));
-  // witnesses.push_back(Point_d(std::vector<FT>{ 1,-2}));
-  // witnesses.push_back(Point_d(std::vector<FT>{ 1,-1}));
-  // witnesses.push_back(Point_d(std::vector<FT>{ 1, 1}));
-  // witnesses.push_back(Point_d(std::vector<FT>{ 1, 2}));
-  // witnesses.push_back(Point_d(std::vector<FT>{ 2,-1}));
-  // witnesses.push_back(Point_d(std::vector<FT>{ 2, 1}));
+  witnesses.push_back(Point_d(std::vector<FT>{-1, 1}));
+  witnesses.push_back(Point_d(std::vector<FT>{-1, 2}));
+  witnesses.push_back(Point_d(std::vector<FT>{ 1,-2}));
+  witnesses.push_back(Point_d(std::vector<FT>{ 1,-1}));
+  witnesses.push_back(Point_d(std::vector<FT>{ 1, 1}));
+  witnesses.push_back(Point_d(std::vector<FT>{ 1, 2}));
+  witnesses.push_back(Point_d(std::vector<FT>{ 2,-1}));
+  witnesses.push_back(Point_d(std::vector<FT>{ 2, 1}));
 
   Kd_tree landmark_tree(landmarks);
   Nearest_landmark_table nearest_landmark_table;
@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE(simple_witness_complex) {
 
   // Weak witness complex: non-Euclidean version
   WitnessComplex witness_complex(nearest_landmark_table);
-  witness_complex.create_complex(complex_ne, 0);
+  witness_complex.create_complex(complex_ne, 8.01);
 
   std::cout << "complex.num_simplices() = " << complex_ne.num_simplices() << std::endl; 
   // BOOST_CHECK(complex_ne.num_simplices() == 24);

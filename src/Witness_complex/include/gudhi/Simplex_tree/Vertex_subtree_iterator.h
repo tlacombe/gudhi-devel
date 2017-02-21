@@ -59,18 +59,22 @@ class Simplex_tree_vertex_subtree_iterator : public boost::iterator_facade<
         st_(st),
         dim_skel_(dim_skel),
         curr_dim_(0) {
-    if (st == nullptr || st->root() == nullptr || st->root()->members().empty() || st->find(std::vector<Vertex_handle>(1,v)) == st->null_simplex()) {
+    if (st == nullptr || st->root() == nullptr || st->root()->members().empty()) {
       st_ = nullptr;
     } else {
       sh_ = st->root()->members().find(v);
       sib_ = st->root();
-      while (st->has_children(sh_) && curr_dim_ < dim_skel_) {
-        sib_ = sh_->second.children();
-        sh_ = sib_->members().begin();
-        ++curr_dim_;
+      if (sh_ == st->null_simplex() || sh_->second.children() == st->root())
+        st_ = nullptr;
+      else {
+        while (st->has_children(sh_) && curr_dim_ < dim_skel_) {
+          sib_ = sh_->second.children();
+          sh_ = sib_->members().begin();
+          ++curr_dim_;
+        }
+        while (curr_dim_ != dim_skel_ && st_ != nullptr)
+          simple_increment();
       }
-      while (curr_dim_ != dim_skel_ && st_ != nullptr)
-        simple_increment();
     }
   }
  private:
