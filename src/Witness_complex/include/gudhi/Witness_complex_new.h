@@ -74,8 +74,8 @@ private:
 
   /* for test puposes
    */
-  Witness_complex<Nearest_landmark_table_> wit_complex;
-  Simplex_tree<> reference_st;
+  // Witness_complex<Nearest_landmark_table_> wit_complex;
+  // Simplex_tree<> reference_st;
   
  public:
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -97,7 +97,7 @@ private:
    */
 
   Witness_complex_new(Nearest_landmark_table_ const & nearest_landmark_table)
-    : nearest_landmark_table_(std::begin(nearest_landmark_table), std::end(nearest_landmark_table)), wit_complex(nearest_landmark_table_)
+    : nearest_landmark_table_(std::begin(nearest_landmark_table), std::end(nearest_landmark_table))//, wit_complex(nearest_landmark_table_)
   {
   }
 
@@ -136,11 +136,10 @@ private:
       return false;
     }
 
-    /* test */
-    wit_complex.create_complex(reference_st, max_alpha_square, limit_dimension);
-    std::cout << "reference_st.num_simplices() = " << reference_st.num_simplices() << std::endl;
+    // /* test */
+    // wit_complex.create_complex(reference_st, max_alpha_square, limit_dimension);
+    // std::cout << "reference_st.num_simplices() = " << reference_st.num_simplices() << std::endl;
 
-    std::cout << reference_st << std::endl;
     
     ActiveWitnessList active_witnesses;
     for (auto w: nearest_landmark_table_)
@@ -189,26 +188,26 @@ private:
     Landmark_id k = 2; /* current dimension in iterative construction */
 
     /* test */
-    typedef Gudhi::Simplex_tree_vertex_subtree_iterator<SimplicialComplexForWitness> Vertex_subtree_iterator;
-    typedef boost::iterator_range<Vertex_subtree_iterator> Vertex_subtree_range;
-    for (auto v0: complex.complex_vertex_range()) {
-      std::cout << "*" << v0 << "\n";
-      for (auto sh: Vertex_subtree_range(Vertex_subtree_iterator(&complex, v0, 1), Vertex_subtree_iterator())) {
-        for (auto v: complex.simplex_vertex_range(sh))
-          std::cout << v << " ";
-        std::cout << std::endl;
-      }
-    }
-    
-    // while (!active_witnesses.empty() && k <= limit_dimension) {
-    //   Simplex_witness_list_map* curr_dim_map = new Simplex_witness_list_map();
-    //   fill_simplices(max_alpha_square, k, complex, active_witnesses, prev_dim_map, curr_dim_map);
-
-    //   delete prev_dim_map;
-    //   prev_dim_map = curr_dim_map;
-    //   //std::cout << k << "-dim active witness list size = " << active_witnesses.size() << "\n";
-    //   k++;
+    // typedef Gudhi::Simplex_tree_vertex_subtree_iterator<SimplicialComplexForWitness> Vertex_subtree_iterator;
+    // typedef boost::iterator_range<Vertex_subtree_iterator> Vertex_subtree_range;
+    // for (auto v0: complex.complex_vertex_range()) {
+    //   std::cout << "*" << v0 << "\n";
+    //   for (auto sh: Vertex_subtree_range(Vertex_subtree_iterator(&complex, v0, 1), Vertex_subtree_iterator())) {
+    //     for (auto v: complex.simplex_vertex_range(sh))
+    //       std::cout << v << " ";
+    //     std::cout << std::endl;
+    //   }
     // }
+    
+    while (!active_witnesses.empty() && k <= limit_dimension) {
+      Simplex_witness_list_map* curr_dim_map = new Simplex_witness_list_map();
+      fill_simplices(max_alpha_square, k, complex, active_witnesses, prev_dim_map, curr_dim_map);
+
+      delete prev_dim_map;
+      prev_dim_map = curr_dim_map;
+      //std::cout << k << "-dim active witness list size = " << active_witnesses.size() << "\n";
+      k++;
+    }
     delete prev_dim_map;
     complex.set_dimension(k-1);
     return true;
@@ -464,12 +463,12 @@ private:
             (*curr_dim_map)[sk].emplace_back(WitnessForSimplex(l_it, w.witness_, norelax_dist2));
             complex.insert_simplex(vertices, l_it->second - norelax_dist2); // Update the filtration
             w.witness_->increase();
-            if (l_it->second < norelax_dist2)
-              norelax_dist2 = l_it->second;
-          }
+          }          
+          if (l_it->second < norelax_dist2)
+            norelax_dist2 = l_it->second;
         }
         w.witness_->decrease();
-        // if (w.witness_->counter() == 0)
+         // if (w.witness_->counter() == 0)
         //   aw_list.erase(w.witness_);
       }
     }
@@ -489,7 +488,7 @@ private:
              class SimplexWitnessMap >
   void remove_non_witnessed_simplices(SimplicialComplexForWitness& complex, SimplexWitnessMap* curr_dim_map)
   {
-    unsigned mismatch = 0, overall = 0;
+    // unsigned mismatch = 0, overall = 0;
     for (auto sw: *curr_dim_map) {
       // std::cout << "*";
       // for (auto v: complex.simplex_vertex_range(vw_it->first.simplex_handle()))
@@ -512,12 +511,12 @@ private:
         complex.remove_maximal_simplex(sw.first.simplex_handle());
         elements_to_remove.push_back(sw.first);
       }
-      else if (reference_st.find(complex.simplex_vertex_range(sw.first.simplex_handle())) == reference_st.null_simplex())
-        mismatch++;
+      // else if (reference_st.find(complex.simplex_vertex_range(sw.first.simplex_handle())) == reference_st.null_simplex())
+      //   mismatch++;
         
       for (auto key: elements_to_remove)
         curr_dim_map->erase(key);
-      overall++;
+      // overall++;
     }
     //std::cout << "Attention! Mismatched simplices = " << mismatch << ". Overall = " << overall << "\n";
   }
