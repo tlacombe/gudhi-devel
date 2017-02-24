@@ -96,6 +96,8 @@ BOOST_AUTO_TEST_CASE(simple_witness_complex) {
   WitnessComplex witness_complex(nearest_landmark_table);
   witness_complex.create_complex(complex_ne, 8.01);
 
+  // std::cout << complex_ne << std::endl;
+  
   std::cout << "complex.num_simplices() = " << complex_ne.num_simplices() << std::endl; 
   // BOOST_CHECK(complex_ne.num_simplices() == 24);
 

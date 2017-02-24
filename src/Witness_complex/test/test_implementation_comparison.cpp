@@ -74,7 +74,9 @@ int main(int argc, char * const argv[]) {
   std::cout << "Witness complex took "
       << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
   std::cout << "Number of simplices is: " << simplex_tree.num_simplices() << "\n";
-
+                                                                             
+                                                                             // std::cout << simplex_tree << std::endl;
+  
   // Compute witness complex - 2
   start = clock();
   Witness_complex_new witness_complex_new(nearest_landmark_table);
