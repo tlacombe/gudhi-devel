@@ -134,7 +134,7 @@ private:
                                              complex,
                                              aw_it->end(),
                                              num_simplices);
-        std::cout << num_simplices << " ";
+        // std::cout << num_simplices << " ";
         assert(simplex.empty());
         if (!ok)
           active_witnesses.erase(aw_it++); //First increase the iterator and then erase the previous element
