@@ -33,6 +33,10 @@ template < class Simplex_tree_,
            class Vertex_ >
 class Sib_vertex_pair : public std::pair<typename Simplex_tree_::Siblings*, Vertex_> {
 public:
+
+  Sib_vertex_pair()
+  {}
+  
   Sib_vertex_pair(typename Simplex_tree_::Siblings* sib, Vertex_ v)
     : std::pair<typename Simplex_tree_::Siblings*, Vertex_>(sib,v)
   {
