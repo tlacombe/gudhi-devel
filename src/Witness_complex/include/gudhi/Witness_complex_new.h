@@ -73,12 +73,6 @@ private:
 
  protected:
   Nearest_landmark_table_internal              nearest_landmark_table_;
-
-  /* for test puposes
-   */
-  Witness_complex<Nearest_landmark_table_> wit_complex;
-  Simplex_tree<> reference_st;
-  Simplex_tree<>::Siblings* sib_ref;
   
  public:
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -100,7 +94,7 @@ private:
    */
 
   Witness_complex_new(Nearest_landmark_table_ const & nearest_landmark_table)
-    : nearest_landmark_table_(std::begin(nearest_landmark_table), std::end(nearest_landmark_table)), wit_complex(nearest_landmark_table_)
+    : nearest_landmark_table_(std::begin(nearest_landmark_table), std::end(nearest_landmark_table))
   {
   }
 
@@ -138,11 +132,6 @@ private:
       std::cerr << "Witness complex cannot create complex - limit dimension must be non-negative.\n";
       return false;
     }
-
-    // /* test */
-    wit_complex.create_complex(reference_st, max_alpha_square, limit_dimension);
-    std::cout << "reference_st.num_simplices() = " << reference_st.num_simplices() << std::endl;
-
     
     ActiveWitnessList active_witnesses;
     for (auto w: nearest_landmark_table_)
@@ -208,21 +197,6 @@ private:
 
       delete prev_dim_map;
       prev_dim_map = curr_dim_map;
-      //std::cout << k << "-dim active witness list size = " << active_witnesses.size() << "\n";
-      for (auto sw: *prev_dim_map)
-        if (reference_st.find(complex.simplex_vertex_range(sw.first.simplex_handle())) == reference_st.null_simplex()) {
-          std::cout << "Extra simplex: ";
-          for (auto v: complex.simplex_vertex_range(sw.first.simplex_handle()))
-            std::cout << v << " ";
-          std::cout << std::endl;
-          typeVectorVertex vertices_sorted(complex.simplex_vertex_range(sw.first.simplex_handle()).begin(),
-                                        complex.simplex_vertex_range(sw.first.simplex_handle()).end());
-          std::sort(vertices_sorted.begin(), vertices_sorted.end());
-          // if (vertices_sorted.size() == 3 && vertices_sorted[0] == 121 && vertices_sorted[1] == 243 && vertices_sorted[2] == 727)
-          //   std::cout << complex.self_siblings(complex.find(vertices_sorted)) << std::endl;
-          // if (k == 2)
-          //   sib_ref = complex.self_siblings(complex.find(typeVectorVertex({121, 243, 727})));
-        }
       k++;
     }
     delete prev_dim_map;
@@ -427,7 +401,7 @@ private:
             if (sh_bool.second) {
               Siblings* sib = complex.self_siblings(sh_bool.first);
               Vertex_handle v = sh_bool.first->first;
-              std::sort(coface.begin(), coface.end());
+              // std::sort(coface.begin(), coface.end());
               // if (coface.size() == 3 && coface[0] == 121 && coface[1] == 243 && coface[2] == 727) {
               //   sib_ref = sib;
               //   std::cout << sib << std::endl;
@@ -492,7 +466,7 @@ private:
             Vertex_handle v = sh->first;
             Simplex_key sk(sib,v);
             Vertex_vector vertices_sorted(vertices);
-            std::sort(vertices_sorted.begin(), vertices_sorted.end());
+            // std::sort(vertices_sorted.begin(), vertices_sorted.end());
             // if (vertices_sorted.size() == 3 && vertices_sorted[0] == 121 && vertices_sorted[1] == 243 && vertices_sorted[2] == 727)
             //     std::cout << sib << std::endl;
             (*curr_dim_map)[sk].emplace_back(WitnessForSimplex(l_it, w.witness_, norelax_dist2));
@@ -557,24 +531,9 @@ private:
         // if (complex.dimension(sw.first.simplex_handle()) == 3)
         elements_to_remove.push_back(sw.first);
       }
-      else if (reference_st.find(complex.simplex_vertex_range(sw.first.simplex_handle())) == reference_st.null_simplex()) {
-        for (auto v: complex.simplex_vertex_range(sw.first.simplex_handle()))
-          std::cout << v << " ";
-        std::cout << "\n[";
-        for (auto w: sw.second) {
-          std::cout << "(" << &(*w.witness_)
-                    << ", " << w.last_it_->first
-                    << ", " << w.limit_distance_
-                    << ")";        
-        }
-        std::cout << "]\n";
-        std::cout << std::endl;
-      }
-      //   mismatch++;
-        
     }
-     for (auto key: elements_to_remove)
-        curr_dim_map->erase(key);
+    for (auto key: elements_to_remove)
+      curr_dim_map->erase(key);
       // overall++;
     //std::cout << "Attention! Mismatched simplices = " << mismatch << ". Overall = " << overall << "\n";
   }

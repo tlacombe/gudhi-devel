@@ -493,8 +493,8 @@ private:
       //   mismatch++;
         
     }
-     for (auto key: elements_to_remove)
-        curr_dim_map->erase(key);
+    for (auto key: elements_to_remove)
+      curr_dim_map->erase(key);
       // overall++;
     //std::cout << "Attention! Mismatched simplices = " << mismatch << ". Overall = " << overall << "\n";
   }

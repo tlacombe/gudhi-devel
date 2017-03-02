@@ -4,6 +4,7 @@
 #include <gudhi/Simplex_tree.h>
 #include <gudhi/Witness_complex.h>
 #include <gudhi/Witness_complex_new.h>
+#include <gudhi/Witness_complex_cof.h>
 #include <gudhi/choose_n_farthest_points.h>
 #include <gudhi/Kd_tree_search.h>
 #include <gudhi/Points_off_io.h>
@@ -25,6 +26,7 @@ typedef std::vector<Nearest_landmark_range> Nearest_landmark_table;
 
 typedef typename Gudhi::witness_complex::Witness_complex<Nearest_landmark_table> Witness_complex;
 typedef typename Gudhi::witness_complex::Witness_complex_new<Nearest_landmark_table> Witness_complex_new;
+typedef typename Gudhi::witness_complex::Witness_complex_cof<Nearest_landmark_table> Witness_complex_cof;
 
 int main(int argc, char * const argv[]) {
   if (argc != 5) {
@@ -41,7 +43,7 @@ int main(int argc, char * const argv[]) {
   int nbL = atoi(argv[2]), lim_dim = atoi(argv[4]);
   double alpha2 = atof(argv[3]);
   clock_t start, end;
-  Gudhi::Simplex_tree<> simplex_tree, simplex_tree2;
+  Gudhi::Simplex_tree<> simplex_tree, simplex_tree2, simplex_tree3;
 
   // Read the point file
   Point_range witnesses, landmarks;
@@ -83,8 +85,19 @@ int main(int argc, char * const argv[]) {
 
   witness_complex_new.create_complex(simplex_tree2, alpha2, lim_dim);
   end = clock();
-  std::cout << "Witness complex 2 took "
+  std::cout << "Witness complex 2 (cofaces and witlists) took "
       << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
   std::cout << "Number of simplices is: " << simplex_tree2.num_simplices() << "\n";
+
+  // Compute witness complex - 3
+  start = clock();
+  Witness_complex_cof witness_complex_cof(nearest_landmark_table);
+
+  witness_complex_cof.create_complex(simplex_tree3, alpha2, lim_dim);
+  end = clock();
+  std::cout << "Witness complex 3 (cofaces, no witlists) took "
+      << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
+  std::cout << "Number of simplices is: " << simplex_tree3.num_simplices() << "\n";
+
   
 }

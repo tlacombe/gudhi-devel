@@ -10,6 +10,7 @@
 #include <gudhi/Witness_complex.h>
 #include <gudhi/Euclidean_witness_complex.h>
 #include <gudhi/Witness_complex_new.h>
+#include <gudhi/Witness_complex_cof.h>
 #include <gudhi/Strong_witness_complex.h>
 #include <gudhi/Euclidean_strong_witness_complex.h>
 
@@ -32,7 +33,7 @@ typedef std::vector<Point_d> Point_range;
 typedef Gudhi::spatial_searching::Kd_tree_search<Kernel, Point_range> Kd_tree;
 typedef Kd_tree::INS_range Nearest_landmark_range; 
 typedef std::vector<Nearest_landmark_range> Nearest_landmark_table;
-typedef Gudhi::witness_complex::Witness_complex_new<Nearest_landmark_table> WitnessComplex;
+typedef Gudhi::witness_complex::Witness_complex_cof<Nearest_landmark_table> WitnessComplex;
 typedef Gudhi::witness_complex::Strong_witness_complex<Nearest_landmark_table> StrongWitnessComplex;
 
 
