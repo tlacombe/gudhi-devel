@@ -16,6 +16,7 @@ can be processed in Excel, for example.
 
 #ifdef _DEBUG
 # define PRINT_FOUND_NEIGHBORS
+# define CHECK_ACTUAL_EPSILON
 
 #else // RELEASE
 //# define PRINT_FOUND_NEIGHBORS
@@ -24,6 +25,7 @@ can be processed in Excel, for example.
 #endif
 
 #define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH
+#undef GUDHI_SBL_IS_AVAILABLE
 #undef GUDHI_NMSLIB_IS_AVAILABLE
 #undef GUDHI_NANOFLANN_IS_AVAILABLE
 //#undef GUDHI_ANN_IS_AVAILABLE
@@ -31,9 +33,8 @@ can be processed in Excel, for example.
 #undef GUDHI_COVERTREE_DNCRANE_IS_AVAILABLE  // DNCrane and Manzil cannot be used at the same time
 #undef GUDHI_COVERTREE_MANZIL_IS_AVAILABLE
 #undef GUDHI_FALCONN_IS_AVAILABLE
-#undef GUDHI_KD_GERAF_IS_AVAILABLE
 
-const int ONLY_THE_FIRST_N_POINTS = 200000; // 0 = no limit
+const int ONLY_THE_FIRST_N_POINTS = 100000; // 0 = no limit
 
 #include <cstddef>
 
@@ -42,6 +43,10 @@ const int ONLY_THE_FIRST_N_POINTS = 200000; // 0 = no limit
 #include "utilities.h"
 
 #include "functor_GUDHI_Kd_tree_search.h"
+
+#ifdef GUDHI_SBL_IS_AVAILABLE
+#include "functor_SBL_Proximity_Forest.h"
+#endif
 
 #ifdef GUDHI_NMSLIB_IS_AVAILABLE
 #include <init.h>
@@ -71,10 +76,6 @@ const int ONLY_THE_FIRST_N_POINTS = 200000; // 0 = no limit
 
 #ifdef GUDHI_FALCONN_IS_AVAILABLE
 #include "functor_FALCONN.h"
-#endif
-
-#ifdef GUDHI_KD_GERAF_IS_AVAILABLE
-#include "functor_kd_GeRaF.h"
 #endif
 
 #include <gudhi/console_color.h>
@@ -141,6 +142,7 @@ std::tuple<std::string, double, double, std::size_t> test__ANN_queries(
   SET_PERFORMANCE_DATA("K", k);
 
   std::size_t mem_before = CGAL::Memory_sizer().virtual_size();
+  std::cerr << red << "***************** Mem before: " << mem_before / (1024 * 1024) << "\n";
 
   // Build the structure
   t.reset();
@@ -193,6 +195,8 @@ std::tuple<std::string, double, double, std::size_t> test__ANN_queries(
   SET_PERFORMANCE_DATA("Mem_MB", (mem_after - mem_before)/(1024*1024));
   SET_PERFORMANCE_DATA("Checksum", checksum);
   XML_perf_data::commit(false);
+
+  std::cerr << red << "***************** Mem after: " << mem_after / (1024 * 1024) << "\n";
 
   return std::make_tuple(algorith_name, build_time, queries_per_sec, (mem_after - mem_before) / (1024 * 1024));
 }
@@ -287,7 +291,7 @@ void run_tests(
         algo_params_3 += std::to_string(efSearch);
 
         perfs.push_back(test__ANN_queries<NMSLIB_hnsw>(
-          points, queries, k, epsilon, "NMSLIB HNSW", algo_params, p_ground_truth, M, 0, efConstruction, efSearch));
+          points, queries, k, epsilon, "NMSLIB HNSW", algo_params_3, p_ground_truth, M, 0, efConstruction, efSearch));
       }
     }
   }
@@ -307,6 +311,21 @@ void run_tests(
 # endif
   perfs.push_back(test__ANN_queries<GUDHI_Kd_tree_search>(
     points, queries, k, epsilon, "GUDHI Kd_tree_search", "", p_ground_truth));
+#endif
+
+  //---------------------------------------------------------------------------
+  // SBL
+  //---------------------------------------------------------------------------
+
+#ifdef GUDHI_SBL_IS_AVAILABLE
+  int num_trees = 16;
+# ifdef LOOP_ON_VARIOUS_PRECISIONS
+  for (num_trees = 2; num_trees <= 2048; num_trees *= 2)
+# endif
+    perfs.push_back(test__ANN_queries<SBL_Proximity_Forest>(
+      points, queries, k, epsilon, "SBL Proximity Forest",
+      std::string("num_trees=") + std::to_string(num_trees),
+      p_ground_truth, num_trees));
 #endif
 
   //---------------------------------------------------------------------------
@@ -429,6 +448,9 @@ void run_tests(
   perfs.push_back(test__ANN_queries<Flann>(
     points, queries, k, epsilon, "Flann - linear bruteforce", "", p_ground_truth, flann::LinearIndexParams()));
 
+# ifdef LOOP_ON_VARIOUS_PRECISIONS
+  for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
+# endif
   perfs.push_back(test__ANN_queries<Flann>(
     points, queries, k, epsilon, "Flann - single kd-tree", "", p_ground_truth, flann::KDTreeSingleIndexParams()));
 
@@ -465,19 +487,6 @@ void run_tests(
     points, queries, k, epsilon, "FALCONN", 
     std::string("num_probes=") + std::to_string(num_probes),
     p_ground_truth, num_probes));
-#endif
-
-  //---------------------------------------------------------------------------
-  // kd-GeRaF
-  //---------------------------------------------------------------------------
-
-#ifdef GUDHI_KD_GERAF_IS_AVAILABLE
-  int num_probes = 32; // either 1, or >= 10
-# ifdef LOOP_ON_VARIOUS_PRECISIONS
-  for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
-# endif
-    perfs.push_back(test__ANN_queries<Kd_GeRaF>(
-      points, queries, k, epsilon, "kd-GeRaF", "", p_ground_truth));
 #endif
 
   //===========================================================================
@@ -695,11 +704,35 @@ int main() {
                 << "****************************************\n\n";
 #endif
 
+            // Get the bounding-box
+            std::vector<FT> bbox_mins(ambient_dim, std::numeric_limits<FT>::max());
+            std::vector<FT> bbox_maxs(ambient_dim, std::numeric_limits<FT>::min());
+            for (auto const& p : points) {
+              for (int i = 0; i < ambient_dim; ++i) {
+                if (p[i] < bbox_mins[i])
+                  bbox_mins[i] = p[i];
+                if (p[i] > bbox_maxs[i])
+                  bbox_maxs[i] = p[i];
+              }
+            }
+
             std::vector<Point> queries;
             queries.reserve(num_queries);
-            // Randomly pick points to fill "queries" (might get some duplicates but it is ok)
+            // Randomly pick points to fill "queries":
+            // pick 2 points and use their mid-point as query
+            // (might get some duplicates but it is ok)
+            CGAL::Random rng;
             for (int i = 0; i < num_queries; ++i) {
-              queries.push_back(points[rand() % points.size()]);
+              std::vector<FT> random_point;
+              random_point.reserve(ambient_dim);
+              for (int i = 0; i < ambient_dim; ++i)
+                random_point.push_back(rng.get_double(bbox_mins[i], bbox_maxs[i]));
+              Point p(random_point.begin(), random_point.end());
+              /*auto p = Kernel().midpoint_d_object()(
+                points[rand() % points.size()],
+                points[rand() % points.size()]);*/
+              //auto p = points[rand() % points.size()];
+              queries.push_back(p);
             }
 
             run_tests(ambient_dim, points, queries, k, epsilon, input.c_str());

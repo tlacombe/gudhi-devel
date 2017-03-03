@@ -29,6 +29,10 @@ if(CGAL_FOUND)
         debug "D:/INRIA/Libs/nmslib-1.5.3/similarity_search/x64/Debug/MainLib/NonMetricSpaceLib.lib")
       add_definitions(-DGUDHI_NMSLIB_IS_AVAILABLE)
       
+      # SBL
+      include_directories("D:/INRIA/Libs/SBL/Core/Spatial_search/include") # CJTODO TEMP
+      add_definitions(-DGUDHI_SBL_IS_AVAILABLE)
+      
       # ANN
       include_directories("D:/INRIA/Libs/ann_1.1.2/include") # CJTODO TEMP
 	  target_link_libraries(Spatial_searching_benchmark "D:/INRIA/Libs/ann_1.1.2/lib/ANN64.lib")
@@ -51,7 +55,7 @@ if(CGAL_FOUND)
 	  include_directories("D:/INRIA/Libs/cover_tree_dncrane") # CJTODO TEMP
       add_definitions(-DGUDHI_COVERTREE_DNCRANE_IS_AVAILABLE)
       
-	  # Cover-tree parallel
+	  # Cover-tree Manzil
 	  include_directories("D:/INRIA/Libs/cover_tree_manzil/src") # CJTODO TEMP
       add_definitions(-DGUDHI_COVERTREE_MANZIL_IS_AVAILABLE)
 	  

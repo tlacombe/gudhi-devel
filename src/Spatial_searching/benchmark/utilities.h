@@ -168,10 +168,10 @@ std::pair<double, double> compute_actual_precision(
   if (results.size() == 0)
   {
     std::cerr << red << "WARNING: compute_actual_precision => results is empty.\n" << white;
-    return std::make_pair(0., 1.);
+    return std::make_pair(-1., -1.);
   }
 
-  double worst_ratio = 0.;
+  double worst_ratio = 1.;
   std::size_t num_correct_answers = 0;
   // For each query
   auto ground_truth_query_result = ground_truth.begin();
