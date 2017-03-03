@@ -448,6 +448,7 @@ private:
         }
       }
     }
+    std::cout << "Candidates: " <<  curr_dim_map->size() << std::endl;
     // confirmation of cofaces by witnesses
     for (auto vw_pair: *prev_dim_map) {
       for (auto w: vw_pair.second) {
@@ -491,6 +492,7 @@ private:
       else
         aw_it++;
     }
+    // std::cout << "\n";
     std::cout << k << "-dim active witness list size = " << aw_list.size() << "\n";
     remove_non_witnessed_simplices(complex, curr_dim_map);
   }

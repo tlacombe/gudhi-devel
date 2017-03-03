@@ -20,17 +20,18 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef WITNESS_COMPLEX_COF_H_
-#define WITNESS_COMPLEX_COF_H_
+#ifndef WITNESS_COMPLEX_WMAP_H_
+#define WITNESS_COMPLEX_WMAP_H_
 
 #include <gudhi/Witness_complex.h>
-#include <gudhi/Witness_complex_new.h>
 #include <gudhi/Kd_tree_search.h>
 #include <gudhi/Active_witness/Active_witness.h>
 #include <gudhi/Active_witness/Witness_for_simplex.h>
 #include <gudhi/Active_witness/Sib_vertex_pair.h>
 #include <gudhi/Witness_complex/all_faces_in.h>
 #include <gudhi/Witness_complex/check_if_neighbors.h>
+#include <gudhi/Witness_complex/Simplex.h>
+#include <gudhi/Witness_complex/Witness_filter.h>
 #include <gudhi/Simplex_tree/Vertex_subtree_iterator.h>
 #include <gudhi/Simplex_tree/Fixed_dimension_iterator.h>
 
@@ -57,7 +58,7 @@ namespace witness_complex {
  *         of the pair range iterator needs to be 'std::pair<std::size_t, double>'.
 */
 template< class Nearest_landmark_table_ >
-class Witness_complex_cof : public Witness_complex<Nearest_landmark_table_> {
+class Witness_complex_wmap : public Witness_complex<Nearest_landmark_table_> {
 private:
   typedef typename Nearest_landmark_table_::value_type               Nearest_landmark_range;
   typedef std::size_t                                                Witness_id;
@@ -65,7 +66,7 @@ private:
   typedef std::pair<Landmark_id, double>                             Id_distance_pair;
   typedef Active_witness<Id_distance_pair, Nearest_landmark_range>   ActiveWitness;
   typedef std::list< ActiveWitness >                                 ActiveWitnessList;
-  typedef std::vector< Landmark_id >                                 Vertex_vector;
+  typedef std::vector< Landmark_id >                                 typeVectorVertex;
   typedef std::vector<Nearest_landmark_range>                        Nearest_landmark_table_internal;
 
   typedef Landmark_id Vertex_handle;
@@ -80,7 +81,7 @@ private:
 
   //@{
 
-  Witness_complex_cof()
+  Witness_complex_wmap()
   {
   }
   
@@ -92,7 +93,7 @@ private:
  *         of the pair range iterator needs to be 'std::pair<std::size_t, double>'.
    */
 
-  Witness_complex_cof(Nearest_landmark_table_ const & nearest_landmark_table)
+  Witness_complex_wmap(Nearest_landmark_table_ const & nearest_landmark_table)
     : nearest_landmark_table_(std::begin(nearest_landmark_table), std::end(nearest_landmark_table))
   {
   }
@@ -115,7 +116,9 @@ private:
     typedef typename SimplicialComplexForWitness::Vertex_handle Vertex_handle;
     typedef Sib_vertex_pair<SimplicialComplexForWitness, Vertex_handle> Simplex_key;
 
-    typedef std::map<Simplex_key, bool> Simplex_bool_map;
+    typedef Witness_for_simplex<typename ActiveWitness::iterator, ActiveWitnessList> Witnessed_simplex;
+    typedef std::list<Witnessed_simplex> Witnessed_simplex_list;
+    typedef std::map<Simplex_key, Witnessed_simplex_list> Simplex_witness_list_map;
     
     if (complex.num_vertices() > 0) {
       std::cerr << "Witness complex cannot create complex - complex is not empty.\n";
@@ -134,17 +137,62 @@ private:
     for (auto w: nearest_landmark_table_)
       active_witnesses.push_back(ActiveWitness(w));
 
-    Simplex_bool_map* prev_dim_map = new Simplex_bool_map();
+    Simplex_witness_list_map* prev_dim_map = new Simplex_witness_list_map();
     fill_vertices(max_alpha_square, complex, active_witnesses, prev_dim_map);
+    
+    //std::cout << "Size of the vertex map: " << prev_dim_map->size() << std::endl;
+    // //----------------------- TEST
+    // for (auto vw_pair: *prev_dim_map) {
+    //   std::cout << "*";
+    //   for (auto v: complex.simplex_vertex_range(vw_pair.first.simplex_handle()))
+    //     std::cout << v << " ";
+    //   std::cout << "\n[";
+    //   for (auto w: vw_pair.second) {
+    //     std::cout << "(" << &(*w.witness_)
+    //               << ", " << w.last_it_->first
+    //               << ", " << w.limit_distance_
+    //               << ")";
+    //   }
+    //   std::cout << "]\n";
+    // }
+    // //---------------------------
 
-    Simplex_bool_map* dim1_map = new Simplex_bool_map();
+    Simplex_witness_list_map* dim1_map = new Simplex_witness_list_map();
     fill_edges(max_alpha_square, complex, active_witnesses, prev_dim_map, dim1_map);
     delete prev_dim_map;
     prev_dim_map = dim1_map;
 
+    // //----------------------- TEST
+    // for (auto vw_pair: *prev_dim_map) {
+    //   std::cout << "*";
+    //   for (auto v: complex.simplex_vertex_range(vw_pair.first.simplex_handle()))
+    //     std::cout << v << " ";
+    //   std::cout << "\n[";
+    //   for (auto w: vw_pair.second) {
+    //     std::cout << "(" << &(*w.witness_)
+    //               << ", " << w.last_it_->first
+    //               << ", " << w.limit_distance_
+    //               << ")";        
+    //   }
+    //   std::cout << "]\n";
+    // }
+
     Landmark_id k = 2; /* current dimension in iterative construction */
+
+    /* test */
+    // typedef Gudhi::Simplex_tree_vertex_subtree_iterator<SimplicialComplexForWitness> Vertex_subtree_iterator;
+    // typedef boost::iterator_range<Vertex_subtree_iterator> Vertex_subtree_range;
+    // for (auto v0: complex.complex_vertex_range()) {
+    //   std::cout << "*" << v0 << "\n";
+    //   for (auto sh: Vertex_subtree_range(Vertex_subtree_iterator(&complex, v0, 1), Vertex_subtree_iterator())) {
+    //     for (auto v: complex.simplex_vertex_range(sh))
+    //       std::cout << v << " ";
+    //     std::cout << std::endl;
+    //   }
+    // }
+    
     while (!active_witnesses.empty() && k <= limit_dimension) {
-      Simplex_bool_map* curr_dim_map = new Simplex_bool_map();
+      Simplex_witness_list_map* curr_dim_map = new Simplex_witness_list_map();
       fill_simplices(max_alpha_square, k, complex, active_witnesses, prev_dim_map, curr_dim_map);
 
       delete prev_dim_map;
@@ -169,16 +217,19 @@ private:
    */
   template < typename SimplicialComplexForWitness,
              typename ActiveWitnessList,
-             typename SimplexBoolMap >
+             typename SimplexWitnessMap >
   void fill_vertices(const double alpha2,
                      SimplicialComplexForWitness& complex,
                      ActiveWitnessList& aw_list,
-                     SimplexBoolMap* sw_map) const
+                     SimplexWitnessMap* sw_map) const
   {
     typedef typename SimplicialComplexForWitness::Simplex_handle Simplex_handle;
     typedef typename SimplicialComplexForWitness::Vertex_handle Vertex_handle;
     typedef typename SimplicialComplexForWitness::Siblings Siblings;
     typedef Sib_vertex_pair<SimplicialComplexForWitness, Vertex_handle> Simplex_key;
+    typedef std::vector<Vertex_handle> Vertex_vector;
+    typedef typename SimplexWitnessMap::mapped_type Simplex_witness_list;
+    typedef typename Simplex_witness_list::value_type WitnessForSimplex;
 
     for (auto aw_it = aw_list.begin(); aw_it != aw_list.end(); ++aw_it) {
       typename ActiveWitness::iterator l_it = aw_it->begin();
@@ -202,7 +253,7 @@ private:
         Siblings* sib = complex.self_siblings(sh);
         Vertex_handle v = sh->first;
         Simplex_key sk(sib,v);
-        (*sw_map)[sk] = true; 
+        (*sw_map)[sk].emplace_back(WitnessForSimplex(l_it, aw_it, norelax_dist2)); 
         aw_it->increase();
         if (l_it->second < norelax_dist2)
           norelax_dist2 = l_it->second;
@@ -224,20 +275,58 @@ private:
                   SimplexWitnessMap* dim0_map,
                   SimplexWitnessMap* dim1_map) const
   {
-    Vertex_vector simplex;
-    simplex.reserve(2);
-    for (auto w: aw_list) {
-      int num_simplices = 0;
-      add_all_faces_of_dimension(1,
-                                 alpha2,
-                                 std::numeric_limits<double>::infinity(),
-                                 w.begin(),
-                                 simplex,
-                                 complex,
-                                 w.end(),
-                                 num_simplices,
-                                 dim1_map);
-      assert(simplex.empty());
+    typedef typename SimplicialComplexForWitness::Simplex_handle Simplex_handle;
+    typedef typename SimplicialComplexForWitness::Vertex_handle Vertex_handle;
+    typedef typename SimplicialComplexForWitness::Siblings Siblings;
+    typedef Sib_vertex_pair<SimplicialComplexForWitness, Vertex_handle> Simplex_key;
+    typedef std::vector<Vertex_handle> Vertex_vector;
+    typedef typename SimplexWitnessMap::mapped_type Simplex_witness_list;
+    typedef typename Simplex_witness_list::value_type WitnessForSimplex;
+
+    for (auto vw_pair: *dim0_map) {
+      for (auto w: vw_pair.second) {
+        typename ActiveWitness::iterator l_it = w.last_it_;
+        typename ActiveWitness::iterator end = w.witness_->end();
+        if (l_it != end)
+          l_it++;
+        double filtration_value = 0;
+        double norelax_dist2 = w.limit_distance_;
+        for (; l_it != end && l_it->second - alpha2 <= norelax_dist2; ++l_it) {
+          if (l_it->second > norelax_dist2)
+            filtration_value = l_it->second - norelax_dist2;
+          else
+            norelax_dist2 = l_it->second;
+          auto sv_range = complex.simplex_vertex_range(vw_pair.first.simplex_handle());
+          Vertex_vector vertices(sv_range.begin(), sv_range.end());
+          vertices.push_back(l_it->first);
+          complex.insert_simplex(vertices, filtration_value);
+        }
+      }
+    }
+    for (auto vw_pair: *dim0_map) {
+      for (auto w: vw_pair.second) {
+        typename ActiveWitness::iterator l_it = w.last_it_;
+        typename ActiveWitness::iterator end = w.witness_->end();
+        if (l_it != end)
+          l_it++;
+        double norelax_dist2 = w.limit_distance_;
+        for (; l_it != end && l_it->second - alpha2 <= norelax_dist2; ++l_it) {
+          auto sv_range = complex.simplex_vertex_range(vw_pair.first.simplex_handle());
+          Vertex_vector vertices(sv_range.begin(), sv_range.end());
+          vertices.push_back(l_it->first);
+          Simplex_handle sh = complex.find(vertices);
+          Siblings* sib = complex.self_siblings(sh);
+          Vertex_handle v = sh->first;
+          Simplex_key sk(sib,v);
+          (*dim1_map)[sk].emplace_back(WitnessForSimplex(l_it, w.witness_, norelax_dist2));
+          w.witness_->increase();
+          if (l_it->second < norelax_dist2)
+            norelax_dist2 = l_it->second;
+        }
+        w.witness_->decrease();
+        if (w.witness_->counter() == 0)
+          aw_list.erase(w.witness_);
+      }
     }
     // for (auto aw: aw_list)
     //   std::cout << aw.counter() << " "; 
@@ -248,209 +337,76 @@ private:
    */
   template < typename SimplicialComplexForWitness,
              typename ActiveWitnessList,
-             typename SimplexBoolMap >
+             typename SimplexWitnessMap >
   void fill_simplices(double alpha2,
                       std::size_t k,
                       SimplicialComplexForWitness& complex,
                       ActiveWitnessList& aw_list,
-                      SimplexBoolMap* prev_dim_map,
-                      SimplexBoolMap* curr_dim_map)
+                      SimplexWitnessMap* prev_dim_map,
+                      SimplexWitnessMap* curr_dim_map)
   {
     typedef typename SimplicialComplexForWitness::Simplex_handle Simplex_handle;
     typedef typename SimplicialComplexForWitness::Vertex_handle Vertex_handle;
     typedef typename SimplicialComplexForWitness::Siblings Siblings;
     typedef Sib_vertex_pair<SimplicialComplexForWitness, Vertex_handle> Simplex_key;
+    typedef std::vector<Vertex_handle> Vertex_vector;
+    typedef typename SimplexWitnessMap::mapped_type Simplex_witness_list;
+    typedef typename Simplex_witness_list::value_type WitnessForSimplex;
     typedef Gudhi::Simplex_tree_vertex_subtree_iterator<SimplicialComplexForWitness> Vertex_subtree_iterator;
     typedef boost::iterator_range<Vertex_subtree_iterator> Vertex_subtree_range;
 
-    // coface precalculation
-    for (auto sw_pair: *prev_dim_map) {
-      auto v_it = complex.simplex_vertex_range(sw_pair.first.simplex_handle()).begin();
-      unsigned counter = 0; /* I need the first vertex before last */ 
-      while (counter != k-2) {
-        v_it++;
-        counter++;
-      }
-      Vertex_handle v1 = *(v_it++);
-      Vertex_handle v0 = *v_it;
-      Vertex_subtree_range v0s_range(Vertex_subtree_iterator(&complex, v0, k-1),
-                                    Vertex_subtree_iterator());
-      Vertex_subtree_range v1s_range(Vertex_subtree_iterator(&complex, v1, k-1),
-                                    Vertex_subtree_iterator());
-      for (auto sh2: v0s_range) {
-        Vertex_vector coface;
-        if (check_if_neighbors(complex, sw_pair.first.simplex_handle(), sh2, coface)) {
+    //#if defined(DEBUG_TRACES)
+    //bool verbose = true;
+    //#else
+    //bool verbose = false;
+    //#endif
+
+    // confirmation of cofaces by witnesses
+    for (auto vw_pair: *prev_dim_map) {
+      for (auto w: vw_pair.second) {
+        typename ActiveWitness::iterator l_it = w.last_it_;
+        typename ActiveWitness::iterator end = w.witness_->end();
+        if (l_it != end)
+          l_it++;
+        double norelax_dist2 = w.limit_distance_;
+        for (; l_it != end && l_it->second - alpha2 <= norelax_dist2; ++l_it) {
+          auto sv_range = complex.simplex_vertex_range(vw_pair.first.simplex_handle());
+          Vertex_vector vertices(sv_range.begin(), sv_range.end());
+          vertices.push_back(l_it->first);
           double filtration_value = 0;
-          if (all_faces_in(coface, &filtration_value, complex)) {
-            std::pair<Simplex_handle, bool> sh_bool = complex.insert_simplex(coface);
-            if (sh_bool.second) {
-              Siblings* sib = complex.self_siblings(sh_bool.first);
-              Vertex_handle v = sh_bool.first->first;
-              curr_dim_map->emplace(Simplex_key(sib,v), false);
-            }
-          }
+          // if norelax_dist is infinite, relaxation is 0.
+          if (l_it->second > norelax_dist2) 
+            filtration_value = l_it->second - norelax_dist2;
+          if (all_faces_in(vertices, &filtration_value, complex)) {
+            auto sh_bool = complex.insert_simplex(vertices, filtration_value);            
+            auto sh = sh_bool.first;
+            if (sh == complex.null_simplex())
+              sh = complex.find(vertices);
+            Siblings* sib = complex.self_siblings(sh);
+            Vertex_handle v = sh->first;
+            Simplex_key sk(sib,v);
+            (*curr_dim_map)[sk].emplace_back(WitnessForSimplex(l_it, w.witness_, norelax_dist2));
+            w.witness_->increase();
+          }          
+          if (l_it->second < norelax_dist2)
+            norelax_dist2 = l_it->second;
         }
-      }
-      for (auto sh2: v1s_range) {
-        Vertex_vector coface;
-        if (check_if_neighbors(complex, sw_pair.first.simplex_handle(), sh2, coface)) {
-          double filtration_value = std::numeric_limits<double>::infinity();
-          if (all_faces_in(coface, &filtration_value, complex)) {
-            std::pair<Simplex_handle, bool> sh_bool = complex.insert_simplex(coface);
-            if (sh_bool.second) {
-              Siblings* sib = complex.self_siblings(sh_bool.first);
-              Vertex_handle v = sh_bool.first->first;
-              curr_dim_map->emplace(Simplex_key(sib,v), false);
-            }
-          }
-        }
+        w.witness_->decrease();
+         // if (w.witness_->counter() == 0)
+        //   aw_list.erase(w.witness_);
       }
     }
-    std::cout << "Candidates: " << curr_dim_map->size() << std::endl;
     auto aw_it = aw_list.begin();
-    std::vector<Landmark_id> simplex;
-    simplex.reserve(k+1);
     while (aw_it != aw_list.end()) {
-      int num_simplices = 0;
-      bool ok = add_all_faces_of_dimension(k,
-                                           alpha2,
-                                           std::numeric_limits<double>::infinity(),
-                                           aw_it->begin(),
-                                           simplex,
-                                           complex,
-                                           aw_it->end(),
-                                           num_simplices,
-                                           curr_dim_map);
-      // std::cout << num_simplices << " ";
-      assert(simplex.empty());
-      if (!ok)
-        aw_list.erase(aw_it++); //First increase the iterator and then erase the previous element
+      // std::cout << aw_it->counter() << " ";
+      if (aw_it->counter() == 0)
+        aw_list.erase(aw_it++);
       else
         aw_it++;
     }
     // std::cout << "\n";
     std::cout << k << "-dim active witness list size = " << aw_list.size() << "\n";
-    std::cout << "Candidates after: " << curr_dim_map->size() << std::endl;
-    remove_non_witnessed_simplices(complex, curr_dim_map);
-  }
-
-  /* \brief Adds recursively all the faces of a certain dimension dim witnessed by the same witness.
-   * Iterator is needed to know until how far we can take landmarks to form simplexes.
-   * simplex is the prefix of the simplexes to insert.
-   * The output value indicates if the witness rests active or not.
-   */
-  template < typename SimplicialComplexForWitness,
-             typename SimplexBoolMap>
-  bool add_all_faces_of_dimension(int dim,
-                                  double alpha2,
-                                  double norelax_dist2,
-                                  typename ActiveWitness::iterator curr_l,
-                                  std::vector<Landmark_id>& simplex,
-                                  SimplicialComplexForWitness& complex,
-                                  typename ActiveWitness::iterator end,
-                                  int& num_simplices,
-                                  SimplexBoolMap* curr_dim_map) const
-  {
-    typedef typename SimplicialComplexForWitness::Simplex_handle Simplex_handle;
-    typedef typename SimplicialComplexForWitness::Vertex_handle Vertex_handle;
-    typedef typename SimplicialComplexForWitness::Siblings Siblings;
-    typedef Sib_vertex_pair<SimplicialComplexForWitness, Vertex_handle> Simplex_key;
-
-    if (curr_l == end)
-      return false;
-    bool will_be_active = false;
-    typename ActiveWitness::iterator l_it = curr_l;
-    if (dim > 0)
-      for (; l_it->second - alpha2 <= norelax_dist2 && l_it != end; ++l_it) {
-        simplex.push_back(l_it->first);
-        if (complex.find(simplex) != complex.null_simplex()) {
-          typename ActiveWitness::iterator next_it = l_it;
-          will_be_active = add_all_faces_of_dimension(dim-1,
-                                                      alpha2,
-                                                      norelax_dist2,
-                                                      ++next_it,
-                                                      simplex,
-                                                      complex,
-                                                      end,
-                                                      num_simplices,
-                                                      curr_dim_map) || will_be_active;
-        }
-        assert(!simplex.empty());
-        simplex.pop_back();
-        // If norelax_dist is infinity, change to first omitted distance
-        if (l_it->second <= norelax_dist2)
-          norelax_dist2 = l_it->second;
-      } 
-    else if (dim == 0)
-      for (; l_it->second - alpha2 <= norelax_dist2 && l_it != end; ++l_it) {
-        simplex.push_back(l_it->first);
-        double filtration_value = 0;
-        // if norelax_dist is infinite, relaxation is 0.
-        if (l_it->second > norelax_dist2) 
-          filtration_value = l_it->second - norelax_dist2;
-        // Two different modes: for edges and others
-        if (simplex.size() == 2) {
-          if (all_faces_in(simplex, &filtration_value, complex)) {
-            will_be_active = true;
-            auto sh_bool = complex.insert_simplex(simplex, filtration_value);
-            if (sh_bool.second) {
-              Simplex_handle sh = sh_bool.first;
-              Vertex_handle v = sh->first;
-              Siblings* sib = complex.self_siblings(sh);
-              (*curr_dim_map)[Simplex_key(sib, v)] = true;
-            }
-            num_simplices++;
-          }
-        }
-        // else {
-        //   if (all_faces_in(simplex, &filtration_value, complex)) {
-        //     will_be_active = true;
-        //     auto sh_bool = complex.insert_simplex(simplex, filtration_value);
-        //     if (sh_bool.second) {
-        //       Simplex_handle sh = sh_bool.first;
-        //       Vertex_handle v = sh->first;
-        //       Siblings* sib = complex.self_siblings(sh);
-        //       (*curr_dim_map)[Simplex_key(sib, v)] = true;
-        //     }
-        //     num_simplices++;
-        //   }
-        // }
-        else {
-          Simplex_handle sh = complex.find(simplex);
-          if (sh != complex.null_simplex()) {
-            will_be_active = true;
-            complex.insert_simplex(simplex, filtration_value);
-            Vertex_handle v = sh->first;
-            Siblings* sib = complex.self_siblings(sh);
-            (*curr_dim_map)[Simplex_key(sib, v)] = true;
-            num_simplices++;
-          }
-        }
-        assert(!simplex.empty());
-        simplex.pop_back();
-        // If norelax_dist is infinity, change to first omitted distance
-        if (l_it->second < norelax_dist2)
-          norelax_dist2 = l_it->second;
-      }
-    return will_be_active;
-  }
-
-  /** Removes the non-witnessed candidate simplices.
-   */
-  template < class SimplicialComplexForWitness,
-             class SimplexBoolMap >
-  void remove_non_witnessed_simplices(SimplicialComplexForWitness& complex, SimplexBoolMap* curr_dim_map)
-  {
-    std::list<typename SimplexBoolMap::key_type> elements_to_remove;
-      
-    for (auto sw: *curr_dim_map) {
-      if (!sw.second) {
-        complex.remove_maximal_simplex(sw.first.simplex_handle());
-        elements_to_remove.push_back(sw.first);
-      }        
-    }
-    for (auto key: elements_to_remove)
-      curr_dim_map->erase(key);
+    // remove_non_witnessed_simplices(complex, curr_dim_map);
   }
   
 };
@@ -459,4 +415,4 @@ private:
 
 }  // namespace Gudhi
 
-#endif  // WITNESS_COMPLEX_COF_H_
+#endif  // WITNESS_COMPLEX_WMAP_H_

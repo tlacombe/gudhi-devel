@@ -5,6 +5,7 @@
 #include <gudhi/Witness_complex.h>
 #include <gudhi/Witness_complex_new.h>
 #include <gudhi/Witness_complex_cof.h>
+#include <gudhi/Witness_complex_wmap.h>
 #include <gudhi/choose_n_farthest_points.h>
 #include <gudhi/Kd_tree_search.h>
 #include <gudhi/Points_off_io.h>
@@ -27,6 +28,7 @@ typedef std::vector<Nearest_landmark_range> Nearest_landmark_table;
 typedef typename Gudhi::witness_complex::Witness_complex<Nearest_landmark_table> Witness_complex;
 typedef typename Gudhi::witness_complex::Witness_complex_new<Nearest_landmark_table> Witness_complex_new;
 typedef typename Gudhi::witness_complex::Witness_complex_cof<Nearest_landmark_table> Witness_complex_cof;
+typedef typename Gudhi::witness_complex::Witness_complex_wmap<Nearest_landmark_table> Witness_complex_wmap;
 
 int main(int argc, char * const argv[]) {
   if (argc != 5) {
@@ -43,7 +45,7 @@ int main(int argc, char * const argv[]) {
   int nbL = atoi(argv[2]), lim_dim = atoi(argv[4]);
   double alpha2 = atof(argv[3]);
   clock_t start, end;
-  Gudhi::Simplex_tree<> simplex_tree, simplex_tree2, simplex_tree3;
+  Gudhi::Simplex_tree<> simplex_tree, simplex_tree2, simplex_tree3, simplex_tree4;
 
   // Read the point file
   Point_range witnesses, landmarks;
@@ -73,7 +75,7 @@ int main(int argc, char * const argv[]) {
 
   witness_complex.create_complex(simplex_tree, alpha2, lim_dim);
   end = clock();
-  std::cout << "Witness complex took "
+  std::cout << "Witness complex 1 (no cofaces, no witlists) took "
       << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
   std::cout << "Number of simplices is: " << simplex_tree.num_simplices() << "\n";
                                                                              
@@ -98,6 +100,16 @@ int main(int argc, char * const argv[]) {
   std::cout << "Witness complex 3 (cofaces, no witlists) took "
       << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
   std::cout << "Number of simplices is: " << simplex_tree3.num_simplices() << "\n";
+
+  // Compute witness complex - 3
+  start = clock();
+  Witness_complex_wmap witness_complex_wmap(nearest_landmark_table);
+
+  witness_complex_wmap.create_complex(simplex_tree4, alpha2, lim_dim);
+  end = clock();
+  std::cout << "Witness complex 3 (no cofaces, but witlists) took "
+      << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
+  std::cout << "Number of simplices is: " << simplex_tree4.num_simplices() << "\n";
 
   
 }
