@@ -31,7 +31,6 @@
 #include <gudhi/Witness_complex/all_faces_in.h>
 #include <gudhi/Witness_complex/check_if_neighbors.h>
 #include <gudhi/Witness_complex/Simplex.h>
-#include <gudhi/Witness_complex/Witness_filter.h>
 #include <gudhi/Simplex_tree/Vertex_subtree_iterator.h>
 #include <gudhi/Simplex_tree/Fixed_dimension_iterator.h>
 

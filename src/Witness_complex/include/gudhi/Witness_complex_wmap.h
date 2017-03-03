@@ -31,7 +31,6 @@
 #include <gudhi/Witness_complex/all_faces_in.h>
 #include <gudhi/Witness_complex/check_if_neighbors.h>
 #include <gudhi/Witness_complex/Simplex.h>
-#include <gudhi/Witness_complex/Witness_filter.h>
 #include <gudhi/Simplex_tree/Vertex_subtree_iterator.h>
 #include <gudhi/Simplex_tree/Fixed_dimension_iterator.h>
 
@@ -345,7 +344,6 @@ private:
                       SimplexWitnessMap* prev_dim_map,
                       SimplexWitnessMap* curr_dim_map)
   {
-    typedef typename SimplicialComplexForWitness::Simplex_handle Simplex_handle;
     typedef typename SimplicialComplexForWitness::Vertex_handle Vertex_handle;
     typedef typename SimplicialComplexForWitness::Siblings Siblings;
     typedef Sib_vertex_pair<SimplicialComplexForWitness, Vertex_handle> Simplex_key;
