@@ -352,8 +352,6 @@ private:
     typedef std::vector<Vertex_handle> Vertex_vector;
     typedef typename SimplexWitnessMap::mapped_type Simplex_witness_list;
     typedef typename Simplex_witness_list::value_type WitnessForSimplex;
-    typedef Gudhi::Simplex_tree_vertex_subtree_iterator<SimplicialComplexForWitness> Vertex_subtree_iterator;
-    typedef boost::iterator_range<Vertex_subtree_iterator> Vertex_subtree_range;
 
     //#if defined(DEBUG_TRACES)
     //bool verbose = true;
@@ -379,7 +377,7 @@ private:
             filtration_value = l_it->second - norelax_dist2;
           if (all_faces_in(vertices, &filtration_value, complex)) {
             auto sh_bool = complex.insert_simplex(vertices, filtration_value);            
-            auto sh = sh_bool.first;
+            Simplex_handle sh = sh_bool.first;
             if (sh == complex.null_simplex())
               sh = complex.find(vertices);
             Siblings* sib = complex.self_siblings(sh);
