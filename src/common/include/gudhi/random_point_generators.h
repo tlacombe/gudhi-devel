@@ -283,6 +283,21 @@ std::vector<typename Kernel::Point_d> generate_points_on_sphere_d(std::size_t nu
 }
 
 template <typename Kernel>
+std::vector<typename Kernel::Point_d> generate_points_in_cube_d(std::size_t num_points, int dim, double side_length) {
+  typedef typename Kernel::Point_d Point;
+  Kernel k;
+  CGAL::Random rng;
+  CGAL::Random_points_in_cube_d<Point> generator(dim, side_length/2);
+  std::vector<Point> points;
+  points.reserve(num_points);
+  for (std::size_t i = 0; i < num_points;) {
+    points.push_back(*generator++);
+    ++i;
+  }
+  return points;
+}
+
+template <typename Kernel>
 std::vector<typename Kernel::Point_d> generate_points_on_two_spheres_d(std::size_t num_points, int dim, double radius,
                                                                        double distance_between_centers,
                                                                        double radius_noise_percentage = 0.) {
