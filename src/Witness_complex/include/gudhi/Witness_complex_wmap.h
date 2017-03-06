@@ -345,6 +345,7 @@ private:
                       SimplexWitnessMap* curr_dim_map)
   {
     typedef typename SimplicialComplexForWitness::Vertex_handle Vertex_handle;
+    typedef typename SimplicialComplexForWitness::Simplex_handle Simplex_handle;
     typedef typename SimplicialComplexForWitness::Siblings Siblings;
     typedef Sib_vertex_pair<SimplicialComplexForWitness, Vertex_handle> Simplex_key;
     typedef std::vector<Vertex_handle> Vertex_vector;

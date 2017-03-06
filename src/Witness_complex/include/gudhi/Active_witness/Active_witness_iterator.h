@@ -51,7 +51,7 @@ class Active_witness_iterator
   typedef typename std::list<Id_distance_pair>::iterator Pair_iterator;
   typedef typename Gudhi::witness_complex::Active_witness_iterator<Active_witness, Id_distance_pair, INS_iterator> Iterator;
   
-  
+public: //TEMP  
   Active_witness *aw_;
   Pair_iterator lh_; // landmark handle
   bool is_end_; // true only if the pointer is end and there are no more neighbors to add

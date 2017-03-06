@@ -74,6 +74,8 @@ private:
   Nearest_landmark_table_internal              nearest_landmark_table_;
   
  public:
+  ActiveWitness* w_ref;
+  bool first_spotted;
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /* @name Constructor
    */
@@ -144,6 +146,12 @@ private:
 
     Landmark_id k = 2; /* current dimension in iterative construction */
     while (!active_witnesses.empty() && k <= limit_dimension) {
+      typename ActiveWitness::Table::iterator it = w_ref->nearest_landmark_table_.begin();
+      // std::advance(it, 2);
+      // if (it->first != 3) {
+      //   std::cout << "Attention!\n";
+      // }
+
       Simplex_bool_map* curr_dim_map = new Simplex_bool_map();
       fill_simplices(max_alpha_square, k, complex, active_witnesses, prev_dim_map, curr_dim_map);
 
@@ -218,28 +226,44 @@ private:
   template < typename SimplicialComplexForWitness,
              typename ActiveWitnessList,
              typename SimplexWitnessMap >
-  void fill_edges(const double alpha2,
+  void fill_edges(double alpha2,
                   SimplicialComplexForWitness& complex,
                   ActiveWitnessList& aw_list,
                   SimplexWitnessMap* dim0_map,
-                  SimplexWitnessMap* dim1_map) const
+                  SimplexWitnessMap* dim1_map)
   {
     Vertex_vector simplex;
     simplex.reserve(2);
-    for (auto w: aw_list) {
+    auto aw_it = aw_list.begin();
+    // for (auto w: aw_list) {
+    //   int num_simplices = 0;
+    //   add_all_faces_of_dimension(1,
+    //                              alpha2,
+    //                              std::numeric_limits<double>::infinity(),
+    //                              w.begin(),
+    //                              simplex,
+    //                              complex,
+    //                              w.end(),
+    //                              num_simplices,
+    //                              dim1_map);
+    //   assert(simplex.empty());
+    // }
+    while (aw_it != aw_list.end()) {
       int num_simplices = 0;
       add_all_faces_of_dimension(1,
                                  alpha2,
                                  std::numeric_limits<double>::infinity(),
-                                 w.begin(),
+                                 aw_it->begin(),
                                  simplex,
                                  complex,
-                                 w.end(),
+                                 aw_it->end(),
                                  num_simplices,
                                  dim1_map);
       assert(simplex.empty());
+      aw_it++;
     }
-    // for (auto aw: aw_list)
+
+  // for (auto aw: aw_list)
     //   std::cout << aw.counter() << " "; 
     std::cout << "1-dim active witness list size = " << aw_list.size() << "\n";
   }
@@ -349,7 +373,7 @@ private:
                                   SimplicialComplexForWitness& complex,
                                   typename ActiveWitness::iterator end,
                                   int& num_simplices,
-                                  SimplexBoolMap* curr_dim_map) const
+                                  SimplexBoolMap* curr_dim_map)
   {
     typedef typename SimplicialComplexForWitness::Simplex_handle Simplex_handle;
     typedef typename SimplicialComplexForWitness::Vertex_handle Vertex_handle;
@@ -361,7 +385,7 @@ private:
     bool will_be_active = false;
     typename ActiveWitness::iterator l_it = curr_l;
     if (dim > 0)
-      for (; l_it->second - alpha2 <= norelax_dist2 && l_it != end; ++l_it) {
+      for (; l_it != end && l_it->second - alpha2 <= norelax_dist2; ++l_it) {
         simplex.push_back(l_it->first);
         if (complex.find(simplex) != complex.null_simplex()) {
           typename ActiveWitness::iterator next_it = l_it;
@@ -382,12 +406,17 @@ private:
           norelax_dist2 = l_it->second;
       } 
     else if (dim == 0)
-      for (; l_it->second - alpha2 <= norelax_dist2 && l_it != end; ++l_it) {
+      for (; l_it != end && l_it->second - alpha2 <= norelax_dist2; ++l_it) {
         simplex.push_back(l_it->first);
         double filtration_value = 0;
         // if norelax_dist is infinite, relaxation is 0.
         if (l_it->second > norelax_dist2) 
           filtration_value = l_it->second - norelax_dist2;
+        if ((simplex[0] == 5) &&
+            (simplex[1] == 7) && first_spotted) {
+          w_ref = l_it.aw_;
+          first_spotted = false;
+        }
         // Two different modes: for edges and others
         if (simplex.size() == 2) {
           if (all_faces_in(simplex, &filtration_value, complex)) {
@@ -399,6 +428,10 @@ private:
               Siblings* sib = complex.self_siblings(sh);
               (*curr_dim_map)[Simplex_key(sib, v)] = true;
             }
+            // if ((l_it.aw_->nearest_landmark_table_.begin()->first == 5) &&
+            //     ((l_it.aw_->nearest_landmark_table_.begin()++)->first == 7) &&
+            //     ((l_it.aw_->nearest_landmark_table_.begin()++++)->first == 3))
+            //   w_ref = l_it.aw_;
             num_simplices++;
           }
         }
@@ -416,6 +449,12 @@ private:
         //   }
         // }
         else {
+          if ((simplex[0] == 5) &&
+              (simplex[1] == 7) &&
+              (simplex[2] == 9)) {
+            w_ref = l_it.aw_;
+            first_spotted = false;
+          }
           Simplex_handle sh = complex.find(simplex);
           if (sh != complex.null_simplex()) {
             will_be_active = true;
@@ -451,6 +490,12 @@ private:
     }
     for (auto key: elements_to_remove)
       curr_dim_map->erase(key);
+  }
+
+  template < class SimplicialComplexForWitness>
+  void print_complex(SimplicialComplexForWitness& complex)
+  {
+    std::cout << complex << std::endl;
   }
   
 };

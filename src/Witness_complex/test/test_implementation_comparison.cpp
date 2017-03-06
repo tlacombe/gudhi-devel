@@ -79,7 +79,7 @@ int main(int argc, char * const argv[]) {
       << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
   std::cout << "Number of simplices is: " << simplex_tree.num_simplices() << "\n";
                                                                              
-                                                                             // std::cout << simplex_tree << std::endl;
+  // std::cout << simplex_tree << std::endl;
   
   // Compute witness complex - 2
   start = clock();
@@ -91,23 +91,23 @@ int main(int argc, char * const argv[]) {
       << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
   std::cout << "Number of simplices is: " << simplex_tree2.num_simplices() << "\n";
 
-  // // Compute witness complex - 3
-  // start = clock();
-  // Witness_complex_cof witness_complex_cof(nearest_landmark_table);
-
-  // witness_complex_cof.create_complex(simplex_tree3, alpha2, lim_dim);
-  // end = clock();
-  // std::cout << "Witness complex 3 (cofaces, no witlists) took "
-  //     << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
-  // std::cout << "Number of simplices is: " << simplex_tree3.num_simplices() << "\n";
-
   // Compute witness complex - 3
+  start = clock();
+  Witness_complex_cof witness_complex_cof(nearest_landmark_table);
+
+  witness_complex_cof.create_complex(simplex_tree3, alpha2, lim_dim);
+  end = clock();
+  std::cout << "Witness complex 3 (cofaces, no witlists) took "
+      << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
+  std::cout << "Number of simplices is: " << simplex_tree3.num_simplices() << "\n";
+  
+  // // Compute witness complex - 3
   start = clock();
   Witness_complex_wmap witness_complex_wmap(nearest_landmark_table);
 
   witness_complex_wmap.create_complex(simplex_tree4, alpha2, lim_dim);
   end = clock();
-  std::cout << "Witness complex 3 (no cofaces, but witlists) took "
+  std::cout << "Witness complex 4 (no cofaces, but witlists) took "
       << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
   std::cout << "Number of simplices is: " << simplex_tree4.num_simplices() << "\n";
 
