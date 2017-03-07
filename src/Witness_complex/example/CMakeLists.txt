@@ -8,6 +8,13 @@ if (TBB_FOUND)
 endif()
 add_test(Witness_complex_test_nearest_landmark_table Witness_complex_example_nearest_landmark_table)
 
+add_executable ( Witness_complex_example_distance_table example_distance_table.cpp )
+target_link_libraries(Witness_complex_example_distance_table ${Boost_SYSTEM_LIBRARY})
+if (TBB_FOUND)
+  target_link_libraries(Witness_complex_example_distance_table ${TBB_LIBRARIES})
+endif()
+add_test(Witness_complex_test_distance_table Witness_complex_example_distance_table)
+
 # CGAL and Eigen3 are required for Euclidean version of Witness
 if(CGAL_FOUND)
   if (NOT CGAL_VERSION VERSION_LESS 4.6.0)
