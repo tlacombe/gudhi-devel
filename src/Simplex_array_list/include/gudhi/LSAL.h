@@ -8,12 +8,13 @@ namespace Gudhi {
 class LSAL {
     
 public:
-    void insert_max(const Simplex& sigma);
 
-    void add(const Simplex& sigma);
+    void insert_max(const Simplex& sigma);
+    bool add(const Simplex& sigma);
     void remove(const Simplex& tau);
     
     bool membership(const Simplex& tau);
+    bool all_facets_inside(const Simplex& sigma);
 
     Vertex contraction(const Vertex x, const Vertex y);
 
@@ -41,21 +42,17 @@ private:
 };
 
 void LSAL::insert_max(const Simplex& sigma){
-    max_empty_face = (sigma.size()==0); //vérifier la gestion de empty face
-    Simplex_ptr sptr = std::make_shared<Simplex>(sigma);
-    for(const Vertex& v : sigma){
-        if(!t0.count(v)) t0.emplace(v, Simplex_ptr_set()), estimated_gamma0.emplace(v,0);
-        t0.at(v).emplace(sptr);
-        estimated_gamma0[v] = estimated_gamma0.at(v) + 1;
-    }
-    total_size++;
+    for(const Vertex& v : sigma)
+        if(!estimated_gamma0.count(v)) estimated_gamma0.emplace(v,1);
+        else estimated_gamma0[v]++;
     estimated_total_size++;
+    add(sigma);
 }
 
-void LSAL::add(const Simplex& sigma){ // modified
+bool LSAL::add(const Simplex& sigma){
     max_empty_face = (sigma.size()==0); //vérifier la gestion de empty face
     Simplex_ptr sptr = std::make_shared<Simplex>(sigma);
-    bool inserted;
+    bool inserted = false;
     for(const Vertex& v : sigma){
         if(!t0.count(v)) t0.emplace(v, Simplex_ptr_set());
         inserted = t0.at(v).emplace(sptr).second;
@@ -64,6 +61,7 @@ void LSAL::add(const Simplex& sigma){ // modified
         total_size++;
     if(total_size > estimated_total_size * betta)
         clean(best_index(sigma));
+    return inserted;
 }
 
 void LSAL::remove(const Simplex& tau){
@@ -94,6 +92,20 @@ bool LSAL::membership(const Simplex& tau){
     for(const Simplex_ptr& sptr : t0.at(v))
         if(included(tau, *sptr)) return true;
     return false;
+}
+
+bool LSAL::all_facets_inside(const Simplex& sigma){
+    Vertex v = best_index(sigma);
+    if(!t0.count(v))  return false;
+    Simplex f = sigma; f.erase(v);
+    if(!membership(f)) return false;
+    std::unordered_set<Vertex> facets_inside;
+    for(const Simplex_ptr& sptr : t0.at(v))
+        for(const Vertex& w : sigma){
+            f = sigma; f.erase(w);
+            if(included(f, *sptr)) facets_inside.insert(w);
+        }
+    return facets_inside.size() == sigma.size() - 1;
 }
 
 /* Returns the remaining vertex */

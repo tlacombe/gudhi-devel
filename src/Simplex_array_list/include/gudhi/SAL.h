@@ -25,6 +25,7 @@ public:
     void remove(const Simplex& tau);
     
     bool membership(const Simplex& tau) const;
+    bool all_facets_inside(const Simplex& sigma);
     bool maximality(const Simplex& sigma) const;
     std::list<Simplex> max_cofaces(const Simplex& tau) const;
 
@@ -33,12 +34,12 @@ public:
 
     std::size_t size() const;
 
-private:
     typedef std::shared_ptr<Simplex> Simplex_ptr;
     struct Sptr_hash{ std::size_t operator()(const Simplex_ptr& s) const; };
     struct Sptr_equal{ std::size_t operator()(const Simplex_ptr& a, const Simplex_ptr& b) const; };
     typedef std::unordered_set<Simplex_ptr, Sptr_hash, Sptr_equal> Simplex_ptr_set;
 
+private:
     void erase_max(const Simplex& sigma);
     Vertex best_index(const Simplex& tau) const;
     
@@ -101,6 +102,21 @@ bool SAL::membership(const Simplex& tau) const{
         if(included(tau, *sptr)) return true;
     return false;
 }
+
+bool SAL::all_facets_inside(const Simplex& sigma){
+    Vertex v = best_index(sigma);
+    if(!t0.count(v))  return false;
+    Simplex f = sigma; f.erase(v);
+    if(!membership(f)) return false;
+    std::unordered_set<Vertex> facets_inside;
+    for(const Simplex_ptr& sptr : t0.at(v))
+        for(const Vertex& w : sigma){
+            f = sigma; f.erase(w);
+            if(included(f, *sptr)) facets_inside.insert(w);
+        }
+    return facets_inside.size() == sigma.size() - 1;
+}
+
 
 bool SAL::maximality(const Simplex& sigma) const{
     if(t0.size()==0 && !max_empty_face) return false; //empty complex
