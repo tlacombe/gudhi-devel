@@ -23,9 +23,15 @@
 #ifndef PERSISTENCE_GRAPH_H_
 #define PERSISTENCE_GRAPH_H_
 
+#include <gudhi/Internal_point.h>
+
+#ifdef GUDHI_USE_TBB
+#include <tbb/parallel_sort.h>
+#endif
+
 #include <vector>
 #include <algorithm>
-#include <gudhi/Internal_point.h>
+#include <limits>  // for numeric_limits
 
 namespace Gudhi {
 
@@ -38,7 +44,7 @@ namespace persistence_diagram {
  */
 class Persistence_graph {
  public:
-  /** \internal \brief Constructor taking 2 Persistence_Diagrams (concept) as parameters. */
+  /** \internal \brief Constructor taking 2 PersistenceDiagrams (concept) as parameters. */
   template<typename Persistence_diagram1, typename Persistence_diagram2>
   Persistence_graph(const Persistence_diagram1& diag1, const Persistence_diagram2& diag2, double e);
   /** \internal \brief Is the given point from U the projection of a point in V ? */
@@ -92,10 +98,12 @@ Persistence_graph::Persistence_graph(const Persistence_diagram1 &diag1,
     swap(u, v);
   std::sort(u_alive.begin(), u_alive.end());
   std::sort(v_alive.begin(), v_alive.end());
-  if (u_alive.size() != v_alive.size())
+  if (u_alive.size() != v_alive.size()) {
     b_alive = std::numeric_limits<double>::infinity();
-  else for (auto it_u = u_alive.cbegin(), it_v = v_alive.cbegin(); it_u != u_alive.cend(); ++it_u, ++it_v)
+  } else {
+    for (auto it_u = u_alive.cbegin(), it_v = v_alive.cbegin(); it_u != u_alive.cend(); ++it_u, ++it_v)
       b_alive = std::max(b_alive, std::fabs(*it_u - *it_v));
+  }
 }
 
 inline bool Persistence_graph::on_the_u_diagonal(int u_point_index) const {
@@ -140,7 +148,11 @@ inline std::vector<double> Persistence_graph::sorted_distances() const {
     for (int v_point_index = 0; v_point_index < size(); ++v_point_index)
       distances.push_back(distance(u_point_index, v_point_index));
   }
+#ifdef GUDHI_USE_TBB
+  tbb::parallel_sort(distances.begin(), distances.end());
+#else
   std::sort(distances.begin(), distances.end());
+#endif
   return distances;
 }
 

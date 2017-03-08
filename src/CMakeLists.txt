@@ -90,6 +90,8 @@ else()
   add_definitions(-DBOOST_RESULT_OF_USE_DECLTYPE)
   # BOOST ISSUE with Libraries name resolution under Windows
   add_definitions(-DBOOST_ALL_NO_LIB)
+  # problem with Visual Studio link on Boost program_options
+  add_definitions( -DBOOST_ALL_DYN_LINK )
 
   INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
   LINK_DIRECTORIES(${Boost_LIBRARY_DIRS})
@@ -113,6 +115,7 @@ else()
   add_subdirectory(example/Bitmap_cubical_complex)
   add_subdirectory(example/Witness_complex)
   add_subdirectory(example/Alpha_complex)
+  add_subdirectory(example/Rips_complex)
   add_subdirectory(example/Spatial_searching)
   add_subdirectory(example/Subsampling)
   add_subdirectory(example/Tangential_complex)

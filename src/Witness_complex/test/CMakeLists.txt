@@ -12,7 +12,9 @@ endif()
 
 add_executable ( Witness_complex_test_simple_witness_complex test_simple_witness_complex.cpp )
 target_link_libraries(Witness_complex_test_simple_witness_complex ${Boost_SYSTEM_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
-target_link_libraries(Witness_complex_test_simple_witness_complex ${TBB_LIBRARIES})
+if (TBB_FOUND)
+  target_link_libraries(Witness_complex_test_simple_witness_complex ${TBB_LIBRARIES})
+endif(TBB_FOUND)
 
 # Unitary tests definition and xml result file generation
 add_test(NAME simple_witness_complex

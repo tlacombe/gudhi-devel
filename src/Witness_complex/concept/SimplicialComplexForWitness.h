@@ -45,33 +45,15 @@ struct SimplicialComplexForWitness {
    */
   std::size_t num_vertices();
   
-  // /** \brief Iterator over the simplices of the complex,
-  //  * in an arbitrary order.
-  //  *
-  //  * 'value_type' must be 'Simplex_handle'.*/
-  // typedef unspecified Complex_simplex_range;
-
-  // /**
-  //  * \brief Returns a range over all the simplices of a
-  //  * complex.
-  //  */
-  // Complex_simplex_range complex_simplex_range();
-
-  // /** \brief Iterator over vertices of a simplex.
-  //  *
-  //  * 'value type' must be 'Vertex_handle'.*/
-  // typedef unspecified Simplex_vertex_range;
-
-  // /** \brief Returns a range over vertices of a given
-  //  *  simplex. */
-  // Simplex_vertex_range simplex_vertex_range(Simplex_handle const & simplex);
-
   /** \brief Return type of an insertion of a simplex
    */
   typedef unspecified Insertion_result_type;
 
   /** \brief Inserts a simplex with vertices from a given range
    *  'vertex_range' in the simplicial complex.
+   *  The function is only used in Witness_complex class
+   *  and by construction, it is not necessary to check if 
+   *  the faces are in the simplicial complex before insertion. 
    *  The simplex is given the filtration value 'filtration'.
    *  Filtration_value should be convertible from double.
    *  The return type is not used.
@@ -82,6 +64,7 @@ struct SimplicialComplexForWitness {
   /** \brief Inserts a simplex and all its faces
    *  with vertices from a given range
    *  'vertex_range' in the simplicial complex.
+   *  The function is only used in Strong_witness_complex class.
    *  All inserted simplices are given the filtration
    *  value 'filtration'.
    *  Filtration_value should be convertible from double.

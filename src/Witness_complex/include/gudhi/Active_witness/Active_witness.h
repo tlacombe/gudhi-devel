@@ -20,25 +20,24 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ACTIVE_WITNESS_H_
-#define ACTIVE_WITNESS_H_
+#ifndef ACTIVE_WITNESS_ACTIVE_WITNESS_H_
+#define ACTIVE_WITNESS_ACTIVE_WITNESS_H_
 
 #include <gudhi/Active_witness/Active_witness_iterator.h>
-#include <vector>
-#include <utility>
+#include <list>
 
 namespace Gudhi {
 
 namespace witness_complex {
 
-  //  /** \class Active_witness
-  // *  \brief Class representing a list of nearest neighbors to a given witness.
-  // *  \details Every element is a pair of a landmark identifier and the squared distance to it.
-  // */
+  /* \class Active_witness
+   *  \brief Class representing a list of nearest neighbors to a given witness.
+   *  \details Every element is a pair of a landmark identifier and the squared distance to it.
+  */
 template< typename Id_distance_pair,
           typename INS_range >
 class Active_witness {
-public:  
+ public:
   typedef Active_witness<Id_distance_pair, INS_range> ActiveWitness;
   typedef typename INS_range::iterator INS_iterator;
   typedef Active_witness_iterator< ActiveWitness, Id_distance_pair, INS_iterator > iterator;
@@ -56,14 +55,12 @@ public:
   {
     //nearest_landmark_table_.push_back(*iterator_last_);
   }
- 
-  iterator begin()
-  {
+
+  iterator begin() {
     return iterator(this, nearest_landmark_table_.begin());
   }
 
-  iterator end()
-  {
+  iterator end() {
     return iterator(this);
   }
 
@@ -84,7 +81,7 @@ public:
   
 };
 
-}
-}
-  
-#endif
+}  // namespace witness_complex
+}  // namespace Gudhi
+
+#endif  // ACTIVE_WITNESS_ACTIVE_WITNESS_H_
