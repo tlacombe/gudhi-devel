@@ -20,6 +20,8 @@
 #include <utility>
 
 
+typedef CGAL::Epick_d<CGAL::Dynamic_dimension_tag> Kernel;
+typedef typename Kernel::Point_d Point_d;
 typedef std::vector<Point_d> Point_range;
 typedef Gudhi::spatial_searching::Kd_tree_search<Kernel, Point_range> Kd_tree;
 typedef Kd_tree::INS_range Nearest_landmark_range; 

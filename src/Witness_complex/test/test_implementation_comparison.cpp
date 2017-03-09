@@ -2,6 +2,9 @@
 #include <sys/stat.h>
 
 #include <gudhi/Simplex_tree.h>
+#include <gudhi/SAL.h>
+#include <gudhi/SALW.h>
+
 #include <gudhi/Witness_complex.h>
 #include <gudhi/Witness_complex_new.h>
 #include <gudhi/Witness_complex_cof.h>
@@ -36,17 +39,14 @@ int main(int argc, char * const argv[]) {
         << " path_to_point_file number_of_landmarks max_squared_alpha limit_dimension\n";
     return 0;
   }
-
-  #ifndef DEBUG_TRACES
-  #define DEBUG_TRACES
-  #endif
   
   std::string file_name = argv[1];
   int nbL = atoi(argv[2]), lim_dim = atoi(argv[4]);
   double alpha2 = atof(argv[3]);
   clock_t start, end;
   Gudhi::Simplex_tree<> simplex_tree, simplex_tree2, simplex_tree3, simplex_tree4;
-
+  Gudhi::SALW sal1;
+  
   // Read the point file
   Point_range witnesses, landmarks;
   Gudhi::Points_off_reader<Point_d> off_reader(file_name);
@@ -69,7 +69,7 @@ int main(int argc, char * const argv[]) {
     nearest_landmark_table.push_back(landmark_tree.query_incremental_nearest_neighbors(w));
 
   
-  // Compute witness complex
+  // Compute witness complex - 1
   start = clock();
   Witness_complex witness_complex(nearest_landmark_table);
 
@@ -101,7 +101,7 @@ int main(int argc, char * const argv[]) {
       << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
   std::cout << "Number of simplices is: " << simplex_tree3.num_simplices() << "\n";
   
-  // // Compute witness complex - 3
+  // Compute witness complex - 4
   start = clock();
   Witness_complex_wmap witness_complex_wmap(nearest_landmark_table);
 
@@ -110,6 +110,16 @@ int main(int argc, char * const argv[]) {
   std::cout << "Witness complex 4 (no cofaces, but witlists) took "
       << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
   std::cout << "Number of simplices is: " << simplex_tree4.num_simplices() << "\n";
+
+  // Compute witness complex - SAL 1
+  start = clock();
+  // Witness_complex witness_complex(nearest_landmark_table);
+
+  witness_complex.create_complex(sal1, alpha2, lim_dim);
+  end = clock();
+  std::cout << "Witness complex SAL 1 (no cofaces, no witlists) took "
+      << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
+  std::cout << "Number of simplices is: " << sal1.num_simplices() << "\n";
 
   
 }

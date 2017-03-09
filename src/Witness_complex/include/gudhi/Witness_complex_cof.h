@@ -330,7 +330,7 @@ private:
         }
       }
     }
-    std::cout << "Candidates: " << curr_dim_map->size() << std::endl;
+    // std::cout << "Candidates: " << curr_dim_map->size() << std::endl;
     auto aw_it = aw_list.begin();
     std::vector<Landmark_id> simplex;
     simplex.reserve(k+1);
@@ -354,7 +354,7 @@ private:
     }
     // std::cout << "\n";
     std::cout << k << "-dim active witness list size = " << aw_list.size() << "\n";
-    std::cout << "Candidates after: " << curr_dim_map->size() << std::endl;
+    // std::cout << "Candidates after: " << curr_dim_map->size() << std::endl;
     remove_non_witnessed_simplices(complex, curr_dim_map);
   }
 

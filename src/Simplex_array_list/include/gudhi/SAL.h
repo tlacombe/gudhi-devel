@@ -33,7 +33,8 @@ public:
     Vertex contraction(const Vertex x, const Vertex y);
 
     std::size_t size() const;
-
+    std::size_t num_vertices() const;
+    
     typedef std::shared_ptr<Simplex> Simplex_ptr;
     struct Sptr_hash{ std::size_t operator()(const Simplex_ptr& s) const; };
     struct Sptr_equal{ std::size_t operator()(const Simplex_ptr& a, const Simplex_ptr& b) const; };
@@ -192,7 +193,13 @@ std::size_t SAL::size() const{
    return max_cofaces(s).size();
 }
 
+/* Return the number of vertices
+ */
+std::size_t SAL::num_vertices() const {
+  return t0.size();
+}
 
+  
 std::size_t SAL::Sptr_equal::operator()(const Simplex_ptr& s1, const Simplex_ptr& s2) const {
     if (s1->size() != s2->size()) return false;
     return included(*s1,*s2); //tests equality for same size simplices
@@ -223,7 +230,7 @@ bool included(const Simplex &tau1, const Simplex &tau2){
         if(!tau2.count(v)) return false;
     return true;
 }
-
+    
 } //namespace Gudhi
 
 #endif /* SAL_H */

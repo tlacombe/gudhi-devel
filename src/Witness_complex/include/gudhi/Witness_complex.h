@@ -183,7 +183,8 @@ class Witness_complex {
         // If norelax_dist is infinity, change to first omitted distance
         if (l_it->second <= norelax_dist2)
           norelax_dist2 = l_it->second;
-      } 
+      }
+    }
     else if (dim == 0)
       for (; l_it->second - alpha2 <= norelax_dist2 && l_it != end; ++l_it) {
         simplex.push_back(l_it->first);
@@ -204,10 +205,10 @@ class Witness_complex {
       }
     return will_be_active;
   }
-};
 
-}  // namespace witness_complex
+};  // namespace witness_complex
 
-}  // namespace Gudhi
+}
+}// namespace Gudhi
 
 #endif  // WITNESS_COMPLEX_H_

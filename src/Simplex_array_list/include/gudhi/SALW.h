@@ -37,12 +37,19 @@ public :
      }
 
 
+     // template <typename Input_vertex_range>
+     // void insert_simplex (Input_vertex_range const &vertex_range){
+     //     Simplex s(vertex_range.begin(),vertex_range.end());
+     //     K.insert_max(s);
+     // }
+
      template <typename Input_vertex_range>
-     void insert_simplex (Input_vertex_range const &vertex_range){
+     void insert_simplex (Input_vertex_range const &vertex_range, double filtration_value = 0){
          Simplex s(vertex_range.begin(),vertex_range.end());
          K.insert_max(s);
      }
 
+  
      template<typename Input_vertex_range>
      Simplex_handle find (Input_vertex_range const &vertex_range){
          Simplex s(vertex_range.begin(),vertex_range.end());
@@ -53,6 +60,16 @@ public :
         return K.size();
      }
 
+     std::size_t num_vertices(){
+        return K.num_vertices();
+     }
+
+     void set_dimension(int k){
+     }
+
+     double filtration(Simplex_handle sh){
+       return 0;
+     }
 };
     
 
