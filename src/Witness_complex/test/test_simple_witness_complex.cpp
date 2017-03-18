@@ -19,7 +19,9 @@
 #include <vector>
 #include <utility>
 
-
+typedef Gudhi::Simplex_tree<> Simplex_tree;
+// typedef typename Gudhi::Simplex_tree<>::Vertex_handle Vertex_handle;
+// typedef std::vector< Vertex_handle > typeVectorVertex;
 typedef CGAL::Epick_d<CGAL::Dynamic_dimension_tag> Kernel;
 typedef typename Kernel::Point_d Point_d;
 typedef std::vector<Point_d> Point_range;

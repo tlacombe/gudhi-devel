@@ -33,6 +33,8 @@ BOOST_AUTO_TEST_CASE(sal) {
     Simplex s = {2, 3, 6}; s.insert(v);
     K.remove(s);
     BOOST_CHECK(K.all_facets_inside(s));
+    s.insert(32);
+    BOOST_CHECK(!K.all_facets_inside(s));
     /* for(auto s : K.max_cofaces(sigma3)){
         for(int p : s)
             std::cout << p << " ";
@@ -40,6 +42,7 @@ BOOST_AUTO_TEST_CASE(sal) {
     } */
 }
 
+/*
 BOOST_AUTO_TEST_CASE(lsal) {
     LSAL LK;
     LK.add(sigma1);
@@ -77,3 +80,4 @@ BOOST_AUTO_TEST_CASE(salf) {
     BOOST_CHECK(FK.membership(sigma4));
     BOOST_CHECK(!FK.membership(sigma5));
 }
+*/

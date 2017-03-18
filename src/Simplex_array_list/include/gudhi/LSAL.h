@@ -19,12 +19,7 @@ public:
     Vertex contraction(const Vertex x, const Vertex y);
 
     std::size_t size() const;
-
 private:
-    typedef std::shared_ptr<Simplex> Simplex_ptr;
-    struct Sptr_hash{ std::size_t operator()(const Simplex_ptr& s) const; };
-    struct Sptr_equal{ std::size_t operator()(const Simplex_ptr& a, const Simplex_ptr& b) const; };
-    typedef std::unordered_set<Simplex_ptr, Sptr_hash, Sptr_equal> Simplex_ptr_set;
 
     void erase_max(const Simplex& sigma);
     Vertex best_index(const Simplex& tau);
@@ -172,32 +167,18 @@ void LSAL::clean(const Vertex v){
             if(!max_simplices.membership(s))
                 max_simplices.insert_max(s);
     Simplex sv; sv.insert(v);
+    /*
     auto clean_cofaces = max_simplices.max_cofaces(sv);
     estimated_total_size = estimated_total_size - (estimated_gamma0.count(v) ? estimated_gamma0.at(v) : 0) + clean_cofaces.size();
     estimated_gamma0[v] = clean_cofaces.size();
-    for(const Simplex s : clean_cofaces)
-        insert_max(s);
+    for(const Simplex_ptr& sptr : clean_cofaces)
+       insert_max(*sptr);
+       */
 }
 
 std::size_t LSAL::size() const{
     return total_size;
 }
-
-
-std::size_t LSAL::Sptr_equal::operator()(const Simplex_ptr& s1, const Simplex_ptr& s2) const {
-    if (s1->size() != s2->size()) return false;
-    return included(*s1,*s2); //tests equality for same size simplices
-}
-
-
-std::size_t LSAL::Sptr_hash::operator()(const Simplex_ptr& s) const {
-    std::hash<double> h_f; //double hash is better than integer hash
-    size_t h = 0;
-    for(const Vertex& v : *s)
-        h += h_f(static_cast<double>(v));
-    return h;
-}
-
 
 } //namespace Gudhi
 
