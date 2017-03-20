@@ -21,8 +21,8 @@
  */
 
 #include <gudhi/Simplex_tree.h>
-#include <gudhi/Strong_witness_complex.h>
-#include <gudhi/Witness_complex.h>
+#include <gudhi/Euclidean_strong_witness_complex.h>
+#include <gudhi/Euclidean_witness_complex.h>
 #include <gudhi/Dim_lists.h>
 #include <gudhi/reader_utils.h>
 #include <gudhi/Persistent_cohomology.h>
@@ -65,8 +65,8 @@ typedef std::vector<Point_d> Point_Vector;
 typedef Simplex_tree<> STree;
 typedef STree::Simplex_handle Simplex_handle;
 
-typedef Strong_witness_complex<K> SRWit;
-typedef Witness_complex<K> WRWit;
+typedef Euclidean_strong_witness_complex<K> SRWit;
+typedef Euclidean_witness_complex<K> WRWit;
 
 /** Program options ***************************************************************
 ***********************************************************************************
@@ -270,7 +270,7 @@ void rw_experiment(Point_Vector & point_vector, int nbL, FT alpha2, int limD, FT
   
   std::cout << "Starting collapses...\n";
   simplices.collapse();
-  simplices.output_simplices();
+  // simplices.output_simplices();
 
   STree collapsed_tree;
   for (auto sh: simplices) {
@@ -285,7 +285,7 @@ void rw_experiment(Point_Vector & point_vector, int nbL, FT alpha2, int limD, FT
   //     landmarks_ind[knn[i][0]] = i;
   // }
   //write_witness_mesh(point_vector, landmarks_ind, simplex_tree, simplices, false, true);
-  write_witness_mesh(point_vector, landmarks_ind, simplex_tree, simplex_tree.complex_simplex_range(), false, true, mesh_filename+"_before_collapse.mesh");
+  write_witness_mesh(point_vector, landmarks_ind, simplex_tree, simplex_tree.complex_simplex_range(), point_vector.begin()->size() == 2, true, mesh_filename+"_before_collapse.mesh");
   
   collapsed_tree.set_dimension(limD);
   Persistent_cohomology< STree, Field_Zp > pcoh2(collapsed_tree, true);
