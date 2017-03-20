@@ -14,7 +14,7 @@ private :
     SAL K;
 
 public :
-    typedef Simplex Simplex_handle;
+    typedef Simplex_ptr Simplex_handle;
 
     typedef Vertex Vertex_handle;
 
@@ -25,7 +25,7 @@ public :
     typedef int Filtration_value;
 
      Simplex_handle null_simplex(){
-         return Simplex();
+         return null_simplex_ptr;
      }
 
    /*  Complex_simplex_range complex_simplex_range(){
@@ -33,7 +33,7 @@ public :
      }
 */
      Simplex_vertex_range simplex_vertex_range (Simplex_handle const &simplex){
-        return simplex;
+        return *simplex;
      }
 
 
@@ -52,8 +52,7 @@ public :
   
      template<typename Input_vertex_range>
      Simplex_handle find (Input_vertex_range const &vertex_range){
-         Simplex s(vertex_range.begin(),vertex_range.end());
-         return K.membership(s) ? s : Simplex();
+       return K.find(vertex_range);
      }
 
      std::size_t num_simplices(){
