@@ -27,7 +27,11 @@
 #include <CGAL/Random.h>
 #include <CGAL/point_generators_d.h>
 
-#include <vector>  // for vector<>
+#include <Eigen/Dense>
+#include <Eigen/QR>
+
+#include <random>
+#include <vector>
 
 namespace Gudhi {
 
@@ -101,6 +105,96 @@ typename Kernel::Point_d construct_point(const Kernel &k,
   tab[4] = x5;
   tab[5] = x6;
   return k.construct_point_d_object()(6, &tab[0], &tab[6]);
+}
+
+
+// Generate random rotation matrix
+// Source: Rico Blaser, Piotr Fryzlewicz, "Random Rotation Ensembles", 2016.
+Eigen::MatrixXd random_rotation_matrix(int dim)
+{
+  std::mt19937 mtrand; // twister with random seed
+  Eigen::MatrixXd A(dim, dim);
+  Eigen::MatrixXd M;
+  const Eigen::VectorXd ones(Eigen::VectorXd::Ones(dim));
+  for (int i = 0; i < dim; ++i)
+    for (int j = 0; j < dim; ++j)
+      A(i, j) = static_cast<double>(mtrand()) / std::mt19937::max(); // Between 0 and 1
+  const Eigen::HouseholderQR<Eigen::MatrixXd> qr(A);
+  const Eigen::MatrixXd Q = qr.householderQ();
+  M = Q * (qr.matrixQR().diagonal().array() < 0).select(-ones, ones).asDiagonal();
+  if (M.determinant() < 0)
+    for (int i = 0; i < dim; ++i)
+      M(i, 0) = -M(i, 0);
+
+  return M;
+}
+
+// Rotates all the points of a vector<Point> using the given rotation matrix
+template <typename Kernel>
+std::vector<typename Kernel::Point_d>
+rotate_points(std::vector<typename Kernel::Point_d> const& points, Eigen::MatrixXd const& rotation_matrix)
+{
+  typedef typename Kernel::FT FT;
+  typedef typename Kernel::Point_d Point;
+
+  if (points.empty())
+    return points;
+
+  Kernel k;
+  int dim = k.point_dimension_d_object()(*points.begin());
+
+  std::vector<Point> ret;
+  ret.reserve(points.size());
+
+  for (auto const& p : points)
+  {
+    Eigen::VectorXd p2(dim);
+    int i = 0;
+    for (auto it_coord = p.cartesian_begin(); it_coord != p.cartesian_end(); ++it_coord, ++i)
+      p2(i) = *it_coord;
+
+    Eigen::VectorXd p_rot = rotation_matrix*p2;
+    ret.push_back(Point(p_rot.data(), p_rot.data() + dim));
+  }
+
+  return ret;
+}
+
+// Rotates all the points of a vector<Point> using the given rotation matrix
+template <typename Kernel>
+std::vector<typename Kernel::Point_d>
+embed_points_in_higher_dim_and_ramdomly_rotate_them(std::vector<typename Kernel::Point_d> const& points, int new_ambient_dim)
+{
+  typedef typename Kernel::FT FT;
+  typedef typename Kernel::Point_d Point;
+
+  if (points.empty())
+    return points;
+
+  Kernel k;
+  int input_dim = k.point_dimension_d_object()(*points.begin());
+
+  GUDHI_CHECK(input_dim < new_ambient_dim, std::logic_error("Input dim should be < new_ambient_dim"));
+
+  auto rotation_matrix = random_rotation_matrix(new_ambient_dim);
+
+  std::vector<Point> ret;
+  ret.reserve(points.size());
+
+  for (auto const& p : points)
+  {
+    Eigen::VectorXd p2(new_ambient_dim);
+    int i = 0;
+    for (auto it_coord = p.cartesian_begin(); it_coord != p.cartesian_end(); ++it_coord, ++i)
+      p2(i) = *it_coord;
+    for (; i < new_ambient_dim; ++i)
+      p2(i) = 0;
+
+    Eigen::VectorXd p_rot = rotation_matrix*p2;
+    ret.push_back(Point(p_rot.data(), p_rot.data() + new_ambient_dim));
+  }
+
+  return ret;
 }
 
 template <typename Kernel>
