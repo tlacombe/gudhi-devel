@@ -91,18 +91,21 @@ class Kd_tree_search {
     std::ptrdiff_t,
     Point_property_map,
     CGAL::Euclidean_distance<Traits_base> >                 Orthogonal_distance;
+  typedef CGAL::Median_of_max_spread<STraits>               Splitter;
+  //typedef CGAL::Sliding_midpoint<STraits>                   Splitter;
+  //typedef CGAL::Midpoint_of_max_spread<STraits>             Splitter;
 
-  typedef CGAL::Orthogonal_k_neighbor_search<STraits>       K_neighbor_search;
-  typedef typename K_neighbor_search::Tree                  Tree;
-  typedef typename K_neighbor_search::Distance              Distance;
+  typedef CGAL::Kd_tree<STraits, Splitter, CGAL::Tag_true>  Tree;
+
+  typedef CGAL::Orthogonal_k_neighbor_search<
+    STraits, Orthogonal_distance, Splitter, Tree>           K_neighbor_search;
   /// \brief The range returned by a k-nearest or k-farthest neighbor search.
   /// Its value type is `std::pair<std::size_t, FT>` where `first` is the index
   /// of a point P and `second` is the squared distance between P and the query point.
   typedef K_neighbor_search                                 KNS_range;
 
   typedef CGAL::Orthogonal_incremental_neighbor_search<
-    STraits, Distance, CGAL::Sliding_midpoint<STraits>, Tree>
-                                                   Incremental_neighbor_search;
+    STraits, Orthogonal_distance, Splitter, Tree>           Incremental_neighbor_search;
   /// \brief The range returned by an incremental nearest or farthest neighbor search.
   /// Its value type is `std::pair<std::size_t, FT>` where `first` is the index
   /// of a point P and `second` is the squared distance between P and the query point.
@@ -115,7 +118,7 @@ class Kd_tree_search {
   : m_points(points),
     m_tree(boost::counting_iterator<std::ptrdiff_t>(0),
            boost::counting_iterator<std::ptrdiff_t>(points.size()),
-           typename Tree::Splitter(),
+           Splitter(),
            STraits(std::begin(points))) {
     // Build the tree now (we don't want to wait for the first query)
     m_tree.build();
@@ -133,7 +136,7 @@ class Kd_tree_search {
     : m_points(points),
       m_tree(
         only_these_points.begin(), only_these_points.end(),
-        typename Tree::Splitter(),
+        Splitter(),
         STraits(std::begin(points))) {
     // Build the tree now (we don't want to wait for the first query)
     m_tree.build();
@@ -151,7 +154,7 @@ class Kd_tree_search {
     m_tree(
       boost::counting_iterator<std::ptrdiff_t>(begin_idx),
       boost::counting_iterator<std::ptrdiff_t>(past_the_end_idx),
-      typename Tree::Splitter(),
+      Splitter(),
       STraits(std::begin(points))) {
     // Build the tree now (we don't want to wait for the first query)
     m_tree.build();
