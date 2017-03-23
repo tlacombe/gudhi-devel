@@ -34,7 +34,7 @@ namespace gss = Gudhi::spatial_searching;
 class GUDHI_Kd_tree_search
 {
   typedef CGAL::Epick_d<CGAL::Dynamic_dimension_tag>  K;
-  typedef typename K::Point_d                         Point;
+  typedef K::Point_d                                  Point;
   typedef std::vector<Point>                          Points;
 
   typedef gss::Kd_tree_search<K, Points>              Points_ds;
