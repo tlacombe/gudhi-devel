@@ -163,7 +163,7 @@ rotate_points(std::vector<typename Kernel::Point_d> const& points, Eigen::Matrix
 // Rotates all the points of a vector<Point> using the given rotation matrix
 template <typename Kernel>
 std::vector<typename Kernel::Point_d>
-embed_points_in_higher_dim_and_ramdomly_rotate_them(std::vector<typename Kernel::Point_d> const& points, int new_ambient_dim)
+embed_points_in_higher_dim(std::vector<typename Kernel::Point_d> const& points, int new_ambient_dim, bool ramdomly_rotate_points_afterwards = false)
 {
   typedef typename Kernel::FT FT;
   typedef typename Kernel::Point_d Point;
@@ -174,9 +174,11 @@ embed_points_in_higher_dim_and_ramdomly_rotate_them(std::vector<typename Kernel:
   Kernel k;
   int input_dim = k.point_dimension_d_object()(*points.begin());
 
-  GUDHI_CHECK(input_dim < new_ambient_dim, std::logic_error("Input dim should be < new_ambient_dim"));
+  GUDHI_CHECK(input_dim <= new_ambient_dim, std::logic_error("Input dim should be <= new_ambient_dim"));
 
-  auto rotation_matrix = random_rotation_matrix(new_ambient_dim);
+  Eigen::MatrixXd rotation_matrix;
+  if (ramdomly_rotate_points_afterwards) 
+    rotation_matrix = random_rotation_matrix(new_ambient_dim);
 
   std::vector<Point> ret;
   ret.reserve(points.size());
@@ -190,8 +192,10 @@ embed_points_in_higher_dim_and_ramdomly_rotate_them(std::vector<typename Kernel:
     for (; i < new_ambient_dim; ++i)
       p2(i) = 0;
 
-    Eigen::VectorXd p_rot = rotation_matrix*p2;
-    ret.push_back(Point(p_rot.data(), p_rot.data() + new_ambient_dim));
+    if (ramdomly_rotate_points_afterwards)
+      p2 = rotation_matrix*p2;
+
+    ret.push_back(Point(p2.data(), p2.data() + new_ambient_dim));
   }
 
   return ret;
