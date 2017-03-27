@@ -749,7 +749,7 @@ int main() {
 
               for (auto const& p : points)
               {
-                for (auto it_coord = p.cartesian_begin(); it_coord != p.cartesian_end(); ++it_coord, ++i)
+                for (auto it_coord = p.cartesian_begin(); it_coord != p.cartesian_end(); ++it_coord)
                   export_file << *it_coord << " ";
                 export_file << "\n";
               }
