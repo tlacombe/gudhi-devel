@@ -16,25 +16,34 @@ can be processed in Excel, for example.
 
 #ifdef _DEBUG
 # define PRINT_FOUND_NEIGHBORS
-# define CHECK_ACTUAL_EPSILON
+//# define CHECK_ACTUAL_EPSILON
 
 #else // RELEASE
 //# define PRINT_FOUND_NEIGHBORS
-# define CHECK_ACTUAL_EPSILON
-# define LOOP_ON_VARIOUS_PRECISIONS
+//# define CHECK_ACTUAL_EPSILON
+//# define LOOP_ON_VARIOUS_PRECISIONS
 #endif
 
-#define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH
+#define EXPORT_POINTCLOUD
+#define RANDOMLY_ROTATE_POINTCLOUD
+//#define GENERATE_QUERIES_IN_BBOX
+#define GENERATE_QUERIES_CLOSE_TO_EXISTING_POINTS
+//#define PICK_QUERIES_OUT_OF_EXISTING_POINTS // default
+
+//#define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH
 #undef GUDHI_SBL_IS_AVAILABLE
 #undef GUDHI_NMSLIB_IS_AVAILABLE
 #undef GUDHI_NANOFLANN_IS_AVAILABLE
-//#undef GUDHI_ANN_IS_AVAILABLE
-#undef GUDHI_FLANN_IS_AVAILABLE
+#undef GUDHI_ANN_IS_AVAILABLE
+//#undef GUDHI_FLANN_IS_AVAILABLE
+  #define GUDHI_FLANN_TEST_SINGLE_KDTREE_ONLY
 #undef GUDHI_COVERTREE_DNCRANE_IS_AVAILABLE  // DNCrane and Manzil cannot be used at the same time
 #undef GUDHI_COVERTREE_MANZIL_IS_AVAILABLE
 #undef GUDHI_FALCONN_IS_AVAILABLE
+#undef GUDHI_RORKD_FOREST_IS_AVAILABLE
 
-const int ONLY_THE_FIRST_N_POINTS = 100000; // 0 = no limit
+const int ONLY_THE_FIRST_N_POINTS = 10000000; // 0 = no limit
+
 
 #include <cstddef>
 
@@ -76,6 +85,10 @@ const int ONLY_THE_FIRST_N_POINTS = 100000; // 0 = no limit
 
 #ifdef GUDHI_FALCONN_IS_AVAILABLE
 #include "functor_FALCONN.h"
+#endif
+
+#ifdef GUDHI_RORKD_FOREST_IS_AVAILABLE
+#include "functor_RORKD_forest.h"
 #endif
 
 #include <gudhi/console_color.h>
@@ -366,14 +379,16 @@ void run_tests(
 
 #ifdef GUDHI_FLANN_IS_AVAILABLE
 
-# ifdef LOOP_ON_VARIOUS_PRECISIONS
+# ifndef GUDHI_FLANN_TEST_SINGLE_KDTREE_ONLY
+
+#   ifdef LOOP_ON_VARIOUS_PRECISIONS
 
   std::vector<std::vector<std::pair<std::size_t, double>>> const* p_gt_for_flann = NULL;
   std::vector<Point> const* p_gt_queries = NULL;
 
   for (int flann_checks = 32; flann_checks <= 8096; flann_checks *= 2)
   {
-# else
+#   else
 
   //**********************************************************
   // Compute ground truth for N random queries
@@ -403,7 +418,7 @@ void run_tests(
   const int flann_checks = 32;
   auto p_gt_for_flann = &ground_truth_for_flann;
   auto p_gt_queries = &gt_queries;
-# endif
+#   endif
 
   perfs.push_back(test__ANN_queries<Flann>(
     points, queries, k, epsilon, 
@@ -441,12 +456,14 @@ void run_tests(
     std::string("checks=") + std::to_string(flann_checks),
     p_ground_truth, flann::HierarchicalClusteringIndexParams(), flann_checks, p_gt_for_flann, p_gt_queries));
 
-# ifdef LOOP_ON_VARIOUS_PRECISIONS
-  }
-# endif
 
+#   ifdef LOOP_ON_VARIOUS_PRECISIONS
+  }
+#   endif
   perfs.push_back(test__ANN_queries<Flann>(
     points, queries, k, epsilon, "Flann - linear bruteforce", "", p_ground_truth, flann::LinearIndexParams()));
+
+# endif // !GUDHI_FLANN_TEST_SINGLE_KDTREE_ONLY
 
 # ifdef LOOP_ON_VARIOUS_PRECISIONS
   for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
@@ -489,13 +506,25 @@ void run_tests(
     p_ground_truth, num_probes));
 #endif
 
+  //---------------------------------------------------------------------------
+  // Randomly-oriented RKD-forest
+  //---------------------------------------------------------------------------
+
+#ifdef GUDHI_RORKD_FOREST_IS_AVAILABLE
+# ifdef LOOP_ON_VARIOUS_PRECISIONS
+  for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
+# endif
+    perfs.push_back(test__ANN_queries<RORKD_forest>(
+      points, queries, k, epsilon, "Randomly-oriented RKD-forest", "", p_ground_truth));
+#endif
+
   //===========================================================================
   // Display info
   //===========================================================================
 
   std::cerr
     << "\n================================================\n"
-    << "Dimension: " << ambient_dim << "\n"
+    << "Ambient dimension: " << ambient_dim << "\n"
     << "Number of points: " << points.size() << "\n"
     << "Number of queries: " << queries.size() << "\n"
     << "Computation times in seconds: build + queries/s + memory (MB)\n\n";
@@ -565,6 +594,7 @@ int main() {
         std::string param3;
         std::size_t num_points;
         int ambient_dim;
+        std::string random_rotation;
         double epsilon;
         int num_queries;
         int k;
@@ -575,6 +605,7 @@ int main() {
         sstr >> param3;
         sstr >> num_points;
         sstr >> ambient_dim;
+        sstr >> random_rotation;
         sstr >> epsilon;
         sstr >> num_queries;
         sstr >> k;
@@ -597,6 +628,7 @@ int main() {
           SET_PERFORMANCE_DATA("Param2", param2);
           SET_PERFORMANCE_DATA("Param3", param3);
           SET_PERFORMANCE_DATA("Ambient_dim", ambient_dim);
+          SET_PERFORMANCE_DATA("Random_rotation", random_rotation);
 
 #ifdef GUDHI_USE_TBB
           SET_PERFORMANCE_DATA(
@@ -615,25 +647,25 @@ int main() {
           std::vector<Point> points;
 
           if (input == "generate_moment_curve") {
-            points = Gudhi::generate_points_on_moment_curve<Kernel>(num_points, ambient_dim,
-                                                                    std::atof(param1.c_str()), std::atof(param2.c_str()));
+            points = Gudhi::generate_points_on_moment_curve<Kernel>(num_points, std::atof(param1.c_str()), 
+                                                                    std::atof(param2.c_str()), std::atof(param3.c_str()));
           } else if (input == "generate_plane") {
-            points = Gudhi::generate_points_on_plane<Kernel>(num_points, std::atoi(param1.c_str()), ambient_dim);
+            // The ambient dim is the same as the intrinsic dim
+            // It will be embedded in the actual ambient dim later if necessary
+            points = Gudhi::generate_points_on_plane<Kernel>(num_points, std::atoi(param1.c_str()), std::atoi(param1.c_str()));
           } else if (input == "generate_sphere_d") {
-            points = Gudhi::generate_points_on_sphere_d<Kernel>(num_points, ambient_dim,
-                                                                std::atof(param1.c_str()),  // radius
-                                                                std::atof(param2.c_str()));  // radius_noise_percentage
+            points = Gudhi::generate_points_on_sphere_d<Kernel>(num_points, std::atoi(param1.c_str()),
+                                                                std::atof(param2.c_str()),  // radius
+                                                                std::atof(param3.c_str()));  // radius_noise_percentage
           } else if (input == "generate_points_in_cube_d") {
-            points = Gudhi::generate_points_in_cube_d<Kernel>(num_points, ambient_dim,
-                                                              std::atof(param1.c_str()));  // side length
+            points = Gudhi::generate_points_in_cube_d<Kernel>(num_points, std::atof(param1.c_str()),
+                                                              std::atof(param2.c_str()));  // side length
           } else if (input == "generate_two_spheres_d") {
-            points = Gudhi::generate_points_on_two_spheres_d<Kernel>(num_points, ambient_dim,
-                                                                     std::atof(param1.c_str()),
+            points = Gudhi::generate_points_on_two_spheres_d<Kernel>(num_points, 
+                                                                     std::atof(param1.c_str()), // dim
                                                                      std::atof(param2.c_str()),
                                                                      std::atof(param3.c_str()));
           } else if (input == "generate_3sphere_and_circle_d") {
-            GUDHI_CHECK(ambient_dim == 5,
-                        std::logic_error("Ambient dim should be 5"));
             points = Gudhi::generate_points_on_3sphere_and_circle<Kernel>(num_points,
                                                                           std::atof(param1.c_str()));
           } else if (input == "generate_torus_3D") {
@@ -643,9 +675,9 @@ int main() {
                                                                 param3 == "Y");
           } else if (input == "generate_torus_d") {
             points = Gudhi::generate_points_on_torus_d<Kernel>(num_points,
-                                                               ambient_dim / 2,
+                                                               std::atof(param1.c_str()) / 2,
                                                                param2 == "Y",  // uniform
-                                                               std::atof(param2.c_str()));  // radius_noise_percentage
+                                                               std::atof(param3.c_str()));  // radius_noise_percentage
           } else if (input == "generate_klein_bottle_3D") {
             points = Gudhi::generate_points_on_klein_bottle_3D<Kernel>(num_points,
                                                                        std::atof(param1.c_str()), std::atof(param2.c_str()));
@@ -704,6 +736,27 @@ int main() {
                 << "****************************************\n\n";
 #endif
 
+            points = Gudhi::embed_points_in_higher_dim<Kernel>(points, ambient_dim, random_rotation == "Y");
+
+#ifdef EXPORT_POINTCLOUD
+            std::ofstream export_file;
+            export_file.open("pointcloud_export.off");
+            if (export_file.is_open()) {
+              export_file << "OFF\n";
+              export_file << points.size() << " 0 0\n";
+
+              for (auto const& p : points)
+              {
+                for (auto it_coord = p.cartesian_begin(); it_coord != p.cartesian_end(); ++it_coord, ++i)
+                  export_file << *it_coord << " ";
+                export_file << "\n";
+              }
+            }
+            else {
+              std::cerr << "Warning: could not create 'pointcloud_export.off'\n";
+            }
+#endif
+
             // Get the bounding-box
             std::vector<FT> bbox_mins(ambient_dim, std::numeric_limits<FT>::max());
             std::vector<FT> bbox_maxs(ambient_dim, std::numeric_limits<FT>::min());
@@ -715,6 +768,9 @@ int main() {
                   bbox_maxs[i] = p[i];
               }
             }
+            FT bbox_squared_diagonal = 0;
+            for (int i = 0; i < ambient_dim; ++i)
+              bbox_squared_diagonal += (bbox_maxs[i] - bbox_mins[i])*(bbox_maxs[i] - bbox_mins[i]);
 
             std::vector<Point> queries;
             queries.reserve(num_queries);
@@ -722,16 +778,27 @@ int main() {
             // pick 2 points and use their mid-point as query
             // (might get some duplicates but it is ok)
             CGAL::Random rng;
+#ifdef GENERATE_QUERIES_CLOSE_TO_EXISTING_POINTS
+            Kernel kernel;
+            CGAL::Random_points_on_sphere_d<Point> pertub_gen(ambient_dim, CGAL::sqrt(bbox_squared_diagonal)/100);
+#endif
             for (int i = 0; i < num_queries; ++i) {
+#ifdef GENERATE_QUERIES_IN_BBOX
               std::vector<FT> random_point;
               random_point.reserve(ambient_dim);
               for (int i = 0; i < ambient_dim; ++i)
                 random_point.push_back(rng.get_double(bbox_mins[i], bbox_maxs[i]));
               Point p(random_point.begin(), random_point.end());
+#elif defined (GENERATE_QUERIES_CLOSE_TO_EXISTING_POINTS)
+              auto perturbation = kernel.point_to_vector_d_object()(*pertub_gen++);
+              auto p = kernel.translated_point_d_object()(points[rand() % points.size()], perturbation);
+#else // PICK_QUERIES_OUT_OF_EXISTING_POINTS
+              auto p = points[rand() % points.size()];
+#endif
               /*auto p = Kernel().midpoint_d_object()(
-                points[rand() % points.size()],
-                points[rand() % points.size()]);*/
-              //auto p = points[rand() % points.size()];
+              points[rand() % points.size()],
+              points[rand() % points.size()]);*/
+
               queries.push_back(p);
             }
 
