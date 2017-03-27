@@ -162,6 +162,8 @@ std::tuple<std::string, double, double, std::size_t> test__ANN_queries(
   ANN_Functor functor(points, epsilon, functor_additional_args...);
   double build_time = t.elapsed();
 
+  SET_PERFORMANCE_DATA("Tree_depth", functor.tree_depth());
+
   // Perform the queries
   std::size_t checksum = 0;
   std::vector<std::vector<std::pair<std::size_t, double>>> results(
@@ -568,7 +570,7 @@ int main() {
   //    - Intrinsic dim
   //    - Number of iterations with these parameters
   if (script_file.is_open()) {
-    int i = 1;
+    int run_number = 1;
 
 #ifdef GUDHI_USE_TBB
     tbb::task_scheduler_init init(num_threads > 0 ? num_threads : tbb::task_scheduler_init::automatic);
@@ -638,7 +640,7 @@ int main() {
           SET_PERFORMANCE_DATA("Num_threads", "N/A");
 #endif
 
-          std::cerr << "\nRun #" << i << "...\n";
+          std::cerr << "\nRun #" << run_number << "...\n";
 
 #ifdef GUDHI_TC_PROFILING
           Gudhi::Clock t_gen;
@@ -804,10 +806,10 @@ int main() {
 
             run_tests(ambient_dim, points, queries, k, epsilon, input.c_str());
 
-            std::cerr << "Run #" << i++ << " done.\n";
+            std::cerr << "Run #" << run_number++ << " done.\n";
             std::cerr << "\n---------------------------------\n";
           } else {
-            std::cerr << "Run #" << i++ << ": no points loaded.\n";
+            std::cerr << "Run #" << run_number++ << ": no points loaded.\n";
           }
         }
       }

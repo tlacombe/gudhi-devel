@@ -74,6 +74,11 @@ public:
     return sum;
   }
 
+  int tree_depth() const
+  {
+    return m_tree.tree_depth();
+  }
+
 private:
   Points_ds m_tree;
 };

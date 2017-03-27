@@ -260,6 +260,11 @@ class Kd_tree_search {
     return search;
   }
 
+  int tree_depth() const
+  {
+    return m_tree.root()->depth();
+  }
+
  private:
   Point_range const& m_points;
   Tree m_tree;

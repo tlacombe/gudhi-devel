@@ -157,6 +157,11 @@ public:
     return sum;
   }
 
+  int tree_depth() const
+  {
+    return -1; // Not provided by the library.
+  }
+
 private:
   flann::Matrix<Coord_type> create_point(Point const& p) const
   {

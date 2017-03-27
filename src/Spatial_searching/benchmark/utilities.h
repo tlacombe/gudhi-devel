@@ -95,6 +95,7 @@ protected:
     subelements.push_back("Mem_MB");
     subelements.push_back("Actual_eps");
     subelements.push_back("Actual_recall");
+    subelements.push_back("Tree_depth");
     subelements.push_back("Info");
 
     return subelements;
