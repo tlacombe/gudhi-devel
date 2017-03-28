@@ -199,20 +199,20 @@ std::tuple<std::string, double, double, std::size_t> test__ANN_queries(
     << ", queries = " << q_time
     << ").\n\n";
 
-  double queries_per_sec = static_cast<double>(queries.size()) / q_time;
+  double avg_query_time_in_ms = 1000 * q_time / static_cast<double>(queries.size());
   std::size_t mem_after = CGAL::Memory_sizer().virtual_size();
 
   SET_PERFORMANCE_DATA("Time1_label", "Build");
   SET_PERFORMANCE_DATA("Time1", build_time);
-  SET_PERFORMANCE_DATA("Time2_label", "Queries/s");
-  SET_PERFORMANCE_DATA("Time2", queries_per_sec);
+  SET_PERFORMANCE_DATA("Time2_label", "Avg query time in ms");
+  SET_PERFORMANCE_DATA("Time2", avg_query_time_in_ms);
   SET_PERFORMANCE_DATA("Mem_MB", (mem_after - mem_before)/(1024*1024));
   SET_PERFORMANCE_DATA("Checksum", checksum);
   XML_perf_data::commit(false);
 
   std::cerr << red << "***************** Mem after: " << mem_after / (1024 * 1024) << white << "\n";
 
-  return std::make_tuple(algorith_name, build_time, queries_per_sec, (mem_after - mem_before) / (1024 * 1024));
+  return std::make_tuple(algorith_name, build_time, avg_query_time_in_ms, (mem_after - mem_before) / (1024 * 1024));
 }
 
 void run_tests(
@@ -528,7 +528,7 @@ void run_tests(
     << "Ambient dimension: " << ambient_dim << "\n"
     << "Number of points: " << points.size() << "\n"
     << "Number of queries: " << queries.size() << "\n"
-    << "Computation times in seconds: build + queries/s + memory (MB)\n\n";
+    << "Computation times in seconds: build + avg query time (ms) + memory (MB)\n\n";
   
   int c = 0;
   for (auto perf : perfs)
