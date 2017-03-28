@@ -24,7 +24,7 @@ can be processed in Excel, for example.
 //# define LOOP_ON_VARIOUS_PRECISIONS
 #endif
 
-#define EXPORT_POINTCLOUD
+//#define EXPORT_POINTCLOUD
 //#define GENERATE_QUERIES_IN_BBOX
 #define GENERATE_QUERIES_CLOSE_TO_EXISTING_POINTS
 //#define PICK_QUERIES_OUT_OF_EXISTING_POINTS // default
@@ -154,7 +154,7 @@ std::tuple<std::string, double, double, std::size_t> test__ANN_queries(
   SET_PERFORMANCE_DATA("K", k);
 
   std::size_t mem_before = CGAL::Memory_sizer().virtual_size();
-  std::cerr << red << "***************** Mem before: " << mem_before / (1024 * 1024) << "\n";
+  std::cerr << red << "***************** Mem before: " << mem_before / (1024 * 1024) << white << "\n";
 
   // Build the structure
   t.reset();
@@ -210,7 +210,7 @@ std::tuple<std::string, double, double, std::size_t> test__ANN_queries(
   SET_PERFORMANCE_DATA("Checksum", checksum);
   XML_perf_data::commit(false);
 
-  std::cerr << red << "***************** Mem after: " << mem_after / (1024 * 1024) << "\n";
+  std::cerr << red << "***************** Mem after: " << mem_after / (1024 * 1024) << white << "\n";
 
   return std::make_tuple(algorith_name, build_time, queries_per_sec, (mem_after - mem_before) / (1024 * 1024));
 }
@@ -592,11 +592,6 @@ int main() {
   std::ifstream script_file;
   script_file.open(BENCHMARK_SCRIPT_FILENAME);
   // Script?
-  // Script file format: each line gives
-  //    - Filename (point set) or "generate_XXX" (point set generation)
-  //    - Ambient dim
-  //    - Intrinsic dim
-  //    - Number of iterations with these parameters
   if (script_file.is_open()) {
     int run_number = 1;
 
@@ -690,7 +685,7 @@ int main() {
             // It will be embedded in the actual ambient dim later if necessary
             points = Gudhi::generate_points_on_plane<Kernel>(num_points, std::atoi(param1.c_str()), std::atoi(param1.c_str()));
           } else if (input == "generate_sphere_d") {
-            points = Gudhi::generate_points_on_sphere_d<Kernel>(num_points, std::atoi(param1.c_str()),
+            points = Gudhi::generate_points_on_sphere_d<Kernel>(num_points, std::atoi(param1.c_str()) + 1, // param1 = intrinsic dim
                                                                 std::atof(param2.c_str()),  // radius
                                                                 std::atof(param3.c_str()));  // radius_noise_percentage
           } else if (input == "generate_points_in_cube_d") {
