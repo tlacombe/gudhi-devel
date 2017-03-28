@@ -25,7 +25,6 @@ can be processed in Excel, for example.
 #endif
 
 #define EXPORT_POINTCLOUD
-#define RANDOMLY_ROTATE_POINTCLOUD
 //#define GENERATE_QUERIES_IN_BBOX
 #define GENERATE_QUERIES_CLOSE_TO_EXISTING_POINTS
 //#define PICK_QUERIES_OUT_OF_EXISTING_POINTS // default
@@ -546,6 +545,35 @@ void run_tests(
   std::cerr << "================================================\n";
 }
 
+// interval can be of form:
+// n      => <n, n, 1>
+// n-m    => <n, m, 1>
+// n-m:i  => <n, m, i>
+template <typename Number_type>
+std::tuple<Number_type, Number_type, Number_type>
+decode_interval(std::string const& interval)
+{
+  Number_type first, last;
+  Number_type increment = 1;
+  auto dash_pos = interval.find('-');
+  // Is there a '-'?
+  if (dash_pos != std::string::npos) 
+  {
+    std::stringstream(interval.substr(0, dash_pos)) >> first;
+    auto colon_pos = interval.find(':');
+    std::stringstream(interval.substr(dash_pos + 1, colon_pos)) >> last;
+    // Is there a ':'?
+    if (colon_pos != std::string::npos)
+      std::stringstream(interval.substr(colon_pos + 1)) >> increment;
+  }
+  else
+  {
+    std::stringstream(interval) >> first;
+    last = first;
+  }
+  return std::make_tuple(first, last, increment);
+}
+
 int main() {
   CGAL::set_error_behaviour(CGAL::ABORT);
 
@@ -595,7 +623,7 @@ int main() {
         std::string param2;
         std::string param3;
         std::size_t num_points;
-        int ambient_dim;
+        std::string ambient_dim_interval;
         std::string random_rotation;
         double epsilon;
         int num_queries;
@@ -606,14 +634,20 @@ int main() {
         sstr >> param2;
         sstr >> param3;
         sstr >> num_points;
-        sstr >> ambient_dim;
+        sstr >> ambient_dim_interval;
         sstr >> random_rotation;
         sstr >> epsilon;
         sstr >> num_queries;
         sstr >> k;
         sstr >> num_iteration;
 
-        for (int j = 0; j < num_iteration; ++j) {
+        auto ambient_dims = decode_interval<int>(ambient_dim_interval);
+
+        for (int j = 0; j < num_iteration; ++j)
+        for (int ambient_dim = std::get<0>(ambient_dims); 
+          ambient_dim <= std::get<1>(ambient_dims); 
+          ambient_dim += std::get<2>(ambient_dims)) {
+
           std::string input_stripped = input;
           size_t slash_index = input_stripped.find_last_of('/');
           if (slash_index == std::string::npos)
