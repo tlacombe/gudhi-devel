@@ -91,8 +91,8 @@ class Kd_tree_search {
     std::ptrdiff_t,
     Point_property_map,
     CGAL::Euclidean_distance<Traits_base> >                 Orthogonal_distance;
-  typedef CGAL::Median_of_max_spread<STraits>               Splitter;
-  //typedef CGAL::Sliding_midpoint<STraits>                   Splitter;
+  typedef CGAL::Sliding_midpoint<STraits>                   Splitter; // default in CGAL -- best choice in average
+  //typedef CGAL::Median_of_max_spread<STraits>               Splitter;
   //typedef CGAL::Midpoint_of_max_spread<STraits>             Splitter;
 
   typedef CGAL::Kd_tree<STraits, Splitter, CGAL::Tag_true>  Tree;
