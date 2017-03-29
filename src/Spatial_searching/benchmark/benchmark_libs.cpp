@@ -29,13 +29,15 @@ can be processed in Excel, for example.
 #define GENERATE_QUERIES_CLOSE_TO_EXISTING_POINTS
 //#define PICK_QUERIES_OUT_OF_EXISTING_POINTS // default
 
-//#define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH
+#define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH
 #undef GUDHI_SBL_IS_AVAILABLE
 #undef GUDHI_NMSLIB_IS_AVAILABLE
 #undef GUDHI_NANOFLANN_IS_AVAILABLE
 #undef GUDHI_ANN_IS_AVAILABLE
 //#undef GUDHI_FLANN_IS_AVAILABLE
-  #define GUDHI_FLANN_TEST_SINGLE_KDTREE_ONLY
+  #define GUDHI_FLANN_TEST_BRUTEFORCE
+  //#define GUDHI_FLANN_TEST_SINGLE_KDTREE
+  //#define GUDHI_FLANN_TEST_OTHER_VARIANTS
 #undef GUDHI_COVERTREE_DNCRANE_IS_AVAILABLE  // DNCrane and Manzil cannot be used at the same time
 #undef GUDHI_COVERTREE_MANZIL_IS_AVAILABLE
 #undef GUDHI_FALCONN_IS_AVAILABLE
@@ -380,7 +382,7 @@ void run_tests(
 
 #ifdef GUDHI_FLANN_IS_AVAILABLE
 
-# ifndef GUDHI_FLANN_TEST_SINGLE_KDTREE_ONLY
+# ifdef GUDHI_FLANN_TEST_OTHER_VARIANTS
 
 #   ifdef LOOP_ON_VARIOUS_PRECISIONS
 
@@ -461,16 +463,20 @@ void run_tests(
 #   ifdef LOOP_ON_VARIOUS_PRECISIONS
   }
 #   endif
+# endif // GUDHI_FLANN_TEST_OTHER_VARIANTS
+
+# ifdef GUDHI_FLANN_TEST_BRUTEFORCE
   perfs.push_back(test__ANN_queries<Flann>(
     points, queries, k, epsilon, "Flann - linear bruteforce", "", p_ground_truth, flann::LinearIndexParams()));
+# endif //GUDHI_FLANN_TEST_BRUTEFORCE
 
-# endif // !GUDHI_FLANN_TEST_SINGLE_KDTREE_ONLY
-
-# ifdef LOOP_ON_VARIOUS_PRECISIONS
+# ifdef GUDHI_FLANN_TEST_SINGLE_KDTREE
+#   ifdef LOOP_ON_VARIOUS_PRECISIONS
   for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
-# endif
+#   endif
   perfs.push_back(test__ANN_queries<Flann>(
     points, queries, k, epsilon, "Flann - single kd-tree", "", p_ground_truth, flann::KDTreeSingleIndexParams()));
+# endif //GUDHI_FLANN_TEST_SINGLE_KDTREE
 
 #endif
 
