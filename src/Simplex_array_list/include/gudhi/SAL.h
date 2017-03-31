@@ -57,7 +57,7 @@ public:
     std::size_t num_vertices() const;
     
 
-protected:
+  // protected:
     void erase_max(const Simplex_ptr& sptr);
     template <typename Input_vertex_range>
     Vertex best_index(const Input_vertex_range &vertex_range) const;

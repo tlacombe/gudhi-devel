@@ -69,6 +69,18 @@ public :
      double filtration(Simplex_handle sh){
        return 0;
      }
+
+  /*  A function that computes all k-cofaces, which have all (k-1)-facets in the current 
+   *  simplicial complex.
+   */
+  // SAL potential_cofaces(int k){
+  //   SAL candidates;
+  //   for (auto v_hset: K.t0)
+  //     for (Simplex_handle sh: v_hset.second) {
+  //       if ()
+  //     }
+  //   return candidates;
+  // }
 };
     
 
