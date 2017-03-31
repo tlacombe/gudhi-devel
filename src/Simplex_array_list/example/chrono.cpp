@@ -10,10 +10,10 @@ using namespace Gudhi;
 int n = 300;
 //int d = 40;
 
-int nb_add1 = 3000;
+int nb_insert_simplex1 = 3000;
 int nb_membership1 = 4000;
 int nb_contraction = 300;
-int nb_add2 = 3000;
+int nb_insert_simplex2 = 3000;
 int nb_membership2 = 400000;
 
 Simplex random_simplex(int n, int d){
@@ -39,15 +39,15 @@ std::vector<Simplex> r_vector_simplices(int n, int max_d, int m){
 template<typename complex_type>
 void chrono(int n, int d){
     complex_type K;
-    std::vector<Simplex> simplices_add1 = r_vector_simplices(n,d,nb_add1);
+    std::vector<Simplex> simplices_insert_simplex1 = r_vector_simplices(n,d,nb_insert_simplex1);
     std::vector<Simplex> simplices_membership1 = r_vector_simplices(n,d,nb_membership1);
-    std::vector<Simplex> simplices_add2 = r_vector_simplices(n - 2*nb_contraction,d,nb_add2);
+    std::vector<Simplex> simplices_insert_simplex2 = r_vector_simplices(n - 2*nb_contraction,d,nb_insert_simplex2);
     std::vector<Simplex> simplices_membership2 = r_vector_simplices(n - 2*nb_contraction,d,nb_membership2);
     std::chrono::time_point<std::chrono::system_clock> start, end;
 
     //start = std::chrono::system_clock::now();
-    for(const Simplex& s : simplices_add1)
-        K.add(s);
+    for(const Simplex& s : simplices_insert_simplex1)
+        K.insert_simplex(s);
     //end = std::chrono::system_clock::now();
     //std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count() << std::endl;
 
@@ -64,8 +64,8 @@ void chrono(int n, int d){
     auto c3 = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
 
     start = std::chrono::system_clock::now();
-    for(const Simplex& s : simplices_add2)
-        K.add(s);
+    for(const Simplex& s : simplices_insert_simplex2)
+        K.insert_simplex(s);
     end = std::chrono::system_clock::now();
     auto c1 = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
 
@@ -75,7 +75,7 @@ void chrono(int n, int d){
     end = std::chrono::system_clock::now();
     auto c2 = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
 
-    std::cout << c1 << "\t \t" << c2 << "\t \t" << c3 << "\t \t" << K.size() << std::endl;
+    std::cout << c1 << "\t \t" << c2 << "\t \t" << c3 << "\t \t" << K.num_simplices() << std::endl;
 }
 
 int main(){

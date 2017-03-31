@@ -9,16 +9,16 @@ class LSAL {
     
 public:
 
-    void insert_max(const Simplex& sigma);
-    bool add(const Simplex& sigma);
-    void remove(const Simplex& tau);
+    void insert_max_simplex(const Simplex& sigma);
+    bool insert_simplex(const Simplex& sigma);
+    void remove_simplex(const Simplex& tau);
     
     bool membership(const Simplex& tau);
     bool all_facets_inside(const Simplex& sigma);
 
     Vertex contraction(const Vertex x, const Vertex y);
 
-    std::size_t size() const;
+    std::size_t num_simplices() const;
 private:
 
     void erase_max(const Simplex& sigma);
@@ -36,15 +36,15 @@ private:
 
 };
 
-void LSAL::insert_max(const Simplex& sigma){
+void LSAL::insert_max_simplex(const Simplex& sigma){
     for(const Vertex& v : sigma)
         if(!estimated_gamma0.count(v)) estimated_gamma0.emplace(v,1);
         else estimated_gamma0[v]++;
     estimated_total_size++;
-    add(sigma);
+    insert_simplex(sigma);
 }
 
-bool LSAL::add(const Simplex& sigma){
+bool LSAL::insert_simplex(const Simplex& sigma){
     max_empty_face = (sigma.size()==0); //vérifier la gestion de empty face
     Simplex_ptr sptr = std::make_shared<Simplex>(sigma);
     bool inserted = false;
@@ -59,7 +59,7 @@ bool LSAL::add(const Simplex& sigma){
     return inserted;
 }
 
-void LSAL::remove(const Simplex& tau){
+void LSAL::remove_simplex(const Simplex& tau){
     if(tau.size()==0){
         t0.clear();
         estimated_gamma0.clear();
@@ -74,7 +74,7 @@ void LSAL::remove(const Simplex& tau){
             if(included(tau, *sptr)){
                 erase_max(*sptr);
                 for(const Simplex& f : facets(tau))
-                    insert_max(f);
+                    insert_max_simplex(f);
             }
     }
 }
@@ -118,13 +118,13 @@ Vertex LSAL::contraction(const Vertex x, const Vertex y){
         erase_max(sigma);
         sigma.erase(d);
         sigma.insert(k);
-        add(sigma);
+        insert_simplex(sigma);
     }
     t0.erase(d);
     return k;
 }
 
-/* No facets added */
+/* No facets insert_simplexed */
 inline void LSAL::erase_max(const Simplex& sigma){
     max_empty_face = false;
     Simplex_ptr sptr = std::make_shared<Simplex>(sigma);
@@ -165,18 +165,18 @@ void LSAL::clean(const Vertex v){
     for(int d = max_dim; d>=1; d--)
         for(const Simplex& s : dsorted_simplices.at(d))
             if(!max_simplices.membership(s))
-                max_simplices.insert_max(s);
+                max_simplices.insert_critical_simplex(s);
     Simplex sv; sv.insert(v);
     /*
     auto clean_cofaces = max_simplices.max_cofaces(sv);
     estimated_total_size = estimated_total_size - (estimated_gamma0.count(v) ? estimated_gamma0.at(v) : 0) + clean_cofaces.size();
     estimated_gamma0[v] = clean_cofaces.size();
     for(const Simplex_ptr& sptr : clean_cofaces)
-       insert_max(*sptr);
+       insert_max_simplex(*sptr);
        */
 }
 
-std::size_t LSAL::size() const{
+std::size_t LSAL::num_simplices() const{
     return total_size;
 }
 

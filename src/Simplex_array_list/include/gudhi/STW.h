@@ -12,17 +12,17 @@ typedef std::pair< Simplex_tree<>::Simplex_handle, bool > typePairSimplexBool;
 class STW {
     
 public:
-    void add(const Simplex& tau);
+    void insert_simplex(const Simplex& tau);
     bool membership(const Simplex& tau);
     Vertex contraction(const Vertex x, const Vertex y);
-    std::size_t size();
+    std::size_t num_simplices();
 
 private:
     Simplex_tree<> simplexTree;
     void erase_max(const Simplex& sigma);
 };
 
-void STW::add(const Simplex& tau){
+void STW::insert_simplex(const Simplex& tau){
     simplexTree.insert_simplex_and_subfaces(tau);
 }
 
@@ -41,16 +41,16 @@ Vertex STW::contraction(const Vertex x, const Vertex y){
     if(hx != simplexTree.null_simplex())
         for(auto h : simplexTree.cofaces_simplex_range(hx,0)){
             auto sr = simplexTree.simplex_vertex_range(h);
-            Simplex sigma(sr.begin(),sr.end());
+            Simplex sigma(sr);
             erase_max(sigma);
             sigma.erase(x);
             sigma.insert(y);
-            add(sigma);
+            insert_simplex(sigma);
         }
     return y;
 }
 
-std::size_t STW::size(){
+std::size_t STW::num_simplices(){
     return simplexTree.num_simplices();
 }
 
