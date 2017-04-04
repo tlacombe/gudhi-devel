@@ -112,7 +112,6 @@ private:
                       double  max_alpha_square,
                       std::size_t limit_dimension = std::numeric_limits<std::size_t>::max())    
   {
-    typedef typename SimplicialComplexForWitness::Vertex_handle Vertex_handle;
     typedef typename SimplicialComplexForWitness::Simplex_handle Simplex_key;
 
     typedef Witness_for_simplex<typename ActiveWitness::iterator, ActiveWitnessList> Witnessed_simplex;
@@ -274,7 +273,6 @@ private:
   {
     typedef typename SimplicialComplexForWitness::Simplex_handle Simplex_handle;
     typedef typename SimplicialComplexForWitness::Vertex_handle Vertex_handle;
-    typedef Simplex_handle Simplex_key;
     typedef std::vector<Vertex_handle> Vertex_vector;
     typedef typename SimplexWitnessMap::mapped_type Simplex_witness_list;
     typedef typename Simplex_witness_list::value_type WitnessForSimplex;
@@ -340,7 +338,6 @@ private:
   {
     typedef typename SimplicialComplexForWitness::Vertex_handle Vertex_handle;
     typedef typename SimplicialComplexForWitness::Simplex_handle Simplex_handle;
-    typedef Simplex_handle Simplex_key;
     typedef std::vector<Vertex_handle> Vertex_vector;
     typedef typename SimplexWitnessMap::mapped_type Simplex_witness_list;
     typedef typename Simplex_witness_list::value_type WitnessForSimplex;
