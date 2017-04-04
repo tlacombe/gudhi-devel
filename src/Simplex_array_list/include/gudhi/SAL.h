@@ -48,6 +48,13 @@ public:
     template <typename Input_vertex_range>
     Filtration_value get_filtration(const Input_vertex_range &vertex_range) const;
 
+    Filtration_value filtration(Simplex_ptr simplex_handle) const
+    {
+      return 0;
+    }
+  
+    void set_dimension(int dimension) const;
+  
     Vertex contraction(const Vertex x, const Vertex y);
 
     std::size_t num_simplices() const;
@@ -117,6 +124,7 @@ void SAL::insert_simplex(const Input_vertex_range &vertex_range, Filtration_valu
     insert_critical_simplex(vertex_range);
 }
 
+  
 template <typename Input_vertex_range>
 void SAL::remove_simplex(const Input_vertex_range &vertex_range){
     if(vertex_range.begin()==vertex_range.end())
@@ -178,6 +186,10 @@ SAL::Filtration_value SAL::get_filtration(const Input_vertex_range &vertex_range
     return find(vertex_range)->filtration;
 }
 
+void SAL::set_dimension(int dimension) const
+{  
+}
+  
 /* Returns the remaining vertex */
 Vertex SAL::contraction(const Vertex x, const Vertex y){
     if(!t0.count(x)) return y;
@@ -225,6 +237,10 @@ std::size_t SAL::num_simplices() const{
     return critical_cofaces(Simplex()).size(); //not efficient !!
 }
 
+std::size_t SAL::num_vertices() const{
+    return t0.size(); //not efficient !!
+}  
+  
 template <typename Input_vertex_range>
 bool SAL::all_facets_inside(const Input_vertex_range &vertex_range) const{
     Vertex v = best_index(vertex_range);

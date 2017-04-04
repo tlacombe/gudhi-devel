@@ -25,7 +25,7 @@ public :
     typedef int Filtration_value;
 
      Simplex_handle null_simplex(){
-         return null_simplex_ptr;
+       return null_simplex();
      }
 
    /*  Complex_simplex_range complex_simplex_range(){
@@ -43,11 +43,10 @@ public :
      //     K.insert_max(s);
      // }
 
-     template <typename Input_vertex_range>
-     void insert_simplex (Input_vertex_range const &vertex_range, double filtration_value = 0){
-         Simplex s(vertex_range.begin(),vertex_range.end());
-         K.insert_max(s);
-     }
+     // template <typename Input_vertex_range>
+     // void insert_simplex (Input_vertex_range const &vertex_range, double filtration_value = 0){
+     //     K.insert_simplex(s);
+     // }
 
   
      template<typename Input_vertex_range>
@@ -55,9 +54,9 @@ public :
        return K.find(vertex_range);
      }
 
-     std::size_t num_simplices(){
-        return K.size();
-     }
+     // std::size_t num_simplices(){
+     //    return K.size();
+     // }
 
      std::size_t num_vertices(){
         return K.num_vertices();
