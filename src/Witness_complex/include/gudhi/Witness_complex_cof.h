@@ -117,7 +117,7 @@ private:
     typedef typename SimplicialComplexForWitness::Vertex_handle Vertex_handle;
     typedef Sib_vertex_pair<SimplicialComplexForWitness, Vertex_handle> Simplex_key;
 
-    typedef std::map<Simplex_key, bool> Simplex_bool_map;
+    typedef std::map<Simplex_key, std::pair<bool, double>> Simplex_bool_map;
     
     if (complex.num_vertices() > 0) {
       std::cerr << "Witness complex cannot create complex - complex is not empty.\n";
@@ -210,7 +210,7 @@ private:
         Siblings* sib = complex.self_siblings(sh);
         Vertex_handle v = sh->first;
         Simplex_key sk(sib,v);
-        (*sw_map)[sk] = true; 
+        (*sw_map)[sk] = std::make_pair(true,0); 
         aw_it->increase();
         if (l_it->second < norelax_dist2)
           norelax_dist2 = l_it->second;
@@ -306,11 +306,11 @@ private:
         if (check_if_neighbors(complex, sw_pair.first.simplex_handle(), sh2, coface)) {
           double filtration_value = 0;
           if (all_faces_in(coface, &filtration_value, complex)) {
-            std::pair<Simplex_handle, bool> sh_bool = complex.insert_simplex(coface);
+            std::pair<Simplex_handle, bool> sh_bool = complex.insert_simplex(coface, std::numeric_limits<double>::infinity());
             if (sh_bool.second) {
               Siblings* sib = complex.self_siblings(sh_bool.first);
               Vertex_handle v = sh_bool.first->first;
-              curr_dim_map->emplace(Simplex_key(sib,v), false);
+              curr_dim_map->emplace(Simplex_key(sib,v), std::make_pair(false, filtration_value));
             }
           }
         }
@@ -320,11 +320,11 @@ private:
         if (check_if_neighbors(complex, sw_pair.first.simplex_handle(), sh2, coface)) {
           double filtration_value = std::numeric_limits<double>::infinity();
           if (all_faces_in(coface, &filtration_value, complex)) {
-            std::pair<Simplex_handle, bool> sh_bool = complex.insert_simplex(coface);
+            std::pair<Simplex_handle, bool> sh_bool = complex.insert_simplex(coface, std::numeric_limits<double>::infinity());
             if (sh_bool.second) {
               Siblings* sib = complex.self_siblings(sh_bool.first);
               Vertex_handle v = sh_bool.first->first;
-              curr_dim_map->emplace(Simplex_key(sib,v), false);
+              curr_dim_map->emplace(Simplex_key(sib,v), std::make_pair(false, filtration_value));
             }
           }
         }
@@ -412,11 +412,11 @@ private:
         // if norelax_dist is infinite, relaxation is 0.
         if (l_it->second > norelax_dist2) 
           filtration_value = l_it->second - norelax_dist2;
-        if ((simplex[0] == 5) &&
-            (simplex[1] == 7) && first_spotted) {
-          w_ref = l_it.aw_;
-          first_spotted = false;
-        }
+        // if ((simplex[0] == 5) &&
+        //     (simplex[1] == 7) && first_spotted) {
+        //   w_ref = l_it.aw_;
+        //   first_spotted = false;
+        // }
         // Two different modes: for edges and others
         if (simplex.size() == 2) {
           if (all_faces_in(simplex, &filtration_value, complex)) {
@@ -426,7 +426,7 @@ private:
               Simplex_handle sh = sh_bool.first;
               Vertex_handle v = sh->first;
               Siblings* sib = complex.self_siblings(sh);
-              (*curr_dim_map)[Simplex_key(sib, v)] = true;
+              (*curr_dim_map)[Simplex_key(sib, v)].first = true;
             }
             // if ((l_it.aw_->nearest_landmark_table_.begin()->first == 5) &&
             //     ((l_it.aw_->nearest_landmark_table_.begin()++)->first == 7) &&
@@ -449,19 +449,22 @@ private:
         //   }
         // }
         else {
-          if ((simplex[0] == 5) &&
-              (simplex[1] == 7) &&
-              (simplex[2] == 9)) {
-            w_ref = l_it.aw_;
-            first_spotted = false;
-          }
+          // if ((simplex[0] == 5) &&
+          //     (simplex[1] == 7) &&
+          //     (simplex[2] == 9)) {
+          //   w_ref = l_it.aw_;
+          //   first_spotted = false;
+          // }
           Simplex_handle sh = complex.find(simplex);
           if (sh != complex.null_simplex()) {
-            will_be_active = true;
-            complex.insert_simplex(simplex, filtration_value);
             Vertex_handle v = sh->first;
             Siblings* sib = complex.self_siblings(sh);
-            (*curr_dim_map)[Simplex_key(sib, v)] = true;
+            auto& wp = (*curr_dim_map)[Simplex_key(sib, v)];
+            will_be_active = true;
+            if (filtration_value < wp.second)
+              filtration_value = wp.second;
+            complex.insert_simplex(simplex, filtration_value);
+            (*curr_dim_map)[Simplex_key(sib, v)].first = true;
             num_simplices++;
           }
         }
@@ -483,7 +486,7 @@ private:
     std::list<typename SimplexBoolMap::key_type> elements_to_remove;
       
     for (auto sw: *curr_dim_map) {
-      if (!sw.second) {
+      if (!sw.second.first) {
         complex.remove_maximal_simplex(sw.first.simplex_handle());
         elements_to_remove.push_back(sw.first);
       }        

@@ -187,28 +187,28 @@ int main(int argc, char * const argv[]) {
 
   witness_complex_new.create_complex(simplex_tree2, alpha2, lim_dim);
   end = clock();
-  ofs = std::ofstream("st2.out", std::ofstream::out);
-  ofs << simplex_tree2 << "\n";
-  ofs.close();
-  
   std::cout << "Witness complex 2 (cofaces and witlists) took "
       << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
   file_name = "num_crit2.out";
-  std::cout << "Number of critical simplices: " << num_crit_simplices(simplex_tree2) << "\n";
+  std::cout << "Number of critical simplices: " << num_crit_simplices2(simplex_tree2) << "\n";
   std::cout << "Number of simplices is: " << simplex_tree2.num_simplices() << "\n";
   assert(simplex_tree == simplex_tree2);
 
   // // Compute witness complex - 3
-  // start = clock();
-  // Witness_complex_cof witness_complex_cof(nearest_landmark_table);
-
-  // witness_complex_cof.create_complex(simplex_tree3, alpha2, lim_dim);
-  // end = clock();
-  // std::cout << "Witness complex 3 (cofaces, no witlists) took "
-  //     << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
-  // std::cout << "Number of critical simplices: " << num_crit_simplices2(simplex_tree3) << "\n";
-  // std::cout << "Number of simplices is: " << simplex_tree3.num_simplices() << "\n";
-  // assert(simplex_tree == simplex_tree3);
+  start = clock();
+  Witness_complex_cof witness_complex_cof(nearest_landmark_table);
+  ofs = std::ofstream("st2.out", std::ofstream::out);
+  ofs << simplex_tree3 << "\n";
+  ofs.close();
+  
+  witness_complex_cof.create_complex(simplex_tree3, alpha2, lim_dim);
+  end = clock();
+  std::cout << "Witness complex 3 (cofaces, no witlists) took "
+      << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
+  file_name = "num_crit3.out";
+  std::cout << "Number of critical simplices: " << num_crit_simplices2(simplex_tree3) << "\n";
+  std::cout << "Number of simplices is: " << simplex_tree3.num_simplices() << "\n";
+  assert(simplex_tree == simplex_tree3);
   
   // // Compute witness complex - 4
   // start = clock();
