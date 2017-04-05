@@ -23,6 +23,8 @@
 #include <string>
 #include <vector>
 
+std::string file_name;
+
 typedef CGAL::Epick_d<CGAL::Dynamic_dimension_tag> Kernel;
 typedef typename Kernel::Point_d Point_d;
 typedef std::vector<Point_d> Point_range;
@@ -80,7 +82,7 @@ int num_crit_simplices2(SimplexTree& st)
   double curr_filtr = 0;
   st.initialize_filtration();
   SimplexTree* st_temp = new SimplexTree;
-  std::ofstream ofs("num_crit2.out", std::ofstream::out);
+  std::ofstream ofs(file_name, std::ofstream::out);
   for (auto sh: st.filtration_simplex_range()) {
     if (curr_filtr == st.filtration(sh))
       st_temp->insert_simplex(st.simplex_vertex_range(sh));
@@ -164,11 +166,12 @@ int main(int argc, char * const argv[]) {
   ofs.close();
   std::cout << "Witness complex 1 (no cofaces, no witlists) took "
       << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
-  start = clock();
-  int crit1_st1 = num_crit_simplices(simplex_tree);
-  end = clock();
-  std::cout << "Number of critical simplices: " << crit1_st1 << ". Time = " << static_cast<double>(end - start) / CLOCKS_PER_SEC << "s.\n";
-  start = clock();
+  // start = clock();
+  // int crit1_st1 = num_crit_simplices(simplex_tree);
+  // end = clock();
+  // std::cout << "Number of critical simplices: " << crit1_st1 << ". Time = " << static_cast<double>(end - start) / CLOCKS_PER_SEC << "s.\n";
+  // start = clock();
+  file_name = "num_crit1.out";
   int crit2_st1 = num_crit_simplices2(simplex_tree);
   end = clock();
   std::cout << "Number of critical simplices: " << crit2_st1 << ". Time = " << static_cast<double>(end - start) / CLOCKS_PER_SEC << "s.\n";
@@ -178,21 +181,22 @@ int main(int argc, char * const argv[]) {
   
   // std::cout << simplex_tree << std::endl;
   
-  // // Compute witness complex - 2
-  // start = clock();
-  // Witness_complex_new witness_complex_new(nearest_landmark_table);
+  // Compute witness complex - 2
+  start = clock();
+  Witness_complex_new witness_complex_new(nearest_landmark_table);
 
-  // witness_complex_new.create_complex(simplex_tree2, alpha2, lim_dim);
-  // end = clock();
-  // // ofs = std::ofstream("st2.out", std::ofstream::out);
-  // // ofs << simplex_tree2 << "\n";
-  // // ofs.close();
-  // assert(simplex_tree == simplex_tree2);
+  witness_complex_new.create_complex(simplex_tree2, alpha2, lim_dim);
+  end = clock();
+  ofs = std::ofstream("st2.out", std::ofstream::out);
+  ofs << simplex_tree2 << "\n";
+  ofs.close();
   
-  // std::cout << "Witness complex 2 (cofaces and witlists) took "
-  //     << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
-  // std::cout << "Number of critical simplices: " << num_crit_simplices(simplex_tree2) << "\n";
-  // std::cout << "Number of simplices is: " << simplex_tree2.num_simplices() << "\n";
+  std::cout << "Witness complex 2 (cofaces and witlists) took "
+      << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
+  file_name = "num_crit2.out";
+  std::cout << "Number of critical simplices: " << num_crit_simplices(simplex_tree2) << "\n";
+  std::cout << "Number of simplices is: " << simplex_tree2.num_simplices() << "\n";
+  assert(simplex_tree == simplex_tree2);
 
   // // Compute witness complex - 3
   // start = clock();

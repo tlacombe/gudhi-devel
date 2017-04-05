@@ -116,7 +116,48 @@ private:
     typedef Sib_vertex_pair<SimplicialComplexForWitness, Vertex_handle> Simplex_key;
 
     typedef Witness_for_simplex<typename ActiveWitness::iterator, ActiveWitnessList> Witnessed_simplex;
-    typedef std::list<Witnessed_simplex> Witnessed_simplex_list;
+    // typedef std::list<Witnessed_simplex> Witnessed_simplex_list;
+    class Witnessed_simplex_list {
+      public:
+      typedef Witnessed_simplex value_type;
+      typedef typename std::list<Witnessed_simplex>::iterator iterator;
+      double facet_max_filtration_;
+      std::list<Witnessed_simplex> list_;
+      Witnessed_simplex_list()
+        : facet_max_filtration_(0)
+      {
+      }
+
+      Witnessed_simplex_list(double fmf)
+        : facet_max_filtration_(fmf)
+      {
+      }
+
+      void emplace_back(Witnessed_simplex&& ws)
+      {
+        list_.emplace_back(ws);
+      }
+
+      iterator begin()
+      {
+        return list_.begin();
+      }
+
+      iterator end()
+      {
+        return list_.end();
+      }
+
+      bool empty()
+      {
+        return list_.empty();
+      }
+      
+      double facet_max_filtration()
+      {
+        return facet_max_filtration_;
+      }
+    };
     typedef std::map<Simplex_key, Witnessed_simplex_list> Simplex_witness_list_map;
     
     if (complex.num_vertices() > 0) {
@@ -396,7 +437,7 @@ private:
           // }
           double filtration_value = 0;
           if (all_faces_in(coface, &filtration_value, complex)) {
-            std::pair<Simplex_handle, bool> sh_bool = complex.insert_simplex(coface);
+            std::pair<Simplex_handle, bool> sh_bool = complex.insert_simplex(coface, std::numeric_limits<double>::infinity());
             if (sh_bool.second) {
               Siblings* sib = complex.self_siblings(sh_bool.first);
               Vertex_handle v = sh_bool.first->first;
@@ -405,7 +446,7 @@ private:
               //   sib_ref = sib;
               //   std::cout << sib << std::endl;
               // }
-              curr_dim_map->emplace(Simplex_key(sib,v), Simplex_witness_list());
+              curr_dim_map->emplace(Simplex_key(sib,v), Simplex_witness_list(filtration_value));
               // if (verbose) std::cout << "Inserted\n"; //
               // if (k == 3)
               //   assert(sib_ref == complex.self_siblings(complex.find(typeVectorVertex({121, 243, 727}))));
@@ -427,9 +468,9 @@ private:
           //     std::cout << v << " ";
           //   std::cout << std::endl;
           // }
-          double filtration_value = 0;//std::numeric_limits<double>::infinity();
+          double filtration_value = 0;
           if (all_faces_in(coface, &filtration_value, complex)) {
-            std::pair<Simplex_handle, bool> sh_bool = complex.insert_simplex(coface);
+            std::pair<Simplex_handle, bool> sh_bool = complex.insert_simplex(coface, std::numeric_limits<double>::infinity());
             if (sh_bool.second) {
               Siblings* sib = complex.self_siblings(sh_bool.first);
               Vertex_handle v = sh_bool.first->first;
@@ -438,7 +479,7 @@ private:
               //   sib_ref = sib;
               //   std::cout << sib << std::endl;
               // }
-              curr_dim_map->emplace(Simplex_key(sib,v), Simplex_witness_list());
+              curr_dim_map->emplace(Simplex_key(sib,v), Simplex_witness_list(filtration_value));
               // if (verbose) std::cout << "Inserted\n";
               // if (k == 3)
               //   assert(sib_ref == complex.self_siblings(complex.find(typeVectorVertex({121, 243, 727}))));
@@ -473,7 +514,10 @@ private:
             // std::sort(vertices_sorted.begin(), vertices_sorted.end());
             // if (vertices_sorted.size() == 3 && vertices_sorted[0] == 121 && vertices_sorted[1] == 243 && vertices_sorted[2] == 727)
             //     std::cout << sib << std::endl;
-            (*curr_dim_map)[sk].emplace_back(WitnessForSimplex(l_it, w.witness_, norelax_dist2));
+            auto& wl = (*curr_dim_map)[sk];
+            wl.emplace_back(WitnessForSimplex(l_it, w.witness_, norelax_dist2));
+            if (filtration_value < wl.facet_max_filtration())
+              filtration_value = wl.facet_max_filtration();
             complex.insert_simplex(vertices, filtration_value); // Update the filtration
             // if (k == 3)
             //   assert(sib_ref == complex.self_siblings(complex.find(typeVectorVertex({121, 243, 727}))));
