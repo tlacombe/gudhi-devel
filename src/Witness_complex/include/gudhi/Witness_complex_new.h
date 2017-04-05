@@ -427,7 +427,7 @@ private:
           //     std::cout << v << " ";
           //   std::cout << std::endl;
           // }
-          double filtration_value = std::numeric_limits<double>::infinity();
+          double filtration_value = 0;//std::numeric_limits<double>::infinity();
           if (all_faces_in(coface, &filtration_value, complex)) {
             std::pair<Simplex_handle, bool> sh_bool = complex.insert_simplex(coface);
             if (sh_bool.second) {
@@ -460,6 +460,10 @@ private:
           auto sv_range = complex.simplex_vertex_range(vw_pair.first.simplex_handle());
           Vertex_vector vertices(sv_range.begin(), sv_range.end());
           vertices.push_back(l_it->first);
+          double filtration_value = 0;
+          // if norelax_dist is infinite, relaxation is 0.
+          if (l_it->second > norelax_dist2) 
+            filtration_value = l_it->second - norelax_dist2;
           Simplex_handle sh = complex.find(vertices);
           if (sh != complex.null_simplex()) {
             Siblings* sib = complex.self_siblings(sh);
@@ -470,7 +474,7 @@ private:
             // if (vertices_sorted.size() == 3 && vertices_sorted[0] == 121 && vertices_sorted[1] == 243 && vertices_sorted[2] == 727)
             //     std::cout << sib << std::endl;
             (*curr_dim_map)[sk].emplace_back(WitnessForSimplex(l_it, w.witness_, norelax_dist2));
-            complex.insert_simplex(vertices, l_it->second - norelax_dist2); // Update the filtration
+            complex.insert_simplex(vertices, filtration_value); // Update the filtration
             // if (k == 3)
             //   assert(sib_ref == complex.self_siblings(complex.find(typeVectorVertex({121, 243, 727}))));
             w.witness_->increase();
