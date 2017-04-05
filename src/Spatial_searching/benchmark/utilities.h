@@ -80,6 +80,7 @@ protected:
     subelements.push_back("Num_threads");
     subelements.push_back("Num_points");
     subelements.push_back("Random_rotation");
+    subelements.push_back("Ambient_noise");
     subelements.push_back("Epsilon");
     subelements.push_back("Algorithm");
     subelements.push_back("Algo_params");

@@ -1,123 +1,104 @@
 #------------------------------------------------------------------------------------------------------------------------------------------
-# Input															PARAM1	PARAM2	PARAM3	NUM_P	AMB			RND_ROT		EPS  	NUM_QUERIES K	NUM_ITER
+# Input															PARAM1	PARAM2	PARAM3	NUM_P	AMB			RND_ROT		NOISE	EPS  	NUM_QUERIES K	NUM_ITER
 #------------------------------------------------------------------------------------------------------------------------------------------
 
 #---------------------------------------------------------- Spatial search benchmarking ---------------------------------------------------
-#generate_torus_3D   											2		1		Y		100000 	3			N			0.2   	2000 		10		1
-#generate_torus_3D   											2		1		Y		1000000 3			N			0.   	100000 		10		1
-#data/buddha_100kv.off 											-		-		-		0		3 			N			0.   	10000 		10		1
-#generate_torus_d    											600		N		-		10000	600			N			0.   	1000 		10		1
-#generate_torus_d    											12		N		-		100000	12			N			0.   	1000 		10		1
-#data/SO3_50000.off  											-		-		-		0		9 			N			0.   	1000  		10		1
-#data/Cy8.off	 												-		-		-		0		24 			N			0.   	10000 		10		1
-#data/fractal_9_5_2_random_edge_list.txt_0.19795_512p_d259.off	-		-		-		0		259			N			0.01  	1000 		10		1
-#generate_sphere_d												4999	0.5 	-		1000	5000		N			0.   	1000 		10		1
-#generate_sphere_d												2		0.5 	-		10000	3			N			0.   	1000 		10		1
-#generate_sphere_d												3		0.5 	-		10000	4			N			0.   	1000 		10		1
-#generate_sphere_d												4		0.5 	-		10000	5			N			0.   	1000 		10		1
-#generate_sphere_d												5		0.5 	-		10000	6			N			0.   	1000 		10		1
-#generate_sphere_d												24		0.5 	-		10000	24			N			0.   	1000 		10		1
-#generate_sphere_d												1000	0.5 	-		10000	1000		N			0.   	1000 		10		1
-#generate_points_in_cube_d										100 	2.0 	-		10000	100			N			0.   	1000 		10		1
-#generate_klein_bottle_4D										4		3		-		1000000	4			N			0.01   	1000		10		1
-#data/sift_base.fvecs     										-		-		-		0		128			N			0.  	2   		10		1 #1M points
-#data/sift_base.fvecs     										-		-		-		0		128			N			0.  	200   		10		1 #1M points
-#data/sift_base.fvecs     										-		-		-		0		128			N			0.01  	1000 		10		1 #1M points
-#data/sift_base.fvecs     										-		-		-		0		128			N			0.1  	1000 		10		1 #1M points
-#data/gist_base.fvecs     										-		-		-		0		960			N			0.01  	1000 		10		1 #1M points - GUDHI Kd_tree_search crashes
-#data/gist_query.fvecs     										-		-		-		0		960			N			0.01  	1000 		10		1
+#generate_torus_3D   											2		1		Y		100000 	3			N			0.		0.2   	2000 		10		1
+#generate_torus_3D   											2		1		Y		1000000 3			N			0.		0.   	100000 		10		1
+#data/buddha_100kv.off 											-		-		-		0		3 			N			0.		0.   	10000 		10		1
+#generate_torus_d    											600		N		-		10000	600			N			0.		0.   	1000 		10		1
+#generate_torus_d    											12		N		-		100000	12			N			0.		0.   	1000 		10		1
+#data/SO3_50000.off  											-		-		-		0		9 			N			0.		0.   	1000  		10		1
+#data/Cy8.off	 												-		-		-		0		24 			N			0.		0.   	10000 		10		1
+#data/fractal_9_5_2_random_edge_list.txt_0.19795_512p_d259.off	-		-		-		0		259			N			0.		0.01  	1000 		10		1
+#generate_sphere_d												4999	0.5 	-		1000	5000		N			0.		0.   	1000 		10		1
+#generate_sphere_d												2		0.5 	-		10000	3			N			0.		0.   	1000 		10		1
+#generate_sphere_d												3		0.5 	-		10000	4			N			0.		0.   	1000 		10		1
+#generate_sphere_d												4		0.5 	-		10000	5			N			0.		0.   	1000 		10		1
+#generate_sphere_d												5		0.5 	-		10000	6			N			0.		0.   	1000 		10		1
+#generate_sphere_d												24		0.5 	-		10000	24			N			0.		0.   	1000 		10		1
+#generate_sphere_d												1000	0.5 	-		10000	1000		N			0.		0.   	1000 		10		1
+#generate_points_in_cube_d										100 	2.0 	-		10000	100			N			0.		0.   	1000 		10		1
+#generate_klein_bottle_4D										4		3		-		1000000	4			N			0.		0.01   	1000		10		1
+#data/sift_base.fvecs     										-		-		-		0		128			N			0.		0.  	2   		10		1 #1M points
+#data/sift_base.fvecs     										-		-		-		0		128			N			0.		0.  	200   		10		1 #1M points
+#data/sift_base.fvecs     										-		-		-		0		128			N			0.		0.01  	1000 		10		1 #1M points
+#data/sift_base.fvecs     										-		-		-		0		128			N			0.		0.1  	1000 		10		1 #1M points
+#data/gist_base.fvecs     										-		-		-		0		960			N			0.		0.01  	1000 		10		1 #1M points - GUDHI Kd_tree_search crashes
+#data/gist_query.fvecs     										-		-		-		0		960			N			0.		0.01  	1000 		10		1
 
 #---------------------------------------------------------- Very small cases for Debug mode -----------------------------------------------
-#generate_sphere_d												2		4		-		20		3			N			0.   	2			10		1
-#generate_sphere_d												2		3		10		70		3			N			0.   	5			10		1
-#generate_sphere_d												2		3		-		1000 	3			N			0.   	5			10		1
-#generate_sphere_d												3		3		-		10		4			N			0.   	5			10		1
-#generate_sphere_d												4		3		-		70		5			N			0.   	5			10		1
-#generate_klein_bottle_4D										4		3		-		70  	4			N			0.   	5			10		1
-#generate_klein_bottle_variant_5D								4		3		-		70  	5			N			0.   	5			10		1
-#data/SO3_10000.off  											-		-		-		0		9 			N			0.   	5			10		1
-#generate_moment_curve											0		1		-		30  	3			N			0.   	5			10		1
-#generate_torus_3D   											2		1		Y		100 	3			N			0.   	5 			10		1
+#generate_sphere_d												2		4		-		20		3			N			0.		0.   	2			10		1
+#generate_sphere_d												2		3		10		70		3			N			0.		0.   	5			10		1
+#generate_sphere_d												2		3		-		1000 	3			N			0.		0.   	5			10		1
+#generate_sphere_d												3		3		-		10		4			N			0.		0.   	5			10		1
+#generate_sphere_d												4		3		-		70		5			N			0.		0.   	5			10		1
+#generate_klein_bottle_4D										4		3		-		70  	4			N			0.		0.   	5			10		1
+#generate_klein_bottle_variant_5D								4		3		-		70  	5			N			0.		0.   	5			10		1
+#data/SO3_10000.off  											-		-		-		0		9 			N			0.		0.   	5			10		1
+#generate_moment_curve											0		1		-		30  	3			N			0.		0.   	5			10		1
+#generate_torus_3D   											2		1		Y		100 	3			N			0.		0.   	5 			10		1
 
 #---------------------------------------- 12/2016 KNN search benchmarking (ONLY_THE_FIRST_N_POINTS = 100000) -------------------------------
-#generate_sphere_d												9		0.5 	-		100000	10			N			0.   	10000 		10		1
-#generate_sphere_d												19		0.5 	-		100000	20			N			0.   	10000 		10		1
-#generate_sphere_d												29		0.5 	-		100000	30			N			0.   	10000 		10		1
-#data/SO3_50000.off  											-		-		-		0		9 			N			0.   	10000  		10		1
-#data/sift_base.fvecs     										-		-		-		0		128			N			0.  	2000   		10		1 # 1M points
+#generate_sphere_d												9		0.5 	-		100000	10			N			0.		0.   	10000 		10		1
+#generate_sphere_d												19		0.5 	-		100000	20			N			0.		0.   	10000 		10		1
+#generate_sphere_d												29		0.5 	-		100000	30			N			0.		0.   	10000 		10		1
+#data/SO3_50000.off  											-		-		-		0		9 			N			0.		0.   	10000  		10		1
+#data/sift_base.fvecs     										-		-		-		0		128			N			0.		0.  	2000   		10		1 # 1M points
 
 #---------------------------------------- 01/2017 KNN search benchmarking (ONLY_THE_FIRST_N_POINTS = 100000) -------------------------------
 
 # K = 1			
-#generate_sphere_d												9		0.5 	-		100000	10			N			0.   	20000 		1		1
-#generate_sphere_d												19		0.5 	-		100000	20			N			0.   	20000 		1		1
-#generate_sphere_d												29		0.5 	-		100000	30			N			0.   	20000 		1		1
-#data/SO3_50000.off  											-		-		-		0		9 			N			0.   	20000  		1		1
-#data/sift_base.fvecs     										-		-		-		0		128			N			0.  	3000   		1		1 # 1M points
-#data/Alvarez_surface_deg5_k2_D8_112K.off    					-       -       -       0       8       	N			0.  	10000  		1   	1
-#data/Cy8.off	 												-		-		-		0		24 			N			0.   	10000 		1		1 # 6040 points
-#generate_torus_d    											30		N		-		100000	30			N			0.   	10000 		1		1
-
-# K = 10			
-#generate_sphere_d												9		0.5 	-		100000	10			N			0.   	5000 		10		1
-#generate_sphere_d												19		0.5 	-		100000	20			N			0.   	5000 		10		1
-#generate_sphere_d												29		0.5 	-		100000	30			N			0.   	5000 		10		1
-#data/SO3_50000.off  											-		-		-		0		9 			N			0.   	5000  		10		1
-#data/sift_base.fvecs     										-		-		-		0		128			N			0.  	2000   		10		1 # 1M points
-#data/Alvarez_surface_deg5_k2_D8_112K.off    					-       -       -       0       8       	N			0.  	5000  		10   	1
-#data/Cy8.off	 												-		-		-		0		24 			N			0.   	5000 		10		1 # 6040 points
-#generate_torus_d    											30		N		-		100000	30			N			0.   	5000 		10		1
+#generate_sphere_d												9		0.5 	-		100000	10			N			0.		0.   	20000 		1		1
+#generate_sphere_d												19		0.5 	-		100000	20			N			0.		0.   	20000 		1		1
+#generate_sphere_d												29		0.5 	-		100000	30			N			0.		0.   	20000 		1		1
+#data/SO3_50000.off  											-		-		-		0		9 			N			0.		0.   	20000  		1		1
+#data/sift_base.fvecs     										-		-		-		0		128			N			0.		0.  	3000   		1		1 # 1M points
+#data/Alvarez_surface_deg5_k2_D8_112K.off    					-       -       -       0       8       	N			0.		0.  	10000  		1   	1
+#data/Cy8.off	 												-		-		-		0		24 			N			0.		0.   	10000 		1		1 # 6040 points
+#generate_torus_d    											30		N		-		100000	30			N			0.		0.   	10000 		1		1
+                                                                                                                        0.		
+# K = 10			                                                                                                    0.		
+#generate_sphere_d												9		0.5 	-		100000	10			N			0.		0.   	5000 		10		1
+#generate_sphere_d												19		0.5 	-		100000	20			N			0.		0.   	5000 		10		1
+#generate_sphere_d												29		0.5 	-		100000	30			N			0.		0.   	5000 		10		1
+#data/SO3_50000.off  											-		-		-		0		9 			N			0.		0.   	5000  		10		1
+#data/sift_base.fvecs     										-		-		-		0		128			N			0.		0.  	2000   		10		1 # 1M points
+#data/Alvarez_surface_deg5_k2_D8_112K.off    					-       -       -       0       8       	N			0.		0.  	5000  		10   	1
+#data/Cy8.off	 												-		-		-		0		24 			N			0.		0.   	5000 		10		1 # 6040 points
+#generate_torus_d    											30		N		-		100000	30			N			0.		0.   	5000 		10		1
 
 #---------------------------------------- 03/2017 KNN search benchmarking -------------------------------
 
-#generate_sphere_d												9		0.5 	-		100000	10			N			0.   	5000 		10		1
-#generate_sphere_d												19		0.5 	-		100000	20			N			0.   	5000 		10		1
-#generate_sphere_d												29		0.5 	-		100000	30			N			0.   	5000 		10		1
-#data/SO3_50000.off  											-		-		-		0		9 			N			0.   	5000  		10		1
-#data/sift_base.fvecs     										-		-		-		0		128			N			0.  	2000   		10		1 # 1M points
-#data/Alvarez_surface_deg5_k2_D8_112K.off    					-       -       -       0       8       	N			0.  	5000  		10   	1
-#data/Cy8.off	 												-		-		-		0		24 			N			0.   	5000 		10		1 # 6040 points
-#generate_torus_d    											30		N		-		100000	30			N			0.   	5000 		10		1
-#data/CASP_45730v_10d.off  										-		-		-		0 		10			N			0.   	50000 		10		1		
-#data/buddha_100kv.off 											-		-		-		0		3 			N			0.   	50000 		10		1
-#data/farman_crotales.off 										-		-		-		0		3 			N			0.   	50000 		10		1
-#generate_torus_3D   											2		1		Y		1000000 3			N			0.   	50000 		10		1
-#generate_torus_3D   											2		1		N		1000000	3-53:5		Y			0.   	10000		10		1
+#generate_sphere_d												9		0.5 	-		100000	10			N			0.		0.   	5000 		10		1
+#generate_sphere_d												19		0.5 	-		100000	20			N			0.		0.   	5000 		10		1
+#generate_sphere_d												29		0.5 	-		100000	30			N			0.		0.   	5000 		10		1
+#data/SO3_50000.off  											-		-		-		0		9 			N			0.		0.   	5000  		10		1
+#data/sift_base.fvecs     										-		-		-		0		128			N			0.		0.  	2000   		10		1 # 1M points
+#data/Alvarez_surface_deg5_k2_D8_112K.off    					-       -       -       0       8       	N			0.		0.  	5000  		10   	1
+#data/Cy8.off	 												-		-		-		0		24 			N			0.		0.   	5000 		10		1 # 6040 points
+#generate_torus_d    											30		N		-		100000	30			N			0.		0.   	5000 		10		1
+#data/CASP_45730v_10d.off  										-		-		-		0 		10			N			0.		0.   	50000 		10		1		
+#data/buddha_100kv.off 											-		-		-		0		3 			N			0.		0.   	50000 		10		1
+#data/farman_crotales.off 										-		-		-		0		3 			N			0.		0.   	50000 		10		1
+#generate_torus_3D   											2		1		Y		1000000 3			N			0.		0.   	50000 		10		1
+#generate_torus_3D   											2		1		N		1000000	3-53:5		Y			0.		0.   	10000		10		1
 
-generate_sphere_d												2 		0.7		-		100000	 5-50:5		N			0.   	10000 		10		1
-generate_plane													2 		-		-		100000	 5-50:5		N			0.   	10000 		10		1
-generate_sphere_d												3 		0.7		-		100000	 5-50:5		N			0.   	10000 		10		1
-generate_plane													3 		-		-		100000	 5-50:5		N			0.   	10000 		10		1
-generate_sphere_d												4 		0.7		-		100000	 5-50:5		N			0.   	10000 		10		1
-generate_plane													4 		-		-		100000	 5-50:5		N			0.   	10000 		10		1
-generate_sphere_d												5 		0.7		-		100000	10-50:5		N			0.   	10000 		10		1
-generate_plane													5 		-		-		100000	10-50:5		N			0.   	10000 		10		1
-generate_sphere_d												6 		0.7		-		100000	10-50:5		N			0.   	10000 		10		1
-generate_plane													6 		-		-		100000	10-50:5		N			0.   	10000 		10		1
-generate_sphere_d												7 		0.7		-		100000	10-50:5		N			0.   	10000 		10		1
-generate_plane													7 		-		-		100000	10-50:5		N			0.   	10000 		10		1
-generate_sphere_d												9 		0.7		-		100000	15-50:5		N			0.   	10000 		10		1
-generate_plane													9 		-		-		100000	15-50:5		N			0.   	10000 		10		1
-generate_sphere_d												11 		0.7		-		500000	15-50:5		N			0.   	10000 		10		1
-generate_plane													11 		-		-		500000	15-50:5		N			0.   	10000 		10		1
-generate_sphere_d												14 		0.7		-		100000	15-50:5		N			0.   	10000 		10		1
-generate_plane													14 		-		-		100000	15-50:5		N			0.   	10000 		10		1
-
-generate_sphere_d												2 		0.7		-		100000	 5-50:5		Y			0.   	10000 		10		1
-generate_plane													2 		-		-		100000	 5-50:5		Y			0.   	10000 		10		1
-generate_sphere_d												3 		0.7		-		100000	 5-50:5		Y			0.   	10000 		10		1
-generate_plane													3 		-		-		100000	 5-50:5		Y			0.   	10000 		10		1
-generate_sphere_d												4 		0.7		-		100000	 5-50:5		Y			0.   	10000 		10		1
-generate_plane													4 		-		-		100000	 5-50:5		Y			0.   	10000 		10		1
-generate_sphere_d												5 		0.7		-		100000	10-50:5		Y			0.   	10000 		10		1
-generate_plane													5 		-		-		100000	10-50:5		Y			0.   	10000 		10		1
-generate_sphere_d												6 		0.7		-		100000	10-50:5		Y			0.   	10000 		10		1
-generate_plane													6 		-		-		100000	10-50:5		Y			0.   	10000 		10		1
-generate_sphere_d												7 		0.7		-		100000	10-50:5		Y			0.   	10000 		10		1
-generate_plane													7 		-		-		100000	10-50:5		Y			0.   	10000 		10		1
-generate_sphere_d												9 		0.7		-		100000	15-50:5		Y			0.   	10000 		10		1
-generate_plane													9 		-		-		100000	15-50:5		Y			0.   	10000 		10		1
-generate_sphere_d												11 		0.7		-		500000	15-50:5		Y			0.   	10000 		10		1
-generate_plane													11 		-		-		500000	15-50:5		Y			0.   	10000 		10		1
-generate_sphere_d												14 		0.7		-		100000	15-50:5		Y			0.   	10000 		10		1
-generate_plane													14 		-		-		100000	15-50:5		Y			0.   	10000 		10		1
+#generate_sphere_d												2 		0.7		10		100000	 5-50:5		Y			0.05	0.   	5000 		10		1
+#generate_sphere_d												3 		0.7		10		100000	 5-50:5		Y			0.05	0.   	5000 		10		1
+#generate_sphere_d												4 		0.7		10		100000	 5-50:5		Y			0.05	0.   	5000 		10		1
+#generate_sphere_d												5 		0.7		10		100000	10-50:5		Y			0.05	0.   	5000 		10		1
+#generate_sphere_d												6 		0.7		10		100000	10-50:5		Y			0.05	0.   	5000 		10		1
+#generate_sphere_d												7 		0.7		10		100000	10-50:5		Y			0.05	0.   	5000 		10		1
+#generate_sphere_d												9 		0.7		10		100000	15-50:5		Y			0.05	0.   	5000 		10		1
+#generate_sphere_d												11 		0.7		10		100000	15-50:5		Y			0.05	0.   	5000 		10		1
+#generate_sphere_d												14 		0.7		10		100000	15-50:5		Y			0.05	0.   	5000 		10		1
+generate_plane													2 		-		-		100000	 5-50:5		Y			0.05	0.   	5000 		10		1
+generate_plane													3 		-		-		100000	 5-50:5		Y			0.05	0.   	5000 		10		1
+generate_plane													4 		-		-		100000	 5-50:5		Y			0.05	0.   	5000 		10		1
+generate_plane													5 		-		-		100000	10-50:5		Y			0.05	0.   	5000 		10		1
+generate_plane													6 		-		-		100000	10-50:5		Y			0.05	0.   	5000 		10		1
+generate_plane													7 		-		-		100000	10-50:5		Y			0.05	0.   	5000 		10		1
+generate_plane													9 		-		-		100000	15-50:5		Y			0.05	0.   	5000 		10		1
+generate_plane													11 		-		-		100000	15-50:5		Y			0.05	0.   	5000 		10		1
+generate_plane													14 		-		-		100000	15-50:5		Y			0.05	0.   	5000 		10		1

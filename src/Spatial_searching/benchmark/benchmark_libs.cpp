@@ -30,13 +30,15 @@ can be processed in Excel, for example.
 //#define PICK_QUERIES_OUT_OF_EXISTING_POINTS // default
 
 #define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH
+#define GUDHI_DO_NOT_TEST_CGAL_KD_TREE
+//#define GUDHI_DO_NOT_TEST_CGAL_KD_TREE_WITH_POINT_AND_INDEX
 #undef GUDHI_SBL_IS_AVAILABLE
 #undef GUDHI_NMSLIB_IS_AVAILABLE
 #undef GUDHI_NANOFLANN_IS_AVAILABLE
 #undef GUDHI_ANN_IS_AVAILABLE
 //#undef GUDHI_FLANN_IS_AVAILABLE
-  #define GUDHI_FLANN_TEST_BRUTEFORCE
-  //#define GUDHI_FLANN_TEST_SINGLE_KDTREE
+  //#define GUDHI_FLANN_TEST_BRUTEFORCE
+  #define GUDHI_FLANN_TEST_SINGLE_KDTREE
   //#define GUDHI_FLANN_TEST_OTHER_VARIANTS
 #undef GUDHI_COVERTREE_DNCRANE_IS_AVAILABLE  // DNCrane and Manzil cannot be used at the same time
 #undef GUDHI_COVERTREE_MANZIL_IS_AVAILABLE
@@ -52,7 +54,17 @@ const int ONLY_THE_FIRST_N_POINTS = 10000000; // 0 = no limit
 
 #include "utilities.h"
 
-#include "functor_GUDHI_Kd_tree_search.h"
+#ifndef GUDHI_DO_NOT_TEST_KD_TREE_SEARCH
+# include "functor_GUDHI_Kd_tree_search.h"
+#endif
+
+#ifndef GUDHI_DO_NOT_TEST_CGAL_KD_TREE
+# include "functor_CGAL_Kd_tree.h"
+#endif
+
+#ifndef GUDHI_DO_NOT_TEST_CGAL_KD_TREE_WITH_POINT_AND_INDEX
+# include "functor_CGAL_Kd_tree_with_point_and_index.h"
+#endif
 
 #ifdef GUDHI_SBL_IS_AVAILABLE
 #include "functor_SBL_Proximity_Forest.h"
@@ -327,6 +339,30 @@ void run_tests(
 # endif
   perfs.push_back(test__ANN_queries<GUDHI_Kd_tree_search>(
     points, queries, k, epsilon, "GUDHI Kd_tree_search", "", p_ground_truth));
+#endif
+
+  //---------------------------------------------------------------------------
+  // CGAL (with points stored in the tree)
+  //---------------------------------------------------------------------------
+
+#ifndef GUDHI_DO_NOT_TEST_CGAL_KD_TREE
+# ifdef LOOP_ON_VARIOUS_PRECISIONS
+  for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
+# endif
+    perfs.push_back(test__ANN_queries<CGAL_Kd_tree>(
+      points, queries, k, epsilon, "CGAL_Kd_tree", "", p_ground_truth));
+#endif
+
+  //---------------------------------------------------------------------------
+  // CGAL (with points AND indices stored in the tree)
+  //---------------------------------------------------------------------------
+
+#ifndef GUDHI_DO_NOT_TEST_CGAL_KD_TREE_WITH_POINT_AND_INDEX
+# ifdef LOOP_ON_VARIOUS_PRECISIONS
+  for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
+# endif
+    perfs.push_back(test__ANN_queries<CGAL_Kd_tree_with_point_and_index>(
+      points, queries, k, epsilon, "CGAL_Kd_tree_with_point_and_index", "", p_ground_truth));
 #endif
 
   //---------------------------------------------------------------------------
@@ -626,6 +662,7 @@ int main() {
         std::size_t num_points;
         std::string ambient_dim_interval;
         std::string random_rotation;
+        double ambient_noise;
         double epsilon;
         int num_queries;
         int k;
@@ -637,6 +674,7 @@ int main() {
         sstr >> num_points;
         sstr >> ambient_dim_interval;
         sstr >> random_rotation;
+        sstr >> ambient_noise;
         sstr >> epsilon;
         sstr >> num_queries;
         sstr >> k;
@@ -666,6 +704,7 @@ int main() {
           SET_PERFORMANCE_DATA("Param3", param3);
           SET_PERFORMANCE_DATA("Ambient_dim", ambient_dim);
           SET_PERFORMANCE_DATA("Random_rotation", random_rotation);
+          SET_PERFORMANCE_DATA("Ambient_noise", ambient_noise);
 
 #ifdef GUDHI_USE_TBB
           SET_PERFORMANCE_DATA(
@@ -773,7 +812,8 @@ int main() {
                 << "****************************************\n\n";
 #endif
 
-            points = Gudhi::embed_points_in_higher_dim<Kernel>(points, ambient_dim, random_rotation == "Y");
+            points = Gudhi::embed_points_in_higher_dim<Kernel>(
+              points, ambient_dim, random_rotation == "Y", ambient_noise);
 
 #ifdef EXPORT_POINTCLOUD
             std::ofstream export_file;
