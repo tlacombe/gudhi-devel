@@ -54,6 +54,16 @@ bool is_critical(typename SimplexTree::Simplex_handle sh,
   return true;
 }
 
+/* Returns true if and only if the simplex is critical.
+ */
+template <class SimplexTree>
+bool is_maximal(typename SimplexTree::Simplex_handle sh,
+                SimplexTree& st)
+{
+  assert(st.num_simplices() != 0);
+  return st.cofaces_simplex_range(sh,1).empty();
+}
+
 /* Returns the number of critical simplices.
  */
 template <class SimplexTree>
@@ -89,7 +99,7 @@ int num_crit_simplices2(SimplexTree& st)
     else {
       st_temp->set_dimension(st.dimension());
       for (auto sh_temp: st_temp->complex_simplex_range())
-        if ((!st_temp->has_children(sh_temp)) && is_critical(sh_temp, *st_temp)) {
+        if ((!st_temp->has_children(sh_temp)) && is_maximal(sh_temp, *st_temp)) {
           count++;
           ofs << st_temp->dimension(sh_temp);
           for (auto v: st_temp->simplex_vertex_range(sh_temp))
@@ -104,7 +114,7 @@ int num_crit_simplices2(SimplexTree& st)
   }
   st_temp->set_dimension(st.dimension());
   for (auto sh_temp: st_temp->complex_simplex_range())
-    if ((!st_temp->has_children(sh_temp)) && is_critical(sh_temp, *st_temp)) {
+    if ((!st_temp->has_children(sh_temp)) && is_maximal(sh_temp, *st_temp)) {
       // for (auto v: st_temp->simplex_vertex_range(sh_temp))
       //   std::cout << v << " ";
       // std::cout << "\n";
@@ -170,7 +180,7 @@ int main(int argc, char * const argv[]) {
   // int crit1_st1 = num_crit_simplices(simplex_tree);
   // end = clock();
   // std::cout << "Number of critical simplices: " << crit1_st1 << ". Time = " << static_cast<double>(end - start) / CLOCKS_PER_SEC << "s.\n";
-  // start = clock();
+  start = clock();
   file_name = "num_crit1.out";
   int crit2_st1 = num_crit_simplices2(simplex_tree);
   end = clock();
@@ -189,10 +199,10 @@ int main(int argc, char * const argv[]) {
   end = clock();
   std::cout << "Witness complex 2 (cofaces and witlists) took "
       << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
-  file_name = "num_crit2.out";
-  std::cout << "Number of critical simplices: " << num_crit_simplices2(simplex_tree2) << "\n";
-  std::cout << "Number of simplices is: " << simplex_tree2.num_simplices() << "\n";
-  assert(simplex_tree == simplex_tree2);
+  // file_name = "num_crit2.out";
+  // std::cout << "Number of critical simplices: " << num_crit_simplices2(simplex_tree2) << "\n";
+  // std::cout << "Number of simplices is: " << simplex_tree2.num_simplices() << "\n";
+  // assert(simplex_tree == simplex_tree2);
 
   // // Compute witness complex - 3
   start = clock();
@@ -206,18 +216,18 @@ int main(int argc, char * const argv[]) {
   std::cout << "Witness complex 3 (cofaces, no witlists) took "
       << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
   file_name = "num_crit3.out";
-  std::cout << "Number of critical simplices: " << num_crit_simplices2(simplex_tree3) << "\n";
-  std::cout << "Number of simplices is: " << simplex_tree3.num_simplices() << "\n";
-  assert(simplex_tree == simplex_tree3);
+  // std::cout << "Number of critical simplices: " << num_crit_simplices2(simplex_tree3) << "\n";
+  // std::cout << "Number of simplices is: " << simplex_tree3.num_simplices() << "\n";
+  // assert(simplex_tree == simplex_tree3);
   
-  // // Compute witness complex - 4
-  // start = clock();
-  // Witness_complex_wmap witness_complex_wmap(nearest_landmark_table);
+  // Compute witness complex - 4
+  start = clock();
+  Witness_complex_wmap witness_complex_wmap(nearest_landmark_table);
 
-  // witness_complex_wmap.create_complex(simplex_tree4, alpha2, lim_dim);
-  // end = clock();
-  // std::cout << "Witness complex 4 (no cofaces, but witlists) took "
-  //     << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
+  witness_complex_wmap.create_complex(simplex_tree4, alpha2, lim_dim);
+  end = clock();
+  std::cout << "Witness complex 4 (no cofaces, but witlists) took "
+      << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
   // std::cout << "Number of critical simplices: " << num_crit_simplices2(simplex_tree4) << "\n";
   // std::cout << "Number of simplices is: " << simplex_tree4.num_simplices() << "\n";
   // assert(simplex_tree == simplex_tree4);
