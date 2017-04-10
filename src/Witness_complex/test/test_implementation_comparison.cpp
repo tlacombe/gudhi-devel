@@ -69,17 +69,17 @@ bool is_maximal(typename SimplexTree::Simplex_handle sh,
 template <class SimplexTree>
 int num_crit_simplices(SimplexTree& st)
 {
-  std::ofstream ofs("num_crit.out", std::ofstream::out);
+  // std::ofstream ofs("num_crit.out", std::ofstream::out);
   int count = 0;
   for (auto sh: st.complex_simplex_range())
     if (is_critical(sh, st)) {
       count++;
-      ofs << st.dimension(sh);
-      for (auto v: st.simplex_vertex_range(sh))
-        ofs << " " << v;
-      ofs << " " << st.filtration(sh) << "\n";
+      // ofs << st.dimension(sh);
+      // for (auto v: st.simplex_vertex_range(sh))
+      //   ofs << " " << v;
+      // ofs << " " << st.filtration(sh) << "\n";
     }
-  ofs.close();
+  // ofs.close();
   return count;
 }
 
@@ -92,7 +92,7 @@ int num_crit_simplices2(SimplexTree& st)
   double curr_filtr = 0;
   st.initialize_filtration();
   SimplexTree* st_temp = new SimplexTree;
-  std::ofstream ofs(file_name, std::ofstream::out);
+  // std::ofstream ofs(file_name, std::ofstream::out);
   for (auto sh: st.filtration_simplex_range()) {
     if (curr_filtr == st.filtration(sh))
       st_temp->insert_simplex(st.simplex_vertex_range(sh));
@@ -101,10 +101,10 @@ int num_crit_simplices2(SimplexTree& st)
       for (auto sh_temp: st_temp->complex_simplex_range())
         if ((!st_temp->has_children(sh_temp)) && is_maximal(sh_temp, *st_temp)) {
           count++;
-          ofs << st_temp->dimension(sh_temp);
-          for (auto v: st_temp->simplex_vertex_range(sh_temp))
-            ofs << " " << v;
-          ofs << " " << curr_filtr << "\n";
+          // ofs << st_temp->dimension(sh_temp);
+          // for (auto v: st_temp->simplex_vertex_range(sh_temp))
+          //   ofs << " " << v;
+          // ofs << " " << curr_filtr << "\n";
         }
       curr_filtr = st.filtration(sh);
       delete st_temp;
@@ -119,13 +119,13 @@ int num_crit_simplices2(SimplexTree& st)
       //   std::cout << v << " ";
       // std::cout << "\n";
       count++;
-      ofs << st_temp->dimension(sh_temp);
-      for (auto v: st_temp->simplex_vertex_range(sh_temp))
-        ofs << " " << v;
-      ofs << " " << curr_filtr << "\n";
+      // ofs << st_temp->dimension(sh_temp);
+      // for (auto v: st_temp->simplex_vertex_range(sh_temp))
+      //   ofs << " " << v;
+      // ofs << " " << curr_filtr << "\n";
     }
   delete st_temp;
-  ofs.close();
+  // ofs.close();
   return count;
 }
 
@@ -140,7 +140,8 @@ int main(int argc, char * const argv[]) {
   int nbL = atoi(argv[2]), lim_dim = atoi(argv[4]);
   double alpha2 = atof(argv[3]);
   clock_t start, end;
-  Gudhi::Simplex_tree<> simplex_tree, simplex_tree2, simplex_tree3, simplex_tree4;
+  double time1, time2;
+  Gudhi::Simplex_tree<>* simplex_tree = new Gudhi::Simplex_tree<>;//, simplex_tree2, simplex_tree3, simplex_tree4;
   Gudhi::SAL sal1, sal2, sal3, sal4;
   
   // Read the point file
@@ -152,8 +153,8 @@ int main(int argc, char * const argv[]) {
     }
   witnesses = Point_range(off_reader.get_point_cloud());
   
-  std::cout << "Successfully read " << witnesses.size() << " points.\n";
-  std::cout << "Ambient dimension is " << witnesses[0].dimension() << ".\n";
+  // std::cout << "Successfully read " << witnesses.size() << " points.\n";
+  // std::cout << "Ambient dimension is " << witnesses[0].dimension() << ".\n";
 
   // Choose landmarks
   Gudhi::subsampling::choose_n_farthest_points(Kernel(), witnesses, nbL, 0, std::back_inserter(landmarks));
@@ -169,69 +170,78 @@ int main(int argc, char * const argv[]) {
   start = clock();
   Witness_complex witness_complex(nearest_landmark_table);
 
-  witness_complex.create_complex(simplex_tree, alpha2, lim_dim);
+  witness_complex.create_complex(*simplex_tree, alpha2, lim_dim);
   end = clock();
-  std::ofstream ofs("st1.out", std::ofstream::out);
-  ofs << simplex_tree << "\n";
-  ofs.close();
-  std::cout << "Witness complex 1 (no cofaces, no witlists) took "
-      << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
+  // std::ofstream ofs("st1.out", std::ofstream::out);
+  // ofs << *simplex_tree << "\n";
+  // ofs.close();
+  // std::cout << "Witness complex 1 (no cofaces, no witlists) took "
+  //     << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
+  time1 = static_cast<double>(end - start) / CLOCKS_PER_SEC;
   // start = clock();
-  // int crit1_st1 = num_crit_simplices(simplex_tree);
+  // int crit1_st1 = num_crit_simplices(*simplex_tree);
   // end = clock();
   // std::cout << "Number of critical simplices: " << crit1_st1 << ". Time = " << static_cast<double>(end - start) / CLOCKS_PER_SEC << "s.\n";
-  start = clock();
-  file_name = "num_crit1.out";
-  int crit2_st1 = num_crit_simplices2(simplex_tree);
-  end = clock();
-  std::cout << "Number of critical simplices: " << crit2_st1 << ". Time = " << static_cast<double>(end - start) / CLOCKS_PER_SEC << "s.\n";
+  // start = clock();
+  // file_name = "num_crit1.out";
+  // int crit2_st1 = num_crit_simplices2(*simplex_tree);
+  // end = clock();
+  // std::cout << "Number of critical simplices: " << crit2_st1 << ". Time = " << static_cast<double>(end - start) / CLOCKS_PER_SEC << "s.\n";
 
   
-  std::cout << "Number of simplices is: " << simplex_tree.num_simplices() << "\n";
+  // std::cout << "Number of simplices is: " << simplex_tree->num_simplices() << "\n";
   
   // std::cout << simplex_tree << std::endl;
   
-  // Compute witness complex - 2
-  start = clock();
-  Witness_complex_new witness_complex_new(nearest_landmark_table);
+  // // Compute witness complex - 2
+  // delete simplex_tree;
+  // simplex_tree = new Gudhi::Simplex_tree<>;
+  // start = clock();
+  // Witness_complex_new witness_complex_new(nearest_landmark_table);
 
-  witness_complex_new.create_complex(simplex_tree2, alpha2, lim_dim);
-  end = clock();
-  std::cout << "Witness complex 2 (cofaces and witlists) took "
-      << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
-  // file_name = "num_crit2.out";
-  // std::cout << "Number of critical simplices: " << num_crit_simplices2(simplex_tree2) << "\n";
-  // std::cout << "Number of simplices is: " << simplex_tree2.num_simplices() << "\n";
-  // assert(simplex_tree == simplex_tree2);
+  // witness_complex_new.create_complex(*simplex_tree, alpha2, lim_dim);
+  // end = clock();
+  // std::cout << "Witness complex 2 (cofaces and witlists) took "
+  //     << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
+  // // file_name = "num_crit2.out";
+  // // std::cout << "Number of critical simplices: " << num_crit_simplices2(simplex_tree2) << "\n";
+  // // std::cout << "Number of simplices is: " << simplex_tree2.num_simplices() << "\n";
+  // // assert(simplex_tree == simplex_tree2);
 
   // // Compute witness complex - 3
-  start = clock();
-  Witness_complex_cof witness_complex_cof(nearest_landmark_table);
-  ofs = std::ofstream("st2.out", std::ofstream::out);
-  ofs << simplex_tree3 << "\n";
-  ofs.close();
+  // delete simplex_tree;
+  // simplex_tree = new Gudhi::Simplex_tree<>;
+  // start = clock();
+  // Witness_complex_cof witness_complex_cof(nearest_landmark_table);
+  // // ofs = std::ofstream("st2.out", std::ofstream::out);
+  // // ofs << simplex_tree3 << "\n";
+  // // ofs.close();
   
-  witness_complex_cof.create_complex(simplex_tree3, alpha2, lim_dim);
-  end = clock();
-  std::cout << "Witness complex 3 (cofaces, no witlists) took "
-      << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
-  file_name = "num_crit3.out";
-  // std::cout << "Number of critical simplices: " << num_crit_simplices2(simplex_tree3) << "\n";
-  // std::cout << "Number of simplices is: " << simplex_tree3.num_simplices() << "\n";
-  // assert(simplex_tree == simplex_tree3);
+  // witness_complex_cof.create_complex(*simplex_tree, alpha2, lim_dim);
+  // end = clock();
+  // std::cout << "Witness complex 3 (cofaces, no witlists) took "
+  //     << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
+  // file_name = "num_crit3.out";
+  // // std::cout << "Number of critical simplices: " << num_crit_simplices2(simplex_tree3) << "\n";
+  // // std::cout << "Number of simplices is: " << simplex_tree3.num_simplices() << "\n";
+  // // assert(simplex_tree == simplex_tree3);
   
   // Compute witness complex - 4
+  delete simplex_tree;
+  simplex_tree = new Gudhi::Simplex_tree<>;
   start = clock();
   Witness_complex_wmap witness_complex_wmap(nearest_landmark_table);
 
-  witness_complex_wmap.create_complex(simplex_tree4, alpha2, lim_dim);
+  witness_complex_wmap.create_complex(*simplex_tree, alpha2, lim_dim);
   end = clock();
-  std::cout << "Witness complex 4 (no cofaces, but witlists) took "
-      << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
+  // std::cout << "Witness complex 4 (no cofaces, but witlists) took "
+  //     << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
+  time2 = static_cast<double>(end - start) / CLOCKS_PER_SEC;
   // std::cout << "Number of critical simplices: " << num_crit_simplices2(simplex_tree4) << "\n";
   // std::cout << "Number of simplices is: " << simplex_tree4.num_simplices() << "\n";
   // assert(simplex_tree == simplex_tree4);
 
+  delete simplex_tree;
   // // Compute witness complex - SAL 1
   // start = clock();
   // // Witness_complex witness_complex(nearest_landmark_table);
@@ -263,6 +273,6 @@ int main(int argc, char * const argv[]) {
   //   st_temp4.insert_simplex_and_subfaces(*sh);
   // }
   // std::cout << "Number of simplices is: " << st_temp4.num_simplices() << "\n";  
-
+  std::cout << alpha2 << " " << nbL/(double)witnesses.size() << " " << time2/time1 << "\n";
   
 }

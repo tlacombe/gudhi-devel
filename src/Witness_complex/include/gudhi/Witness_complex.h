@@ -135,7 +135,7 @@ class Witness_complex {
         else
           aw_it++;
       }
-      std::cout << k << "-dim active witness list size = " << active_witnesses.size() << "\n";
+      // std::cout << k << "-dim active witness list size = " << active_witnesses.size() << "\n";
       k++;
     }
     complex.set_dimension(k-1);

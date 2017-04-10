@@ -259,7 +259,7 @@ private:
       }
       // std::cout << aw_it->counter() << " "; 
     }
-    std::cout << "0-dim active witness list size = " << aw_list.size() << "\n";
+    // std::cout << "0-dim active witness list size = " << aw_list.size() << "\n";
     // std::cout << "\n\n";
   }
 
@@ -329,7 +329,7 @@ private:
     }
     // for (auto aw: aw_list)
     //   std::cout << aw.counter() << " "; 
-    std::cout << "1-dim active witness list size = " << aw_list.size() << "\n";
+    // std::cout << "1-dim active witness list size = " << aw_list.size() << "\n";
   }
 
   /* \brief Fills the map "k-simplex -> witnesses for edges"
@@ -402,7 +402,7 @@ private:
         aw_it++;
     }
     // std::cout << "\n";
-    std::cout << k << "-dim active witness list size = " << aw_list.size() << "\n";
+    // std::cout << k << "-dim active witness list size = " << aw_list.size() << "\n";
     // remove_non_witnessed_simplices(complex, curr_dim_map);
   }
   
