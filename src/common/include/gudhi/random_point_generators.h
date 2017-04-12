@@ -163,7 +163,11 @@ rotate_points(std::vector<typename Kernel::Point_d> const& points, Eigen::Matrix
 // Rotates all the points of a vector<Point> using the given rotation matrix
 template <typename Kernel>
 std::vector<typename Kernel::Point_d>
-embed_points_in_higher_dim(std::vector<typename Kernel::Point_d> const& points, int new_ambient_dim, bool ramdomly_rotate_points_afterwards = false)
+embed_points_in_higher_dim(
+  std::vector<typename Kernel::Point_d> const& points, 
+  int new_ambient_dim, 
+  bool ramdomly_rotate_points_afterwards = false,
+  typename Kernel::FT ambient_noise = FT(0))
 {
   typedef typename Kernel::FT FT;
   typedef typename Kernel::Point_d Point;
@@ -183,6 +187,8 @@ embed_points_in_higher_dim(std::vector<typename Kernel::Point_d> const& points, 
   std::vector<Point> ret;
   ret.reserve(points.size());
 
+  CGAL::Random rng = CGAL::get_default_random();
+
   for (auto const& p : points)
   {
     Eigen::VectorXd p2(new_ambient_dim);
@@ -194,6 +200,10 @@ embed_points_in_higher_dim(std::vector<typename Kernel::Point_d> const& points, 
 
     if (ramdomly_rotate_points_afterwards)
       p2 = rotation_matrix*p2;
+
+    if (ambient_noise != FT(0))
+      for (i = 0; i < new_ambient_dim; ++i)
+        p2(i) = p2(i) + rng.get_double(-ambient_noise, ambient_noise);
 
     ret.push_back(Point(p2.data(), p2.data() + new_ambient_dim));
   }
@@ -208,7 +218,7 @@ std::vector<typename Kernel::Point_d> generate_points_on_plane(std::size_t num_p
   typedef typename Kernel::Point_d Point;
   typedef typename Kernel::FT FT;
   Kernel k;
-  CGAL::Random rng;
+  CGAL::Random rng = CGAL::get_default_random();
   std::vector<Point> points;
   points.reserve(num_points);
   for (std::size_t i = 0; i < num_points;) {
@@ -230,7 +240,7 @@ std::vector<typename Kernel::Point_d> generate_points_on_moment_curve(std::size_
   typedef typename Kernel::Point_d Point;
   typedef typename Kernel::FT FT;
   Kernel k;
-  CGAL::Random rng;
+  CGAL::Random rng = CGAL::get_default_random();
   std::vector<Point> points;
   points.reserve(num_points);
   for (std::size_t i = 0; i < num_points;) {
@@ -255,7 +265,7 @@ std::vector<typename Kernel::Point_d> generate_points_on_torus_3D(std::size_t nu
   typedef typename Kernel::Point_d Point;
   typedef typename Kernel::FT FT;
   Kernel k;
-  CGAL::Random rng;
+  CGAL::Random rng = CGAL::get_default_random();
 
   // if uniform
   std::size_t num_lines = (std::size_t)sqrt(num_points);
@@ -289,7 +299,7 @@ static void generate_uniform_points_on_torus_d(const Kernel &k, int dim, std::si
                                                OutputIterator out,
                                                double radius_noise_percentage = 0.,
                                                std::vector<typename Kernel::FT> current_point = std::vector<typename Kernel::FT>()) {
-  CGAL::Random rng;
+  CGAL::Random rng = CGAL::get_default_random();
   if (current_point.size() == 2 * dim) {
     *out++ = k.construct_point_d_object()(
                                           static_cast<int> (current_point.size()),
@@ -318,7 +328,7 @@ std::vector<typename Kernel::Point_d> generate_points_on_torus_d(std::size_t num
   typedef typename Kernel::Point_d Point;
   typedef typename Kernel::FT FT;
   Kernel k;
-  CGAL::Random rng;
+  CGAL::Random rng = CGAL::get_default_random();
 
   std::vector<Point> points;
   points.reserve(num_points);
@@ -355,7 +365,14 @@ std::vector<typename Kernel::Point_d> generate_points_on_sphere_d(std::size_t nu
                                                                   double radius_noise_percentage = 0.) {
   typedef typename Kernel::Point_d Point;
   Kernel k;
-  CGAL::Random rng;
+  typename Kernel::Point_to_vector_d k_pt_to_vec =
+      k.point_to_vector_d_object();
+  typename Kernel::Vector_to_point_d k_vec_to_pt =
+      k.vector_to_point_d_object();
+  typename Kernel::Scaled_vector_d k_scaled_vec =
+      k.scaled_vector_d_object();
+
+  CGAL::Random rng = CGAL::get_default_random();
   CGAL::Random_points_on_sphere_d<Point> generator(dim, radius);
   std::vector<Point> points;
   points.reserve(num_points);
@@ -366,12 +383,6 @@ std::vector<typename Kernel::Point_d> generate_points_on_sphere_d(std::size_t nu
                                                  (100. - radius_noise_percentage) / 100.,
                                                  (100. + radius_noise_percentage) / 100.);
 
-      typename Kernel::Point_to_vector_d k_pt_to_vec =
-          k.point_to_vector_d_object();
-      typename Kernel::Vector_to_point_d k_vec_to_pt =
-          k.vector_to_point_d_object();
-      typename Kernel::Scaled_vector_d k_scaled_vec =
-          k.scaled_vector_d_object();
       p = k_vec_to_pt(k_scaled_vec(k_pt_to_vec(p), radius_noise_ratio));
     }
     points.push_back(p);
@@ -384,7 +395,7 @@ template <typename Kernel>
 std::vector<typename Kernel::Point_d> generate_points_in_cube_d(std::size_t num_points, int dim, double side_length) {
   typedef typename Kernel::Point_d Point;
   Kernel k;
-  CGAL::Random rng;
+  CGAL::Random rng = CGAL::get_default_random();
   CGAL::Random_points_in_cube_d<Point> generator(dim, side_length/2);
   std::vector<Point> points;
   points.reserve(num_points);
@@ -403,7 +414,14 @@ std::vector<typename Kernel::Point_d> generate_points_on_two_spheres_d(std::size
   typedef typename Kernel::Point_d Point;
   typedef typename Kernel::Vector_d Vector;
   Kernel k;
-  CGAL::Random rng;
+  typename Kernel::Point_to_vector_d k_pt_to_vec =
+    k.point_to_vector_d_object();
+  typename Kernel::Vector_to_point_d k_vec_to_pt =
+    k.vector_to_point_d_object();
+  typename Kernel::Scaled_vector_d k_scaled_vec =
+    k.scaled_vector_d_object();
+
+  CGAL::Random rng = CGAL::get_default_random();
   CGAL::Random_points_on_sphere_d<Point> generator(dim, radius);
   std::vector<Point> points;
   points.reserve(num_points);
@@ -418,13 +436,6 @@ std::vector<typename Kernel::Point_d> generate_points_on_two_spheres_d(std::size
       double radius_noise_ratio = rng.get_double(
                                                  (100. - radius_noise_percentage) / 100.,
                                                  (100. + radius_noise_percentage) / 100.);
-
-      typename Kernel::Point_to_vector_d k_pt_to_vec =
-          k.point_to_vector_d_object();
-      typename Kernel::Vector_to_point_d k_vec_to_pt =
-          k.vector_to_point_d_object();
-      typename Kernel::Scaled_vector_d k_scaled_vec =
-          k.scaled_vector_d_object();
       p = k_vec_to_pt(k_scaled_vec(k_pt_to_vec(p), radius_noise_ratio));
     }
 
@@ -446,7 +457,7 @@ std::vector<typename Kernel::Point_d> generate_points_on_3sphere_and_circle(std:
   typedef typename Kernel::FT FT;
   typedef typename Kernel::Point_d Point;
   Kernel k;
-  CGAL::Random rng;
+  CGAL::Random rng = CGAL::get_default_random();
   CGAL::Random_points_on_sphere_d<Point> generator(3, sphere_radius);
   std::vector<Point> points;
   points.reserve(num_points);
@@ -479,7 +490,7 @@ std::vector<typename Kernel::Point_d> generate_points_on_klein_bottle_3D(std::si
   typedef typename Kernel::Point_d Point;
   typedef typename Kernel::FT FT;
   Kernel k;
-  CGAL::Random rng;
+  CGAL::Random rng = CGAL::get_default_random();
 
   // if uniform
   std::size_t num_lines = (std::size_t)sqrt(num_points);
@@ -515,7 +526,7 @@ std::vector<typename Kernel::Point_d> generate_points_on_klein_bottle_4D(std::si
   typedef typename Kernel::Point_d Point;
   typedef typename Kernel::FT FT;
   Kernel k;
-  CGAL::Random rng;
+  CGAL::Random rng = CGAL::get_default_random();
 
   // if uniform
   std::size_t num_lines = (std::size_t)sqrt(num_points);
@@ -554,7 +565,7 @@ generate_points_on_klein_bottle_variant_5D(
   typedef typename Kernel::Point_d Point;
   typedef typename Kernel::FT FT;
   Kernel k;
-  CGAL::Random rng;
+  CGAL::Random rng = CGAL::get_default_random();
 
   // if uniform
   std::size_t num_lines = (std::size_t)sqrt(num_points);
