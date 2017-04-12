@@ -132,12 +132,12 @@ int num_crit_simplices2(SimplexTree& st)
 int main(int argc, char * const argv[]) {
   if (argc != 5) {
     std::cerr << "Usage: " << argv[0]
-        << " path_to_point_file number_of_landmarks max_squared_alpha limit_dimension\n";
+        << " path_to_point_file path_to_landmark_file max_squared_alpha limit_dimension\n";
     return 0;
   }
   
-  std::string file_name = argv[1];
-  int nbL = atoi(argv[2]), lim_dim = atoi(argv[4]);
+  std::string file_name = argv[1], landmark_file = argv[2];
+  int lim_dim = atoi(argv[4]);
   double alpha2 = atof(argv[3]);
   clock_t start, end;
   double time1, time2;
@@ -152,12 +152,20 @@ int main(int argc, char * const argv[]) {
       exit(-1);  // ----- >>
     }
   witnesses = Point_range(off_reader.get_point_cloud());
+
+  Gudhi::Points_off_reader<Point_d> off_reader2(landmark_file);
+  if (!off_reader2.is_valid()) {
+      std::cerr << "Witness complex - Unable to read file " << landmark_file << "\n";
+      exit(-1);  // ----- >>
+    }
+  landmarks = Point_range(off_reader2.get_point_cloud());
+  int nbL = landmarks.size();
   
   // std::cout << "Successfully read " << witnesses.size() << " points.\n";
   // std::cout << "Ambient dimension is " << witnesses[0].dimension() << ".\n";
 
   // Choose landmarks
-  Gudhi::subsampling::choose_n_farthest_points(Kernel(), witnesses, nbL, 0, std::back_inserter(landmarks));
+  // Gudhi::subsampling::choose_n_farthest_points(Kernel(), witnesses, nbL, 0, std::back_inserter(landmarks));
 
   // Compute nearest neighbor table
   Kd_tree landmark_tree(landmarks);
@@ -175,8 +183,8 @@ int main(int argc, char * const argv[]) {
   // std::ofstream ofs("st1.out", std::ofstream::out);
   // ofs << *simplex_tree << "\n";
   // ofs.close();
-  // std::cout << "Witness complex 1 (no cofaces, no witlists) took "
-  //     << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
+  std::cerr << "Witness complex 1 (no cofaces, no witlists) took "
+            << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
   time1 = static_cast<double>(end - start) / CLOCKS_PER_SEC;
   // start = clock();
   // int crit1_st1 = num_crit_simplices(*simplex_tree);
@@ -189,7 +197,7 @@ int main(int argc, char * const argv[]) {
   // std::cout << "Number of critical simplices: " << crit2_st1 << ". Time = " << static_cast<double>(end - start) / CLOCKS_PER_SEC << "s.\n";
 
   
-  // std::cout << "Number of simplices is: " << simplex_tree->num_simplices() << "\n";
+  std::cerr << "Number of simplices is: " << simplex_tree->num_simplices() << "\n";
   
   // std::cout << simplex_tree << std::endl;
   
@@ -234,8 +242,8 @@ int main(int argc, char * const argv[]) {
 
   witness_complex_wmap.create_complex(*simplex_tree, alpha2, lim_dim);
   end = clock();
-  // std::cout << "Witness complex 4 (no cofaces, but witlists) took "
-  //     << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
+  std::cerr << "Witness complex 4 (no cofaces, but witlists) took "
+       << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
   time2 = static_cast<double>(end - start) / CLOCKS_PER_SEC;
   // std::cout << "Number of critical simplices: " << num_crit_simplices2(simplex_tree4) << "\n";
   // std::cout << "Number of simplices is: " << simplex_tree4.num_simplices() << "\n";

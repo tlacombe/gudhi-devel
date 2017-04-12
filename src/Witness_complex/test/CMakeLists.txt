@@ -25,3 +25,7 @@ add_test(NAME simple_witness_complex
 add_executable ( Witness_complex_test_implementation_comparison test_implementation_comparison.cpp )
 target_link_libraries(Witness_complex_test_implementation_comparison ${Boost_SYSTEM_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
 target_link_libraries(Witness_complex_test_implementation_comparison ${TBB_LIBRARIES})
+
+add_executable ( generate_landmarks generate_landmarks.cpp )
+target_link_libraries(generate_landmarks ${Boost_SYSTEM_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+target_link_libraries(generate_landmarks ${TBB_LIBRARIES})
