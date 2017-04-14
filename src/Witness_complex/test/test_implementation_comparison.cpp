@@ -196,8 +196,8 @@ int main(int argc, char * const argv[]) {
   // end = clock();
   // std::cout << "Number of critical simplices: " << crit2_st1 << ". Time = " << static_cast<double>(end - start) / CLOCKS_PER_SEC << "s.\n";
 
-  
-  std::cerr << "Number of simplices is: " << simplex_tree->num_simplices() << "\n";
+  int num_simplices = simplex_tree->num_simplices();
+  std::cerr << "Number of simplices is: " << num_simplices << "\n";
   
   // std::cout << simplex_tree << std::endl;
   
@@ -281,6 +281,7 @@ int main(int argc, char * const argv[]) {
   //   st_temp4.insert_simplex_and_subfaces(*sh);
   // }
   // std::cout << "Number of simplices is: " << st_temp4.num_simplices() << "\n";  
-  std::cout << alpha2 << " " << nbL/(double)witnesses.size() << " " << time2/time1 << "\n";
+  // std::cout << alpha2 << " " << nbL/(double)witnesses.size() << " " << time2/time1 << " " << num_simplices << "\n";
+  std::cout << alpha2 << " " << nbL/(double)witnesses.size() << " " << time2/time1 << " " << num_simplices << "\n";
   
 }
