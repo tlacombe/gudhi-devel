@@ -361,31 +361,41 @@ std::vector<typename Kernel::Point_d> generate_points_on_torus_d(std::size_t num
 }
 
 template <typename Kernel>
-std::vector<typename Kernel::Point_d> generate_points_on_sphere_d(std::size_t num_points, int dim, double radius,
+std::vector<typename Kernel::Point_d> generate_points_on_sphere_d(std::size_t num_points, int intrinsic_dim, 
+                                                                  int ambient_dim, double radius,
                                                                   double radius_noise_percentage = 0.) {
+  typedef CGAL::Epick_d<CGAL::Dynamic_dimension_tag> Kernel_lower_dim;
+  typedef typename Kernel_lower_dim::Point_d Point_lower_dim;
+
+  typedef typename Kernel::FT FT;
   typedef typename Kernel::Point_d Point;
-  Kernel k;
-  typename Kernel::Point_to_vector_d k_pt_to_vec =
+  Kernel_lower_dim k;
+  typename Kernel_lower_dim::Point_to_vector_d k_pt_to_vec =
       k.point_to_vector_d_object();
-  typename Kernel::Vector_to_point_d k_vec_to_pt =
+  typename Kernel_lower_dim::Vector_to_point_d k_vec_to_pt =
       k.vector_to_point_d_object();
-  typename Kernel::Scaled_vector_d k_scaled_vec =
+  typename Kernel_lower_dim::Scaled_vector_d k_scaled_vec =
       k.scaled_vector_d_object();
 
   CGAL::Random rng = CGAL::get_default_random();
-  CGAL::Random_points_on_sphere_d<Point> generator(dim, radius);
+  CGAL::Random_points_on_sphere_d<Point_lower_dim> generator(intrinsic_dim + 1, radius);
   std::vector<Point> points;
   points.reserve(num_points);
   for (std::size_t i = 0; i < num_points;) {
-    Point p = *generator++;
+    // Generate a point in intrinsic dim + 1 space
+    Point_lower_dim p = *generator++;
     if (radius_noise_percentage > 0.) {
-      double radius_noise_ratio = rng.get_double(
-                                                 (100. - radius_noise_percentage) / 100.,
+      double radius_noise_ratio = rng.get_double((100. - radius_noise_percentage) / 100.,
                                                  (100. + radius_noise_percentage) / 100.);
 
       p = k_vec_to_pt(k_scaled_vec(k_pt_to_vec(p), radius_noise_ratio));
     }
-    points.push_back(p);
+    // Embed it in ambient dim
+    std::vector<FT> coords(ambient_dim, FT(0));
+    int i_coord = 0;
+    for (auto it_coord = p.cartesian_begin(); it_coord != p.cartesian_end(); ++it_coord, ++i_coord)
+      coords[i_coord] = *it_coord;
+    points.push_back(Point(ambient_dim, coords.begin(), coords.end()));
     ++i;
   }
   return points;
