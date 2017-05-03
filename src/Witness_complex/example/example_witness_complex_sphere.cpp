@@ -46,11 +46,11 @@ int main(int argc, char * const argv[]) {
   std::vector< std::pair<int, double> > l_time;
 
   // Generate points
-  for (int nbP = 500; nbP < 10000; nbP += 500) {
+  for (int nbP = 50000; nbP <= 50000; nbP += 500) {
     // Construct the Simplex Tree
     Gudhi::Simplex_tree<> simplex_tree;
     Point_Vector point_vector, landmarks;
-    generate_points_sphere(point_vector, nbP, 4);
+    generate_points_sphere(point_vector, nbP, 24);
     std::cout << "Successfully generated " << point_vector.size() << " points.\n";
     std::cout << "Ambient dimension is " << point_vector[0].size() << ".\n";
 
@@ -68,6 +68,15 @@ int main(int argc, char * const argv[]) {
         << time << " s. \n";
     //assert(1 == 0);
     //std::cout << simplex_tree << "\n";
+
+    int dim = 0;
+    for (auto sh: simplex_tree.complex_simplex_range())
+      if (simplex_tree.dimension(sh) > dim)
+        dim = simplex_tree.dimension(sh);
+
+    std::cout << "Dimension of witness complex is: " << dim << "\n";
+
+
     std::cout << "Number of simplices is: " << simplex_tree.num_simplices() << "\n";
     l_time.push_back(std::make_pair(nbP, time));
   }

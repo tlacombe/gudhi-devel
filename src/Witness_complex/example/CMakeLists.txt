@@ -13,6 +13,12 @@ if(CGAL_FOUND)
         target_link_libraries(Witness_complex_bench_rwit ${TBB_LIBRARIES})
       endif()
 
+      add_executable( Witness_complex_demo_collapses ../bench/demo_collapses.cpp )
+      target_link_libraries(Witness_complex_demo_collapses ${Boost_PROGRAM_OPTIONS_LIBRARY})
+      if (TBB_FOUND)
+        target_link_libraries(Witness_complex_demo_collapses ${TBB_LIBRARIES})
+      endif()
+
       add_executable( Witness_complex_bings_house ../bench/bings_house.cpp )
       target_link_libraries(Witness_complex_bings_house ${Boost_PROGRAM_OPTIONS_LIBRARY})
       if (TBB_FOUND)
@@ -26,6 +32,7 @@ if(CGAL_FOUND)
       endif()
 
       add_executable( generate_subsamplings ../bench/generate_subsamplings.cpp )
+      add_executable( generate_bings_house ../bench/generate_bings_house.cpp )
 
       add_executable( Witness_complex_example_off example_witness_complex_off.cpp )
       add_executable( Witness_complex_example_strong_off example_strong_witness_complex_off.cpp )

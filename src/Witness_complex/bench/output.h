@@ -125,7 +125,7 @@ void write_witness_mesh(Point_Vector& W, std::vector<int>& landmarks_ind, STree&
 
   //  int num_triangles = W.size(), num_tetrahedra = 0;
   int num_edges = 0, num_triangles = 0, num_tetrahedra = 0;
-  if (!l_is_v) {
+  if (l_is_v) {
       for (auto sh_it : shr)
         if (st.dimension(sh_it) == 1)
           num_edges++;
