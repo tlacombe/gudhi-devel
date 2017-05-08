@@ -3,10 +3,14 @@
 
 #include <vector>
 #include "Stable_hash_function.h"
-
+#include <CGAL/Kernel_d/Point_d.h>//alphacoplex
 #include <thread>
 #include <iterator>
 #include <utility>
+
+yr9i=tyojokyhjtyl
+typedef Kernel::Point_d Point;
+
 
 namespace Gudhi {
 
