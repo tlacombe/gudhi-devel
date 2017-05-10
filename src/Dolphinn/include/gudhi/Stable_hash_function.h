@@ -1,6 +1,8 @@
 #ifndef HASH_H
 #define HASH_H
 
+//#define T double
+
 #include <vector>
 #include <chrono>
 #include <random>
@@ -21,15 +23,16 @@
 
 namespace Gudhi {
 
-template <class T>
+template <class T, typename Point>
 class Stable_hash_function
 {
+		//typedef typename CGAL::Cartesian_d<T>::Point_d Point;
     // of original pointset
     int dimension; 
-    int r;
-    int b;
-    std::vector<T> a;
-    std::uniform_int_distribution<int> uni_distribution;
+    float r;
+    float b;
+    Point a;
+    std::uniform_real_distribution<float> uni_distribution;
     std::uniform_int_distribution<int> uni_bit_distribution;
     std::default_random_engine generator;
     // key and a vector of the indices of the associated points
@@ -51,17 +54,18 @@ class Stable_hash_function
 	 * @param mean  	 - optional parameter of Normal Distribution. Default is 0.0.
 	 * @param deviation  - optional parameter of Normal Distribution. Default is 1.0.
 	 */
-  	Stable_hash_function(const int D, const int r, const float mean = 0.0, const float deviation = 1.0)
+  	Stable_hash_function(const int D, const float r, const float mean = 0.0, const float deviation = 1.0)
   		: dimension(D), r(r), uni_distribution(0, r), uni_bit_distribution(0, 1),
   		generator(std::chrono::system_clock::now().time_since_epoch().count())
-  	{  		
-  		std::normal_distribution<typename std::conditional<std::is_same<T, int>::value, float, T>::type> distribution(mean, deviation);
+  	{ 
+  		std::normal_distribution<typename std::conditional<std::is_same<T, float>::value, float, T>::type> distribution(mean, deviation);
       for(int i = 0; i < D; ++i)
       {
   			a.push_back(distribution(generator));
       }
-
   		b = uni_distribution(generator);
+  		std::cout << "b=" << b << "\n";
+  		for(auto x:a) std::cout << x <<" ";
   	}
 
     /** \brief Constructor that creates a 
@@ -79,16 +83,15 @@ class Stable_hash_function
      * @param mean         - optional parameter of Normal Distribution. Default is 0.0.
      * @param deviation    - optional parameter of Normal Distribution. Default is 1.0.
     */
-    Stable_hash_function(const int D, const int r, const int thread_info, const float mean = 0.0, const float deviation = 1.0)
+    Stable_hash_function(const int D, const float r, const int thread_info, const float mean = 0.0, const float deviation = 1.0)
       : dimension(D), r(r), uni_distribution(0, r), uni_bit_distribution(0, 1),
       generator(thread_info + std::chrono::system_clock::now().time_since_epoch().count())
     {     
-      std::normal_distribution<typename std::conditional<std::is_same<T, int>::value, float, T>::type> distribution(mean, deviation);
+      std::normal_distribution<typename std::conditional<std::is_same<T, float>::value, float, T>::type> distribution(mean, deviation);
       for(int i = 0; i < D; ++i)
       {
         a.push_back(distribution(generator));
       }
-
       b = uni_distribution(generator);
     }
 
@@ -98,23 +101,26 @@ class Stable_hash_function
 	 * @param N   - number of points
 	 * @param D   - dimension of points
 	 */
-  	void hash(const std::vector<T>& v, const int N, const int D)
+  	void hash(const std::vector<Point>& v, const int N, const int D)
   	{
   		for(int i = 0; i < N; ++i)
   		{
-  			hashtable[hash(std::begin(v) + i * D)].push_back(i);
+  			hashtable[hash(v[i])].push_back(i);
   		}
   	}
 
   	/** \brief Hash a point.
 	 *
-	 * @param v_begin  - iterator at the start of the point to be hashed
+	 * @param v  			 - the point to be hashed
 	 * @return 		     - result of hash function
 	 */
-  	template <typename iterator>
-  	int hash(iterator v_begin)
+  	
+  	int hash(const Point v)
   	{
-  		const T scalar_product = std::inner_product(std::begin(a), std::end(a), v_begin, 0.0);
+  		float scalar_product = 0;
+  		for(size_t i=0;i<v.size();++i){
+				scalar_product += v[i] * a[i];
+			}
   		//std::cout << scalar_product << " " << b << " " << r << std::endl;
   		//std::cout << (scalar_product + b) << " " << (scalar_product + b) / r << " " << (scalar_product + b) / (float)r << std::endl;
   		return floor((scalar_product + b) / r);
@@ -171,10 +177,10 @@ class Stable_hash_function
    * @param mapped_q_begin   	- (to be) mapped query
    * @param k   				- iteration (assign the k-th bit of the query)
    */
-    template <typename iterator, typename bit_iterator>
-    void assign_random_bit_query(iterator q_begin, bit_iterator mapped_q_begin, const int k)
+    template <typename bit_iterator>
+    void assign_random_bit_query(const Point q, bit_iterator mapped_q_begin, const int k)
     {
-      int q_key = hash(q_begin);
+      int q_key = hash(q);
       const auto& q_key_it = hashtable_for_random_bit.find(q_key);
     	if(q_key_it != hashtable_for_random_bit.end())
       {
@@ -197,11 +203,11 @@ class Stable_hash_function
       * @return                    - index of a point, where Eucl(point[i], query_point) <= r
     */
     template <typename iterator>
-    int radius_query(std::string mapped_query, const int radius, const int K, const int MAX_PNTS_TO_SEARCH, iterator pointset, iterator query_point)
+    int radius_query(std::string mapped_query, const float radius, const int K, const int MAX_PNTS_TO_SEARCH, iterator pointset, iterator query_point)
     {
       int points_checked = 0;
       int answer_point_idx = -1;
-      int squared_radius = radius * radius;
+      float squared_radius = radius * radius;
       const auto& q_key_it = hashtable_cube.find(mapped_query);
       // search query's cube vertex, if pointsets' points exist there
       if(q_key_it != hashtable_cube.end())
@@ -233,7 +239,7 @@ class Stable_hash_function
     */
     template <typename iterator>
     bool find_strings_with_fixed_Hamming_dist_for_radius_query(std::string& str, const int i, const int changesLeft, 
-      int& points_checked, const int MAX_PNTS_TO_SEARCH, const int squared_radius, iterator& pointset, 
+      int& points_checked, const int MAX_PNTS_TO_SEARCH, const float squared_radius, iterator& pointset, 
       iterator& query_point, int& answer_point_idx)
     {
       bool stop = false;
@@ -429,10 +435,17 @@ class Stable_hash_function
   	void print_a()
   	{
   		std::cout << "'a' vector of the stable distribution for h, is:\n";
-  		for(unsigned int i = 0; i < a.size(); ++i)
+  		for(unsigned int i = 0; i < dimension; ++i)
   			std::cout << a[i] << " ";
   		std::cout << "\n";
   	}
+  	
+  	void print_string_cast_int(const std::string& str)
+		{
+			for(auto& character: str)
+    		std::cout << (int)character;
+		}
+
 };
 }
 #endif /*HASH_H*/

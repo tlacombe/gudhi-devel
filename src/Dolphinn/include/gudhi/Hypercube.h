@@ -3,31 +3,27 @@
 
 #include <vector>
 #include "Stable_hash_function.h"
-#include <CGAL/Kernel_d/Point_d.h>//alphacoplex
 #include <thread>
 #include <iterator>
 #include <utility>
-
-yr9i=tyojokyhjtyl
-typedef Kernel::Point_d Point;
 
 
 namespace Gudhi {
 
 namespace dolphinn
 {
-  template <typename T, typename bitT>
+  template <typename Point, typename T, typename bitT>
   class Hypercube
   {
-    // The 'K' hash-functions that we are going to use. Only the last one will be used to query,
+  	// The 'K' hash-functions that we are going to use. Only the last one will be used to query,
     // but we need all of them to map the query on arrival, first.
-    std::vector<Stable_hash_function<T>> H;
+    std::vector<Stable_hash_function<T,Point>> H;
     // original dimension of points
     const int D;
     // mapped dimension of points (dimension of the Hypercube)
     const int K;
     // Reference of an 1D vector of points, emulating a 2D, with N rows and D columns per row.
-    const std::vector<T>& pointset;
+    const std::vector<Point>& pointset;
     public:
     /** \brief Constructor that creates in parallel a 
       * vector from a stable distribution.
@@ -43,16 +39,18 @@ namespace dolphinn
       * @param r           - parameter of Stable Distribution. Default value is 4. Should be modified for Nearest 
       *                      Neighbor Search, to adapt to the average distance of the NN, 'r' is the hashing window.
    */
-    Hypercube(const std::vector<T>& pointset, const int N, const int D, const int K, const int threads_no = std::thread::hardware_concurrency(), const int r = 4/*3 or 8*/)
+    Hypercube(const std::vector<Point>& pointset, const int N, const int D, const int K, const int threads_no = 1 /*std::thread::hardware_concurrency()*/, const float r = 4/*3 or 8*/)
       : D(D), K(K), pointset(pointset)
     {
+    	std::cout << "r=" << r << "\n";
       if(threads_no >= K || ((K - 1) % threads_no) != 0)
       {
-        std::cout << "Threads number is greater or equal to K (dimension of Hypercube). Or  (threads_no MOD (K - 1)) != 0. Construction aborted..." << std::endl;
+      	std::cout << threads_no << K << std::endl;
+      	std::cout << "Threads number is greater or equal to K (dimension of Hypercube). Or  (threads_no MOD (K - 1)) != 0. Construction aborted..." << std::endl;
         return;
       }
       std::vector<bitT> mapped_pointset(N * K);
-
+			
       if(threads_no == 1)
       {
         for(int k = 0; k < K - 1; ++k)
@@ -68,13 +66,13 @@ namespace dolphinn
         H[K - 1].hash(pointset, N, D);
         H[K - 1].assign_random_bit_and_fill_hashtable_cube(mapped_pointset, K);
 
-        //H[K - 1].print_hashtable_cube();
+        H[K - 1].print_hashtable_cube();
       }
       else
       {
         std::vector<std::thread> threads;
 
-        std::vector<std::vector<Stable_hash_function<T>>> subvectors(threads_no);
+        std::vector<std::vector<Stable_hash_function<T,Point>>> subvectors(threads_no);
         const int subvector_size = (K - 1)/threads_no;
         //std::cout << "subvector_size = " << subvector_size << std::endl;
         for (int i = 0; i < threads_no; ++i)
@@ -115,7 +113,7 @@ namespace dolphinn
       * @param k_start           - starting index of mapped_pointset to be poppulated in parallel
       * @param K                 - dimension of Hypercube
     */
-    static void populate_vector_of_hash_functions(std::vector<Stable_hash_function<T>>& H, const int n_vec, const int D, const int r, const std::vector<T>& pointset, const int N, std::vector<bitT>& mapped_pointset, const int k_start, const int K)
+    static void populate_vector_of_hash_functions(std::vector<Stable_hash_function<T,Point>>& H, const int n_vec, const int D, const int r, const std::vector<Point>& pointset, const int N, std::vector<bitT>& mapped_pointset, const int k_start, const int K)
     {
       for (int i = 0; i < n_vec; ++i)
       {
@@ -135,7 +133,7 @@ namespace dolphinn
       * @param results_idxs        - indices of Q points, where Eucl(point[i], query[i]) <= r
       * @param threads_no          - number of threads to be created. Default value is 'std::thread::hardware_concurrency()'.
     */
-    void radius_query(const std::vector<T>& query, const int Q, const int radius, const int MAX_PNTS_TO_SEARCH, std::vector<int>& results_idxs, const int threads_no = std::thread::hardware_concurrency())
+    void radius_query(const std::vector<Point>& query, const int Q, const float radius, const int MAX_PNTS_TO_SEARCH, std::vector<int>& results_idxs, const int threads_no = std::thread::hardware_concurrency())
     {
       std::vector<bitT> mapped_query(Q * K);
       if(threads_no == 1)
@@ -144,9 +142,9 @@ namespace dolphinn
         {
           for(int k = 0; k < K; ++k)
           {
-            H[k].assign_random_bit_query((std::begin(query) + q * D), (std::begin(mapped_query) + q * K), k);
+            H[k].assign_random_bit_query((query[q]), (std::begin(mapped_query) + q * K), k);
           }
-          results_idxs[q] = H[K - 1].radius_query(std::string(mapped_query.begin() + q * K, mapped_query.begin() + (q + 1) * K), radius, K, MAX_PNTS_TO_SEARCH, pointset.begin(), query.begin() + q * D);
+          results_idxs[q] = H[K - 1].radius_query(std::string(mapped_query.begin() + q * K, mapped_query.begin() + (q + 1) * K), radius, K, MAX_PNTS_TO_SEARCH, pointset.begin(), query.begin() + q);
         }
       }
       else
@@ -186,15 +184,15 @@ namespace dolphinn
       * @param MAX_PNTS_TO_SEARCH   - threshold when searching
       * @param results_idxs         - The index of the point-answer in i-th posistion, for i-th query, -1 if not found.
     */
-    static void execute_radius_queries(std::vector<Stable_hash_function<T>>& H, const std::vector<T>& query, std::vector<bitT>& mapped_query, const int q_start, const int q_end, const int K, const int D, const std::vector<T>& pointset, const int radius, const int MAX_PNTS_TO_SEARCH, std::vector<int>& results_idxs)
+    static void execute_radius_queries(std::vector<Stable_hash_function<T,Point>>& H, const std::vector<Point>& query, std::vector<bitT>& mapped_query, const int q_start, const int q_end, const int K, const int D, const std::vector<Point>& pointset, const float radius, const int MAX_PNTS_TO_SEARCH, std::vector<int>& results_idxs)
     {
       for(int q = q_start; q < q_end; ++q)
       {
         for(int k = 0; k < K; ++k)
         {
-          H[k].assign_random_bit_query((std::begin(query) + q * D), (std::begin(mapped_query) + q * K), k);
+          H[k].assign_random_bit_query(query[q], (std::begin(mapped_query) + q * K), k);
         }
-        results_idxs[q] = H[K - 1].radius_query(std::string(mapped_query.begin() + q * K, mapped_query.begin() + (q + 1) * K), radius, K, MAX_PNTS_TO_SEARCH, pointset.begin(), query.begin() + q * D);
+        results_idxs[q] = H[K - 1].radius_query(std::string(mapped_query.begin() + q * K, mapped_query.begin() + (q + 1) * K), radius, K, MAX_PNTS_TO_SEARCH, pointset.begin(), query.begin() + q);
       }
     }
 
@@ -206,7 +204,7 @@ namespace dolphinn
       * @param results_idxs_dists  - indices and distances of Q points, where the (Approximate) Nearest Neighbors are stored.
       * @param threads_no          - number of threads to be created. Default value is 'std::thread::hardware_concurrency()'.
     */
-    void m_nearest_neighbors_query(const std::vector<T>& query, const int Q, const int m, const int MAX_PNTS_TO_SEARCH, std::vector<std::vector<std::pair<int, float>>>& results_idxs_dists, const int threads_no = std::thread::hardware_concurrency())
+    void m_nearest_neighbors_query(const std::vector<Point>& query, const int Q, const int m, const int MAX_PNTS_TO_SEARCH, std::vector<std::vector<std::pair<int, float>>>& results_idxs_dists, const int threads_no = std::thread::hardware_concurrency())
     {
       std::vector<bitT> mapped_query(Q * K);
       if(threads_no == 1)
@@ -215,9 +213,9 @@ namespace dolphinn
         {
           for(int k = 0; k < K; ++k)
           {
-            H[k].assign_random_bit_query((std::begin(query) + q * D), (std::begin(mapped_query) + q * K), k);
+            H[k].assign_random_bit_query(query[q], (std::begin(mapped_query) + q * K), k);
           }
-          results_idxs_dists[q] = H[K - 1].m_nearest_neighbors_query(std::string(mapped_query.begin() + q * K, mapped_query.begin() + (q + 1) * K), K, m, MAX_PNTS_TO_SEARCH, pointset.begin(), query.begin() + q * D);
+          results_idxs_dists[q] = H[K - 1].m_nearest_neighbors_query(std::string(mapped_query.begin() + q * K, mapped_query.begin() + (q + 1) * K), K, m, MAX_PNTS_TO_SEARCH, pointset.begin(), query.begin() + q);
         }
       }
       else
@@ -249,15 +247,15 @@ namespace dolphinn
       * @param MAX_PNTS_TO_SEARCH   - threshold when searching
       * @param results_idxs_dists  - indices and distances of Q points, where the (Approximate) Nearest Neighbors are stored.
     */
-    static void execute_nearest_neighbor_queries(std::vector<Stable_hash_function<T>>& H, const std::vector<T>& query, std::vector<bitT>& mapped_query, const int q_start, const int q_end, const int K, const int D, const std::vector<T>& pointset, const int MAX_PNTS_TO_SEARCH, std::vector<std::pair<int, float>>& results_idxs_dists)
+    static void execute_nearest_neighbor_queries(std::vector<Stable_hash_function<T,Point>>& H, const std::vector<Point>& query, std::vector<bitT>& mapped_query, const int q_start, const int q_end, const int K, const int D, const std::vector<Point>& pointset, const int MAX_PNTS_TO_SEARCH, std::vector<std::pair<int, float>>& results_idxs_dists)
     {
       for(int q = q_start; q < q_end; ++q)
       {
         for(int k = 0; k < K; ++k)
         {
-          H[k].assign_random_bit_query((std::begin(query) + q * D), (std::begin(mapped_query) + q * K), k);
+          H[k].assign_random_bit_query(query[q], (std::begin(mapped_query) + q * K), k);
         }
-        results_idxs_dists[q] = H[K - 1].nearest_neighbor_query(std::string(mapped_query.begin() + q * K, mapped_query.begin() + (q + 1) * K), K, MAX_PNTS_TO_SEARCH, pointset.begin(), query.begin() + q * D);
+        results_idxs_dists[q] = H[K - 1].nearest_neighbor_query(std::string(mapped_query.begin() + q * K, mapped_query.begin() + (q + 1) * K), K, MAX_PNTS_TO_SEARCH, pointset.begin(), query.begin() + q);
       }
     }
 
