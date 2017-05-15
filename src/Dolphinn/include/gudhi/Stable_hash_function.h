@@ -26,12 +26,14 @@ namespace Gudhi {
 template <class T, typename Point>
 class Stable_hash_function
 {
+		typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> Matrix;
 		//typedef typename CGAL::Cartesian_d<T>::Point_d Point;
     // of original pointset
-    int dimension; 
+    const int dimension; 
     float r;
     float b;
     Point a;
+    Matrix m;
     std::uniform_real_distribution<float> uni_distribution;
     std::uniform_int_distribution<int> uni_bit_distribution;
     std::default_random_engine generator;
@@ -57,15 +59,26 @@ class Stable_hash_function
   	Stable_hash_function(const int D, const float r, const float mean = 0.0, const float deviation = 1.0)
   		: dimension(D), r(r), uni_distribution(0, r), uni_bit_distribution(0, 1),
   		generator(std::chrono::system_clock::now().time_since_epoch().count())
-  	{ 
+  	{
   		std::normal_distribution<typename std::conditional<std::is_same<T, float>::value, float, T>::type> distribution(mean, deviation);
       for(int i = 0; i < D; ++i)
       {
   			a.push_back(distribution(generator));
       }
-  		b = uni_distribution(generator);
-  		std::cout << "b=" << b << "\n";
-  		for(auto x:a) std::cout << x <<" ";
+      b = uni_distribution(generator);
+  	}
+  	
+  	Stable_hash_function(const int K, const int D, const float r, const float mean = 0.0, const float deviation = 1.0)
+  		: dimension(D), r(r), m(Matrix(K,D)), uni_distribution(0, r), uni_bit_distribution(0, 1),
+  		generator(std::chrono::system_clock::now().time_since_epoch().count())
+  	{
+  		std::normal_distribution<float> distribution(0.0,1.0/std::sqrt((float)D));
+  		std::default_random_engine generator(std::chrono::system_clock::now().time_since_epoch().count());
+  		for(int i =0; i<K;++i) {
+  			for(int j =0; j<D;++j) {
+  				m(i,j)=distribution(generator);
+  			}
+  		}
   	}
 
     /** \brief Constructor that creates a 
@@ -86,13 +99,31 @@ class Stable_hash_function
     Stable_hash_function(const int D, const float r, const int thread_info, const float mean = 0.0, const float deviation = 1.0)
       : dimension(D), r(r), uni_distribution(0, r), uni_bit_distribution(0, 1),
       generator(thread_info + std::chrono::system_clock::now().time_since_epoch().count())
-    {     
+    {
       std::normal_distribution<typename std::conditional<std::is_same<T, float>::value, float, T>::type> distribution(mean, deviation);
       for(int i = 0; i < D; ++i)
       {
         a.push_back(distribution(generator));
       }
-      b = uni_distribution(generator);
+      if(r!=0){b = uni_distribution(generator);}
+    }
+    
+    void hyperplane_hash(const std::vector<Point>& v) {
+    	int j=0;
+    	for(const auto& x:v) {
+    		const float* ptr = &x[0];
+    		Eigen::Matrix<float, Eigen::Dynamic, 1> vector =  m * Eigen::Map<const Eigen::Matrix<float ,Eigen::Dynamic, 1>>(ptr,dimension,1);
+    		std::vector<char> hash_key(vector.size());
+    		for(int i =0; i<vector.size();++i) {
+    			if(vector(i,0)>0){
+    				hash_key[i]=1;
+    			} else {
+    				hash_key[i]=0;
+    			}
+    		}
+    		hashtable_cube[std::string(hash_key.begin(),hash_key.end()-1)].push_back(j);
+    		++j;
+    	}
     }
 
   	/** \brief Hash a pointset.
@@ -123,7 +154,11 @@ class Stable_hash_function
 			}
   		//std::cout << scalar_product << " " << b << " " << r << std::endl;
   		//std::cout << (scalar_product + b) << " " << (scalar_product + b) / r << " " << (scalar_product + b) / (float)r << std::endl;
-  		return floor((scalar_product + b) / r);
+  		if(r>0){
+  			return floor((scalar_product + b) / r);
+  		} else {
+  			if(scalar_product>0){return 1;} else {return 0;}
+  		}
   	}
 
    	/** \brief Assing random bit for every key.
@@ -137,14 +172,30 @@ class Stable_hash_function
   	void assign_random_bit(std::vector<bitT>& v, const int k, const int K)
   	{
   		bitT random_bit;
-  		for(auto& key_value: hashtable)
-  		{
-  			random_bit = uni_bit_distribution(generator);
-        hashtable_for_random_bit[key_value.first] = random_bit;
-  			for(auto const& point_idx: key_value.second)
-  			{
-  				v[k + point_idx * K] = random_bit;
-  			}
+  		if(r>0) {
+				for(auto& key_value: hashtable)
+				{
+					random_bit = uni_bit_distribution(generator);
+		      hashtable_for_random_bit[key_value.first] = random_bit;
+					for(auto const& point_idx: key_value.second)
+					{
+						v[k + point_idx * K] = random_bit;
+					}
+				}
+  		} else {
+  			for(auto& key_value: hashtable)
+				{
+					if(key_value.first>0) {
+						random_bit = 1;
+					}	else {
+						random_bit = 0;
+					}
+		      hashtable_for_random_bit[key_value.first] = random_bit;
+					for(auto const& point_idx: key_value.second)
+					{
+						v[k + point_idx * K] = random_bit;
+					}
+				}
   		}
   	} 
 
@@ -158,16 +209,34 @@ class Stable_hash_function
     void assign_random_bit_and_fill_hashtable_cube(std::vector<bitT>& v, const int K)
     {
       bitT random_bit;
-      for(auto& key_value: hashtable)
-      {
-        random_bit = uni_bit_distribution(generator);
-        hashtable_for_random_bit[key_value.first] = random_bit;
-        for(auto const& point_idx: key_value.second)
-        {
-          v[(K - 1) + point_idx * K] = random_bit;
-          //std::cout << (int)(std::string(v.begin() + point_idx * K, v.begin() + (point_idx + 1) * K))[2] << std::endl;
-          hashtable_cube[std::string(v.begin() + point_idx * K, v.begin() + (point_idx + 1) * K)].push_back(point_idx);
-        }
+      if(r>0){
+		    for(auto& key_value: hashtable)
+		    {
+		      random_bit = uni_bit_distribution(generator);
+		      hashtable_for_random_bit[key_value.first] = random_bit;
+		      for(auto const& point_idx: key_value.second)
+		      {
+		        v[(K - 1) + point_idx * K] = random_bit;
+		        //std::cout << (int)(std::string(v.begin() + point_idx * K, v.begin() + (point_idx + 1) * K))[2] << std::endl;
+		        hashtable_cube[std::string(v.begin() + point_idx * K, v.begin() + (point_idx + 1) * K)].push_back(point_idx);
+		      }
+		    }
+      } else {
+      	for(auto& key_value: hashtable)
+		    {
+		      if(key_value.first>0) {
+		      	random_bit = 1;
+		      } else {
+		      	random_bit = 0;
+		      }
+		      hashtable_for_random_bit[key_value.first] = random_bit;
+		      for(auto const& point_idx: key_value.second)
+		      {
+		        v[(K - 1) + point_idx * K] = random_bit;
+		        //std::cout << (int)(std::string(v.begin() + point_idx * K, v.begin() + (point_idx + 1) * K))[2] << std::endl;
+		        hashtable_cube[std::string(v.begin() + point_idx * K, v.begin() + (point_idx + 1) * K)].push_back(point_idx);
+		      }
+		    }
       }
     }	
 
@@ -188,9 +257,20 @@ class Stable_hash_function
     	}
     	else
     	{
-       	*(mapped_q_begin + k) = uni_bit_distribution(generator);
+    		if(r>0){
+    			*(mapped_q_begin + k) = uni_bit_distribution(generator);
+    		} else {
+    			if(q_key>0) {
+    				*(mapped_q_begin + k) = 1;
+    			} else {
+    				*(mapped_q_begin + k) = 0;
+    			}
+    		}
     	}
     }   
+    
+   // hash(const std::vector<Point>& v, const int N, const int D)
+    //assign_random_bit(std::vector<bitT>& v, const int k, const int K)
 
     /** \brief Radius query the Hamming cube.
       *

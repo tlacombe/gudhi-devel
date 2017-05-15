@@ -15,13 +15,13 @@ namespace dolphinn
   template <typename Point, typename T, typename bitT>
   class Hypercube
   {
-  	// The 'K' hash-functions that we are going to use. Only the last one will be used to query,
-    // but we need all of them to map the query on arrival, first.
-    std::vector<Stable_hash_function<T,Point>> H;
-    // original dimension of points
+  	// original dimension of points
     const int D;
     // mapped dimension of points (dimension of the Hypercube)
     const int K;
+  	// The 'K' hash-functions that we are going to use. Only the last one will be used to query,
+    // but we need all of them to map the query on arrival, first.
+    std::vector<Stable_hash_function<T,Point>> H;
     // Reference of an 1D vector of points, emulating a 2D, with N rows and D columns per row.
     const std::vector<Point>& pointset;
     public:
@@ -42,33 +42,39 @@ namespace dolphinn
     Hypercube(const std::vector<Point>& pointset, const int N, const int D, const int K, const int threads_no = 1 /*std::thread::hardware_concurrency()*/, const float r = 4/*3 or 8*/)
       : D(D), K(K), pointset(pointset)
     {
-    	std::cout << "r=" << r << "\n";
-      if(threads_no >= K || ((K - 1) % threads_no) != 0)
+      /*if(threads_no >= K || ((K - 1) % threads_no) != 0)
       {
       	std::cout << threads_no << K << std::endl;
       	std::cout << "Threads number is greater or equal to K (dimension of Hypercube). Or  (threads_no MOD (K - 1)) != 0. Construction aborted..." << std::endl;
         return;
-      }
-      std::vector<bitT> mapped_pointset(N * K);
-			
-      if(threads_no == 1)
+      }*/
+
+      //if(threads_no == 1)
       {
-        for(int k = 0; k < K - 1; ++k)
-        {
-          H.emplace_back(D, r);
-          //H[k].print_a();
-          H[k].hash(pointset, N, D);
-          //H[k].print_stats();
+      	if(r!=0){
+      		std::vector<bitT> mapped_pointset(N * K);
+      		for(int k = 0; k < K - 1; ++k)
+		      {
+		        H.emplace_back(D, r);
+		        //H[k].print_a();
+		        H[k].hash(pointset, N, D);
+		        //H[k].print_stats();
 
-          H[k].assign_random_bit(mapped_pointset, k, K);
-        }
-        H.emplace_back(D, r);
-        H[K - 1].hash(pointset, N, D);
-        H[K - 1].assign_random_bit_and_fill_hashtable_cube(mapped_pointset, K);
+		        H[k].assign_random_bit(mapped_pointset, k, K);
+		      }
+		      H.emplace_back(D, r);
+		      H[K - 1].hash(pointset, N, D);
+		      H[K - 1].assign_random_bit_and_fill_hashtable_cube(mapped_pointset, K);
 
-        H[K - 1].print_hashtable_cube();
+		      //H[K - 1].print_hashtable_cube();
+      	} else {
+      		H.emplace_back(K, D, r);
+      		H[0].hyperplane_hash(pointset);
+      		//H[0].print_hashtable_cube();
+      	}
+        
       }
-      else
+     /* else
       {
         std::vector<std::thread> threads;
 
@@ -97,7 +103,7 @@ namespace dolphinn
         H[K - 1].assign_random_bit_and_fill_hashtable_cube(mapped_pointset, K);
 
         //H[K - 1].print_hashtable_cube();
-      }
+      }*/
     } 
 
     /** \brief Populate the vector of hash functions.

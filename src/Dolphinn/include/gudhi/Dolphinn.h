@@ -1,7 +1,6 @@
 #include "Hypercube.h"
 #include <thread>
-#include <CGAL/Epick_d.h>
-
+#include "IO.h"
 
 
 namespace Gudhi {
@@ -40,7 +39,11 @@ namespace dolphinn {
       * @param threads_no          - number of threads to be created. Default value is 'std::thread::hardware_concurrency()'.
     */
   	void radius_query(const std::vector<Point>& query, const int Q, const float radius, const int max_pnts_to_search, std::vector<int>& results_idxs, const int threads_no = std::thread::hardware_concurrency()) {
-  		hypercube.radius_query(query, Q, radius, max_pnts_to_search, results_idxs, threads_no);
+  		if(max_pnts_to_search>N){
+  			hypercube.radius_query(query, Q, radius, N, results_idxs, threads_no);
+  		} else {
+  			hypercube.radius_query(query, Q, radius, max_pnts_to_search, results_idxs, threads_no);
+  		}
   	}
   	
   	/** \brief Nearest Neighbor query in the Hamming cube.
@@ -52,7 +55,12 @@ namespace dolphinn {
       * @param threads_no          - number of threads to be created. Default value is 'std::thread::hardware_concurrency()'.
     	*/
   	void m_nearest_neighbors_query(const std::vector<Point>& query, const int Q, const int m, const int max_pnts_to_search, std::vector<std::vector<std::pair<int, float>>>& results_idxs_dists, const int threads_no = std::thread::hardware_concurrency()) {
-  		hypercube.m_nearest_neighbors_query(query, Q, m, max_pnts_to_search, results_idxs_dists, threads_no);
+  		if(max_pnts_to_search>N){
+  			hypercube.m_nearest_neighbors_query(query, Q, m, N, results_idxs_dists, threads_no);
+  		} else {
+  			hypercube.m_nearest_neighbors_query(query, Q, m, max_pnts_to_search, results_idxs_dists, threads_no);
+  		}
+  		
   	}
   	
   	
