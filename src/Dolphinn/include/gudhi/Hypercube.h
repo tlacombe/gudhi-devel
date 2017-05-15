@@ -19,6 +19,8 @@ namespace dolphinn
     const int D;
     // mapped dimension of points (dimension of the Hypercube)
     const int K;
+    // Parameter of the LSH functions
+    const float R;
   	// The 'K' hash-functions that we are going to use. Only the last one will be used to query,
     // but we need all of them to map the query on arrival, first.
     std::vector<Stable_hash_function<T,Point>> H;
@@ -40,7 +42,7 @@ namespace dolphinn
       *                      Neighbor Search, to adapt to the average distance of the NN, 'r' is the hashing window.
    */
     Hypercube(const std::vector<Point>& pointset, const int N, const int D, const int K, const int threads_no = 1 /*std::thread::hardware_concurrency()*/, const float r = 4/*3 or 8*/)
-      : D(D), K(K), pointset(pointset)
+      : D(D), K(K), R(r), pointset(pointset)
     {
       /*if(threads_no >= K || ((K - 1) % threads_no) != 0)
       {
@@ -141,18 +143,25 @@ namespace dolphinn
     */
     void radius_query(const std::vector<Point>& query, const int Q, const float radius, const int MAX_PNTS_TO_SEARCH, std::vector<int>& results_idxs, const int threads_no = std::thread::hardware_concurrency())
     {
-      std::vector<bitT> mapped_query(Q * K);
-      if(threads_no == 1)
-      {
-        for(int q = 0; q < Q; ++q)
-        {
-          for(int k = 0; k < K; ++k)
-          {
-            H[k].assign_random_bit_query((query[q]), (std::begin(mapped_query) + q * K), k);
-          }
-          results_idxs[q] = H[K - 1].radius_query(std::string(mapped_query.begin() + q * K, mapped_query.begin() + (q + 1) * K), radius, K, MAX_PNTS_TO_SEARCH, pointset.begin(), query.begin() + q);
-        }
-      }
+    	if(R>0){
+		    std::vector<bitT> mapped_query(Q * K);
+		    //if(threads_no == 1){
+	      for(int q = 0; q < Q; ++q)
+	      {
+		    	for(int k = 0; k < K; ++k)
+		      {
+		        H[k].assign_random_bit_query((query[q]), (std::begin(mapped_query) + q * K), k);
+		      }
+		      results_idxs[q] = H[K - 1].radius_query(std::string(mapped_query.begin() + q * K, mapped_query.begin() + (q + 1) * K), radius, K, MAX_PNTS_TO_SEARCH, pointset.begin(), query.begin() + q);
+	    	}
+		  } else {
+		  	std::vector<bitT> key(K);
+				for(int q = 0; q < Q; ++q){
+					H[0].hyperplane_hash<bitT>(query[q], key);
+					results_idxs[q] = H[0].radius_query(std::string(key.begin(), key.end()-1), radius, K, MAX_PNTS_TO_SEARCH, pointset.begin(), query.begin() + q);
+				}
+		  }
+      /*}
       else
       {
         std::vector<std::thread> threads;
@@ -165,7 +174,7 @@ namespace dolphinn
     
         for (auto& th : threads)
           th.join();
-      }
+      }*/
       // per query, find candidates
       /*for(int q = 0; q < Q; ++q)
       {
@@ -212,21 +221,28 @@ namespace dolphinn
     */
     void m_nearest_neighbors_query(const std::vector<Point>& query, const int Q, const int m, const int MAX_PNTS_TO_SEARCH, std::vector<std::vector<std::pair<int, float>>>& results_idxs_dists, const int threads_no = std::thread::hardware_concurrency())
     {
-      std::vector<bitT> mapped_query(Q * K);
-      if(threads_no == 1)
-      {
-        for(int q = 0; q < Q; ++q)
-        {
-          for(int k = 0; k < K; ++k)
-          {
-            H[k].assign_random_bit_query(query[q], (std::begin(mapped_query) + q * K), k);
-          }
-          results_idxs_dists[q] = H[K - 1].m_nearest_neighbors_query(std::string(mapped_query.begin() + q * K, mapped_query.begin() + (q + 1) * K), K, m, MAX_PNTS_TO_SEARCH, pointset.begin(), query.begin() + q);
-        }
-      }
+    	if(R>0){
+		    std::vector<bitT> mapped_query(Q * K);
+		    //if(threads_no == 1){
+	      for(int q = 0; q < Q; ++q)
+	      {
+	        for(int k = 0; k < K; ++k)
+	        {
+	          H[k].assign_random_bit_query(query[q], (std::begin(mapped_query) + q * K), k);
+	        }
+	        results_idxs_dists[q] = H[K - 1].m_nearest_neighbors_query(std::string(mapped_query.begin() + q * K, mapped_query.begin() + (q + 1) * K), K, m, MAX_PNTS_TO_SEARCH, pointset.begin(), query.begin() + q);
+	      }
+			} else {
+				std::vector<bitT> key(K);
+				for(int q = 0; q < Q; ++q){
+					H[0].hyperplane_hash(query[q], key);
+					results_idxs_dists[q] = H[0].m_nearest_neighbors_query(std::string(key.begin(), key.end() -1), K, m, MAX_PNTS_TO_SEARCH, pointset.begin(), query.begin() + q);
+				}
+			}
+      /*}
       else
       {
-        /*std::vector<std::thread> threads;
+        std::vector<std::thread> threads;
 
         const int batch = Q/threads_no;
         //std::cout << "subvector_size = " << subvector_size << std::endl;
@@ -235,8 +251,8 @@ namespace dolphinn
         threads.push_back(std::thread(execute_nearest_neighbor_queries, std::ref(H), std::ref(query), std::ref(mapped_query), (threads_no - 1) * batch, Q, K, D, std::ref(pointset), MAX_PNTS_TO_SEARCH, std::ref(results_idxs_dists)));
     
         for (auto& th : threads)
-          th.join();*/
-      }
+          th.join();
+      }*/
     }
 
     /** \brief Execute specified portion of Nearest Neighbor Queries.

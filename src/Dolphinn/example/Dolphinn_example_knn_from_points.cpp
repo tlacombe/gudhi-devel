@@ -49,18 +49,19 @@ int main(int argc, char **argv) {
   	pointset.push_back(p);
   }*/
   
-  Point query;
+  /*Point query;
   for(size_t j=0;j<d;++j){
 		query.push_back(distribution(generator));
-	}
+	}*/
 	
-	queries.push_back(query);
+	
 	
 	std::vector<std::vector<std::pair<int, float>>> result;
 	std::vector<std::pair<int, float>> dummy;
 	result.push_back(dummy);
 	
 	readfvecs(pointset, n, d, "./sift_base.fvecs");
+	queries.push_back(pointset[0]);
 	
 	std::cout << "Data generated\n";
 	
@@ -76,19 +77,19 @@ int main(int argc, char **argv) {
 
 	std::cout << "Build: " << time_span.count() << " seconds.\n";
   
-  /*dolphi.m_nearest_neighbors_query(queries, 1, atoi(argv[3]), n/100+atoi(argv[3]), result, 1);
+  dolphi.m_nearest_neighbors_query(queries, 1, atoi(argv[3]), n/100+atoi(argv[3]), result, 1);
   std::cout << "radius queries done\n";
   
-  std::cout << "The query is:";
+  /*std::cout << "The query is:";
   for(auto& x:query) std::cout << x << " ";
-  std::cout << "\n";
+  std::cout << "\n";*/
   
   std::cout << "The nearest neighbour are: \n";
   for(auto& x:result[0]){
   	for(auto y:pointset[x.first])
   		std::cout << y << " ";
   	 std::cout << " for a distance of " << std::sqrt(x.second) << "\n";
-  }*/
+  }
   
   return 0;
 }

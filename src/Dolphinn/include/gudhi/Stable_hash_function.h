@@ -125,6 +125,19 @@ class Stable_hash_function
     		++j;
     	}
     }
+    
+    template<typename bitT>
+    void hyperplane_hash(const Point& x, std::vector<bitT> hash_key) {
+   		const float* ptr = &x[0];
+  		Eigen::Matrix<float, Eigen::Dynamic, 1> vector =  m * Eigen::Map<const Eigen::Matrix<float ,Eigen::Dynamic, 1>>(ptr,dimension,1);
+  		for(int i =0; i<vector.size();++i) {
+  			if(vector(i,0)>0){
+  				hash_key[i]=1;
+  			} else {
+  				hash_key[i]=0;
+  			}
+  		}
+  	}
 
   	/** \brief Hash a pointset.
 	 *
