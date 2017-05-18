@@ -1,3 +1,6 @@
+#ifndef DOLPHINN_H
+#define DOLPHINN_H
+
 #include "Hypercube.h"
 #include <thread>
 #include "IO.h"
@@ -10,15 +13,21 @@ namespace dolphinn {
   class Dolphinn
   {
   	typedef typename std::vector<T> Point;
-  public:
+  
+  	// See constructor
   	int N,D,K;
 		double hashing_method;
 		std::vector<Point>& pointset;
 		Hypercube<Point, T, bitT> hypercube;
 
+		public:
+		Hypercube<Point, T, bitT> get_hypercube(){
+			return hypercube;
+		}
+
   	/** \brief Constructor of the class and fills the hypercube.
       *
-      * @param pointset    		- 1D vector of points, emulating a 2D, with N rows and D columns per row.
+      * @param pointset    		- Set of points
       * @param N           		- number of points
       * @param D           		- dimension of the points
       * @param K           		- dimension of Hypercube (and of the mapped points)
@@ -68,3 +77,5 @@ namespace dolphinn {
   };
 }
 }
+
+#endif /* DOLPHINN_H*/

@@ -1,10 +1,9 @@
-#ifndef EUCLIDEAN_DIST_H
-#define EUCLIDEAN_DIST_H
+#ifndef DOLPHINN_EUCLIDEAN_DIST_H
+#define DOLPHINN_EUCLIDEAN_DIST_H
 
 #include <vector>
 #include <random>
 #include <math.h>
-#include <CGAL/Cartesian_d.h>
 
 
 
@@ -151,4 +150,4 @@ void Euclidean_distance_within_radius(iterator pointset, const std::vector<int>&
 }
 }
 
-#endif /*EUCLIDEAN_DIST_H*/
+#endif /*DOLPHINN_EUCLIDEAN_DIST_H*/

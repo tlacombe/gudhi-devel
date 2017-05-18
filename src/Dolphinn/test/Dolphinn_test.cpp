@@ -1,70 +1,182 @@
-#include <iostream>
-#include <assert.h> 
+#define BOOST_TEST_DYN_LINK
+#define BOOST_TEST_MODULE "dolphinn"
+#include <boost/test/unit_test.hpp>
+
 #include "gudhi/Dolphinn.h"
-//#include <CGAL/Epick_d.h>
 #include <gudhi/Points_off_io.h>
-
-#include <ctime>
-#include <ratio>
-#include <chrono>
 #include <vector>
+#include <random>
+#include <cmath>
 
-#define N 10000
-#define D 128
-#define K floor(log2(N)/2)
-#define M 1// #NN to find 
-#define Q 100
 #define T float
 #define bitT char
-#define MAX_PNTS_TO_SEARCH N/100
-#define THREADS_NO 1
-#define RADIUS 1
-//#define Point CGAL::Cartesian_d<T>::Point_d
-#define Point std::vector<float>
-
+#define Point std::vector<T>
+#define N 10000
+#define K 4
+#define D 10
+#define Q 5
 
 using namespace Gudhi;
 
-int main()
-{
-	
-  Gudhi::Points_off_reader<Point> off_reader("./../../../../data/points/bunny_5000.off");
-  if (!off_reader.is_valid()) {
-    std::cerr << "Unable to read file " << "\n";
-    exit(-1);  // ----- >>
+BOOST_AUTO_TEST_CASE(hypercube_building_lines) {
+  std::vector<Point> pointset;
+  std::default_random_engine generator(std::chrono::system_clock::now().time_since_epoch().count());
+  std::normal_distribution<float> distribution(0.0,1.0/std::sqrt((float)D));
+  for(size_t i=0;i<N;++i){
+  	Point p;
+  	for(size_t j=0;j<D;++j){
+  		p.push_back(distribution(generator));
+  	}
+  	pointset.push_back(p);
   }
-  std::vector<Point> pointset = off_reader.get_point_cloud();
-  size_t n = pointset.size();
-  size_t k = floor(log2(N)/2);
-  size_t d = pointset[0].size();
+    	
+  dolphinn::Dolphinn<T, bitT> dolphi(pointset, N, D, K, 0);
+  const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> m = dolphi.get_hypercube().get_H()[0].get_m();
+  const float* ptr = &pointset[0][0];
+  Eigen::Matrix<float, Eigen::Dynamic, 1> v =  m * Eigen::Map<const Eigen::Matrix<float ,Eigen::Dynamic, 1>>(ptr,D,1);
+  float s=0;
+  for(int i=0;i<D;i++){s+=v[i]*v[i];}
+  int num=0;
+  for(auto x:dolphi.get_hypercube().get_H()[0].get_hashtable())
+  	num += x.second.size();
   
-  Point query = pointset[n-1];
-  pointset.pop_back();
+  //no point lost
+  BOOST_CHECK(num==10000);
+  //no absurd hash
+  BOOST_CHECK(s>0);
+}
+
+
+BOOST_AUTO_TEST_CASE(hypercube_building_hyperplanes) {
+	std::vector<Point> pointset;
+  std::default_random_engine generator(std::chrono::system_clock::now().time_since_epoch().count());
+  std::normal_distribution<float> distribution(0.0,1.0/std::sqrt((float)D));
+  for(size_t i=0;i<N;++i){
+  	Point p;
+  	for(size_t j=0;j<D;++j){
+  		p.push_back(distribution(generator));
+  	}
+  	pointset.push_back(p);
+  }
+  dolphinn::Dolphinn<T, bitT> dolphi(pointset, N, D, K, 0.0001);
+  int num=0;
+  for(auto x:dolphi.get_hypercube().get_H()[K-1].get_hashtable())
+  	num += x.second.size();
+  
+  
+  //no point lost
+  BOOST_CHECK(num==N);
+  //no absurd hash
+  for(auto& h:dolphi.get_hypercube().get_H()){
+  	float norm = 0;
+		for(size_t i=0;i<D;++i){
+			norm += h.get_a()[i] * h.get_a()[i];
+		}
+		BOOST_CHECK(norm != 0);
+		BOOST_CHECK(h.get_b()!=0);
+		BOOST_CHECK(h.get_r()!=0);
+  }
+}
+
+
+BOOST_AUTO_TEST_CASE(knn_query) {
+	std::vector<Point> pointset;
+  std::default_random_engine generator(std::chrono::system_clock::now().time_since_epoch().count());
+  std::normal_distribution<float> distribution(0.0,1.0/std::sqrt((float)D));
+  for(size_t i=0;i<N;++i){
+  	Point p;
+  	for(size_t j=0;j<D;++j){
+  		p.push_back(distribution(generator));
+  	}
+  	pointset.push_back(p);
+  }
+  dolphinn::Dolphinn<T, bitT> dolphi(pointset, N, D, K, 0);
   
   std::vector<Point> queries;
-  queries.push_back(query);
-  
-  std::vector<int> result;
-  
-  result.push_back(21); 
-  
-  dolphinn::Dolphinn<T, bitT> dolphi(pointset, n, d, k, 0.001); 
-  dolphi.radius_query(queries, 1, 10, 500, result, 1);
-  
-  float res=0;
-	float tmp;
-	std::cout << "\n";
-	for(auto x:result) std::cout << x << " ";
-	std::cout << "\n";
-	for(auto x:pointset[result[0]]) std::cout << x << " ";
-	std::cout << "\n";
-	for(auto x:query) std::cout << x << " ";
-	std::cout << "\n";
+  std::vector<std::vector<std::pair<int, float>>> result;
+	for(size_t i=0;i<Q;++i){
+  	Point p;
+  	for(size_t j=0;j<D;++j){
+  		p.push_back(distribution(generator));
+  	}
+  	std::vector<std::pair<int, float>> dummy;
+  	result.push_back(dummy);
+  	queries.push_back(p);
+  }
 	
-	for(size_t i=0;i<d;++i){
-		tmp = pointset[result[0]][i] - query[i];
-		res += tmp*tmp;
+	dolphi.m_nearest_neighbors_query(queries, Q, 10, N/100, result, 1);
+	float mean=0;
+	int no_nn =0;
+	for(size_t j=0;j<Q;++j){
+		for(auto& x:result[j]){
+			if(x.first !=-1) {
+				float d=0;
+				for(size_t i=0;i<D;++i){
+					d+=(queries[j][i]-pointset[x.first][i])*(queries[j][i]-pointset[x.first][i]);
+				}
+				//is the output distance correct
+				BOOST_CHECK(d==x.second);
+				mean += std::sqrt(x.second);
+			} else {++no_nn;}
+		}
 	}
-  std::cout << res << " res\n";
-  return 0;
+	//are the ouput points some kind of neighbours (will fail with D too large)
+	BOOST_CHECK(mean<std::sqrt(2)*(Q*10-no_nn)-5);
+	
+	std::vector<std::vector<std::pair<int, float>>> result2;
+	std::vector<std::pair<int, float>> dummy;
+  result2.push_back(dummy);
+	dolphi.m_nearest_neighbors_query(queries, 1, 1, N*2, result2, 1);
+	
+	int min_idx = 0;
+	float min_dist = 500;
+	
+	for(size_t i=0;i<N;++i){
+		float d=0;
+		for(size_t j=0;j<D;++j){
+			d+=(queries[0][j]-pointset[i][j])*(queries[0][j]-pointset[i][j]);
+		}
+		if(d<min_dist) {min_dist=d; min_idx=i;}
+	}
+		
+	//if all the points are checked, is the actual nearest neighbour output 
+	BOOST_CHECK(result2[0][0].first==min_idx && result2[0][0].second==min_dist);
+}
+
+
+
+BOOST_AUTO_TEST_CASE(radius_query) {
+	std::vector<Point> pointset;
+  std::default_random_engine generator(std::chrono::system_clock::now().time_since_epoch().count());
+  std::normal_distribution<float> distribution(0.0,1.0/std::sqrt((float)D));
+  for(size_t i=0;i<N;++i){
+  	Point p;
+  	for(size_t j=0;j<D;++j){
+  		p.push_back(distribution(generator));
+  	}
+  	pointset.push_back(p);
+  }
+  dolphinn::Dolphinn<T, bitT> dolphi(pointset, N, D, K, 0.2);
+  
+  std::vector<Point> queries;
+  std::vector<int> result(Q);
+	for(size_t i=0;i<Q;++i){
+  	Point p;
+  	for(size_t j=0;j<D;++j){
+  		p.push_back(distribution(generator));
+  	}
+  	queries.push_back(p);
+  }
+	
+	dolphi.radius_query(queries, Q, 0.3, N/100, result, 0.5);
+	for(int i=0; i<Q;++i){
+		if(result[i]!=-1){
+			float d=0;
+			for(size_t j=0;j<D;++j){
+				d+=(queries[i][j]-pointset[result[i]][j])*(queries[i][j]-pointset[result[i]][j]);
+			}
+			//is the answer inside the radius?
+			BOOST_CHECK(d<=0.3*0.3);
+		}
+	}
 }

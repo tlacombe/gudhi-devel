@@ -26,42 +26,39 @@ int main(int argc, char **argv) {
 		std::cerr << "Fourth argument is a parameter for the LSH function\n";
 	}
   
-  size_t n = 1000000;//atoi(argv[1]);
-  size_t k = 16;//floor(log2(n)/2);
-  size_t d = 128;//atoi(argv[2]);
+  size_t n = atoi(argv[1]);
+  size_t k = floor(log2(n)/2);
+  size_t d = atoi(argv[2]);
   
   
   
-  std::vector<Point> pointset(n);
-  for(auto& x:pointset)
-  	x = std::vector<float>(d);
+  std::vector<Point> pointset;
+  
   std::vector<Point> queries;
   
   std::default_random_engine generator(std::chrono::system_clock::now().time_since_epoch().count());
   
   std::normal_distribution<float> distribution(0.0,1.0/std::sqrt((float)d));
   
-  /*for(size_t i=0;i<n;++i){
+  for(size_t i=0;i<n;++i){
   	Point p;
   	for(size_t j=0;j<d;++j){
   		p.push_back(distribution(generator));
   	}
   	pointset.push_back(p);
-  }*/
+  }
   
-  /*Point query;
+  Point query;
   for(size_t j=0;j<d;++j){
 		query.push_back(distribution(generator));
-	}*/
-	
+	}
+	queries.push_back(query);
 	
 	
 	std::vector<std::vector<std::pair<int, float>>> result;
 	std::vector<std::pair<int, float>> dummy;
 	result.push_back(dummy);
 	
-	readfvecs(pointset, n, d, "./sift_base.fvecs");
-	queries.push_back(pointset[0]);
 	
 	std::cout << "Data generated\n";
 	
@@ -80,15 +77,17 @@ int main(int argc, char **argv) {
   dolphi.m_nearest_neighbors_query(queries, 1, atoi(argv[3]), n/100+atoi(argv[3]), result, 1);
   std::cout << "radius queries done\n";
   
-  /*std::cout << "The query is:";
+  std::cout << "The query is:";
   for(auto& x:query) std::cout << x << " ";
-  std::cout << "\n";*/
+  std::cout << "\n";
+  
   
   std::cout << "The nearest neighbour are: \n";
   for(auto& x:result[0]){
   	for(auto y:pointset[x.first])
   		std::cout << y << " ";
-  	 std::cout << " for a distance of " << std::sqrt(x.second) << "\n";
+  	std::cout << x.first << " ";
+  	std::cout << " for a distance of " << std::sqrt(x.second) << "\n";
   }
   
   return 0;

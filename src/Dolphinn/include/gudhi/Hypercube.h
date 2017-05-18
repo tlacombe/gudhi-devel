@@ -1,5 +1,5 @@
-#ifndef HYPERCUBE_H
-#define HYPERCUBE_H
+#ifndef DOLPHINN_HYPERCUBE_H
+#define DOLPHINN_HYPERCUBE_H
 
 #include <vector>
 #include "Stable_hash_function.h"
@@ -27,6 +27,25 @@ namespace dolphinn
     // Reference of an 1D vector of points, emulating a 2D, with N rows and D columns per row.
     const std::vector<Point>& pointset;
     public:
+    
+    //accessors
+    int get_D() {
+  		return D;
+  	}
+  	int get_K() {
+  		return K;
+  	}
+  	float get_R(){
+  		return R;
+  	}
+  	std::vector<Point> get_pointset(){
+  		return pointset;
+  	}
+  	std::vector<Stable_hash_function<T,Point>> get_H(){
+  		return H;
+  	}
+  	
+    
     /** \brief Constructor that creates in parallel a 
       * vector from a stable distribution.
       *
@@ -157,8 +176,8 @@ namespace dolphinn
 		  } else {
 		  	std::vector<bitT> key(K);
 				for(int q = 0; q < Q; ++q){
-					H[0].hyperplane_hash<bitT>(query[q], key);
-					results_idxs[q] = H[0].radius_query(std::string(key.begin(), key.end()-1), radius, K, MAX_PNTS_TO_SEARCH, pointset.begin(), query.begin() + q);
+					H[0].hyperplane_hash(query[q], key);
+					results_idxs[q] = H[0].radius_query(std::string(key.begin(), key.end()), radius, K, MAX_PNTS_TO_SEARCH, pointset.begin(), query.begin() + q);
 				}
 		  }
       /*}
@@ -236,7 +255,7 @@ namespace dolphinn
 				std::vector<bitT> key(K);
 				for(int q = 0; q < Q; ++q){
 					H[0].hyperplane_hash(query[q], key);
-					results_idxs_dists[q] = H[0].m_nearest_neighbors_query(std::string(key.begin(), key.end() -1), K, m, MAX_PNTS_TO_SEARCH, pointset.begin(), query.begin() + q);
+					results_idxs_dists[q] = H[0].m_nearest_neighbors_query(std::string(key.begin(), key.end()), K, m, MAX_PNTS_TO_SEARCH, pointset.begin(), query.begin() + q);
 				}
 			}
       /*}
@@ -287,10 +306,12 @@ namespace dolphinn
     */
     void print_no_of_assigned_points_per_vertex()
     {
-      H[K - 1].print_hashtable_cube();
+    	if(R>0){
+      	H[K - 1].print_hashtable_cube();
+      } else {H[0].print_hashtable_cube();}
     }
 
   };
 }
 }
-#endif /* HYPERCUBE_H */
+#endif /* DOLPHINN_HYPERCUBE_H */

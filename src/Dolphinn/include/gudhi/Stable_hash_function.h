@@ -1,7 +1,6 @@
-#ifndef HASH_H
-#define HASH_H
+#ifndef DOLPHINN_HASH_H
+#define DOLPHINN_HASH_H
 
-//#define T double
 
 #include <vector>
 #include <chrono>
@@ -13,12 +12,13 @@
 #include <string>
 #include <thread>
 #include <utility>
-
+#include <Eigen/Dense>
 #include "euclidean_dist.h"
 
 /**
- * We want an h from a family of hash functions H. We implement:
- * https://en.wikipedia.org/wiki/Locality-sensitive_hashing#Stable_distributions
+ * Currently we have 2 possible families of hashing functions:
+ * - https://en.wikipedia.org/wiki/Locality-sensitive_hashing#Stable_distributions
+ * - hyperplane hashing
  */
 
 namespace Gudhi {
@@ -27,12 +27,13 @@ template <class T, typename Point>
 class Stable_hash_function
 {
 		typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> Matrix;
-		//typedef typename CGAL::Cartesian_d<T>::Point_d Point;
     // of original pointset
     const int dimension; 
     float r;
+		//for line LSH
     float b;
     Point a;
+    //for Hyperplane LSH
     Matrix m;
     std::uniform_real_distribution<float> uni_distribution;
     std::uniform_int_distribution<int> uni_bit_distribution;
@@ -45,6 +46,24 @@ class Stable_hash_function
     // This is used *only* by the last hash.
     std::unordered_map< std::string, std::vector<int> > hashtable_cube;
   public:
+  
+  	//accessors
+  	Point get_a() {
+  		return a;
+  	}
+  	float get_r() {
+  		return r;
+  	}
+  	float get_b() {
+  		return b;
+  	}
+  	std::unordered_map< std::string, std::vector<int> > get_hashtable() {
+  		return hashtable_cube;
+  	}
+  	Matrix get_m() {
+  		return m;
+  	}
+  	
   	/** \brief Constructor that creates a 
   	 * vector from a stable distribution.
  	 *
@@ -68,12 +87,19 @@ class Stable_hash_function
       b = uni_distribution(generator);
   	}
   	
-  	Stable_hash_function(const int K, const int D, const float r, const float mean = 0.0, const float deviation = 1.0)
-  		: dimension(D), r(r), m(Matrix(K,D)), uni_distribution(0, r), uni_bit_distribution(0, 1),
+  	
+  	/** \brief Constructor that creates a 
+  	 * hashing function based on hyperplanes
+ 	 *
+	 *
+	 * @param D  		 - dimension of points
+	 * @param r  		 - parameter hashing function (here r=0) 
+	 */
+  	Stable_hash_function(const int K, const int D, const float r)
+  		: dimension(D), r(r), m(Matrix(K,D)),
   		generator(std::chrono::system_clock::now().time_since_epoch().count())
   	{
   		std::normal_distribution<float> distribution(0.0,1.0/std::sqrt((float)D));
-  		std::default_random_engine generator(std::chrono::system_clock::now().time_since_epoch().count());
   		for(int i =0; i<K;++i) {
   			for(int j =0; j<D;++j) {
   				m(i,j)=distribution(generator);
@@ -108,6 +134,11 @@ class Stable_hash_function
       if(r!=0){b = uni_distribution(generator);}
     }
     
+    
+    /** \brief Hash a pointset with the hyperplanes method.
+	 *
+	 * @param v  	- vector of points
+	 */
     void hyperplane_hash(const std::vector<Point>& v) {
     	int j=0;
     	for(const auto& x:v) {
@@ -121,11 +152,16 @@ class Stable_hash_function
     				hash_key[i]=0;
     			}
     		}
-    		hashtable_cube[std::string(hash_key.begin(),hash_key.end()-1)].push_back(j);
+    		hashtable_cube[std::string(hash_key.begin(),hash_key.end())].push_back(j);
     		++j;
     	}
     }
     
+    /** \brief Hash a point with the hyperplanes method.
+	 *
+	 * @param v  				- vector of points
+	 * @param hash_key  - stores the result of the hashing
+	 */
     template<typename bitT>
     void hyperplane_hash(const Point& x, std::vector<bitT> hash_key) {
    		const float* ptr = &x[0];
@@ -139,7 +175,7 @@ class Stable_hash_function
   		}
   	}
 
-  	/** \brief Hash a pointset.
+  	/** \brief Hash a pointset with the stable distribution method.
 	 *
 	 * @param v  	- vector of points
 	 * @param N   - number of points
@@ -541,4 +577,4 @@ class Stable_hash_function
 
 };
 }
-#endif /*HASH_H*/
+#endif /*DOLPHINN_HASH_H*/
