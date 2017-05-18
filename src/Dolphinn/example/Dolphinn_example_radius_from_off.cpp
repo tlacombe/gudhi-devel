@@ -24,17 +24,17 @@ int main(int argc, char **argv) {
   Gudhi::Points_off_reader<Point> off_readerd(argv[1]);
   if (!off_readerd.is_valid()) {
     std::cerr << "Unable to read file " << "\n";
-    exit(-1);  // ----- >>
+    exit(-1);  
   }
   std::vector<Point> pointset = off_readerd.get_point_cloud();
   size_t n = pointset.size();
-  size_t k = 16;//floor(log2(n)/2);
+  size_t k = floor(log2(n)/2);
   size_t d = pointset[0].size();
   
   Gudhi::Points_off_reader<Point> off_readerq(argv[2]);
   if (!off_readerq.is_valid()) {
     std::cerr << "Unable to read file " << "\n";
-    exit(-1);  // ----- >>
+    exit(-1);  
   }
 	std::vector<Point> queries = off_readerq.get_point_cloud();  
   
