@@ -1,0 +1,94 @@
+/*    This file is part of the Gudhi Library. The Gudhi library
+ *    (Geometric Understanding in Higher Dimensions) is a generic C++
+ *    library for computational topology.
+ *
+ *    Author(s):       Clement Jamin
+ *
+ *    Copyright (C) 2017 INRIA
+ *
+ *    This program is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU General Public License as published by
+ *    the Free Software Foundation, either version 3 of the License, or
+ *    (at your option) any later version.
+ *
+ *    This program is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU General Public License for more details.
+ *
+ *    You should have received a copy of the GNU General Public License
+ *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef FUNCTOR_CGAL_KD_TREE_STORING_POINTS_
+#define FUNCTOR_CGAL_KD_TREE_STORING_POINTS_
+
+#include <CGAL/Search_traits.h>
+#include <CGAL/Orthogonal_k_neighbor_search.h>
+
+#include <vector>
+#include <utility>
+
+template <typename Kernel>
+class CGAL_Kd_tree_storing_points
+{
+  typedef Kernel                                          K;
+  typedef typename K::FT                                  FT;
+  typedef typename K::Point_d                             Point;
+  typedef std::vector<Point>                              Points;
+
+  typedef K                                               STraits;
+
+  //typedef CGAL::Sliding_midpoint<STraits>                 Splitter; // default in CGAL -- best choice for low dimension
+  typedef CGAL::Median_of_max_spread<STraits>             Splitter; // best choice for medium dimension
+  //typedef CGAL::Midpoint_of_max_spread<STraits>           Splitter;
+
+  typedef CGAL::Orthogonal_k_neighbor_search<STraits,
+    CGAL::Euclidean_distance<STraits>, Splitter>          Neighbor_search;
+  typedef typename Neighbor_search::Tree                  Tree;
+
+public:
+  CGAL_Kd_tree_storing_points(Points const& points, double /*epsilon*/ = 0.)
+    : m_tree(points.begin(), points.end())
+  {}
+
+  // Returns 0 because the indices are not returned in this version
+  std::size_t query_k_nearest_neighbors(
+    Point const& p,
+    unsigned int k,
+    double eps = 0.,
+    std::vector<std::pair<std::size_t, double>> *result = NULL) const
+  {
+    Neighbor_search search(m_tree, p, k, eps);
+
+#ifdef PRINT_FOUND_NEIGHBORS
+    std::cerr << "Query:\n";
+    for (auto nb : search)
+      std::cerr << "  " << nb.first << " : " << nb.second << "\n";
+#endif
+
+    std::size_t sum = 0;
+    if (result) {
+      for (auto nb : search)
+      {
+        //sum += nb.first;
+        result->push_back(std::make_pair(0, nb.second));
+      }
+    }
+    else {
+      //for (auto nb : search)
+        //sum += nb.first;
+    }
+    return sum;
+  }
+
+  int tree_depth() const
+  {
+    return m_tree.root()->depth();
+  }
+
+private:
+  Tree m_tree;
+};
+
+#endif // FUNCTOR_CGAL_KD_TREE_STORING_POINTS_
