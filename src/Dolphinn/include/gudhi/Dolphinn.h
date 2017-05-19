@@ -9,6 +9,23 @@
 namespace Gudhi {
 namespace dolphinn {
 
+/**
+ * \class Dolphinn Dolphinn.h gudhi/Dolphinn.h
+ * \brief Method for approximate neighbour computing.
+ * 
+ * \ingroup dolphinn
+ * 
+ * \details
+ * This class was created to interface with the user. 
+ *
+ * Dolphinn projects all the data on the vertices of an hypercube aiming to send close points to 
+ * close vertices (w.r.t. the hamming distance). It proposes two queries: the k-nearest neigbourg 
+ * search and the range query.
+ * 
+ * \remark When the class is built, the hypercube is immediately built.
+ * 
+ */
+
 	template <typename T, typename bitT>
   class Dolphinn
   {
@@ -43,7 +60,7 @@ namespace dolphinn {
       * @param query               - vector of queries
       * @param Q                   - number of queries
       * @param radius              - find a point within r with query
-      * @param MAX_PNTS_TO_SEARCH  - threshold
+      * @param max_pnts_to_search  - threshold
       * @param results_idxs        - indices of Q points, where Eucl(point[i], query[i]) <= r
       * @param threads_no          - number of threads to be created. Default value is 'std::thread::hardware_concurrency()'.
     */
@@ -59,7 +76,8 @@ namespace dolphinn {
       *
       * @param query               - vector of queries
       * @param Q                   - number of queries
-      * @param MAX_PNTS_TO_SEARCH  - threshold
+      * @param m                   - number of neighbours to search 
+      * @param max_pnts_to_search  - threshold
       * @param results_idxs_dists  - indices and distances of Q points, where the (Approximate) Nearest Neighbors are stored.
       * @param threads_no          - number of threads to be created. Default value is 'std::thread::hardware_concurrency()'.
     	*/

@@ -19,6 +19,7 @@ int main(int argc, char **argv) {
 		std::cerr << "Third argument is the radius\n";
 		std::cerr << "Fourth argument is the LSH's windows size\n";
 		std::cerr << "(optionnal) Fifth argument is the number of queries (the n firsts queries of the query file)\n";
+		exit(-1);
 	}
   
   Gudhi::Points_off_reader<Point> off_readerd(argv[1]);

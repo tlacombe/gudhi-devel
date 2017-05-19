@@ -23,6 +23,18 @@
 
 namespace Gudhi {
 
+/**  
+ * \class Stable_hash_function Stable_hash_function.h gudhi/Stable_hash_function.h
+ * \brief Hash functions used to build Dolphinn's hypercube.
+ * 
+ * \ingroup dolphinn
+ * 
+ * \details
+ * The class contains the methods and the informations to hash a point/dataset.
+ *
+ *\remark This class is meant to be abstracted.
+ */
+
 template <class T, typename Point>
 class Stable_hash_function
 {
@@ -43,7 +55,7 @@ class Stable_hash_function
     // for every key remember its random bit
     std::unordered_map<int, char> hashtable_for_random_bit;
     // Hamming cube vertex and vertices of assigned points.
-    // This is used *only* by the last hash.
+    // This is used *only* by one of the hash.
     std::unordered_map< std::string, std::vector<int> > hashtable_cube;
   public:
   
@@ -91,8 +103,8 @@ class Stable_hash_function
   	/** \brief Constructor that creates a 
   	 * hashing function based on hyperplanes
  	 *
-	 *
-	 * @param D  		 - dimension of points
+	 * @param K  		 - dimension of the hypercube
+	 * @param D  		 - dimension of the points
 	 * @param r  		 - parameter hashing function (here r=0) 
 	 */
   	Stable_hash_function(const int K, const int D, const float r)
@@ -159,7 +171,7 @@ class Stable_hash_function
     
     /** \brief Hash a point with the hyperplanes method.
 	 *
-	 * @param v  				- vector of points
+	 * @param x 				- point to hash
 	 * @param hash_key  - stores the result of the hashing
 	 */
     template<typename bitT>
@@ -291,9 +303,9 @@ class Stable_hash_function
 
     /** \brief Assing random bit for queries.
    *
-   * @param q_begin   			- query
+   * @param q   							- query
    * @param mapped_q_begin   	- (to be) mapped query
-   * @param k   				- iteration (assign the k-th bit of the query)
+   * @param k   							- iteration (assign the k-th bit of the query)
    */
     template <typename bit_iterator>
     void assign_random_bit_query(const Point q, bit_iterator mapped_q_begin, const int k)
@@ -306,15 +318,7 @@ class Stable_hash_function
     	}
     	else
     	{
-    		if(r>0){
-    			*(mapped_q_begin + k) = uni_bit_distribution(generator);
-    		} else {
-    			if(q_key>0) {
-    				*(mapped_q_begin + k) = 1;
-    			} else {
-    				*(mapped_q_begin + k) = 0;
-    			}
-    		}
+    		*(mapped_q_begin + k) = uni_bit_distribution(generator);
     	}
     }   
     
@@ -364,6 +368,8 @@ class Stable_hash_function
       * @param points_checked      - current points checked
       * @param MAX_PNTS_TO_SEARCH  - threshold
       * @param squared_radius      - check if any original point lies in r Euclidean distance from the original query
+      * @param pointset						 - original dataset
+      * @param query_point				 - pointer to the queried point
       * @param answer_point_idx    - index of point that has distance less or equal than r with the query
     */
     template <typename iterator>
@@ -409,6 +415,7 @@ class Stable_hash_function
       *
       * @param mapped_query        - mapped query
       * @param K                   - dimension of the mapped query
+      * @param m                   - number of nearest neighbours to search
       * @param MAX_PNTS_TO_SEARCH  - threshold
       * @param pointset            - original points
       * @param query_point         - original query
@@ -440,9 +447,12 @@ class Stable_hash_function
       *
       * @param str                     - given string
       * @param i                       - index
+      * @param m                       - number of nearest neighbours to search
       * @param changesLeft             - changes left to make
       * @param points_checked          - current points checked
       * @param MAX_PNTS_TO_SEARCH      - threshold
+      * @param pointset           		 - original points
+      * @param query_point        		 - original query
       * @param answer_point_idx_dist   - index and distance of current best Nearest Neighbor
     */
     template <typename iterator>

@@ -24,6 +24,7 @@ int main(int argc, char **argv) {
 		std::cerr << "Second argument is the dimension of the pointset\n";
 		std::cerr << "Third argument is the number of nearest neighbour\n";
 		std::cerr << "Fourth argument is a parameter for the LSH function\n";
+		exit(-1);
 	}
   
   size_t n = atoi(argv[1]);

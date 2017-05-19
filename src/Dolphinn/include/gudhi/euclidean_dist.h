@@ -11,9 +11,8 @@ namespace Gudhi {
 
 /** \brief Euclidean distance squared.
  *
- * @param it1       - first point
- * @param it1_end   - end of first point
- * @param it2       - second point
+ * @param p1       	- first point
+ * @param p2   			- second point
  * @return          - the Euclidean distance of p1-p2
  */
 template<typename iterator>
@@ -31,7 +30,7 @@ float squared_Eucl_distance(iterator p1, iterator p2)
 /** \brief Report a point's index (if any) that has Euclidean distance
  * less or equal than a given radius.
  *
- * @param pointset        - 1D vector of all points
+ * @param pointset        - vector of all points
  * @param points_idxs     - indices of candidate points
  * @param D               - dimension of points
  * @param query_point     - vector containing only the coordinates of the query point
@@ -54,7 +53,7 @@ int Euclidean_distance_within_radius(iterator pointset, const std::vector<int>& 
 
 /** \brief Report Nearest Neighbor's index, if something better than the current NN is found.
  *
- * @param pointset              - 1D vector of all points
+ * @param pointset              - vector of all points
  * @param points_idxs           - indices of candidate points
  * @param D                     - dimension of points
  * @param query_point           - vector containing only the coordinates of the query point
@@ -80,7 +79,7 @@ void find_Nearest_Neighbor_index(iterator pointset, const std::vector<int>& poin
 
 /** \brief Report M Nearest Neighbors' indices, if something better than the current NN is found.
  *
- * @param pointset              - 1D vector of all points
+ * @param pointset              - vector of all points
  * @param points_idxs           - indices of candidate points
  * @param D                     - dimension of points
  * @param M
@@ -123,7 +122,7 @@ void find_M_Nearest_Neighbor_indices(iterator pointset, const std::vector<int>& 
 /** \brief Report a point's index (if any) that has Euclidean distance
  * less or equal than a given radius. Usage in a parallel environment.
  *
- * @param pointset          - 1D vector of all points
+ * @param pointset          - vector of all points
  * @param points_idxs       - indices of candidate points
  * @param start_points_idxs - where to start checking
  * @param end_points_idxs   - where to stop checking

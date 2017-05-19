@@ -12,6 +12,23 @@ namespace Gudhi {
 
 namespace dolphinn
 {
+/**
+ * \class Hypercube Hypercube.h gudhi/Hypercube.h
+ * \brief Data structure for Dolphinn.
+ * 
+ * \ingroup dolphinn
+ * 
+ * \details
+ * This class is the hypercube used in Dolphinn. It contains functions for quering and so far 
+ * unused parallelisation code. Among its members, there is a vector of hash functions, every 
+ * vertex of the hypercube corresponds to a possible output of this vector (each function hash 
+ * a points and returns a bit). One of these hash functions contains a map corresponding to the 
+ * data structure. 
+ * 
+ */
+
+
+
   template <typename Point, typename T, typename bitT>
   class Hypercube
   {
@@ -208,7 +225,7 @@ namespace dolphinn
       *
       * @param H                    - vector of Hash Functions
       * @param query                - vector of all queries
-      * @param mapped query         - vector of all (to be) mapped queries
+      * @param mapped_query         - vector of all (to be) mapped queries
       * @param q_start              - starting index of query to execute
       * @param q_end                - ending index of query to execute
       * @param K                    - dimension of Hypercube
@@ -234,6 +251,7 @@ namespace dolphinn
       *
       * @param query               - vector of queries
       * @param Q                   - number of queries
+      * @param m                   - number of neigbours to be searched
       * @param MAX_PNTS_TO_SEARCH  - threshold
       * @param results_idxs_dists  - indices and distances of Q points, where the (Approximate) Nearest Neighbors are stored.
       * @param threads_no          - number of threads to be created. Default value is 'std::thread::hardware_concurrency()'.
@@ -279,7 +297,7 @@ namespace dolphinn
       *
       * @param H                    - vector of Hash Functions
       * @param query                - vector of all queries
-      * @param mapped query         - vector of all (to be) mapped queries
+      * @param mapped_query         - vector of all (to be) mapped queries
       * @param q_start              - starting index of query to execute
       * @param q_end                - ending index of query to execute
       * @param K                    - dimension of Hypercube
