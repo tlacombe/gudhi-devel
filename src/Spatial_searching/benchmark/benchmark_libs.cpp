@@ -29,9 +29,11 @@ can be processed in Excel, for example.
 #define GENERATE_QUERIES_CLOSE_TO_EXISTING_POINTS
 //#define PICK_QUERIES_OUT_OF_EXISTING_POINTS // default
 
-#define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH
-#define GUDHI_DO_NOT_TEST_CGAL_KD_TREE
-//#define GUDHI_DO_NOT_TEST_CGAL_KD_TREE_WITH_POINT_AND_INDEX
+//#define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_SLIDING_MIDPOINT
+//#define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_MEDIAN_OF_MAX_SPREAD
+#define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_MIDPOINT_OF_MAX_SPREAD
+#define GUDHI_DO_NOT_TEST_CGAL_KD_TREE_STORING_POINTS
+#define GUDHI_DO_NOT_TEST_CGAL_KD_TREE_STORING_POINTS_AND_INDICES
 #undef GUDHI_SBL_IS_AVAILABLE
 #undef GUDHI_NMSLIB_IS_AVAILABLE
 #undef GUDHI_NANOFLANN_IS_AVAILABLE
@@ -46,7 +48,7 @@ can be processed in Excel, for example.
 #undef GUDHI_RORKD_FOREST_IS_AVAILABLE
 
 const int ONLY_THE_FIRST_N_POINTS = 10000000; // 0 = no limit
-
+const bool FLANN_KDTREE_REORDER = true;
 
 #include <cstddef>
 
@@ -58,12 +60,12 @@ const int ONLY_THE_FIRST_N_POINTS = 10000000; // 0 = no limit
 # include "functor_GUDHI_Kd_tree_search.h"
 #endif
 
-#ifndef GUDHI_DO_NOT_TEST_CGAL_KD_TREE
-# include "functor_CGAL_Kd_tree.h"
+#ifndef GUDHI_DO_NOT_TEST_CGAL_KD_TREE_STORING_POINTS
+# include "functor_CGAL_Kd_tree_storing_points.h"
 #endif
 
-#ifndef GUDHI_DO_NOT_TEST_CGAL_KD_TREE_WITH_POINT_AND_INDEX
-# include "functor_CGAL_Kd_tree_with_point_and_index.h"
+#ifndef GUDHI_DO_NOT_TEST_CGAL_KD_TREE_STORING_POINTS_AND_INDICES
+# include "functor_CGAL_Kd_tree_storing_points_and_indices.h"
 #endif
 
 #ifdef GUDHI_SBL_IS_AVAILABLE
@@ -138,6 +140,7 @@ const int ONLY_THE_FIRST_N_POINTS = 10000000; // 0 = no limit
 
 const char * const BENCHMARK_SCRIPT_FILENAME = "benchmark_script.txt";
 
+//typedef CGAL::Epick_d<CGAL::Dimension_tag<2>> Kernel;
 typedef CGAL::Epick_d<CGAL::Dynamic_dimension_tag> Kernel;
 typedef Kernel::FT FT;
 typedef Kernel::Point_d Point;
@@ -260,7 +263,7 @@ void run_tests(
 #ifdef CHECK_ACTUAL_EPSILON
   typedef std::vector<std::pair<std::size_t, double>> Query_res;
 
-  GUDHI_Kd_tree_search gkts(points);
+  GUDHI_Kd_tree_search<Kernel> gkts(points);
 
   std::vector<std::vector<std::pair<std::size_t, double>>> ground_truth(
     queries.size(), std::vector<std::pair<std::size_t, double>>());
@@ -333,36 +336,52 @@ void run_tests(
   // CGAL/GUDHI
   //---------------------------------------------------------------------------
 
-#ifndef GUDHI_DO_NOT_TEST_KD_TREE_SEARCH
+#ifndef GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_SLIDING_MIDPOINT
 # ifdef LOOP_ON_VARIOUS_PRECISIONS
   for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
 # endif
-  perfs.push_back(test__ANN_queries<GUDHI_Kd_tree_search>(
-    points, queries, k, epsilon, "GUDHI Kd_tree_search", "", p_ground_truth));
+  perfs.push_back(test__ANN_queries<GUDHI_Kd_tree_search<Kernel, gss::SLIDING_MIDPOINT>>(
+    points, queries, k, epsilon, "GUDHI Kd_tree_search SLIDING_MIDPOINT", "", p_ground_truth));
+#endif
+
+#ifndef GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_MEDIAN_OF_MAX_SPREAD
+# ifdef LOOP_ON_VARIOUS_PRECISIONS
+  for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
+# endif
+    perfs.push_back(test__ANN_queries<GUDHI_Kd_tree_search<Kernel, gss::MEDIAN_OF_MAX_SPREAD>>(
+      points, queries, k, epsilon, "GUDHI Kd_tree_search MEDIAN_OF_MAX_SPREAD", "", p_ground_truth));
+#endif
+
+#ifndef GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_MIDPOINT_OF_MAX_SPREAD
+# ifdef LOOP_ON_VARIOUS_PRECISIONS
+  for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
+# endif
+    perfs.push_back(test__ANN_queries<GUDHI_Kd_tree_search<Kernel, gss::MIDPOINT_OF_MAX_SPREAD>>(
+      points, queries, k, epsilon, "GUDHI Kd_tree_search MIDPOINT_OF_MAX_SPREAD", "", p_ground_truth));
 #endif
 
   //---------------------------------------------------------------------------
   // CGAL (with points stored in the tree)
   //---------------------------------------------------------------------------
 
-#ifndef GUDHI_DO_NOT_TEST_CGAL_KD_TREE
+#ifndef GUDHI_DO_NOT_TEST_CGAL_KD_TREE_STORING_POINTS
 # ifdef LOOP_ON_VARIOUS_PRECISIONS
   for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
 # endif
-    perfs.push_back(test__ANN_queries<CGAL_Kd_tree>(
-      points, queries, k, epsilon, "CGAL_Kd_tree", "", p_ground_truth));
+    perfs.push_back(test__ANN_queries<CGAL_Kd_tree_storing_points<Kernel>>(
+      points, queries, k, epsilon, "CGAL_Kd_tree_storing_points", "", p_ground_truth));
 #endif
 
   //---------------------------------------------------------------------------
   // CGAL (with points AND indices stored in the tree)
   //---------------------------------------------------------------------------
 
-#ifndef GUDHI_DO_NOT_TEST_CGAL_KD_TREE_WITH_POINT_AND_INDEX
+#ifndef GUDHI_DO_NOT_TEST_CGAL_KD_TREE_STORING_POINTS_AND_INDICES
 # ifdef LOOP_ON_VARIOUS_PRECISIONS
   for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
 # endif
-    perfs.push_back(test__ANN_queries<CGAL_Kd_tree_with_point_and_index>(
-      points, queries, k, epsilon, "CGAL_Kd_tree_with_point_and_index", "", p_ground_truth));
+    perfs.push_back(test__ANN_queries<CGAL_Kd_tree_storing_points_and_indices<Kernel>>(
+      points, queries, k, epsilon, "CGAL_Kd_tree_storing_points_and_indices", "", p_ground_truth));
 #endif
 
   //---------------------------------------------------------------------------
@@ -436,7 +455,7 @@ void run_tests(
   const int GROUND_TRUTH_FOR_FLANN_NUM_QUERIES = 200;
   typedef std::vector<std::pair<std::size_t, double>> Query_res;
 
-  GUDHI_Kd_tree_search gkts_for_flann(points);
+  GUDHI_Kd_tree_search<Kernel> gkts_for_flann(points);
 
   std::vector<Point> gt_queries;
   gt_queries.reserve(GROUND_TRUTH_FOR_FLANN_NUM_QUERIES);
@@ -459,37 +478,37 @@ void run_tests(
   auto p_gt_queries = &gt_queries;
 #   endif
 
-  perfs.push_back(test__ANN_queries<Flann>(
+  perfs.push_back(test__ANN_queries<Flann<Kernel>>(
     points, queries, k, epsilon, 
     "Flann - randomized kd-trees - 4 trees",
     std::string("checks=") + std::to_string(flann_checks), 
     p_ground_truth, flann::KDTreeIndexParams(4), flann_checks, p_gt_for_flann, p_gt_queries));
 
-  perfs.push_back(test__ANN_queries<Flann>(
+  perfs.push_back(test__ANN_queries<Flann<Kernel>>(
     points, queries, k, epsilon,
     "Flann - randomized kd-trees - 16 trees",
     std::string("checks=") + std::to_string(flann_checks),
     p_ground_truth, flann::KDTreeIndexParams(16), flann_checks, p_gt_for_flann, p_gt_queries));
 
-  perfs.push_back(test__ANN_queries<Flann>(
+  perfs.push_back(test__ANN_queries<Flann<Kernel>>(
     points, queries, k, epsilon,
     "Flann - hierarchical k-means",
     std::string("checks=") + std::to_string(flann_checks),
     p_ground_truth, flann::KMeansIndexParams(), flann_checks, p_gt_for_flann, p_gt_queries));
 
-  perfs.push_back(test__ANN_queries<Flann>(
+  perfs.push_back(test__ANN_queries<Flann<Kernel>>(
     points, queries, k, epsilon,
     "Flann - composite (4 kd-trees + k-means)",
     std::string("checks=") + std::to_string(flann_checks),
     p_ground_truth, flann::CompositeIndexParams(4), flann_checks, p_gt_for_flann, p_gt_queries));
 
-  perfs.push_back(test__ANN_queries<Flann>(
+  perfs.push_back(test__ANN_queries<Flann<Kernel>>(
     points, queries, k, epsilon,
     "Flann - composite (16 kd-trees + k-means)",
     std::string("checks=") + std::to_string(flann_checks),
     p_ground_truth, flann::CompositeIndexParams(16), flann_checks, p_gt_for_flann, p_gt_queries));
 
-  perfs.push_back(test__ANN_queries<Flann>(
+  perfs.push_back(test__ANN_queries<Flann<Kernel>>(
     points, queries, k, epsilon,
     "Flann - hierarchical clustering",
     std::string("checks=") + std::to_string(flann_checks),
@@ -502,7 +521,7 @@ void run_tests(
 # endif // GUDHI_FLANN_TEST_OTHER_VARIANTS
 
 # ifdef GUDHI_FLANN_TEST_BRUTEFORCE
-  perfs.push_back(test__ANN_queries<Flann>(
+  perfs.push_back(test__ANN_queries<Flann<Kernel>>(
     points, queries, k, epsilon, "Flann - linear bruteforce", "", p_ground_truth, flann::LinearIndexParams()));
 # endif //GUDHI_FLANN_TEST_BRUTEFORCE
 
@@ -510,8 +529,8 @@ void run_tests(
 #   ifdef LOOP_ON_VARIOUS_PRECISIONS
   for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
 #   endif
-  perfs.push_back(test__ANN_queries<Flann>(
-    points, queries, k, epsilon, "Flann - single kd-tree", "", p_ground_truth, flann::KDTreeSingleIndexParams()));
+  perfs.push_back(test__ANN_queries<Flann<Kernel>>(
+    points, queries, k, epsilon, "Flann - single kd-tree", "", p_ground_truth, flann::KDTreeSingleIndexParams(10, FLANN_KDTREE_REORDER)));
 # endif //GUDHI_FLANN_TEST_SINGLE_KDTREE
 
 #endif
@@ -617,6 +636,10 @@ decode_interval(std::string const& interval)
 }
 
 int main() {
+  unsigned int seed = static_cast<unsigned int> (time(NULL));
+  CGAL::default_random = CGAL::Random(seed);  // TODO(CJ): use set_default_random
+  std::cerr << "Random seed = " << seed << "\n";
+
   CGAL::set_error_behaviour(CGAL::ABORT);
 
 #ifdef GUDHI_USE_TBB
@@ -626,10 +649,6 @@ int main() {
   int num_threads = tbb::task_scheduler_init::default_num_threads() - 4;
 #endif
 #endif
-
-  unsigned int seed = static_cast<unsigned int> (time(NULL));
-  CGAL::default_random = CGAL::Random(seed);  // TODO(CJ): use set_default_random
-  std::cerr << "Random seed = " << seed << "\n";
 
   std::ifstream script_file;
   script_file.open(BENCHMARK_SCRIPT_FILENAME);
@@ -716,21 +735,18 @@ int main() {
 
           std::cerr << "\nRun #" << run_number << "...\n";
 
-#ifdef GUDHI_TC_PROFILING
           Gudhi::Clock t_gen;
-#endif
-
           std::vector<Point> points;
 
           if (input == "generate_moment_curve") {
             points = Gudhi::generate_points_on_moment_curve<Kernel>(num_points, std::atof(param1.c_str()), 
                                                                     std::atof(param2.c_str()), std::atof(param3.c_str()));
           } else if (input == "generate_plane") {
-            // The ambient dim is the same as the intrinsic dim
-            // It will be embedded in the actual ambient dim later if necessary
-            points = Gudhi::generate_points_on_plane<Kernel>(num_points, std::atoi(param1.c_str()), std::atoi(param1.c_str()));
+            points = Gudhi::generate_points_on_plane<Kernel>(num_points, std::atoi(param1.c_str()), ambient_dim, 
+                                                             std::atoi(param2.c_str()), std::atoi(param3.c_str())); // coord_min, coord_max
           } else if (input == "generate_sphere_d") {
-            points = Gudhi::generate_points_on_sphere_d<Kernel>(num_points, std::atoi(param1.c_str()) + 1, // param1 = intrinsic dim
+            points = Gudhi::generate_points_on_sphere_d<Kernel>(num_points, std::atoi(param1.c_str()), // param1 = intrinsic dim
+                                                                ambient_dim,
                                                                 std::atof(param2.c_str()),  // radius
                                                                 std::atof(param3.c_str()));  // radius_noise_percentage
           } else if (input == "generate_points_in_cube_d") {
@@ -796,11 +812,9 @@ int main() {
             }
           }
 
-#ifdef GUDHI_TC_PROFILING
           t_gen.end();
           std::cerr << "Point set generated/loaded in " << t_gen.num_seconds()
               << " seconds.\n";
-#endif
 
           if (!points.empty()) {
 #if defined(INPUT_STRIDES) && INPUT_STRIDES > 1
