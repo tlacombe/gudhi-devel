@@ -31,13 +31,14 @@
 
 namespace gss = Gudhi::spatial_searching;
 
+template <typename Kernel, gss::Splitter_enum Splitting_strategy = gss::SLIDING_MIDPOINT>
 class GUDHI_Kd_tree_search
 {
-  typedef CGAL::Epick_d<CGAL::Dynamic_dimension_tag>  K;
-  typedef K::Point_d                                  Point;
+  typedef Kernel                                      K;
+  typedef typename K::Point_d                         Point;
   typedef std::vector<Point>                          Points;
 
-  typedef gss::Kd_tree_search<K, Points>              Points_ds;
+  typedef gss::Kd_tree_search<K, Points, Splitting_strategy> Points_ds;
 
 public:
   GUDHI_Kd_tree_search(Points const& points, double /*epsilon*/ = 0.)
