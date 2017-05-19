@@ -29,10 +29,11 @@
 #include <vector>
 #include <utility>
 
+template <typename Kernel>
 class Flann
 {
-  typedef CGAL::Epick_d<CGAL::Dynamic_dimension_tag>  K;
-  typedef K::Point_d                                  Point;
+  typedef Kernel                                      K;
+  typedef typename K::Point_d                         Point;
   typedef std::vector<Point>                          Points;
 
   typedef double                                      Coord_type;
