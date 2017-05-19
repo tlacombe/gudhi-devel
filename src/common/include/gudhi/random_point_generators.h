@@ -214,7 +214,7 @@ embed_points_in_higher_dim(
 template <typename Kernel>
 std::vector<typename Kernel::Point_d> generate_points_on_plane(std::size_t num_points, int intrinsic_dim,
                                                                int ambient_dim,
-                                                               double coord_min = -5., double coord_max = 5.) {
+                                                               double coord_min = -1., double coord_max = 1.) {
   typedef typename Kernel::Point_d Point;
   typedef typename Kernel::FT FT;
   Kernel k;
