@@ -2,11 +2,10 @@
 #define DOLPHINN_HYPERCUBE_H
 
 #include <vector>
-#include "Stable_hash_function.h"
+#include <gudhi/Stable_hash_function.h>
 #include <thread>
 #include <iterator>
 #include <utility>
-
 
 namespace Gudhi {
 
@@ -80,14 +79,10 @@ namespace dolphinn
     Hypercube(const std::vector<Point>& pointset, const int N, const int D, const int K, const int threads_no = 1 /*std::thread::hardware_concurrency()*/, const float r = 4/*3 or 8*/)
       : D(D), K(K), R(r), pointset(pointset)
     {
-      /*if(threads_no >= K || ((K - 1) % threads_no) != 0)
-      {
-      	std::cout << threads_no << K << std::endl;
-      	std::cout << "Threads number is greater or equal to K (dimension of Hypercube). Or  (threads_no MOD (K - 1)) != 0. Construction aborted..." << std::endl;
-        return;
-      }*/
-
-      //if(threads_no == 1)
+      if(N<1){
+      	std::cerr << "N<1 aborting construction\n";
+      	exit(-1); 
+      }
       {
       	if(r!=0){
       		std::vector<bitT> mapped_pointset(N * K);

@@ -13,7 +13,7 @@
 #include <thread>
 #include <utility>
 #include <Eigen/Dense>
-#include "euclidean_dist.h"
+#include <gudhi/euclidean_dist.h>
 
 /**
  * Currently we have 2 possible families of hashing functions:
@@ -44,6 +44,7 @@ class Stable_hash_function
     float r;
 		//for line LSH
     float b;
+    // direction of the line for the stable distribution or offset for the hyperplanes
     Point a;
     //for Hyperplane LSH
     Matrix m;
@@ -147,15 +148,28 @@ class Stable_hash_function
     }
     
     
-    /** \brief Hash a pointset with the hyperplanes method.
+    /** \brief Hash a pointset with the hyperplanes method and fills the hypercube.
 	 *
 	 * @param v  	- vector of points
 	 */
     void hyperplane_hash(const std::vector<Point>& v) {
+    	for(int j=0;j<dimension;++j){
+    		a.push_back(v[0][j]);
+    	}
+    	for(size_t i=1;i<v.size();++i){
+    		for(int j=0;j<dimension;++j){
+		  		a[j]+=v[i][j];
+		  	}
+    	}
+    	for(int j=0;j<dimension;++j){
+    		a[j] = a[j]/v.size();
+    	}
     	int j=0;
+    	const float* aptr = &a[0];
     	for(const auto& x:v) {
     		const float* ptr = &x[0];
-    		Eigen::Matrix<float, Eigen::Dynamic, 1> vector =  m * Eigen::Map<const Eigen::Matrix<float ,Eigen::Dynamic, 1>>(ptr,dimension,1);
+    		Eigen::Matrix<float, Eigen::Dynamic, 1> vector =  m * 
+    										(Eigen::Map<const Eigen::Matrix<float ,Eigen::Dynamic, 1>>(ptr,dimension,1)-Eigen::Map<const Eigen::Matrix<float ,Eigen::Dynamic, 1>>(aptr,dimension,1));
     		std::vector<char> hash_key(vector.size());
     		for(int i =0; i<vector.size();++i) {
     			if(vector(i,0)>0){
@@ -175,9 +189,11 @@ class Stable_hash_function
 	 * @param hash_key  - stores the result of the hashing
 	 */
     template<typename bitT>
-    void hyperplane_hash(const Point& x, std::vector<bitT> hash_key) {
+    void hyperplane_hash(const Point& x, std::vector<bitT>& hash_key) {
+    	const float* aptr = &a[0];
    		const float* ptr = &x[0];
-  		Eigen::Matrix<float, Eigen::Dynamic, 1> vector =  m * Eigen::Map<const Eigen::Matrix<float ,Eigen::Dynamic, 1>>(ptr,dimension,1);
+  		Eigen::Matrix<float, Eigen::Dynamic, 1> vector =  m * 
+  										(Eigen::Map<const Eigen::Matrix<float ,Eigen::Dynamic, 1>>(ptr,dimension,1)-Eigen::Map<const Eigen::Matrix<float ,Eigen::Dynamic, 1>>(aptr,dimension,1));
   		for(int i =0; i<vector.size();++i) {
   			if(vector(i,0)>0){
   				hash_key[i]=1;
@@ -430,7 +446,6 @@ class Stable_hash_function
       // search query's cube vertex, if pointsets' points exist there
       if(q_key_it != hashtable_cube.end())
       {
-        //find_Nearest_Neighbor_index<iterator>(pointset, q_key_it->second, dimension, query_point, answer_point_idx_dist, MAX_PNTS_TO_SEARCH);
     	  find_M_Nearest_Neighbor_indices<iterator>(pointset, q_key_it->second, dimension, m, query_point, answer_point_idx_dist, MAX_PNTS_TO_SEARCH);
     	  points_checked += q_key_it->second.size();
       }
@@ -465,7 +480,6 @@ class Stable_hash_function
         const auto& key_value_it = hashtable_cube.find(str);
         if(key_value_it != hashtable_cube.end())
         {
-          //find_Nearest_Neighbor_index<iterator>(pointset, key_value_it->second, dimension, query_point, answer_point_idx_dist, MAX_PNTS_TO_SEARCH);
           find_M_Nearest_Neighbor_indices<iterator>(pointset, key_value_it->second, dimension, m, query_point, answer_point_idx_dist, MAX_PNTS_TO_SEARCH);
           points_checked += key_value_it->second.size();
           stop = (points_checked > MAX_PNTS_TO_SEARCH);

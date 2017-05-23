@@ -1,9 +1,9 @@
 #ifndef DOLPHINN_H
 #define DOLPHINN_H
 
-#include "Hypercube.h"
+#include <gudhi/Hypercube.h>
 #include <thread>
-#include "IO.h"
+//#include "IO.h"
 
 
 namespace Gudhi {
@@ -32,7 +32,8 @@ namespace dolphinn {
   	typedef typename std::vector<T> Point;
   
   	// See constructor
-  	int N,D,K;
+  	int N;
+  	const int D,K;
 		double hashing_method;
 		std::vector<Point>& pointset;
 		Hypercube<Point, T, bitT> hypercube;
@@ -52,7 +53,7 @@ namespace dolphinn {
       *                      Neighbor Search, to adapt to the average distance of the NN, 'r' is the hashing window.
    */
   	
-  	Dolphinn(std::vector<Point>& pointset, const int N, const int D, const int K, const double hashing_method) : N(N), D(D), K(K), hashing_method(hashing_method), pointset(pointset), hypercube(pointset, N, D, K, 1, hashing_method) 
+  	Dolphinn(std::vector<Point>& pointset, int N, const int D, const int K, const double hashing_method) : N(pointset.size()), D(D), K(K), hashing_method(hashing_method), pointset(pointset), hypercube(pointset, N, D, K, 1, hashing_method) 
   		{}
   	
   	/** \brief Radius query the Hamming cube.
@@ -64,7 +65,7 @@ namespace dolphinn {
       * @param results_idxs        - indices of Q points, where Eucl(point[i], query[i]) <= r
       * @param threads_no          - number of threads to be created. Default value is 'std::thread::hardware_concurrency()'.
     */
-  	void radius_query(const std::vector<Point>& query, const int Q, const float radius, const int max_pnts_to_search, std::vector<int>& results_idxs, const int threads_no = std::thread::hardware_concurrency()) {
+  	void radius_query(const std::vector<Point>& query, const int Q, const float radius, const int max_pnts_to_search, std::vector<int>& results_idxs, const int threads_no = 1/* std::thread::hardware_concurrency()*/) {
   		if(max_pnts_to_search>N){
   			hypercube.radius_query(query, Q, radius, N, results_idxs, threads_no);
   		} else {
@@ -81,7 +82,7 @@ namespace dolphinn {
       * @param results_idxs_dists  - indices and distances of Q points, where the (Approximate) Nearest Neighbors are stored.
       * @param threads_no          - number of threads to be created. Default value is 'std::thread::hardware_concurrency()'.
     	*/
-  	void m_nearest_neighbors_query(const std::vector<Point>& query, const int Q, const int m, const int max_pnts_to_search, std::vector<std::vector<std::pair<int, float>>>& results_idxs_dists, const int threads_no = std::thread::hardware_concurrency()) {
+  	void m_nearest_neighbors_query(const std::vector<Point>& query, const int Q, const int m, const int max_pnts_to_search, std::vector<std::vector<std::pair<int, float>>>& results_idxs_dists, const int threads_no = 1 /*std::thread::hardware_concurrency()*/) {
   		if(max_pnts_to_search>N){
   			hypercube.m_nearest_neighbors_query(query, Q, m, N, results_idxs_dists, threads_no);
   		} else {

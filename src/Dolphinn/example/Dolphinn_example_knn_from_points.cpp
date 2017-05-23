@@ -1,9 +1,10 @@
 #include <iostream>
-#include "gudhi/Dolphinn.h"
+#include <gudhi/Dolphinn.h>
 #include <gudhi/Points_off_io.h>
 #include <vector>
 #include <random>
 #include <cmath> // for sqrt
+#include <utility> // for pair
 
 #include <ctime>
 #include <ratio>
@@ -14,7 +15,7 @@
 #define Point std::vector<T>
 
 
-using namespace Gudhi;
+using Dolphinn = Gudhi::dolphinn::Dolphinn<T, bitT>;
 
 int main(int argc, char **argv) {
 	
@@ -22,7 +23,7 @@ int main(int argc, char **argv) {
 		std::cerr << "Error: Wrong number of arguments\n";
 		std::cerr << "First argument is the number of points\n";
 		std::cerr << "Second argument is the dimension of the pointset\n";
-		std::cerr << "Third argument is the number of nearest neighbour\n";
+		std::cerr << "Third argument is the number of nearest neighbours\n";
 		std::cerr << "Fourth argument is a parameter for the LSH function\n";
 		exit(-1);
 	}
@@ -66,7 +67,7 @@ int main(int argc, char **argv) {
 	using namespace std::chrono;
   high_resolution_clock::time_point t1 = high_resolution_clock::now();
   
-  dolphinn::Dolphinn<T, bitT> dolphi(pointset, n, d, k, atof(argv[4])); 
+  Dolphinn dolphi(pointset, n, d, k, atof(argv[4])); 
   std::cout << "Hypercube built\n";
   
 	high_resolution_clock::time_point t2 = high_resolution_clock::now();
@@ -83,11 +84,11 @@ int main(int argc, char **argv) {
   std::cout << "\n";
   
   
-  std::cout << "The nearest neighbour are: \n";
+  std::cout << "The nearest neighbours are: \n";
   for(auto& x:result[0]){
   	for(auto y:pointset[x.first])
   		std::cout << y << " ";
-  	std::cout << x.first << " ";
+  	//std::cout << x.first << " ";
   	std::cout << " for a distance of " << std::sqrt(x.second) << "\n";
   }
   

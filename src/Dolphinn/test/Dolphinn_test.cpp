@@ -2,11 +2,12 @@
 #define BOOST_TEST_MODULE "dolphinn"
 #include <boost/test/unit_test.hpp>
 
-#include "gudhi/Dolphinn.h"
+#include <gudhi/Dolphinn.h>
 #include <gudhi/Points_off_io.h>
 #include <vector>
 #include <random>
 #include <cmath>
+#include <utility> //for pair
 
 #define T float
 #define bitT char
@@ -16,7 +17,7 @@
 #define D 10
 #define Q 5
 
-using namespace Gudhi;
+using Dolphinn = Gudhi::dolphinn::Dolphinn<T, bitT>;
 
 BOOST_AUTO_TEST_CASE(hypercube_building_lines) {
   std::vector<Point> pointset;
@@ -30,7 +31,7 @@ BOOST_AUTO_TEST_CASE(hypercube_building_lines) {
   	pointset.push_back(p);
   }
     	
-  dolphinn::Dolphinn<T, bitT> dolphi(pointset, N, D, K, 0);
+  Dolphinn dolphi(pointset, N, D, K, 0);
   const Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> m = dolphi.get_hypercube().get_H()[0].get_m();
   const float* ptr = &pointset[0][0];
   Eigen::Matrix<float, Eigen::Dynamic, 1> v =  m * Eigen::Map<const Eigen::Matrix<float ,Eigen::Dynamic, 1>>(ptr,D,1);
@@ -58,7 +59,7 @@ BOOST_AUTO_TEST_CASE(hypercube_building_hyperplanes) {
   	}
   	pointset.push_back(p);
   }
-  dolphinn::Dolphinn<T, bitT> dolphi(pointset, N, D, K, 0.0001);
+  Dolphinn dolphi(pointset, N, D, K, 0.0001);
   int num=0;
   for(auto x:dolphi.get_hypercube().get_H()[K-1].get_hashtable())
   	num += x.second.size();
@@ -90,7 +91,7 @@ BOOST_AUTO_TEST_CASE(knn_query) {
   	}
   	pointset.push_back(p);
   }
-  dolphinn::Dolphinn<T, bitT> dolphi(pointset, N, D, K, 0);
+  Dolphinn dolphi(pointset, N, D, K, 0);
   
   std::vector<Point> queries;
   std::vector<std::vector<std::pair<int, float>>> result;
@@ -127,7 +128,6 @@ BOOST_AUTO_TEST_CASE(knn_query) {
 	std::vector<std::pair<int, float>> dummy;
   result2.push_back(dummy);
 	dolphi.m_nearest_neighbors_query(queries, 1, 1, N*2, result2, 1);
-	
 	int min_idx = 0;
 	float min_dist = 500;
 	
@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE(radius_query) {
   	}
   	pointset.push_back(p);
   }
-  dolphinn::Dolphinn<T, bitT> dolphi(pointset, N, D, K, 0.2);
+  Dolphinn dolphi(pointset, N, D, K, 0.5);
   
   std::vector<Point> queries;
   std::vector<int> result(Q);
@@ -168,7 +168,7 @@ BOOST_AUTO_TEST_CASE(radius_query) {
   	queries.push_back(p);
   }
 	
-	dolphi.radius_query(queries, Q, 0.3, N/100, result, 0.5);
+	dolphi.radius_query(queries, Q, 0.8, N/100, result, 1);
 	for(int i=0; i<Q;++i){
 		if(result[i]!=-1){
 			float d=0;
@@ -176,7 +176,13 @@ BOOST_AUTO_TEST_CASE(radius_query) {
 				d+=(queries[i][j]-pointset[result[i]][j])*(queries[i][j]-pointset[result[i]][j]);
 			}
 			//is the answer inside the radius?
-			BOOST_CHECK(d<=0.3*0.3);
+			BOOST_CHECK(d<=0.8*0.8);
 		}
 	}
+	
+	// for find_strings_with_fixed_Hamming_dist_for_radius_query (Stable_hash_function.h)
+	std::vector<int> result2(Q);
+	Dolphinn dolphi2(pointset, N, D, K+5, 0);
+	dolphi2.radius_query(queries, Q, 0.000001, N, result2, 1);
+	
 }

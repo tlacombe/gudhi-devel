@@ -8,7 +8,7 @@
 #define Point std::vector<T>
 
 
-using namespace Gudhi;
+using Dolphinn = Gudhi::dolphinn::Dolphinn<T, bitT>;
 
 int main(int argc, char **argv) {
 	
@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
   
   std::vector<int> result(nq);
   
-  dolphinn::Dolphinn<T, bitT> dolphi(pointset, n, d, k, atof(argv[4])); 
+  Dolphinn dolphi(pointset, n, d, k, atof(argv[4])); 
   std::cout << "Hypercube built \n";
   
   dolphi.radius_query(queries, nq, atof(argv[3]), n/100 + 10, result, 1);
@@ -57,10 +57,9 @@ int main(int argc, char **argv) {
   		std::cout << "found: ";
   		for(auto x: pointset[result[i]]) std::cout << x << " ";
   		std::cout << "d=";
-  		float tmp;
   		float res=0;
   		for(size_t j=0;j<d;++j){
-				tmp = pointset[result[i]][j] - queries[i][j];
+  			float tmp = pointset[result[i]][j] - queries[i][j];
 				res += tmp*tmp;
 			}
   		std::cout << res <<"\n";
