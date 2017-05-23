@@ -79,8 +79,8 @@ namespace dolphinn
     Hypercube(const std::vector<Point>& pointset, const int N, const int D, const int K, const int threads_no = 1 /*std::thread::hardware_concurrency()*/, const float r = 4/*3 or 8*/)
       : D(D), K(K), R(r), pointset(pointset)
     {
-      if(N<1){
-      	std::cerr << "N<1 aborting construction\n";
+      if(N<1 || K<1){
+      	std::cerr << "Less than one point or hypercube's dimension smaller than one: aborting construction\n";
       	exit(-1); 
       }
       {

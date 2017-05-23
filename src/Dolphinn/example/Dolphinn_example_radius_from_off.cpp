@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
   }
   std::vector<Point> pointset = off_readerd.get_point_cloud();
   size_t n = pointset.size();
-  size_t k = floor(log2(n)/2);
+  size_t k = floor(log2(n)/2)+1;
   size_t d = pointset[0].size();
   
   Gudhi::Points_off_reader<Point> off_readerq(argv[2]);
