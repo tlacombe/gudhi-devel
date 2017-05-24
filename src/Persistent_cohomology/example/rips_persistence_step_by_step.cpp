@@ -34,6 +34,13 @@
 #include <utility>  // for pair
 #include <map>
 
+// ----------------------------------------------------------------------------
+// rips_persistence_step_by_step is an example of each step that is required to
+// build a Rips over a Simplex_tree. Please refer to rips_persistence to see
+// how to do the same thing with the Rips_complex wrapper for less detailed
+// steps.
+// ----------------------------------------------------------------------------
+
 // Types definition
 using Simplex_tree = Gudhi::Simplex_tree<Gudhi::Simplex_tree_options_fast_persistence>;
 using Vertex_handle = Simplex_tree::Vertex_handle;
@@ -75,7 +82,7 @@ int main(int argc, char * argv[]) {
 
   // Compute the proximity graph of the points
   Graph_t prox_graph = compute_proximity_graph(off_reader.get_point_cloud(), threshold
-                                               , Euclidean_distance());
+                                               , Gudhi::Euclidean_distance());
 
   // Construct the Rips complex in a Simplex Tree
   Simplex_tree st;

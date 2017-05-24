@@ -10,10 +10,10 @@
 #define BOOST_TEST_MODULE "persistent_cohomology"
 #include <boost/test/unit_test.hpp>
 
-#include "gudhi/graph_simplicial_complex.h"
-#include "gudhi/reader_utils.h"
-#include "gudhi/Simplex_tree.h"
-#include "gudhi/Persistent_cohomology.h"
+#include <gudhi/graph_simplicial_complex.h>
+#include <gudhi/reader_utils.h>
+#include <gudhi/Simplex_tree.h>
+#include <gudhi/Persistent_cohomology.h>
 
 using namespace Gudhi;
 using namespace Gudhi::persistent_cohomology;
@@ -22,11 +22,9 @@ using namespace boost::unit_test;
 typedef Simplex_tree<> typeST;
 
 std::string test_rips_persistence(int coefficient, int min_persistence) {
-  // file name is given as parameter from CMakeLists.txt
-  const std::string inputFile(framework::master_test_suite().argv[1]);
-
+  // file is copied in CMakeLists.txt
   std::ifstream simplex_tree_stream;
-  simplex_tree_stream.open(inputFile.c_str());
+  simplex_tree_stream.open("simplex_tree_file_for_unit_test.txt");
   typeST st;
   simplex_tree_stream >> st;
   simplex_tree_stream.close();

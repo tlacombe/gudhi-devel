@@ -24,6 +24,10 @@
 #define DISTANCE_FUNCTIONS_H_
 
 #include <cmath>  // for std::sqrt
+#include <type_traits>  // for std::decay
+#include <iterator>  // for std::begin, std::end
+
+namespace Gudhi {
 
 /** @file
  * @brief Global distance functions
@@ -34,7 +38,7 @@
 class Euclidean_distance {
  public:
   template< typename Point >
-  auto operator()(const Point& p1, const Point& p2) -> typename std::decay<decltype(*std::begin(p1))>::type {
+  auto operator()(const Point& p1, const Point& p2) const -> typename std::decay<decltype(*std::begin(p1))>::type {
     auto it1 = p1.begin();
     auto it2 = p2.begin();
     typename Point::value_type dist = 0.;
@@ -45,5 +49,7 @@ class Euclidean_distance {
     return std::sqrt(dist);
   }
 };
+
+}  // namespace Gudhi
 
 #endif  // DISTANCE_FUNCTIONS_H_
