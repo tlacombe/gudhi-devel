@@ -61,7 +61,6 @@ void check_symmetry_and_null_diagonal_of_matrix(std::vector<double> const & mat)
         std::cerr<<"Warning : The matrix is not squared !\n";
         std::abort();
     }
-    # pragma omp parallel for
     for (int i=0; i<sqrt_size_int; ++i){
         for (int j=0; j<i; ++j){
             if (mat[sqrt_size*i+j]!=mat[sqrt_size*j+i]){
@@ -126,8 +125,8 @@ void write_file(std::vector<double> & mat, std::string const & file_name_matrix)
     if(!file_matrix){std::cerr<<"Can't write on file "<<file_name_matrix_new<<" "; std::abort();}
     int size = std::sqrt(mat.size());
     if(size*size!=mat.size()){std::cerr<<"mat should be a squared matrix !"; std::abort();}
-    for(unsigned int i=0; i<size; ++i){
-        for (unsigned int j=0; j<i; ++j){
+    for(int i=0; i<size; ++i){
+        for (int j=0; j<i; ++j){
             file_matrix<<mat[i*size+j]<<" ";
         }
     }
@@ -683,14 +682,16 @@ std::vector<double>  m_choice(Distance_matrix & D_P, Distance_matrix & D_Q, std:
 
     std::vector<std::pair<double,bool>> vect_m_plot(vector_m.size());
     if(plot_signatures == 0){
-        for(int i = 0 ; i<vector_m.size() ; ++i){
+        for(std::size_t i = 0 ; i<vector_m.size() ; ++i){
             vect_m_plot[i]={vector_m[i],false};
         }
     }
     else{
-        if(signatures_to_plot.size()!=vector_m.size()){std::cerr<<"signatures_to_plot and vector_m should be of the same size"; std::abort;}
-        else{
-            for(int i = 0 ; i<vector_m.size() ; ++i){
+        if(signatures_to_plot.size()!=vector_m.size()) {
+          std::cerr<<"signatures_to_plot and vector_m should be of the same size";
+          std::abort();
+        } else {
+            for(std::size_t i = 0 ; i<vector_m.size() ; ++i){
                 vect_m_plot[i]={vector_m[i],signatures_to_plot[i]};
             }
         }
@@ -861,7 +862,7 @@ std::vector<double>  m_choice(Distance_matrix & D_P, Distance_matrix & D_Q, std:
     }
     Gnuplot gp;
     std::vector<std::array<double,2>> cost_plot(vector_m.size());
-    for(int i = 0; i<vector_m.size(); ++i){cost_plot[i][0] = vector_m[i]; cost_plot[i][1] = m_loss[i];}
+    for(std::size_t i = 0; i<vector_m.size(); ++i){cost_plot[i][0] = vector_m[i]; cost_plot[i][1] = m_loss[i];}
     gp << "plot [0:1] '-' with lines tit 'cost'\n";
     gp.send1d(cost_plot);
     return m_loss;
@@ -1133,7 +1134,7 @@ std::vector<double> Distance_matrix::check_test_error(std::vector<std::pair<doub
 
     Gnuplot gp;
     std::vector<std::array<double,2>> error_plot(pair_m_n.size());
-    for(int i = 0; i<pair_m_n.size(); ++i){error_plot[i][0] = pair_m_n[i].second; error_plot[i][1] = nb_rejected_tests[i];} 
+    for(std::size_t i = 0; i<pair_m_n.size(); ++i){error_plot[i][0] = pair_m_n[i].second; error_plot[i][1] = nb_rejected_tests[i];}
     auto minn = std::min_element(pair_m_n.begin(),pair_m_n.end(),smaller2);
     auto maxn = std::max_element(pair_m_n.begin(),pair_m_n.end(),smaller2);
     int min_bound = (*minn).second-1;

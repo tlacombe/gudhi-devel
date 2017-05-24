@@ -94,22 +94,22 @@ namespace isomorphism_test {
  * \f$H_1\f$ : \f$(\mathcal{X},d,\mu)\f$ and \f$(\mathcal{Y},d',\nu)\f$ are not isomorphic
  * is based on a pseudo-metric built as follows.
  * We associate to any mm-space \f$(\mathcal{X},d,\mu)\f$ a signature \f$S(\mu)\f$, that is, a Borel probability measure on \f$\mathbf{R}_+\f$ such that \f$S(\mu)=S(\nu)\f$ whenever \f$(\mathcal{X},d,\mu)\f$ and \f$(\mathcal{Y},d',\nu)\f$ are isomorphic.
- * \image html "images_doc/cap2.png" \f$\mu\f$ uniform measure on a cap shaped open subset of \f$\mathbf{R}^2\f$.
- * \image html "images_doc/hat2.png" \f$\nu\f$ uniform measure on a cap shaped open subset of \f$\mathbf{R}^2\f$.
- * \image html "images_doc/capsignature.png" cumulative distribution function of \f$S(\mu)\f$.
- * \image html "images_doc/hatsignature.png" cumulative distribution function of \f$S(\nu)\f$.
+ * \image html "cap2.png" \f$\mu\f$ uniform measure on a cap shaped open subset of \f$\mathbf{R}^2\f$.
+ * \image html "hat2.png" \f$\nu\f$ uniform measure on a cap shaped open subset of \f$\mathbf{R}^2\f$.
+ * \image html "capsignature.png" cumulative distribution function of \f$S(\mu)\f$.
+ * \image html "hatsignature.png" cumulative distribution function of \f$S(\nu)\f$.
  *The pseudo-metric \f$D(\mu,\nu)\f$ considered is then equal to the \f$L_1\f$-norm between the cumulative distribution functions of the signatures, also knows as the \f$L_1\f$-Wasserstein distance:
  * \f[D(\mu,\nu)=W_1(S(\mu),S(\nu)).\f]
- * \image html "images_doc/Comparaisonhatcap.png" \f$W_1(S(\mu),S(\nu))\f$.
+ * \image html "Comparaisonhatcap.png" \f$W_1(S(\mu),S(\nu))\f$.
 
  * The true mm-spaces are unknown. Indeed, we do only have an access to two samples of points. Thus, the statistical test is based on the signatures associated to the samples :
  * \f[D(\mathbf{1}_P,\mathbf{1}_Q)=W_1(S(\mathbf{1}_P),S(\mathbf{1}_Q)),\f]
  * where \f$\mathbf{1}_P\f$ corresponds to the uniform measure on the sample \f$P\f$.
 
- * \image html "images_doc/cap2echant70pt.png" Sample P
- * \image html "images_doc/hat2echant70pt.png" Sample Q
- * \image html "images_doc/Cap70pt.png" cumulative distribution function of \f$S(\mathbf{1}_P)\f$.
- * \image html "images_doc/Hat70pt.png" cumulative distribution function of \f$S(\mathbf{1}_Q)\f$.
+ * \image html "cap2echant70pt.png" Sample P
+ * \image html "hat2echant70pt.png" Sample Q
+ * \image html "Cap70pt.pdf" cumulative distribution function of \f$S(\mathbf{1}_P)\f$.
+ * \image html "Hat70pt.pdf" cumulative distribution function of \f$S(\mathbf{1}_Q)\f$.
 
  * For each point \f$X_i\f$ in \f$P\f$, we use the notation
  * \f[d_{\mathbf{1}_P,m}(X_i)=\frac{1}{k}\sum_{j=1}^{k}d(X_i,X^{j}),\f]
@@ -130,16 +130,16 @@ namespace isomorphism_test {
  * The hypothesis \f$H_0\f$ will be rejected whenever this p-value is smaller than \f$\alpha\f$.
  * Note that when \f$N\f$ and \f$n\f$ are large enough, it happens with probability \f$\alpha\f$ when \f$(\mathcal{X},d,\mu)\f$ and \f$(\mathcal{Y},d',\nu)\f$ are isomorphic, for some relevant choice of parameters m and n.
 
-\section{Examples of usage}
+\section IsomorphismTestUsage Examples of usage
 
  * This first example presents the method to get a p-value. Beware of the fact that the number of points in each sample in this example, \f$N=4\f$, is not big enough for the p-value to be meaningful. 
  * \include example_simple.cpp
 
  * This second example proposes an overview of all of the possible methods to read or compute a distance matrix for the test.
- * \include example_read_distance_matrix.cpp
+ * \include Isomorphism_statistical_test/example_read_distance_matrix.cpp
 
  * This last example is a more complete version of the test since it first presents the method to choose the best parameter m, then plot the signatures associated to this m, helps choosing the biggest parameter n for which the approximate type I error is \f$\alpha\f$, and finally makes the test for the chosen parameters m and n, returning a p-value and the hypothesis retained.
- * \include example_step_by_step.cpp
+ * \include Isomorphism_statistical_test/example_step_by_step.cpp
 
 
 \verbatim
@@ -174,8 +174,6 @@ The hypothesis retained is H0
 /** @} */  // end defgroup isomorphism_test
 
 }  // namespace isomorphism_test
-
-namespace Isomorphism_test = isomorphism_test;
 
 }  // namespace Gudhi
 
