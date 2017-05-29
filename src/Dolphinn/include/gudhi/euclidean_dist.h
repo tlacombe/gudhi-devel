@@ -66,7 +66,7 @@ template <typename iterator>
 void find_M_Nearest_Neighbor_indices(iterator pointset, const std::vector<int>& points_idxs,
  const int D, const int M, iterator query_point, std::vector<std::pair<int, float>>& answer_point_idx_dist, const int threshold)
 {
-  const int size = points_idxs.size();
+  /*const int size = points_idxs.size();
   float current_dist;
   current_dist = answer_point_idx_dist[0].second;
   int current_j=0;
@@ -90,6 +90,22 @@ void find_M_Nearest_Neighbor_indices(iterator pointset, const std::vector<int>& 
 				}
 			}
     }
+  }*/
+  
+  const int size = points_idxs.size();
+  for(int i = 0; i < threshold && i < size; ++i)
+  {
+  	float current_dist = squared_Eucl_distance(query_point, pointset + points_idxs[i]);
+  	if(current_dist<answer_point_idx_dist[M-1].second){
+  		int j=M-2;
+  		while(j>=0 && current_dist<answer_point_idx_dist[j].second){
+  			answer_point_idx_dist[j+1].second = answer_point_idx_dist[j].second;
+  			answer_point_idx_dist[j+1].first = answer_point_idx_dist[j].first;
+  			--j;
+  		}
+  		answer_point_idx_dist[j+1].second = current_dist;
+  		answer_point_idx_dist[j+1].first = points_idxs[i];
+  	}
   }
 }
 
