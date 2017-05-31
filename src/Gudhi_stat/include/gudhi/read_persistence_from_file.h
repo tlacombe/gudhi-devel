@@ -119,11 +119,11 @@ std::vector< std::vector< double > > read_numbers_from_file_line_by_line( const 
 
 /**
  * Universal procedure to read files with persistence. It ignores the lines starting from # (treat them as comments). 
- * It reads the fist line which is not a comment and assume that there are some numerical entries over there. The program assume
+ * It reads the first line which is not a comment and assume that there are some numerical entries over there. The program assume
  * that each other line in the file, which is not a comment, have the same number of numerical entries (2, 3 or 4). 
  * If there are two numerical entries per line, then the function assume that they are birth/death coordinates. 
  * If there are three numerical entries per line, then the function assume that they are: dimension and birth/death coordinates. 
- * If there are four numerical entries per line, then the function assume that they are: thc characteristic of a filed over which 
+ * If there are four numerical entries per line, then the function assume that they are: the characteristic of a filed over which 
  * persistence was computed, dimension and birth/death coordinates. 
  * The 'inf' string can appear only as a last element of a line. 
  * The procedure returns vector of persistence pairs. 
@@ -162,7 +162,7 @@ std::vector<std::pair<double,double> > read_persistence_intervals_in_one_dimensi
 				if ( line_copy.find("inf") != std::string::npos )
 				{					
 					size_t np = line_copy.find("inf");
-					//replace symbols 'inf' in line_copy with whilespaces:					
+					//replace symbols 'inf' in line_copy with whitespaces:					
 					line_copy[np] = ' ';
 					line_copy[np+1] = ' ';
 					line_copy[np+2] = ' ';		
