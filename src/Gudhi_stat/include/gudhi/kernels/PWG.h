@@ -171,10 +171,12 @@ std::vector<std::pair<double,double> > compute_Fourier_features(double C, int p,
 
 std::vector<std::pair<double,double> > random_Fourier(double sigma, int M = 1000){
   std::normal_distribution<double> distrib(0,1); std::vector<std::pair<double,double> > Z;
+  std::random_device rd;
   for(int i = 0; i < M; i++){
-    unsigned seedx = 2*i; unsigned seedy = 2*i+1;
-    std::default_random_engine generatorx(seedx); std::default_random_engine generatory(seedy);
-    double zx = distrib(generatorx); double zy = distrib(generatory);
+    //unsigned seedx = 2*i; unsigned seedy = 2*i+1;
+    //std::default_random_engine generatorx(seedx); std::default_random_engine generatory(seedy);
+    std::mt19937 e1(rd()); std::mt19937 e2(rd());
+    double zx = distrib(e1/*generatorx*/); double zy = distrib(e2/*generatory*/);
     Z.push_back(std::pair<double,double>((1/sigma)*zx,(1/sigma)*zy));
   }
   return Z;
