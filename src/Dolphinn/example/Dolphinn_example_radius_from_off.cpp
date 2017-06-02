@@ -3,12 +3,11 @@
 #include <gudhi/Points_off_io.h>
 #include <vector>
 
-#define T float
-#define bitT char
+#define T double
 #define Point std::vector<T>
 
 
-using Dolphinn = Gudhi::dolphinn::Dolphinn<T, bitT>;
+using Dolphinn = Gudhi::dolphinn::Dolphinn<T>;
 
 int main(int argc, char **argv) {
 	
@@ -47,7 +46,7 @@ int main(int argc, char **argv) {
   Dolphinn dolphi(pointset, n, d, k, atof(argv[4])); 
   std::cout << "Hypercube built \n";
   
-  dolphi.radius_query(queries, nq, atof(argv[3]), n/100 + 10, result, 1);
+  dolphi.radius_query(queries, nq, atof(argv[3]), n/100 + 10, result);
   std::cout << "radius queries done\n";
   
   for(int i=0; i<nq; ++i){
@@ -57,9 +56,9 @@ int main(int argc, char **argv) {
   		std::cout << "found: ";
   		for(auto x: pointset[result[i]]) std::cout << x << " ";
   		std::cout << "d=";
-  		float res=0;
+  		double res=0;
   		for(size_t j=0;j<d;++j){
-  			float tmp = pointset[result[i]][j] - queries[i][j];
+  			double tmp = pointset[result[i]][j] - queries[i][j];
 				res += tmp*tmp;
 			}
   		std::cout << res <<"\n";

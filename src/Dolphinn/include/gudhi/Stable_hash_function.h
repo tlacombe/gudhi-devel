@@ -22,12 +22,9 @@
  */
 
 namespace Gudhi {
-
+namespace dolphinn {
 /**  
- * \class Stable_hash_function Stable_hash_function.h gudhi/Stable_hash_function.h
  * \brief Hash functions used to build Dolphinn's hypercube.
- * 
- * \ingroup dolphinn
  * 
  * \details
  * The class contains the methods and the informations to hash a point/dataset.
@@ -38,17 +35,17 @@ namespace Gudhi {
 template <class T, typename Point>
 class Stable_hash_function
 {
-		typedef Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> Matrix;
+		typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> Matrix;
     // of original pointset
     const int dimension; 
-    float r;
+    double r;
 		//for line LSH
-    float b;
+    double b;
     // direction of the line for the stable distribution or offset for the hyperplanes
     Point a;
     //for Hyperplane LSH
     Matrix m;
-    std::uniform_real_distribution<float> uni_distribution;
+    std::uniform_real_distribution<double> uni_distribution;
     std::uniform_int_distribution<int> uni_bit_distribution;
     std::default_random_engine generator;
     // key and a vector of the indices of the associated points
@@ -64,10 +61,10 @@ class Stable_hash_function
   	Point get_a() {
   		return a;
   	}
-  	float get_r() {
+  	double get_r() {
   		return r;
   	}
-  	float get_b() {
+  	double get_b() {
   		return b;
   	}
   	std::unordered_map< std::string, std::vector<int> > get_hashtable() {
@@ -83,16 +80,16 @@ class Stable_hash_function
 	 * Assign 'D' random values from a normal distribution
 	 * N(0,1/sqrt(D)).
 	 *
-	 * @param D  		 - dimension of points
-	 * @param r  		 - parameter of Stable Distribution
-	 * @param mean  	 - optional parameter of Normal Distribution. Default is 0.0.
-	 * @param deviation  - optional parameter of Normal Distribution. Default is 1.0.
+	 * @param D  		 dimension of points
+	 * @param r  		 parameter of Stable Distribution
+	 * @param mean  	 optional parameter of Normal Distribution. Default is 0.0.
+	 * @param deviation	optional parameter of Normal Distribution. Default is 1.0.
 	 */
-  	Stable_hash_function(const int D, const float r, const float mean = 0.0, const float deviation = 1.0)
+  	Stable_hash_function(const int D, const double r, const double mean = 0.0, const double deviation = 1.0)
   		: dimension(D), r(r), uni_distribution(0, r), uni_bit_distribution(0, 1),
   		generator(std::chrono::system_clock::now().time_since_epoch().count())
   	{
-  		std::normal_distribution<typename std::conditional<std::is_same<T, float>::value, float, T>::type> distribution(mean, deviation);
+  		std::normal_distribution<typename std::conditional<std::is_same<T, double>::value, double, T>::type> distribution(mean, deviation);
       for(int i = 0; i < D; ++i)
       {
   			a.push_back(distribution(generator));
@@ -104,15 +101,15 @@ class Stable_hash_function
   	/** \brief Constructor that creates a 
   	 * hashing function based on hyperplanes
  	 *
-	 * @param K  		 - dimension of the hypercube
-	 * @param D  		 - dimension of the points
-	 * @param r  		 - parameter hashing function (here r=0) 
+	 * @param K  		 dimension of the hypercube
+	 * @param D  		 dimension of the points
+	 * @param r  		 parameter hashing function (here r=0) 
 	 */
-  	Stable_hash_function(const int K, const int D, const float r)
+  	Stable_hash_function(const int K, const int D, const double r)
   		: dimension(D), r(r), m(Matrix(K,D)),
   		generator(std::chrono::system_clock::now().time_since_epoch().count())
   	{
-  		std::normal_distribution<float> distribution(0.0,1.0/std::sqrt((float)D));
+  		std::normal_distribution<double> distribution(0.0,1.0/std::sqrt((double)D));
   		for(int i =0; i<K;++i) {
   			for(int j =0; j<D;++j) {
   				m(i,j)=distribution(generator);
@@ -127,19 +124,19 @@ class Stable_hash_function
      * Assign 'D' random values from a normal distribution
      * N(0,1/sqrt(D)).
      *
-     * @param D            - dimension of points
-     * @param r            - parameter of Stable Distribution
-     * @param thread_info  - Something that identifies the thread, so that every thread
-     *                       creates its own random numbers, and not the same - as is the
-     *                       case with just seeding the random generator with the time.
-     * @param mean         - optional parameter of Normal Distribution. Default is 0.0.
-     * @param deviation    - optional parameter of Normal Distribution. Default is 1.0.
+     * @param D            dimension of points
+     * @param r            parameter of Stable Distribution
+     * @param thread_info  Something that identifies the thread, so that every thread
+     *                     creates its own random numbers, and not the same - as is the
+     *                     case with just seeding the random generator with the time.
+     * @param mean         optional parameter of Normal Distribution. Default is 0.0.
+     * @param deviation    optional parameter of Normal Distribution. Default is 1.0.
     */
-    Stable_hash_function(const int D, const float r, const int thread_info, const float mean = 0.0, const float deviation = 1.0)
+    Stable_hash_function(const int D, const double r, const int thread_info, const double mean = 0.0, const double deviation = 1.0)
       : dimension(D), r(r), uni_distribution(0, r), uni_bit_distribution(0, 1),
       generator(thread_info + std::chrono::system_clock::now().time_since_epoch().count())
     {
-      std::normal_distribution<typename std::conditional<std::is_same<T, float>::value, float, T>::type> distribution(mean, deviation);
+      std::normal_distribution<typename std::conditional<std::is_same<T, double>::value, double, T>::type> distribution(mean, deviation);
       for(int i = 0; i < D; ++i)
       {
         a.push_back(distribution(generator));
@@ -150,7 +147,7 @@ class Stable_hash_function
     
     /** \brief Hash a pointset with the hyperplanes method and fills the hypercube.
 	 *
-	 * @param v  	- vector of points
+	 * @param v  	vector of points
 	 */
     void hyperplane_hash(const std::vector<Point>& v) {
     	for(int j=0;j<dimension;++j){
@@ -165,11 +162,11 @@ class Stable_hash_function
     		a[j] = a[j]/v.size();
     	}
     	int j=0;
-    	const float* aptr = &a[0];
+    	const double* aptr = &a[0];
     	for(const auto& x:v) {
-    		const float* ptr = &x[0];
-    		Eigen::Matrix<float, Eigen::Dynamic, 1> vector =  m * 
-    										(Eigen::Map<const Eigen::Matrix<float ,Eigen::Dynamic, 1>>(ptr,dimension,1)-Eigen::Map<const Eigen::Matrix<float ,Eigen::Dynamic, 1>>(aptr,dimension,1));
+    		const double* ptr = &x[0];
+    		Eigen::Matrix<double, Eigen::Dynamic, 1> vector =  m * 
+    										(Eigen::Map<const Eigen::Matrix<double ,Eigen::Dynamic, 1>>(ptr,dimension,1)-Eigen::Map<const Eigen::Matrix<double ,Eigen::Dynamic, 1>>(aptr,dimension,1));
     		std::vector<char> hash_key(vector.size());
     		for(int i =0; i<vector.size();++i) {
     			if(vector(i,0)>0){
@@ -185,15 +182,15 @@ class Stable_hash_function
     
     /** \brief Hash a point with the hyperplanes method.
 	 *
-	 * @param x 				- point to hash
-	 * @param hash_key  - stores the result of the hashing
+	 * @param x 				point to hash
+	 * @param hash_key  stores the result of the hashing
 	 */
     template<typename bitT>
     void hyperplane_hash(const Point& x, std::vector<bitT>& hash_key) {
-    	const float* aptr = &a[0];
-   		const float* ptr = &x[0];
-  		Eigen::Matrix<float, Eigen::Dynamic, 1> vector =  m * 
-  										(Eigen::Map<const Eigen::Matrix<float ,Eigen::Dynamic, 1>>(ptr,dimension,1)-Eigen::Map<const Eigen::Matrix<float ,Eigen::Dynamic, 1>>(aptr,dimension,1));
+    	const double* aptr = &a[0];
+   		const double* ptr = &x[0];
+  		Eigen::Matrix<double, Eigen::Dynamic, 1> vector =  m * 
+  										(Eigen::Map<const Eigen::Matrix<double ,Eigen::Dynamic, 1>>(ptr,dimension,1)-Eigen::Map<const Eigen::Matrix<double ,Eigen::Dynamic, 1>>(aptr,dimension,1));
   		for(int i =0; i<vector.size();++i) {
   			if(vector(i,0)>0){
   				hash_key[i]=1;
@@ -205,9 +202,9 @@ class Stable_hash_function
 
   	/** \brief Hash a pointset with the stable distribution method.
 	 *
-	 * @param v  	- vector of points
-	 * @param N   - number of points
-	 * @param D   - dimension of points
+	 * @param v  	vector of points
+	 * @param N   number of points
+	 * @param D   dimension of points
 	 */
   	void hash(const std::vector<Point>& v, const int N, const int D)
   	{
@@ -219,18 +216,18 @@ class Stable_hash_function
 
   	/** \brief Hash a point.
 	 *
-	 * @param v  			 - the point to be hashed
-	 * @return 		     - result of hash function
+	 * @param v  			 the point to be hashed
+	 * @return 		     result of hash function
 	 */
   	
   	int hash(const Point v)
   	{
-  		float scalar_product = 0;
+  		double scalar_product = 0;
   		for(size_t i=0;i<v.size();++i){
 				scalar_product += v[i] * a[i];
 			}
   		//std::cout << scalar_product << " " << b << " " << r << std::endl;
-  		//std::cout << (scalar_product + b) << " " << (scalar_product + b) / r << " " << (scalar_product + b) / (float)r << std::endl;
+  		//std::cout << (scalar_product + b) << " " << (scalar_product + b) / r << " " << (scalar_product + b) / (double)r << std::endl;
   		if(r>0){
   			return floor((scalar_product + b) / r);
   		} else {
@@ -240,9 +237,9 @@ class Stable_hash_function
 
    	/** \brief Assing random bit for every key.
  	 *
- 	 * @param v 	- vector of (to be) mapped points
- 	 * @param k		- iteration (assign the k-th bit of the points)
- 	 * @param K   - dimension of the cube that awaits for
+ 	 * @param v 	vector of (to be) mapped points
+ 	 * @param k		iteration (assign the k-th bit of the points)
+ 	 * @param K   dimension of the cube that awaits for
  	 *				  the points to be mapped on its vertices
 	 */
     template<typename bitT>
@@ -278,8 +275,8 @@ class Stable_hash_function
 
     /** \brief Assing random bit for every key and fill cube's hashtable.
      *
-     * @param v   - vector of (to be) mapped points
-     * @param K   - dimension of the cube that awaits for
+     * @param v   vector of (to be) mapped points
+     * @param K   dimension of the cube that awaits for
      *          the points to be mapped on its vertices
     */
     template<typename bitT>
@@ -319,9 +316,9 @@ class Stable_hash_function
 
     /** \brief Assing random bit for queries.
    *
-   * @param q   							- query
-   * @param mapped_q_begin   	- (to be) mapped query
-   * @param k   							- iteration (assign the k-th bit of the query)
+   * @param q   							query
+   * @param mapped_q_begin   	(to be) mapped query
+   * @param k   							iteration (assign the k-th bit of the query)
    */
     template <typename bit_iterator>
     void assign_random_bit_query(const Point q, bit_iterator mapped_q_begin, const int k)
@@ -343,20 +340,20 @@ class Stable_hash_function
 
     /** \brief Radius query the Hamming cube.
       *
-      * @param mapped_query        - mapped query
-      * @param radius              - find a point within r with query
-      * @param K                   - dimension of the mapped query
-      * @param MAX_PNTS_TO_SEARCH  - threshold
-      * @param pointset            - original points
-      * @param query_point         - original query
-      * @return                    - index of a point, where Eucl(point[i], query_point) <= r
+      * @param mapped_query        mapped query
+      * @param radius              find a point within r with query
+      * @param K                   dimension of the mapped query
+      * @param MAX_PNTS_TO_SEARCH  threshold
+      * @param pointset            original points
+      * @param query_point         original query
+      * @return                    index of a point, where Eucl(point[i], query_point) <= r
     */
     template <typename iterator>
-    int radius_query(std::string mapped_query, const float radius, const int K, const int MAX_PNTS_TO_SEARCH, iterator pointset, iterator query_point)
+    int radius_query(std::string mapped_query, const double radius, const int K, const int MAX_PNTS_TO_SEARCH, iterator pointset, iterator query_point)
     {
       int points_checked = 0;
       int answer_point_idx = -1;
-      float squared_radius = radius * radius;
+      double squared_radius = radius * radius;
       const auto& q_key_it = hashtable_cube.find(mapped_query);
       // search query's cube vertex, if pointsets' points exist there
       if(q_key_it != hashtable_cube.end())
@@ -378,19 +375,19 @@ class Stable_hash_function
 
     /** \brief Find strings within a given Hamming distance. Used by 'radius_query()'.
       *
-      * @param str                 - given string
-      * @param i                   - index
-      * @param changesLeft         - changes left to make
-      * @param points_checked      - current points checked
-      * @param MAX_PNTS_TO_SEARCH  - threshold
-      * @param squared_radius      - check if any original point lies in r Euclidean distance from the original query
-      * @param pointset						 - original dataset
-      * @param query_point				 - pointer to the queried point
-      * @param answer_point_idx    - index of point that has distance less or equal than r with the query
+      * @param str                 given string
+      * @param i                   index
+      * @param changesLeft         changes left to make
+      * @param points_checked      current points checked
+      * @param MAX_PNTS_TO_SEARCH  threshold
+      * @param squared_radius      check if any original point lies in r Euclidean distance from the original query
+      * @param pointset						 original dataset
+      * @param query_point				 pointer to the queried point
+      * @param answer_point_idx    index of point that has distance less or equal than r with the query
     */
     template <typename iterator>
     bool find_strings_with_fixed_Hamming_dist_for_radius_query(std::string& str, const int i, const int changesLeft, 
-      int& points_checked, const int MAX_PNTS_TO_SEARCH, const float squared_radius, iterator& pointset, 
+      int& points_checked, const int MAX_PNTS_TO_SEARCH, const double squared_radius, iterator& pointset, 
       iterator& query_point, int& answer_point_idx)
     {
       bool stop = false;
@@ -429,19 +426,19 @@ class Stable_hash_function
 
     /** \brief Nearest Neighbor query the Hamming cube.
       *
-      * @param mapped_query        - mapped query
-      * @param K                   - dimension of the mapped query
-      * @param m                   - number of nearest neighbours to search
-      * @param MAX_PNTS_TO_SEARCH  - threshold
-      * @param pointset            - original points
-      * @param query_point         - original query
-      * @return                    - index and distance from query of (approximate) Nearest Neighbor
+      * @param mapped_query        mapped query
+      * @param K                   dimension of the mapped query
+      * @param m                   number of nearest neighbors to search
+      * @param MAX_PNTS_TO_SEARCH  threshold
+      * @param pointset            original points
+      * @param query_point         original query
+      * @return                    index and distance from query of (approximate) Nearest Neighbor
     */
     template <typename iterator>
-    std::vector<std::pair<int, float>>m_nearest_neighbors_query(std::string mapped_query, const int K, const int m, const int MAX_PNTS_TO_SEARCH, iterator pointset, iterator query_point)
+    std::vector<std::pair<int, double>>m_nearest_neighbors_query(std::string mapped_query, const int K, const int m, const int MAX_PNTS_TO_SEARCH, iterator pointset, iterator query_point)
     {
       int points_checked = 0;
-      std::vector<std::pair<int, float>> answer_point_idx_dist(m, std::make_pair(-1, 1000000.0));
+      std::vector<std::pair<int, double>> answer_point_idx_dist(m, std::make_pair(-1, 1000000.0));
       const auto& q_key_it = hashtable_cube.find(mapped_query);
       // search query's cube vertex, if pointsets' points exist there
       if(q_key_it != hashtable_cube.end())
@@ -460,20 +457,20 @@ class Stable_hash_function
 
     /** \brief Find strings within a given Hamming distance. Used by 'nearest_neighbor_query()'.
       *
-      * @param str                     - given string
-      * @param i                       - index
-      * @param m                       - number of nearest neighbours to search
-      * @param changesLeft             - changes left to make
-      * @param points_checked          - current points checked
-      * @param MAX_PNTS_TO_SEARCH      - threshold
-      * @param pointset           		 - original points
-      * @param query_point        		 - original query
-      * @param answer_point_idx_dist   - index and distance of current best Nearest Neighbor
+      * @param str                     given string
+      * @param i                       index
+      * @param m                       number of nearest neighbors to search
+      * @param changesLeft             changes left to make
+      * @param points_checked          current points checked
+      * @param MAX_PNTS_TO_SEARCH      threshold
+      * @param pointset           		 original points
+      * @param query_point        		 original query
+      * @param answer_point_idx_dist   index and distance of current best Nearest Neighbor
     */
     template <typename iterator>
     bool find_strings_with_fixed_Hamming_dist_for_nearest_neighbor_query(std::string& str, const int i, const int m,  const int changesLeft,
       int& points_checked, const int MAX_PNTS_TO_SEARCH, iterator& pointset, 
-      iterator& query_point,std::vector<std::pair<int, float>>& answer_point_idx_dist)
+      iterator& query_point,std::vector<std::pair<int, double>>& answer_point_idx_dist)
     {
       bool stop = false;
       if (changesLeft == 0) {
@@ -505,9 +502,9 @@ class Stable_hash_function
 
     /** \brief Check if vector is full of 'value'.
      *
-     * @param vec   - vector to be checked
-     * @param value - check if all elements of 'vec' have this value
-     * @return      - True if all elements of 'vev' are 'value'. False, otherwise.
+     * @param vec   vector to be checked
+     * @param value check if all elements of 'vec' have this value
+     * @return      True if all elements of 'vev' are 'value'. False, otherwise.
     */
     bool check_vec(std::vector<int>& vec, int value)
     {
@@ -519,9 +516,9 @@ class Stable_hash_function
 
     /** \brief Return first element of 'vec' that is different from 'value'.
      *
-     * @param vec   - vector to be checked
-     * @param value - check if all elements of 'vec' have this value
-     * @return      - Element of 'vec' different from 'value', if exists. 'value', otherwise.
+     * @param vec   vector to be checked
+     * @param value check if all elements of 'vec' have this value
+     * @return      Element of 'vec' different from 'value', if exists. 'value', otherwise.
     */
     int find_non_value_in_vec(std::vector<int>& vec, int value)
     {
@@ -560,7 +557,7 @@ class Stable_hash_function
   	}
 
     /** \brief Print hashtable of Hamming cube. 
-    * @param print_indices - Print all the values of the unordered_map. Default false.
+    * @param print_indices Print all the values of the unordered_map. Default false.
     *
    */
     void print_hashtable_cube(const bool print_indices = false)
@@ -600,5 +597,6 @@ class Stable_hash_function
 		}
 
 };
+}
 }
 #endif /*DOLPHINN_HASH_H*/

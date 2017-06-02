@@ -10,12 +10,11 @@
 #include <ratio>
 #include <chrono>
 
-#define T float
-#define bitT char
+#define T double
 #define Point std::vector<T>
 
 
-using Dolphinn = Gudhi::dolphinn::Dolphinn<T, bitT>;
+using Dolphinn = Gudhi::dolphinn::Dolphinn<T>;
 
 int main(int argc, char **argv) {
 	
@@ -40,7 +39,7 @@ int main(int argc, char **argv) {
   
   std::default_random_engine generator(std::chrono::system_clock::now().time_since_epoch().count());
   
-  std::normal_distribution<float> distribution(0.0,1.0/std::sqrt((float)d));
+  std::normal_distribution<double> distribution(0.0,1.0/std::sqrt((double)d));
   
   for(size_t i=0;i<n;++i){
   	Point p;
@@ -57,8 +56,8 @@ int main(int argc, char **argv) {
 	queries.push_back(query);
 	
 	
-	std::vector<std::vector<std::pair<int, float>>> result;
-	std::vector<std::pair<int, float>> dummy;
+	std::vector<std::vector<std::pair<int, double>>> result;
+	std::vector<std::pair<int, double>> dummy;
 	result.push_back(dummy);
 	
 	
@@ -76,7 +75,7 @@ int main(int argc, char **argv) {
 
 	std::cout << "Build: " << time_span.count() << " seconds.\n";
   
-  dolphi.m_nearest_neighbors_query(queries, 1, atoi(argv[3]), n/100+atoi(argv[3]), result, 1);
+  dolphi.k_nearest_neighbors_query(queries, 1, atoi(argv[3]), n/100+atoi(argv[3]), result);
   std::cout << "radius queries done\n";
   
   std::cout << "The query is:";

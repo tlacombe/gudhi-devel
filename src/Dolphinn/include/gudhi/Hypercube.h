@@ -7,15 +7,15 @@
 #include <iterator>
 #include <utility>
 
+#define bitT char
+
 namespace Gudhi {
 
 namespace dolphinn
 {
 /**
- * \class Hypercube Hypercube.h gudhi/Hypercube.h
  * \brief Data structure for Dolphinn.
  * 
- * \ingroup dolphinn
  * 
  * \details
  * This class is the hypercube used in Dolphinn. It contains functions for quering and so far 
@@ -28,7 +28,7 @@ namespace dolphinn
 
 
 
-  template <typename Point, typename T, typename bitT>
+  template <typename Point, typename T>
   class Hypercube
   {
   	// original dimension of points
@@ -36,7 +36,7 @@ namespace dolphinn
     // mapped dimension of points (dimension of the Hypercube)
     const int K;
     // Parameter of the LSH functions
-    const float R;
+    const double R;
   	// The 'K' hash-functions that we are going to use. Only the last one will be used to query,
     // but we need all of them to map the query on arrival, first.
     std::vector<Stable_hash_function<T,Point>> H;
@@ -51,7 +51,7 @@ namespace dolphinn
   	int get_K() {
   		return K;
   	}
-  	float get_R(){
+  	double get_R(){
   		return R;
   	}
   	std::vector<Point> get_pointset(){
@@ -68,15 +68,15 @@ namespace dolphinn
       * Assign 'D' random values from a normal distribution
       * N(0,1/sqrt(D)).
       *
-      * @param pointset    - 1D vector of points, emulating a 2D, with N rows and D columns per row.
-      * @param N           - number of points
-      * @param D           - dimension of points
-      * @param K           - dimension of Hypercube (and of the mapped points)
-      * @param threads_no  - number of threads to be created. Default value is 'std::thread::hardware_concurrency()'.
-      * @param r           - parameter of Stable Distribution. Default value is 4. Should be modified for Nearest 
+      * @param pointset    1D vector of points, emulating a 2D, with N rows and D columns per row.
+      * @param N           number of points
+      * @param D           dimension of points
+      * @param K           dimension of Hypercube (and of the mapped points)
+      * @param threads_no  number of threads to be created. Default value is 'std::thread::hardware_concurrency()'.
+      * @param r           parameter of Stable Distribution. Default value is 4. Should be modified for Nearest 
       *                      Neighbor Search, to adapt to the average distance of the NN, 'r' is the hashing window.
    */
-    Hypercube(const std::vector<Point>& pointset, const int N, const int D, const int K, const int threads_no = 1 /*std::thread::hardware_concurrency()*/, const float r = 4/*3 or 8*/)
+    Hypercube(const std::vector<Point>& pointset, const int N, const int D, const int K, const int threads_no = 1 /*std::thread::hardware_concurrency()*/, const double r = 4/*3 or 8*/)
       : D(D), K(K), R(r), pointset(pointset)
     {
       if(N<1 || K<1){
@@ -142,15 +142,15 @@ namespace dolphinn
     /** \brief Populate the vector of hash functions.
       * Helper function for the Constructor in a parallel environment.
       *
-      * @param H                 - vector of Hash Functions
-      * @param n_vec             - nubmer of hash function to be inserted
-      * @param D                 - dimension of the original points
-      * @param r                 - Stable Distirbution parameter
-      * @param pointset          - original points
-      * @param N                 - number of origial points
-      * @param mapped_pointset   - vector of mapped points (to be poppulated)
-      * @param k_start           - starting index of mapped_pointset to be poppulated in parallel
-      * @param K                 - dimension of Hypercube
+      * @param H                 vector of Hash Functions
+      * @param n_vec             nubmer of hash function to be inserted
+      * @param D                 dimension of the original points
+      * @param r                 Stable Distirbution parameter
+      * @param pointset          original points
+      * @param N                 number of origial points
+      * @param mapped_pointset   vector of mapped points (to be poppulated)
+      * @param k_start           starting index of mapped_pointset to be poppulated in parallel
+      * @param K                 dimension of Hypercube
     */
     static void populate_vector_of_hash_functions(std::vector<Stable_hash_function<T,Point>>& H, const int n_vec, const int D, const int r, const std::vector<Point>& pointset, const int N, std::vector<bitT>& mapped_pointset, const int k_start, const int K)
     {
@@ -165,14 +165,14 @@ namespace dolphinn
 
     /** \brief Radius query the Hamming cube.
       *
-      * @param query               - vector of queries
-      * @param Q                   - number of queries
-      * @param radius              - find a point within r with query
-      * @param MAX_PNTS_TO_SEARCH  - threshold
-      * @param results_idxs        - indices of Q points, where Eucl(point[i], query[i]) <= r
-      * @param threads_no          - number of threads to be created. Default value is 'std::thread::hardware_concurrency()'.
+      * @param query               vector of queries
+      * @param Q                   number of queries
+      * @param radius              find a point within r with query
+      * @param MAX_PNTS_TO_SEARCH  threshold
+      * @param results_idxs        indices of Q points, where Eucl(point[i], query[i]) <= r
+      * @param threads_no          number of threads to be created. Default value is 'std::thread::hardware_concurrency()'.
     */
-    void radius_query(const std::vector<Point>& query, const int Q, const float radius, const int MAX_PNTS_TO_SEARCH, std::vector<int>& results_idxs, const int threads_no = std::thread::hardware_concurrency())
+    void radius_query(const std::vector<Point>& query, const int Q, const double radius, const int MAX_PNTS_TO_SEARCH, std::vector<int>& results_idxs)
     {
     	if(R>0){
 		    std::vector<bitT> mapped_query(Q * K);
@@ -218,19 +218,19 @@ namespace dolphinn
     /** \brief Execute specified portion of Radius Queries.
       * Helper function for the Constructor in a parallel environment.
       *
-      * @param H                    - vector of Hash Functions
-      * @param query                - vector of all queries
-      * @param mapped_query         - vector of all (to be) mapped queries
-      * @param q_start              - starting index of query to execute
-      * @param q_end                - ending index of query to execute
-      * @param K                    - dimension of Hypercube
-      * @param D                    - dimension of original points and queries
-      * @param pointset             - original points
-      * @param radius               - radius to query with
-      * @param MAX_PNTS_TO_SEARCH   - threshold when searching
-      * @param results_idxs         - The index of the point-answer in i-th posistion, for i-th query, -1 if not found.
+      * @param H                    vector of Hash Functions
+      * @param query                vector of all queries
+      * @param mapped_query         vector of all (to be) mapped queries
+      * @param q_start              starting index of query to execute
+      * @param q_end                ending index of query to execute
+      * @param K                    dimension of Hypercube
+      * @param D                    dimension of original points and queries
+      * @param pointset             original points
+      * @param radius               radius to query with
+      * @param MAX_PNTS_TO_SEARCH   threshold when searching
+      * @param results_idxs         The index of the point-answer in i-th posistion, for i-th query, -1 if not found.
     */
-    static void execute_radius_queries(std::vector<Stable_hash_function<T,Point>>& H, const std::vector<Point>& query, std::vector<bitT>& mapped_query, const int q_start, const int q_end, const int K, const int D, const std::vector<Point>& pointset, const float radius, const int MAX_PNTS_TO_SEARCH, std::vector<int>& results_idxs)
+    static void execute_radius_queries(std::vector<Stable_hash_function<T,Point>>& H, const std::vector<Point>& query, std::vector<bitT>& mapped_query, const int q_start, const int q_end, const int K, const int D, const std::vector<Point>& pointset, const double radius, const int MAX_PNTS_TO_SEARCH, std::vector<int>& results_idxs)
     {
       for(int q = q_start; q < q_end; ++q)
       {
@@ -244,14 +244,14 @@ namespace dolphinn
 
     /** \brief Nearest Neighbor query in the Hamming cube.
       *
-      * @param query               - vector of queries
-      * @param Q                   - number of queries
-      * @param m                   - number of neigbours to be searched
-      * @param MAX_PNTS_TO_SEARCH  - threshold
-      * @param results_idxs_dists  - indices and distances of Q points, where the (Approximate) Nearest Neighbors are stored.
-      * @param threads_no          - number of threads to be created. Default value is 'std::thread::hardware_concurrency()'.
+      * @param query               vector of queries
+      * @param Q                   number of queries
+      * @param m                   number of neigbors to be searched
+      * @param MAX_PNTS_TO_SEARCH  threshold
+      * @param results_idxs_dists  indices and distances of Q points, where the (Approximate) Nearest Neighbors are stored.
+      * @param threads_no          number of threads to be created. Default value is 'std::thread::hardware_concurrency()'.
     */
-    void m_nearest_neighbors_query(const std::vector<Point>& query, const int Q, const int m, const int MAX_PNTS_TO_SEARCH, std::vector<std::vector<std::pair<int, float>>>& results_idxs_dists, const int threads_no = std::thread::hardware_concurrency())
+    void m_nearest_neighbors_query(const std::vector<Point>& query, const int Q, const int m, const int MAX_PNTS_TO_SEARCH, std::vector<std::vector<std::pair<int, double>>>& results_idxs_dists)
     {
     	if(R>0){
 		    std::vector<bitT> mapped_query(Q * K);
@@ -290,18 +290,18 @@ namespace dolphinn
     /** \brief Execute specified portion of Nearest Neighbor Queries.
       * Helper function for the Constructor in a parallel environment.
       *
-      * @param H                    - vector of Hash Functions
-      * @param query                - vector of all queries
-      * @param mapped_query         - vector of all (to be) mapped queries
-      * @param q_start              - starting index of query to execute
-      * @param q_end                - ending index of query to execute
-      * @param K                    - dimension of Hypercube
-      * @param D                    - dimension of original points and queries
-      * @param pointset             - original points
-      * @param MAX_PNTS_TO_SEARCH   - threshold when searching
-      * @param results_idxs_dists  - indices and distances of Q points, where the (Approximate) Nearest Neighbors are stored.
+      * @param H                    vector of Hash Functions
+      * @param query                vector of all queries
+      * @param mapped_query         vector of all (to be) mapped queries
+      * @param q_start              starting index of query to execute
+      * @param q_end                ending index of query to execute
+      * @param K                    dimension of Hypercube
+      * @param D                    dimension of original points and queries
+      * @param pointset             original points
+      * @param MAX_PNTS_TO_SEARCH   threshold when searching
+      * @param results_idxs_dists  	indices and distances of Q points, where the (Approximate) Nearest Neighbors are stored.
     */
-    static void execute_nearest_neighbor_queries(std::vector<Stable_hash_function<T,Point>>& H, const std::vector<Point>& query, std::vector<bitT>& mapped_query, const int q_start, const int q_end, const int K, const int D, const std::vector<Point>& pointset, const int MAX_PNTS_TO_SEARCH, std::vector<std::pair<int, float>>& results_idxs_dists)
+    static void execute_nearest_neighbor_queries(std::vector<Stable_hash_function<T,Point>>& H, const std::vector<Point>& query, std::vector<bitT>& mapped_query, const int q_start, const int q_end, const int K, const int D, const std::vector<Point>& pointset, const int MAX_PNTS_TO_SEARCH, std::vector<std::pair<int, double>>& results_idxs_dists)
     {
       for(int q = q_start; q < q_end; ++q)
       {
