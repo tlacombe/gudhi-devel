@@ -23,8 +23,6 @@
 #ifndef LANDMARK_CHOICE_BY_FARTHEST_POINT_H_
 #define LANDMARK_CHOICE_BY_FARTHEST_POINT_H_
 
-#include <gudhi/Spatial_tree_data_structure.h>
-
 #include <iterator>
 #include <algorithm>  // for sort
 #include <vector>
@@ -114,7 +112,8 @@ namespace subsampling {
     clusters.reserve(final_size);    
 
     Max_heap max_heap;
-
+    std::vector<typename Max_heap::handle_type> center_heap_map;
+    
     std::vector<Friend_list> friend_lists;
     friend_lists.reserve(final_size);
 
@@ -127,12 +126,13 @@ namespace subsampling {
     clusters.push_back(Cluster_heap());
     for (std::size_t i = 0; i < nb_points; ++i)
       clusters[0].push(Heap_node(i, sqdist(input_pts[centers[0]], input_pts[i])));
-    max_heap.push(clusters.begin());
+    center_heap_map.push_back(max_heap.push(clusters.begin()));
     friend_lists.push_back(Friend_list());
     FT r = std::numeric_limits<double>::infinity();
     
     // Assumption: Lazy max_heap update. The friends' lists don't pop to max unless they are max.
     for (std::size_t i = 1; i < final_size; ++i) {
+      std::vector<typename Max_heap::handle_type> to_decrease;
       centers.push_back(max_heap.top()->top().first);
       *output_it++ = input_pts[max_heap.top()->top().first];
       r = max_heap.top()->top().second;
@@ -141,6 +141,7 @@ namespace subsampling {
         prev_prev_centers[j] = prev_centers[j];
       std::vector<typename Cluster_heap::iterator> to_erase;
       std::size_t c_k = std::distance(clusters.begin(), max_heap.top());
+      to_decrease.push_back(center_heap_map[c_k]);
       for (auto c_it = max_heap.top()->begin(); c_it != max_heap.top()->end(); ++c_it) {
         FT new_dist = sqdist(input_pts[centers[i]], input_pts[c_it->first]);
         if (new_dist < c_it->second) {
@@ -154,6 +155,7 @@ namespace subsampling {
       auto fr_it = friend_lists[c_k].begin();
       while (fr_it != friend_lists[c_k].end()) {
         to_erase.clear();
+        to_decrease.push_back(center_heap_map[*fr_it]);
         for (auto c_it = clusters[*fr_it].begin(); c_it != clusters[*fr_it].end(); ++c_it) {
           FT new_dist = sqdist(input_pts[centers[i]], input_pts[c_it->first]);
           if (new_dist < c_it->second) {
@@ -169,7 +171,9 @@ namespace subsampling {
         else
           fr_it++;
       }
-      max_heap.top()->pop();
+      for (auto handle: to_decrease)
+        max_heap.decrease(handle);
+      center_heap_map.push_back(max_heap.push(clusters.begin() + i));
       friend_lists.push_back(Friend_list());
       fr_it = friend_lists[prev_prev_centers[centers[i]]].begin();
       while (fr_it != friend_lists[prev_prev_centers[centers[i]]].end()) {
