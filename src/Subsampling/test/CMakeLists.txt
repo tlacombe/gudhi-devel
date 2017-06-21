@@ -19,6 +19,12 @@ if(CGAL_FOUND)
       add_executable( Subsampling_test_choose_n_farthest_points test_choose_n_farthest_points.cpp )
       target_link_libraries(Subsampling_test_choose_n_farthest_points ${CGAL_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
 
+      add_executable( Subsampling_test_choose_farthest_point test_choose_farthest_point.cpp )
+      target_link_libraries(Subsampling_test_choose_farthest_point ${Boost_SYSTEM_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+
+      add_executable( Subsampling_test_harpeled_mendel test_harpeled_mendel.cpp )
+      target_link_libraries(Subsampling_test_harpeled_mendel ${Boost_SYSTEM_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+
       add_executable(Subsampling_test_sparsify_point_set test_sparsify_point_set.cpp)
       target_link_libraries(Subsampling_test_sparsify_point_set ${CGAL_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
 
