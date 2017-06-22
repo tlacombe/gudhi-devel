@@ -25,6 +25,7 @@
 
 #include <iterator>
 #include <algorithm>  // for sort
+#include <set>
 #include <vector>
 #include <list>
 #include <random>
@@ -35,24 +36,24 @@ namespace Gudhi {
 namespace subsampling {
   
 
-  template < typename Point_d,
-             typename Heap,
-             typename Tree,
-             typename Presence_table >
-  void update_heap( Point_d &l,
-                    unsigned nbL,
-                    Heap &heap,
-                    Tree &tree,
-                    Presence_table &table)
-  {
-    auto search = tree.query_incremental_ANN(l);
-    for (auto w: search) {
-      if (table[w.first].first)
-        if (w.second < table[w.first].second->second) {
-          heap.update(table[w.first].second, w);
-        }
-    }
-  }
+  // template < typename Point_d,
+  //            typename Heap,
+  //            typename Tree,
+  //            typename Presence_table >
+  // void update_heap( Point_d &l,
+  //                   unsigned nbL,
+  //                   Heap &heap,
+  //                   Tree &tree,
+  //                   Presence_table &table)
+  // {
+  //   auto search = tree.query_incremental_ANN(l);
+  //   for (auto w: search) {
+  //     if (table[w.first].first)
+  //       if (w.second < table[w.first].second->second) {
+  //         heap.update(table[w.first].second, w);
+  //       }
+  //   }
+  // }
   
   /** 
    *  \ingroup witness_complex
@@ -128,6 +129,7 @@ namespace subsampling {
       clusters[0].push(Heap_node(i, sqdist(input_pts[centers[0]], input_pts[i])));
     center_heap_map.push_back(max_heap.push(clusters.begin()));
     friend_lists.push_back(Friend_list());
+    friend_lists[0].push_back(0);
     FT r = std::numeric_limits<double>::infinity();
     
     // Assumption: Lazy max_heap update. The friends' lists don't pop to max unless they are max.
@@ -135,6 +137,7 @@ namespace subsampling {
       std::vector<typename Max_heap::handle_type> to_decrease;
       centers.push_back(max_heap.top()->top().first);
       *output_it++ = input_pts[max_heap.top()->top().first];
+      // std::cout << input_pts[max_heap.top()->top().first] << std::endl;
       r = max_heap.top()->top().second;
       clusters.push_back(Cluster_heap());
       for (std::size_t j = 0; j < nb_points; ++j)
@@ -176,16 +179,24 @@ namespace subsampling {
       center_heap_map.push_back(max_heap.push(clusters.begin() + i));
       friend_lists.push_back(Friend_list());
       fr_it = friend_lists[prev_prev_centers[centers[i]]].begin();
+      std::set<Point_id> new_friend_list;
+      // friend_lists[i].push_back(c_k);
+      // friend_lists[c_k].push_back(i);
       while (fr_it != friend_lists[prev_prev_centers[centers[i]]].end()) {
-        if (sqdist(input_pts[centers[*fr_it]], input_pts[centers[i]]) <= 16*r)
-          friend_lists[i].push_back(*fr_it);
+        if (sqdist(input_pts[centers[*fr_it]], input_pts[centers[i]]) <= 16*r) {
+          friend_lists[*fr_it].push_back(i);
+          // friend_lists[i].push_back(*fr_it);
+          new_friend_list.emplace(*fr_it);
+        }
         if (sqdist(input_pts[centers[*fr_it]], input_pts[prev_prev_centers[centers[i]]]) > 64*r)
           friend_lists[prev_prev_centers[centers[i]]].erase(fr_it++);
         else
           fr_it++;
       }
+      for (auto p: new_friend_list)
+        friend_lists[i].push_back(p);
     }
-    
+    // std::cout << "r1^2 = " << r << std::endl;
     // typedef boost::heap::fibonacci_heap<Heap_node, boost::heap::compare<R_max_compare>> Heap;
     // typedef Spatial_tree_data_structure<Kernel, Point_container> Tree;
     // typedef std::vector< std::pair<bool, Heap_node*> > Presence_table;
