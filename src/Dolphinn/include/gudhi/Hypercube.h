@@ -3,7 +3,6 @@
 
 #include <vector>
 #include <gudhi/Stable_hash_function.h>
-#include <thread>
 #include <iterator>
 #include <utility>
 
@@ -72,11 +71,10 @@ namespace dolphinn
       * @param N           number of points
       * @param D           dimension of points
       * @param K           dimension of Hypercube (and of the mapped points)
-      * @param threads_no  number of threads to be created. Default value is 'std::thread::hardware_concurrency()'.
       * @param r           parameter of Stable Distribution. Default value is 4. Should be modified for Nearest 
       *                      Neighbor Search, to adapt to the average distance of the NN, 'r' is the hashing window.
    */
-    Hypercube(const std::vector<Point>& pointset, const int N, const int D, const int K, const int threads_no = 1 /*std::thread::hardware_concurrency()*/, const double r = 4/*3 or 8*/)
+    Hypercube(const std::vector<Point>& pointset, const int N, const int D, const int K, const double r = 4/*3 or 8*/)
       : D(D), K(K), R(r), pointset(pointset)
     {
       if(N<1 || K<1){
@@ -107,36 +105,6 @@ namespace dolphinn
       	}
         
       }
-     /* else
-      {
-        std::vector<std::thread> threads;
-
-        std::vector<std::vector<Stable_hash_function<T,Point>>> subvectors(threads_no);
-        const int subvector_size = (K - 1)/threads_no;
-        //std::cout << "subvector_size = " << subvector_size << std::endl;
-        for (int i = 0; i < threads_no; ++i)
-          threads.push_back(std::thread(populate_vector_of_hash_functions, std::ref(subvectors[i]), subvector_size, D, r, std::ref(pointset), N, std::ref(mapped_pointset), i * subvector_size, K));
-
-        for (auto& th : threads)
-          th.join();
-
-        for(auto& subv: subvectors)
-        {
-          //for(auto& s: subv)
-          //{
-            H.insert(
-              H.end(),
-              std::make_move_iterator(subv.begin()),
-              std::make_move_iterator(subv.end())
-            );
-          //}
-        }
-        H.emplace_back(D, r);
-        H[K - 1].hash(pointset, N, D);
-        H[K - 1].assign_random_bit_and_fill_hashtable_cube(mapped_pointset, K);
-
-        //H[K - 1].print_hashtable_cube();
-      }*/
     } 
 
     /** \brief Populate the vector of hash functions.
@@ -170,13 +138,11 @@ namespace dolphinn
       * @param radius              find a point within r with query
       * @param MAX_PNTS_TO_SEARCH  threshold
       * @param results_idxs        indices of Q points, where Eucl(point[i], query[i]) <= r
-      * @param threads_no          number of threads to be created. Default value is 'std::thread::hardware_concurrency()'.
     */
     void radius_query(const std::vector<Point>& query, const int Q, const double radius, const int MAX_PNTS_TO_SEARCH, std::vector<int>& results_idxs)
     {
     	if(R>0){
 		    std::vector<bitT> mapped_query(Q * K);
-		    //if(threads_no == 1){
 	      for(int q = 0; q < Q; ++q)
 	      {
 		    	for(int k = 0; k < K; ++k)
@@ -192,27 +158,6 @@ namespace dolphinn
 					results_idxs[q] = H[0].radius_query(std::string(key.begin(), key.end()), radius, K, MAX_PNTS_TO_SEARCH, pointset.begin(), query.begin() + q);
 				}
 		  }
-      /*}
-      else
-      {
-        std::vector<std::thread> threads;
-
-        const int batch = Q/threads_no;
-        //std::cout << "subvector_size = " << subvector_size << std::endl;
-        for (int i = 0; i < threads_no - 1; ++i)
-          threads.push_back(std::thread(execute_radius_queries, std::ref(H), std::ref(query), std::ref(mapped_query), i * batch, (i + 1) * batch, K, D, std::ref(pointset), radius, MAX_PNTS_TO_SEARCH, std::ref(results_idxs)));
-        threads.push_back(std::thread(execute_radius_queries, std::ref(H), std::ref(query), std::ref(mapped_query), (threads_no - 1) * batch, Q, K, D, std::ref(pointset), radius, MAX_PNTS_TO_SEARCH, std::ref(results_idxs)));
-    
-        for (auto& th : threads)
-          th.join();
-      }*/
-      // per query, find candidates
-      /*for(int q = 0; q < Q; ++q)
-      {
-        //std::cout << "Query no. " << q << std::endl;
-        results_idxs[q] = H[K - 1].radius_query(std::string(mapped_query.begin() + q * K, mapped_query.begin() + (q + 1) * K), radius, K, MAX_PNTS_TO_SEARCH, pointset.begin(), query.begin() + q * D);
-        //std::cout << "Query no. " << q << " completed" << std::endl;
-      }*/
     }
 
     /** \brief Execute specified portion of Radius Queries.
@@ -249,13 +194,11 @@ namespace dolphinn
       * @param m                   number of neigbors to be searched
       * @param MAX_PNTS_TO_SEARCH  threshold
       * @param results_idxs_dists  indices and distances of Q points, where the (Approximate) Nearest Neighbors are stored.
-      * @param threads_no          number of threads to be created. Default value is 'std::thread::hardware_concurrency()'.
     */
     void m_nearest_neighbors_query(const std::vector<Point>& query, const int Q, const int m, const int MAX_PNTS_TO_SEARCH, std::vector<std::vector<std::pair<int, double>>>& results_idxs_dists)
     {
     	if(R>0){
 		    std::vector<bitT> mapped_query(Q * K);
-		    //if(threads_no == 1){
 	      for(int q = 0; q < Q; ++q)
 	      {
 	        for(int k = 0; k < K; ++k)
@@ -271,20 +214,6 @@ namespace dolphinn
 					results_idxs_dists[q] = H[0].m_nearest_neighbors_query(std::string(key.begin(), key.end()), K, m, MAX_PNTS_TO_SEARCH, pointset.begin(), query.begin() + q);
 				}
 			}
-      /*}
-      else
-      {
-        std::vector<std::thread> threads;
-
-        const int batch = Q/threads_no;
-        //std::cout << "subvector_size = " << subvector_size << std::endl;
-        for (int i = 0; i < threads_no - 1; ++i)
-          threads.push_back(std::thread(execute_nearest_neighbor_queries, std::ref(H), std::ref(query), std::ref(mapped_query), i * batch, (i + 1) * batch, K, D, std::ref(pointset), MAX_PNTS_TO_SEARCH, std::ref(results_idxs_dists)));
-        threads.push_back(std::thread(execute_nearest_neighbor_queries, std::ref(H), std::ref(query), std::ref(mapped_query), (threads_no - 1) * batch, Q, K, D, std::ref(pointset), MAX_PNTS_TO_SEARCH, std::ref(results_idxs_dists)));
-    
-        for (auto& th : threads)
-          th.join();
-      }*/
     }
 
     /** \brief Execute specified portion of Nearest Neighbor Queries.

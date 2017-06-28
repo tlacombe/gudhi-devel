@@ -64,7 +64,7 @@ namespace dolphinn {
       *                      Neighbor Search, to adapt to the average distance of the NN, 'r' is the hashing window.
    */
   	
-  	Dolphinn(std::vector<Point>& pointset, int N, const int D, const int K, const double hashing_method) : N(pointset.size()), D(D), K(K), hashing_method(hashing_method), pointset(pointset), hypercube(pointset, N, D, K, 1, hashing_method) 
+  	Dolphinn(std::vector<Point>& pointset, int N, const int D, const int K, const double hashing_method) : N(pointset.size()), D(D), K(K), hashing_method(hashing_method), pointset(pointset), hypercube(pointset, N, D, K, hashing_method) 
   		{}
   	
   	/** \brief Radius query the Hamming cube, returns the index of only ONE point per query.
