@@ -36,7 +36,7 @@ There exists several such families. Here we are concerned by two of them: the li
 
 The stable distribution based LSH, called here "line LSH", is parametrized by a real  \f$ r \f$  (different  \f$ r \f$  give different subfamilies), they were designed to work with the Euclidean distance. Let  \f$ (M,d) \f$  be an Euclidean space,  \f$ r \f$  a real,  \f$ a \in M \f$  a vector with entries chosen independently from a stable distribution and  \f$ b \in [ 0;r ]  \f$  chosen uniform at random,  \f$  h_{a,b}:~x\in M \mapsto \lfloor \frac{<a,x> + b}{r} \rfloor  \f$  is a member of this family. This function consists in orthogonally projecting  \f$ x \f$  on the line passing by the origin and directed by  \f$ a \f$ , shifting the result by a constant quantity, and returning the part of the line the result landed in. The line is sliced in windows of size  \f$ r \f$ , each one of these windows is a possible output for the hashing function.
 
-\image latex "linelsh.eps" "Illustration of the line LSH" width=10cm
+\image html "linelsh.png" "Illustration of the line LSH"
 
 In the figure above, the small spheres are elements of the dataset, the double lined line separated in windows of the same size ( \f$ r \f$  in the text) is the support of the projection, two points in the same windows (delimited by the dashed lines) will have the same image.
 
@@ -46,7 +46,7 @@ The hyperplane LSH is a family initially designed for cosine similarity, it offe
 
 This LSH family is not based on a distance and does not require any parameter making it easier to use. However, this is not a perfect family as the datasets are rarely uniformly distributed on a sphere. To avoid pathologic cases where all the points are on the same side of an hyperplane, the dataset is centered before the hashing. Instead of rewriting all the points, the centering is done by computing the center of the dataset and subtracting this vector from the points before the dot product. The formula obtained is for any point  \f$ p \f$ :  \f$ sgn(<p-c,v>) \f$  where  \f$ sgn \f$  is the function that returns 1 for any non-negative real and 0 otherwise,  \f$ c \f$  is the center of the dataset, and  \f$ v \f$  the normal vector of the hyperplane.
 
-\image latex "hyplsh.eps" "Illustration of the line LSH, the arrow its normal vector, and the two types of points the two groups obtained." width=10cm
+\image html "hyplsh.png" "Illustration of the line LSH, the arrow its normal vector, and the two types of points the two groups obtained." 
 
 \section doldef Dolphinn
 
@@ -62,7 +62,7 @@ Now each  \f$ h_i \f$  maps points into  \f$ \{0,1\} \f$  and  \f$ [h_1,...,h_K]
 
 Dolphinn's data structure is obtained by hashing all the points of the dataset and storing them on the vertices of an hypercube. The following figure illustrates the construction of an hypercube for a regular dataset in dimension 2, with  \f$ K=2 \f$  and a line LSH. However, for simplicity, the lines used for the LSH are perpendicular, which does not happen in practice. This building is linear in time and space in the size of the dataset, its dimension, and  \f$ K \f$ .
 
-\image latex dol2.eps "Construction of the hypercube" width=10cm
+\image html dol2.png "Construction of the hypercube"
 
 The left part of the figure represents a regular dataset (with large dots) and two lines for the hashing, the light grey dashed lines corresponds to the windows of the LSH functions, the  \f$ 0 \f$  and  \f$ 1 \f$  corresponds to the result of the coin flip for each window. The right part represents the resulting hypercube of dimension 2 (a square), with the coordinates of each on of its vertices. The circled data points got the same results through the two hashing functions: they are sent to the same vertex (here  \f$ (1,1) \f$ ).
 
