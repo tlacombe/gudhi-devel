@@ -1,0 +1,18 @@
+cmake_minimum_required(VERSION 2.6)
+project(Strong_collapse)
+
+if (NOT CGAL_WITH_EIGEN3_VERSION VERSION_LESS 4.6.0)
+  add_executable (example_usage example_usage.cpp )
+  target_link_libraries(example_usage ${Boost_SYSTEM_LIBRARY})
+  if (TBB_FOUND)
+   target_link_libraries(example_usage ${TBB_LIBRARIES})
+  endif()
+
+  add_executable (example_usage2 example_usage2.cpp )
+  target_link_libraries(example_usage2 ${Boost_SYSTEM_LIBRARY})
+  if (TBB_FOUND)
+   target_link_libraries(example_usage2 ${TBB_LIBRARIES})
+  endif()
+
+endif (NOT CGAL_WITH_EIGEN3_VERSION VERSION_LESS 4.6.0)
+
