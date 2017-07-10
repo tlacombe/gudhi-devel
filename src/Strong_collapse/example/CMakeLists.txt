@@ -14,5 +14,29 @@ if (NOT CGAL_WITH_EIGEN3_VERSION VERSION_LESS 4.6.0)
    target_link_libraries(example_usage2 ${TBB_LIBRARIES})
   endif()
 
+  add_executable (alpha1 alpha1.cpp )
+  target_link_libraries(alpha1 ${Boost_SYSTEM_LIBRARY})
+  if (TBB_FOUND)
+   target_link_libraries(alpha1 ${TBB_LIBRARIES})
+  endif()
+
+  add_executable (alpha2 alpha2.cpp )
+  target_link_libraries(alpha2 ${Boost_SYSTEM_LIBRARY})
+  if (TBB_FOUND)
+   target_link_libraries(alpha2 ${TBB_LIBRARIES})
+  endif()
+
+  add_executable (rips1 rips1.cpp )
+  target_link_libraries(rips1 ${Boost_SYSTEM_LIBRARY})
+  if (TBB_FOUND)
+   target_link_libraries(rips1 ${TBB_LIBRARIES})
+  endif()
+
+  add_executable (rips2 rips2.cpp )
+  target_link_libraries(rips2 ${Boost_SYSTEM_LIBRARY})
+  if (TBB_FOUND)
+   target_link_libraries(rips2 ${TBB_LIBRARIES})
+  endif()
+
 endif (NOT CGAL_WITH_EIGEN3_VERSION VERSION_LESS 4.6.0)
 
