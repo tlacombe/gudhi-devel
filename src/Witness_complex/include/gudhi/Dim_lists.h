@@ -23,8 +23,8 @@
 #ifndef DIM_LISTS_H_
 #define DIM_LISTS_H_
 
-#include <boost/container/flat_map.hpp>
-#include <boost/iterator/transform_iterator.hpp>
+// #include <boost/container/flat_map.hpp>
+// #include <boost/iterator/transform_iterator.hpp>
 #include <algorithm>
 #include <utility>
 #include "gudhi/reader_utils.h"
@@ -39,26 +39,20 @@
 #include <ctime>
 #include <iostream>
 
-#include <boost/tuple/tuple.hpp>
-#include <boost/iterator/zip_iterator.hpp>
-#include <boost/iterator/counting_iterator.hpp>
-#include <boost/range/iterator_range.hpp>
+// #include <boost/tuple/tuple.hpp>
+// #include <boost/iterator/zip_iterator.hpp>
+// #include <boost/iterator/counting_iterator.hpp>
+// #include <boost/range/iterator_range.hpp>
 
-// Needed for the adjacency graph in bad link search
-#include <boost/graph/graph_traits.hpp>
-#include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/connected_components.hpp>
+// // Needed for the adjacency graph in bad link search
+// #include <boost/graph/graph_traits.hpp>
+// #include <boost/graph/adjacency_list.hpp>
+// #include <boost/graph/connected_components.hpp>
 
 namespace Gudhi {
 
 namespace witness_complex {
 
-  /** \addtogroup simplex_tree
-   *  Witness complex is a simplicial complex defined on two sets of points in \f$\mathbf{R}^D\f$:
-   *  \f$W\f$ set of witnesses and \f$L \subseteq W\f$ set of landmarks. The simplices are based on points in \f$L\f$
-   *  and a simplex belongs to the witness complex if and only if it is witnessed (there exists a point \f$w \in W\f$ such that
-   *  w is closer to the vertices of this simplex than others) and all of its faces are witnessed as well. 
-   */
 template< class Simplicial_complex >
 class Dim_lists {
 
@@ -145,10 +139,12 @@ public:
           face_list_it != table_.rend();
           ++face_list_it) {
       auto face_it = face_list_it->begin();
-      while (face_it != face_list_it->end() && sc_.filtration(*face_it) != 0) {
+      // while (face_it != face_list_it->end() && sc_.filtration(*face_it) != 0) {
+      while (face_it != face_list_it->end()) {
         int coface_count = 0;
         auto reduced_coface = coface_list_it->begin();
-        for (auto coface_it = coface_list_it->begin(); coface_it != coface_list_it->end() && sc_.filtration(*coface_it) != 0; ++coface_it)
+        // for (auto coface_it = coface_list_it->begin(); coface_it != coface_list_it->end() && sc_.filtration(*coface_it) != 0; ++coface_it)
+        for (auto coface_it = coface_list_it->begin(); coface_it != coface_list_it->end(); ++coface_it)
           if (is_face(*face_it, *coface_it)) {
             coface_count++;
             if (coface_count == 1)
@@ -179,13 +175,7 @@ public:
         table_.pop_back();
     }
   }
-  
-  bool is_pseudomanifold()
-  {
-
-    return true;
-  }
-  
+   
 }; //class Dim_lists
 
 } // namespace witness_complex

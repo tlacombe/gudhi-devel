@@ -155,7 +155,7 @@ void write_barcodes(std::string in_file, double alpha2, std::string out_file = "
   ifs.close();
   std::ofstream ofs (out_file, std::ofstream::out);
   write_preamble(ofs);
-  double barwidth = 0.01;
+  double barwidth = 0.001;
   int i = 0;
   for (auto interval: pers_intervals) {
     std::string color = "black";
@@ -170,6 +170,94 @@ void write_barcodes(std::string in_file, double alpha2, std::string out_file = "
     ofs << "\\fill[" << color << "] (" << interval.alpha_start << "," << barwidth*i << ") rectangle ("
         << interval.alpha_end << "," << barwidth*(i+1) <<");\n";
     i++;
+  }
+  write_end(ofs);
+  ofs.close();
+}
+
+void write_persistence_diagram(std::string in_file, double alpha2, std::string out_file = "barcodes.tikz.tex")
+{
+  std::ifstream ifs(in_file, std::ios::in);
+  std::string line;
+  std::vector<Pers_interval> pers_intervals;
+  while (getline(ifs, line)) {
+    int p, dim;
+    double alpha_start, alpha_end;
+    std::string alpha_start_s, alpha_end_s;
+    std::istringstream iss(line);
+    iss >> p >> dim >> alpha_start_s >> alpha_end_s;
+    // std::cout << "p = " << p << ", dim = " << dim << ", a_start =  " << alpha_start_s << ", a_end = " << alpha_end_s << "\n";
+    if (alpha_end_s == "inf") {
+      alpha_start = std::stof(alpha_start_s);
+      alpha_end = alpha2;
+      pers_intervals.push_back(Pers_interval(alpha_start, alpha_end, dim));
+    }
+    else if (alpha_start_s != alpha_end_s) {
+      alpha_start = std::stof(alpha_start_s);
+      alpha_end = std::stof(alpha_end_s);
+      // if (alpha_end < alpha_start)
+      //   alpha_end = alpha2;
+      pers_intervals.push_back(Pers_interval(alpha_start, alpha_end, dim));
+    }
+    // std::cout << "a_start := " << alpha_start << ", a_end := " << alpha_end << "\n";
+  }
+  ifs.close();
+  FT vmax = alpha2;
+  
+  FT order10 = pow(10,std::floor(std::log10(vmax)));
+  int digit = std::floor( vmax / order10) + 1;
+  if (digit == 4 || digit == 6) digit = 5;
+  if (digit > 6) digit = 10;
+  FT plot_max = digit*order10;
+  std::cout << plot_max << " " << vmax;
+  FT hstep = 10.0/ alpha2;
+  FT wstep = 10.0 / alpha2;
+
+  //std::cout << "(eps_max-eps_min)/(N-48) = " << (vmax-*data.begin())/(data.size()-48) << "\n";
+  std::ofstream ofs(out_file, std::ofstream::out);
+
+  write_preamble(ofs);
+  
+  ofs <<  "\\draw[->] (0,0) -- (0,10);" << std::endl <<
+    "\\draw[->] (0,0) -- (10,0);" << std::endl <<
+    "\\foreach \\i in {1,...,10}" << std::endl <<
+    "\\draw (0,\\i) -- (-0.05,\\i);" << std::endl <<
+    // "\\foreach \\i in {1,...,10}" << std::endl <<
+    // "\\draw (\\i,0) -- (\\i,-0.05);" << std::endl << std::endl <<
+    "\\draw (0,0) rectangle (10,10);" << std::endl << std::endl <<
+
+    //  "\\foreach \\i in {1,...,10}" << std::endl <<
+    //    "\\draw[dashed] (-0.05,\\i) -- (11,\\i);" << std::endl << std::endl <<
+
+    "\\draw[dashed] (0,0) -- (10,10);" << std::endl << std::endl <<
+    "\\fill[orange] (9,8) circle (0.05) node[right] {dim 0};" << std::endl <<
+    "\\fill[red] (9,7.5) circle (0.05) node[right] {dim 1};" << std::endl <<
+    "\\fill[blue] (9,7) circle (0.05) node[right] {dim 2};" << std::endl <<
+    "\\fill[green] (9,6.5) circle (0.05) node[right] {dim 3};" << std::endl <<
+    "\\fill[yellow] (9,6) circle (0.05) node[right] {dim 4};" << std::endl <<
+    
+    "\\node at (-0.5,11) {death}; " << std::endl <<
+    "\\node at (11,-0.5) {birth}; " << std::endl <<
+    "\\node at (-0.5,-0.5) {0}; " << std::endl <<
+    "\\node at (-0.5,10) {" << alpha2 << "}; " << std::endl <<
+    "%\\node at (10,-0.5) {2}; " << std::endl;
+
+  // ofs << "\\draw[red] (0," << wstep*data[0] << ")";
+  // for (int i = 1; i < n; ++i)
+  //   ofs << " -- (" << hstep*i << "," << wstep*data[i] << ")";
+  // ofs << ";\n";
+  
+  for (auto interval: pers_intervals) {
+    std::string color = "black";
+    switch (interval.dim) {
+    case 0: color = "orange"; break;
+    case 1: color = "red"; break;
+    case 2: color = "blue"; break;
+    case 3: color = "green"; break;
+    case 4: color = "yellow"; break;
+    default: color = "orange"; break;
+    }
+    ofs << "\\fill[" << color << "] (" << hstep*interval.alpha_start << "," << wstep*interval.alpha_end << ") circle (0.05);\n";
   }
   write_end(ofs);
   ofs.close();

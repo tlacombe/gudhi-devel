@@ -52,6 +52,7 @@
 #include "../example/generators.h"
 #include "output.h"
 #include "output_tikz.h"
+#include "flag_expansion.h"
 
 using namespace Gudhi;
 using namespace Gudhi::witness_complex;
@@ -63,6 +64,7 @@ typedef typename K::Point_d Point_d;
 typedef std::vector<Point_d> Point_Vector;
 //typedef Simplex_tree<Simplex_tree_options_fast_persistence> STree;
 typedef Simplex_tree<> STree;
+typedef Flag_simplex_tree<> FTree;
 typedef STree::Simplex_handle Simplex_handle;
 
 typedef Euclidean_strong_witness_complex<K> SRWit;
@@ -222,6 +224,7 @@ void rw_experiment(Point_Vector & point_vector, int nbL, FT alpha2, int limD, FT
 {
   clock_t start, end;
   STree simplex_tree;
+  FTree flag_tree;
 
   // Choose landmarks
   //std::vector<std::vector< int > > knn;
@@ -245,6 +248,10 @@ void rw_experiment(Point_Vector & point_vector, int nbL, FT alpha2, int limD, FT
             << time << " s. \n";
   std::cout << "The complex contains " << simplex_tree.num_simplices() << " simplices \n";
   //std::cout << simplex_tree << "\n";
+  std::ofstream out_stream("SWit.st");
+  out_stream << simplex_tree;
+  out_stream.close();
+  
   
   // Compute the persistence diagram of the complex
   simplex_tree.set_dimension(limD);
