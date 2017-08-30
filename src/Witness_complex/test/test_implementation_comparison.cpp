@@ -15,6 +15,8 @@
 #include <gudhi/Kd_tree_search.h>
 #include <gudhi/Points_off_io.h>
 
+#include "output_tikz.h"
+
 #include <CGAL/Epick_d.h>
 
 #include <iostream>
@@ -196,6 +198,8 @@ int main(int argc, char * const argv[]) {
   // end = clock();
   // std::cout << "Number of critical simplices: " << crit2_st1 << ". Time = " << static_cast<double>(end - start) / CLOCKS_PER_SEC << "s.\n";
 
+  write_2skeleton_tikz(witnesses, "test.tikz.tex");
+  
   int num_simplices = simplex_tree->num_simplices();
   std::cerr << "Number of simplices is: " << num_simplices << "\n";
   
