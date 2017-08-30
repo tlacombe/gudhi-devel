@@ -7,80 +7,169 @@
 #include <memory>
 #include <limits>
 
-#define default_vertex 0
-#define default_filtration 0
-
 namespace Gudhi {
 
+/** Type of a Vertex
+ *
+ * \ingroup sal
+ */
 typedef Simplex::Vertex Vertex;
 
+/** Represents the simplicial complex.
+ *
+ * \ingroup sal
+ */
 class SAL {
 
 public:
+    /** Type of a pointer to a maximal simplex
+     *
+     * \ingroup sal
+     */
     typedef std::shared_ptr<Simplex> Simplex_ptr;
+
+    /** Type of a filtration value
+     *
+     * \ingroup sal
+     */
     typedef Simplex::Filtration_t Filtration_value;
 
+    /** Type of a set of Simplex_ptr
+     *
+     * \ingroup sal
+     */
     struct Sptr_hash{ std::size_t operator()(const Simplex_ptr& s) const; };
     struct Sptr_equal{ std::size_t operator()(const Simplex_ptr& a, const Simplex_ptr& b) const; };
     typedef std::unordered_set<Simplex_ptr, Sptr_hash, Sptr_equal> Simplex_ptr_set;
 
+    /** \brief Add a critical (maximal if there is no filtration values) simplex to SAL.
+     *
+     * The simplex must not have neither face nor coface in the complex.
+     *
+     * \ingroup sal
+     */
     template <typename Input_vertex_range>
-    void insert_critical_simplex(const Input_vertex_range &vertex_range, Filtration_value f = default_filtration);
+    void insert_critical_simplex(const Input_vertex_range &vertex_range, Filtration_value f = filtration_upper_bound);
 
+    /**
+     * Add a simplex and its faces to the complex.
+     *
+     * \ingroup sal
+     */
     template <typename Input_vertex_range>
-    void insert_simplex(const Input_vertex_range &vertex_range, Filtration_value f = default_filtration);
+    void insert_simplex(const Input_vertex_range &vertex_range, Filtration_value f = filtration_upper_bound);
 
+    /**
+     * Remove a simplex and its cofaces from the complex. Its faces are keep inside.
+     *
+     * \ingroup sal
+     */
     template <typename Input_vertex_range>
     void remove_simplex(const Input_vertex_range &vertex_range);
     
+    /**
+     * Give a pointer to a critical coface of the simplex with the same filtration value.
+     * To a maximal coface if no filtration values.
+     *
+     * \ingroup sal
+     */
     template <typename Input_vertex_range>
-    Simplex_ptr find(const Input_vertex_range &vertex_range) const;
+    Simplex_ptr find(const Input_vertex_range &vertex_range, bool any_coface = false) const;
 
+    /**
+     * Does a simplex belong to the complex ?
+     *
+     * \ingroup sal
+     */
     template <typename Input_vertex_range>
     bool membership(const Input_vertex_range &vertex_range) const;
 
+    /**
+     * Does a simplex is critical (maximal if no filtrations value) ?
+     *
+     * \ingroup sal
+     */
     template <typename Input_vertex_range>
     bool criticality(const Input_vertex_range &vertex_range) const;
 
+    /**
+     * The all set of critical cofaces of a simplex.
+     *
+     * \ingroup sal
+     */
     template <typename Input_vertex_range>
     Simplex_ptr_set critical_cofaces(const Input_vertex_range &vertex_range) const;
 
-    template <typename Input_vertex_range>
-    Filtration_value get_filtration(const Input_vertex_range &vertex_range) const;
+    /**
+     * \brief Gives the filtration value from a simplex pointer.
+     *
+     * Such a critical coface can be found with the 'find' method.
+     *
+     * \ingroup sal
+     */
+    Filtration_value filtration(const Simplex_ptr &sptr) const;
 
-    Filtration_value filtration(Simplex_ptr simplex_handle) const
-    {
-      return 0;
-    }
-  
-    void set_dimension(int dimension) const;
-  
+    /**
+     * \brief Contracts one edge in the complex.
+     *
+     * The edge has to verify the link condition if you want to preserve topology. Returns the remaining vertex.
+     *
+     * \ingroup sal
+     */
     Vertex contraction(const Vertex x, const Vertex y);
 
+    /**
+     * Removes a vertex from any simplex containing it.
+     *
+     * \ingroup sal
+     */
+    void remove_vertex(const Vertex x);
+
+    /**
+     * \brief Number of critical simplices.
+     *
+     * /!\ Not efficient !
+     *
+     * \ingroup sal
+     */
     std::size_t num_simplices() const;
     std::size_t num_vertices() const;
     
 
-    // Simplex_tree interface compatibility
+    /** Simplex_tree interface compatibility \ingroup sal */
     typedef Simplex_ptr Simplex_handle;
+    /** Simplex_tree interface compatibility \ingroup sal */
     typedef Vertex Vertex_handle;
+    /** Simplex_tree interface compatibility \ingroup sal */
     typedef Simplex_ptr_set Complex_simplex_range;
-    typedef Simplex Simplex_vertex_range; //Iterator over vertices of a simplex. More...
+    /** Simplex_tree interface compatibility \ingroup sal */
+    typedef Simplex Simplex_vertex_range;
+    /** Simplex_tree interface compatibility \ingroup sal */
     Simplex_handle null_simplex() const;
+    /** Simplex_tree interface compatibility \ingroup sal */
     Simplex_vertex_range simplex_vertex_range (Simplex_handle const &simplex) const;
 
     // For Siargey
-    template <typename Input_vertex_range>
-    bool all_facets_inside(const Input_vertex_range &vertex_range) const;
     Simplex_ptr_set candidates() const;
 
+    // Added for compilation reasons
+  void set_dimension(int k) {};
+  
 protected:
+    /** \internal Removes a critical simplex (and possibly some non critical faces) without adding facets after. \ingroup sal */
     void erase_critical(const Simplex_ptr& sptr);
 
+    /** \internal How to look for a simplex quickly ? \ingroup sal */
     template <typename Input_vertex_range>
     Vertex best_index(const Input_vertex_range &vertex_range) const;
+
+    /** \internal Are all the facets of a simplex in the complex ? \ingroup sal */
+    template <typename Input_vertex_range>
+    bool all_facets_inside(const Input_vertex_range &vertex_range) const;
     
+    /** \internal Map from vertices to maximal simplices \ingroup sal */
     std::unordered_map<Vertex, Simplex_ptr_set> t0;
+
 };
 
 typedef SAL::Simplex_ptr Simplex_ptr;
@@ -96,7 +185,6 @@ template <typename Input_vertex_range1, typename Input_vertex_range2>
 bool included(const Input_vertex_range1 &vertex_range1, const Input_vertex_range2 &vertex_range2);
 
 
-/* sigma must not have neither face nor coface in the complex */
 template <typename Input_vertex_range>
 void SAL::insert_critical_simplex(const Input_vertex_range &vertex_range, Filtration_value f){
     Simplex_ptr sptr = get_key(vertex_range);
@@ -110,17 +198,21 @@ void SAL::insert_critical_simplex(const Input_vertex_range &vertex_range, Filtra
 template <typename Input_vertex_range>
 void SAL::insert_simplex(const Input_vertex_range &vertex_range, Filtration_value f){
     if(membership(vertex_range)) return;
-    bool all_facets_crit = true;
+    bool replace_facets = true;
     for(const Simplex& facet : facets(vertex_range))
-        if(!criticality(facet) || get_filtration(facet)!=f) all_facets_crit=false;
-    if(all_facets_crit)
+        if(!criticality(facet) || filtration(get_key(facet))!=f)
+        {
+            replace_facets=false;
+            break;
+        }
+    if(replace_facets)
         for(const Simplex& facet : facets(vertex_range))
             erase_critical(get_key(facet));
     else
         for(const Vertex& v : vertex_range)
             //Copy constructor needed because the set is modified
             if(t0.count(v))  for(const Simplex_ptr& fptr : Simplex_ptr_set(t0.at(v)))
-                if(included(*fptr,vertex_range) && get_filtration(*fptr) >= f) erase_critical(fptr); // We erase all the maximal faces of the simplex
+                if(included(*fptr,vertex_range) && filtration(fptr) >= f) erase_critical(fptr); // We erase all the maximal faces of the simplex
     insert_critical_simplex(vertex_range);
 }
 
@@ -142,19 +234,21 @@ void SAL::remove_simplex(const Input_vertex_range &vertex_range){
 }
 
 template <typename Input_vertex_range>
-Simplex_ptr SAL::find(const Input_vertex_range &vertex_range) const{
+Simplex_ptr SAL::find(const Input_vertex_range &vertex_range, bool any_coface) const{
     if(t0.size()==0) return null_simplex();
     const Vertex& v = best_index(vertex_range);
     if(!t0.count(v))  return null_simplex();
     if(criticality(vertex_range)) return *(t0.at(v).find(get_key(vertex_range)));
+    Simplex_ptr r = null_simplex();
     for(const Simplex_ptr& sptr : t0.at(v))
-        if(included(vertex_range, *sptr)) return sptr;
-    return null_simplex();
+        if(included(vertex_range, *sptr) && (any_coface || sptr->filtration <= r->filtration))
+            r = sptr;
+    return r;
 }
 
 template <typename Input_vertex_range>
 bool SAL::membership(const Input_vertex_range &vertex_range) const{
-    return find(vertex_range) != null_simplex();
+    return !Sptr_equal()(find(vertex_range, true),null_simplex());
 }
 
 template <typename Input_vertex_range>
@@ -181,16 +275,19 @@ Simplex_ptr_set SAL::critical_cofaces(const Input_vertex_range &vertex_range) co
     return cofaces;
 }
 
-template <typename Input_vertex_range>
-SAL::Filtration_value SAL::get_filtration(const Input_vertex_range &vertex_range) const{
-    return find(vertex_range)->filtration;
+SAL::Filtration_value SAL::filtration(const Simplex_ptr &sptr) const{
+    return find(*sptr)->filtration;
 }
 
-void SAL::set_dimension(int dimension) const
-{  
+void SAL::remove_vertex(const Vertex x){
+    for(const Simplex_ptr& sptr : Simplex_ptr_set(t0.at(x))){
+        Simplex sigma(*sptr);
+        erase_critical(sptr);
+        sigma.erase(x);
+        insert_simplex(sigma);
+    }
 }
-  
-/* Returns the remaining vertex */
+
 Vertex SAL::contraction(const Vertex x, const Vertex y){
     if(!t0.count(x)) return y;
     if(!t0.count(y)) return x;
@@ -210,13 +307,11 @@ Vertex SAL::contraction(const Vertex x, const Vertex y){
     return k;
 }
 
-/* /!\ No facets added */
 inline void SAL::erase_critical(const Simplex_ptr& sptr){
-    if(sptr->size()==0){
-        t0.at(default_vertex).erase(sptr);
-        if(t0.at(default_vertex).size()==0) t0.erase(default_vertex);
-    }
-    else for(const Vertex& v : *sptr){
+    Simplex sigma(*sptr);
+    if (sptr->size()==0)
+        sigma.insert(vertex_upper_bound);
+    for(const Vertex& v : sigma){
         t0.at(v).erase(sptr);
         if(t0.at(v).size()==0) t0.erase(v);
     }
@@ -225,7 +320,7 @@ inline void SAL::erase_critical(const Simplex_ptr& sptr){
 template <typename Input_vertex_range>
 Vertex SAL::best_index(const Input_vertex_range &vertex_range) const{
     std::size_t min = std::numeric_limits<size_t>::max();
-    Vertex arg_min = default_vertex;
+    Vertex arg_min = vertex_upper_bound;
     for(const Vertex& v : vertex_range)
         if(!t0.count(v)) return v;
         else if(t0.at(v).size() < min)
@@ -286,7 +381,9 @@ Simplex_ptr_set SAL::candidates() const{
 }
 
 Simplex_ptr SAL::null_simplex() const{
-    return Simplex_ptr();
+    Simplex sigma;
+    sigma.insert(vertex_upper_bound);
+    return get_key(sigma);
 }
 
 Simplex SAL::simplex_vertex_range (const Simplex_ptr& sptr) const{
@@ -333,7 +430,6 @@ Simplex_ptr get_key(const Input_vertex_range &vertex_range){
     Simplex s(vertex_range);
     return std::make_shared<Simplex>(s);
 }
-
 
 
 } //namespace Gudhi

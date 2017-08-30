@@ -2,13 +2,62 @@
 #include <random>
 #include <chrono>
 
+#include <gudhi/Simplex_tree.h>
 #include <gudhi/LSAL.h>
-#include <gudhi/STW.h>
 
 using namespace Gudhi;
 
+typedef Simplex typeVectorVertex;
+typedef std::pair< Simplex_tree<>::Simplex_handle, bool > typePairSimplexBool;
+
+class STW {
+
+public:
+    void insert_simplex(const Simplex& tau);
+    bool membership(const Simplex& tau);
+    Vertex contraction(const Vertex x, const Vertex y);
+    std::size_t num_simplices();
+
+private:
+    Simplex_tree<> simplexTree;
+    void erase_max(const Simplex& sigma);
+};
+
+void STW::insert_simplex(const Simplex& tau){
+    simplexTree.insert_simplex_and_subfaces(tau);
+}
+
+bool STW::membership(const Simplex& tau) {
+    return simplexTree.find(tau) != simplexTree.null_simplex();
+}
+
+void STW::erase_max(const Simplex& sigma){
+    if(membership(sigma))
+        simplexTree.remove_maximal_simplex(simplexTree.find(sigma));
+}
+
+Vertex STW::contraction(const Vertex x, const Vertex y){
+    Simplex sx; sx.insert(x);
+    auto hx = simplexTree.find(sx);
+    if(hx != simplexTree.null_simplex())
+        for(auto h : simplexTree.cofaces_simplex_range(hx,0)){
+            auto sr = simplexTree.simplex_vertex_range(h);
+            Simplex sigma(sr);
+            erase_max(sigma);
+            sigma.erase(x);
+            sigma.insert(y);
+            insert_simplex(sigma);
+        }
+    return y;
+}
+
+std::size_t STW::num_simplices(){
+    return simplexTree.num_simplices();
+}
+
+
+
 int n = 300;
-//int d = 40;
 
 int nb_insert_simplex1 = 3000;
 int nb_membership1 = 4000;
@@ -45,17 +94,11 @@ void chrono(int n, int d){
     std::vector<Simplex> simplices_membership2 = r_vector_simplices(n - 2*nb_contraction,d,nb_membership2);
     std::chrono::time_point<std::chrono::system_clock> start, end;
 
-    //start = std::chrono::system_clock::now();
     for(const Simplex& s : simplices_insert_simplex1)
         K.insert_simplex(s);
-    //end = std::chrono::system_clock::now();
-    //std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count() << std::endl;
 
-    //start = std::chrono::system_clock::now();
     for(const Simplex& s : simplices_membership1)
         K.membership(s);
-    //end = std::chrono::system_clock::now();
-    //std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count() << std::endl;
 
     start = std::chrono::system_clock::now();
     for(int i = 0; i<=nb_contraction; i++)
@@ -80,7 +123,7 @@ void chrono(int n, int d){
 
 int main(){
     for(int d=5;d<=40;d+=5){
-        std::cout << "d=" << d << " \t  Insertions \t Membership \t   Contractions \t Mem" << std::endl;
+        std::cout << "d=" << d << " \t  Insertions \t   Membership \t Contractions \t        Size" << std::endl;
         std::cout << "LSAL \t \t";
         chrono<LSAL>(n,d);
         std::cout << "SAL \t \t";

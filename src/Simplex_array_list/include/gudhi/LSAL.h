@@ -2,45 +2,51 @@
 #define LSAL_H
 
 #include <gudhi/SAL.h>
+#include <boost/heap/fibonacci_heap.hpp>
 
 namespace Gudhi {
 
 class LSAL {
-    
-public:
 
+public:
     void insert_max_simplex(const Simplex& sigma);
     bool insert_simplex(const Simplex& sigma);
     void remove_simplex(const Simplex& tau);
-    
+
     bool membership(const Simplex& tau);
     bool all_facets_inside(const Simplex& sigma);
 
     Vertex contraction(const Vertex x, const Vertex y);
 
     std::size_t num_simplices() const;
-private:
 
+private:
     void erase_max(const Simplex& sigma);
     Vertex best_index(const Simplex& tau);
     void clean(const Vertex v);
-    
+
     std::unordered_map<Vertex, Simplex_ptr_set> t0;
     bool max_empty_face; // Is the empty simplex a maximal face ?
 
-    std::unordered_map<Vertex, std::size_t> estimated_gamma0;
-    std::size_t estimated_total_size = 0;
-    std::size_t total_size = 0;
-    const double alpha = 3;
-    const double betta = 5;
+    typedef boost::heap::fibonacci_heap<std::pair<std::size_t,Vertex>> PriorityQueue;
+    PriorityQueue cleaning_priority;
+    std::unordered_map<Vertex, PriorityQueue::handle_type> cp_handles;
 
+    std::unordered_map<Vertex, std::size_t> gamma0_lbounds;
+    std::size_t get_gamma0_lbound(const Vertex v) const;
+
+    std::size_t size_lbound = 0;
+    std::size_t size = 0;
+
+    const double alpha = 2; //time
+    const double betta = 3; //memory
 };
 
 void LSAL::insert_max_simplex(const Simplex& sigma){
     for(const Vertex& v : sigma)
-        if(!estimated_gamma0.count(v)) estimated_gamma0.emplace(v,1);
-        else estimated_gamma0[v]++;
-    estimated_total_size++;
+        if(!gamma0_lbounds.count(v)) gamma0_lbounds.emplace(v,1);
+        else gamma0_lbounds[v]++;
+    size_lbound++;
     insert_simplex(sigma);
 }
 
@@ -49,22 +55,28 @@ bool LSAL::insert_simplex(const Simplex& sigma){
     Simplex_ptr sptr = std::make_shared<Simplex>(sigma);
     bool inserted = false;
     for(const Vertex& v : sigma){
-        if(!t0.count(v)) t0.emplace(v, Simplex_ptr_set());
+        if(!t0.count(v)){
+            t0.emplace(v, Simplex_ptr_set());
+            auto v_handle = cleaning_priority.push(std::make_pair(0, v));
+            cp_handles.emplace(v, v_handle);
+        }
         inserted = t0.at(v).emplace(sptr).second;
+        cleaning_priority.update(cp_handles.at(v), std::make_pair(t0.at(v).size() - get_gamma0_lbound(v),v));
     }
     if(inserted)
-        total_size++;
-    if(total_size > estimated_total_size * betta)
-        clean(best_index(sigma));
+        size++;
+    if(size > size_lbound * betta)
+        clean(cleaning_priority.top().second);
     return inserted;
 }
 
 void LSAL::remove_simplex(const Simplex& tau){
     if(tau.size()==0){
         t0.clear();
-        estimated_gamma0.clear();
-        estimated_total_size = 0;
-        total_size = 0;
+        gamma0_lbounds.clear();
+        cleaning_priority.clear();
+        size_lbound = 0;
+        size = 0;
         max_empty_face = false;
     }
     else {
@@ -135,7 +147,7 @@ inline void LSAL::erase_max(const Simplex& sigma){
             t0.erase(v);
     }
     if (erased)
-        total_size--;
+        size--;
 }
 
 Vertex LSAL::best_index(const Simplex& tau){
@@ -144,10 +156,15 @@ Vertex LSAL::best_index(const Simplex& tau){
         if(!t0.count(v)) return v;
         else if(t0.at(v).size() < min)
             min = t0.at(v).size(), arg_min = v;
-    if(alpha * (estimated_gamma0.count(arg_min) ? estimated_gamma0.at(arg_min) : 1) <  min)
+    if(min > alpha * get_gamma0_lbound(arg_min))
         clean(arg_min);
     return arg_min;
 }
+
+std::size_t LSAL::get_gamma0_lbound(const Vertex v) const{
+    return gamma0_lbounds.count(v) ? gamma0_lbounds.at(v) : 0;
+}
+
 
 void LSAL::clean(const Vertex v){
     SAL max_simplices;
@@ -167,17 +184,15 @@ void LSAL::clean(const Vertex v){
             if(!max_simplices.membership(s))
                 max_simplices.insert_critical_simplex(s);
     Simplex sv; sv.insert(v);
-    /*
-    auto clean_cofaces = max_simplices.max_cofaces(sv);
-    estimated_total_size = estimated_total_size - (estimated_gamma0.count(v) ? estimated_gamma0.at(v) : 0) + clean_cofaces.size();
-    estimated_gamma0[v] = clean_cofaces.size();
+    auto clean_cofaces = max_simplices.maximal_cofaces(sv);
+    size_lbound = size_lbound - get_gamma0_lbound(v) + clean_cofaces.size();
+    gamma0_lbounds[v] = clean_cofaces.size();
     for(const Simplex_ptr& sptr : clean_cofaces)
-       insert_max_simplex(*sptr);
-       */
+        insert_simplex(*sptr);
 }
 
 std::size_t LSAL::num_simplices() const{
-    return total_size;
+    return size;
 }
 
 } //namespace Gudhi

@@ -202,37 +202,37 @@ int main(int argc, char * const argv[]) {
   // std::cout << simplex_tree << std::endl;
   
   // // Compute witness complex - 2
-  // delete simplex_tree;
-  // simplex_tree = new Gudhi::Simplex_tree<>;
-  // start = clock();
-  // Witness_complex_new witness_complex_new(nearest_landmark_table);
+  delete simplex_tree;
+  simplex_tree = new Gudhi::Simplex_tree<>;
+  start = clock();
+  Witness_complex_new witness_complex_new(nearest_landmark_table);
 
-  // witness_complex_new.create_complex(*simplex_tree, alpha2, lim_dim);
-  // end = clock();
-  // std::cout << "Witness complex 2 (cofaces and witlists) took "
-  //     << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
-  // // file_name = "num_crit2.out";
-  // // std::cout << "Number of critical simplices: " << num_crit_simplices2(simplex_tree2) << "\n";
-  // // std::cout << "Number of simplices is: " << simplex_tree2.num_simplices() << "\n";
-  // // assert(simplex_tree == simplex_tree2);
+  witness_complex_new.create_complex(*simplex_tree, alpha2, lim_dim);
+  end = clock();
+  std::cerr << "Witness complex 2 (cofaces and witlists) took "
+      << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
+  // file_name = "num_crit2.out";
+  // std::cout << "Number of critical simplices: " << num_crit_simplices2(simplex_tree2) << "\n";
+  // std::cout << "Number of simplices is: " << simplex_tree2.num_simplices() << "\n";
+  // assert(simplex_tree == simplex_tree2);
 
-  // // Compute witness complex - 3
-  // delete simplex_tree;
-  // simplex_tree = new Gudhi::Simplex_tree<>;
-  // start = clock();
-  // Witness_complex_cof witness_complex_cof(nearest_landmark_table);
-  // // ofs = std::ofstream("st2.out", std::ofstream::out);
-  // // ofs << simplex_tree3 << "\n";
-  // // ofs.close();
+  // Compute witness complex - 3
+  delete simplex_tree;
+  simplex_tree = new Gudhi::Simplex_tree<>;
+  start = clock();
+  Witness_complex_cof witness_complex_cof(nearest_landmark_table);
+  // ofs = std::ofstream("st2.out", std::ofstream::out);
+  // ofs << simplex_tree3 << "\n";
+  // ofs.close();
   
-  // witness_complex_cof.create_complex(*simplex_tree, alpha2, lim_dim);
-  // end = clock();
-  // std::cout << "Witness complex 3 (cofaces, no witlists) took "
-  //     << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
-  // file_name = "num_crit3.out";
-  // // std::cout << "Number of critical simplices: " << num_crit_simplices2(simplex_tree3) << "\n";
-  // // std::cout << "Number of simplices is: " << simplex_tree3.num_simplices() << "\n";
-  // // assert(simplex_tree == simplex_tree3);
+  witness_complex_cof.create_complex(*simplex_tree, alpha2, lim_dim);
+  end = clock();
+  std::cerr << "Witness complex 3 (cofaces, no witlists) took "
+      << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
+  file_name = "num_crit3.out";
+  // std::cout << "Number of critical simplices: " << num_crit_simplices2(simplex_tree3) << "\n";
+  // std::cout << "Number of simplices is: " << simplex_tree3.num_simplices() << "\n";
+  // assert(simplex_tree == simplex_tree3);
   
   // Compute witness complex - 4
   delete simplex_tree;
@@ -250,37 +250,39 @@ int main(int argc, char * const argv[]) {
   // assert(simplex_tree == simplex_tree4);
 
   delete simplex_tree;
-  // // Compute witness complex - SAL 1
-  // start = clock();
-  // // Witness_complex witness_complex(nearest_landmark_table);
+  // Compute witness complex - SAL 1
+  start = clock();
+  // Witness_complex witness_complex(nearest_landmark_table);
 
-  // witness_complex.create_complex(sal1, alpha2, lim_dim);
-  // end = clock();
-  // std::cout << "Witness complex SAL 1 (no cofaces, no witlists) took "
-  //     << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
-  // std::cout << "Number of critical simplices is: " << sal1.num_simplices() << "\n";
-  // // Compute the total number of simplices with ST
-  // Gudhi::Simplex_tree<> st_temp1;
-  // for (auto sh: sal1.critical_cofaces(Gudhi::Simplex()) ) {
-  //   st_temp1.insert_simplex_and_subfaces(*sh);
-  // }
-  // std::cout << "Number of simplices is: " << st_temp1.num_simplices() << "\n";  
+  witness_complex.create_complex(sal1, alpha2, lim_dim);
+  end = clock();
+  std::cout << "Witness complex SAL 1 (no cofaces, no witlists) took "
+      << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
+  std::cout << "Number of critical simplices is: " << sal1.num_simplices() << "\n";
+  // Compute the total number of simplices with ST
+  Gudhi::Simplex_tree<> st_temp1;
+  for (auto sh: sal1.critical_cofaces(Gudhi::Simplex()) ) {
+    st_temp1.insert_simplex_and_subfaces(*sh);
+  }
+  std::cout << "Number of simplices is: " << num_crit_simplices2(st_temp1) << "\n";  
   
-  // // Compute witness complex - SAL 4
-  // start = clock();
-  // Witness_complex_sal4 witness_complex_sal4(nearest_landmark_table);
+  // Compute witness complex - SAL 4
+  start = clock();
+  Witness_complex_sal4 witness_complex_sal4(nearest_landmark_table);
 
-  // witness_complex_sal4.create_complex(sal4, alpha2, lim_dim);
-  // end = clock();
-  // std::cout << "Witness complex SAL 4 (no cofaces, but witlists) took "
-  //     << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
-  // std::cout << "Number of critical simplices is: " << sal4.num_simplices() << "\n";
+  witness_complex_sal4.create_complex(sal4, alpha2, lim_dim);
+  end = clock();
+  std::cout << "Witness complex SAL 4 (no cofaces, but witlists) took "
+      << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
+  std::cout << "Number of critical simplices is: " << sal4.num_simplices() << "\n";
 
-  // Gudhi::Simplex_tree<> st_temp4;
-  // for (auto sh: sal1.critical_cofaces(Gudhi::Simplex()) ) {
-  //   st_temp4.insert_simplex_and_subfaces(*sh);
-  // }
-  // std::cout << "Number of simplices is: " << st_temp4.num_simplices() << "\n";  
+  Gudhi::Simplex_tree<> st_temp4;
+  for (auto sh: sal1.critical_cofaces(Gudhi::Simplex()) ) {
+    st_temp4.insert_simplex_and_subfaces(*sh);
+  }
+  std::cout << "Number of simplices is: " << num_crit_simplices2(st_temp4) << "\n";  
+
+
   // std::cout << alpha2 << " " << nbL/(double)witnesses.size() << " " << time2/time1 << " " << num_simplices << "\n";
   std::cout << alpha2 << " " << nbL/(double)witnesses.size() << " " << time2/time1 << " " << num_simplices << "\n";
   

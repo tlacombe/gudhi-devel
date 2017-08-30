@@ -3,8 +3,15 @@
 
 #include <unordered_set>
 
+#define vertex_upper_bound std::numeric_limits<Simplex::Vertex>::max()
+#define filtration_upper_bound std::numeric_limits<Simplex::Filtration_t>::max()
+
 namespace Gudhi {
 
+/* Internal representation of a simplex in SAL,
+ * A simplex is a std::unordered_set<Vertex> vertices
+ * and a filtration value
+ */
 class Simplex {
 
 public :
@@ -33,12 +40,12 @@ private:
 };
 
 Simplex::Simplex()
-    : vertices()
+    : filtration(filtration_upper_bound), vertices()
 {}
 
 template <typename Input_vertex_range>
 Simplex::Simplex(Input_vertex_range vertex_range)
-    : vertices(vertex_range.begin(),vertex_range.end())
+    : filtration(filtration_upper_bound), vertices(vertex_range.begin(),vertex_range.end())
 {}
 
 std::unordered_set<Simplex::Vertex>::const_iterator Simplex::cbegin() const{
