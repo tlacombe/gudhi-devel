@@ -180,7 +180,7 @@ class Witness_complex {
         if (l_it->second <= norelax_dist2)
           norelax_dist2 = l_it->second;
       }
-    } else if (dim == 0) {
+    } else if (dim == 0)
       for (; l_it != end && l_it->second - alpha2 <= norelax_dist2; ++l_it) {
         simplex.push_back(l_it->first);
         double filtration_value = 0;
@@ -200,7 +200,7 @@ class Witness_complex {
       }
     return will_be_active;
   }
-
+  
 };  // namespace witness_complex
 
 }
