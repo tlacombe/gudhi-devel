@@ -56,7 +56,7 @@ void program_options(int argc, char * argv[]
                      , int & p
                      , Filtration_value & min_persistence);
 
-static inline std::pair<double, double> compute_root_square (std::pair<double, double> input) {
+static inline std::pair<double, double> compute_root_square(std::pair<double, double> input) {
   return std::make_pair(std::sqrt(input.first), std::sqrt(input.second));
 }
 
@@ -74,7 +74,7 @@ int main(int argc, char * argv[]) {
   // --------------------------------------------
   // Rips persistence
   // --------------------------------------------
-  Rips_complex rips_complex(off_reader.get_point_cloud(), threshold, Euclidean_distance());
+  Rips_complex rips_complex(off_reader.get_point_cloud(), threshold, Gudhi::Euclidean_distance());
 
   // Construct the Rips complex in a Simplex Tree
   Simplex_tree rips_stree;

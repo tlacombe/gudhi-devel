@@ -106,10 +106,6 @@ class Witness_complex {
       std::cerr << "Witness complex cannot create complex - squared relaxation parameter must be non-negative.\n";
       return false;
     }
-    if (limit_dimension < 0) {
-      std::cerr << "Witness complex cannot create complex - limit dimension must be non-negative.\n";
-      return false;
-    }
     ActiveWitnessList active_witnesses;
     Landmark_id k = 0; /* current dimension in iterative construction */
     for (auto w : nearest_landmark_table_)
@@ -184,9 +180,8 @@ class Witness_complex {
         if (l_it->second <= norelax_dist2)
           norelax_dist2 = l_it->second;
       }
-    }
-    else if (dim == 0)
-      for (; l_it->second - alpha2 <= norelax_dist2 && l_it != end; ++l_it) {
+    } else if (dim == 0) {
+      for (; l_it != end && l_it->second - alpha2 <= norelax_dist2; ++l_it) {
         simplex.push_back(l_it->first);
         double filtration_value = 0;
         // if norelax_dist is infinite, relaxation is 0.

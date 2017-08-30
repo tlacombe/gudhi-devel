@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE(RIPS_DOC_OFF_file) {
       rips_threshold << "==========" << std::endl;
 
   Gudhi::Points_off_reader<Point> off_reader(off_file_name);
-  Rips_complex rips_complex_from_file(off_reader.get_point_cloud(), rips_threshold, Euclidean_distance());
+  Rips_complex rips_complex_from_file(off_reader.get_point_cloud(), rips_threshold, Gudhi::Euclidean_distance());
 
   const int DIMENSION_1 = 1;
   Simplex_tree st;
@@ -89,10 +89,10 @@ BOOST_AUTO_TEST_CASE(RIPS_DOC_OFF_file) {
         std::cout << vertex << ",";
         vp.push_back(off_reader.get_point_cloud().at(vertex));
       }
-      std::cout << ") - distance =" << Euclidean_distance()(vp.at(0), vp.at(1)) <<
+      std::cout << ") - distance =" << Gudhi::Euclidean_distance()(vp.at(0), vp.at(1)) <<
           " - filtration =" << st.filtration(f_simplex) << std::endl;
       BOOST_CHECK(vp.size() == 2);
-      BOOST_CHECK(are_almost_the_same(st.filtration(f_simplex), Euclidean_distance()(vp.at(0), vp.at(1))));
+      BOOST_CHECK(are_almost_the_same(st.filtration(f_simplex), Gudhi::Euclidean_distance()(vp.at(0), vp.at(1))));
     }
   }
 
@@ -244,7 +244,7 @@ BOOST_AUTO_TEST_CASE(Rips_doc_csv_file) {
   std::cout << "========== CSV FILE NAME = " << csv_file_name << " - Rips threshold=" <<
       rips_threshold << "==========" << std::endl;
 
-  Distance_matrix distances = read_lower_triangular_matrix_from_csv_file<Filtration_value>(csv_file_name);
+  Distance_matrix distances = Gudhi::read_lower_triangular_matrix_from_csv_file<Filtration_value>(csv_file_name);
   Rips_complex rips_complex_from_file(distances, rips_threshold);
 
   const int DIMENSION_1 = 1;
@@ -341,7 +341,7 @@ BOOST_AUTO_TEST_CASE(Rips_create_complex_throw) {
       rips_threshold << "==========" << std::endl;
 
   Gudhi::Points_off_reader<Point> off_reader(off_file_name);
-  Rips_complex rips_complex_from_file(off_reader.get_point_cloud(), rips_threshold, Euclidean_distance());
+  Rips_complex rips_complex_from_file(off_reader.get_point_cloud(), rips_threshold, Gudhi::Euclidean_distance());
 
   Simplex_tree stree;
   std::vector<int> simplex = {0, 1, 2};

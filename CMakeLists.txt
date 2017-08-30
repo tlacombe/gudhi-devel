@@ -2,75 +2,71 @@ cmake_minimum_required(VERSION 2.6)
 project(GUDHIdev)
 
 include(CMakeGUDHIVersion.txt)
-# Generate GUDHI official version file
-configure_file(GUDHIVersion.cmake.in "${CMAKE_SOURCE_DIR}/GUDHIVersion.cmake" @ONLY)
 
-find_package(Boost REQUIRED COMPONENTS system filesystem unit_test_framework chrono timer date_time program_options thread REQUIRED)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/src/cmake/modules/")
 
-if(NOT Boost_FOUND)
-  message(FATAL_ERROR "NOTICE: This program requires Boost and will not be compiled.")
+enable_testing()
+
+# This variable is used by Cython CMakeLists.txt to know its path
+set(GUDHI_CYTHON_PATH "src/cython")
+# For third parties libraries management - To be done last as CGAL updates CMAKE_MODULE_PATH
+include(GUDHI_third_party_libraries)
+
+if(MSVC)
+  # Turn off some VC++ warnings
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4267 /wd4668 /wd4311 /wd4800 /wd4820 /wd4503 /wd4244 /wd4345 /wd4996 /wd4396 /wd4018")
 else()
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -pedantic")
+endif()
 
-  set(CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/src/cmake/modules/")
-  set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/src/cmake/modules/")
-  message("CMAKE_PREFIX_PATH = ${CMAKE_PREFIX_PATH}")
-  message("CMAKE_MODULE_PATH = ${CMAKE_MODULE_PATH}")
+if(CMAKE_BUILD_TYPE MATCHES Debug)
+  message("++ Debug compilation flags are: ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG}")
+else()
+  message("++ Release compilation flags are: ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}")
+endif()
 
-  enable_testing()
+if (DEBUG_TRACES)
+  # For programs to be more verbose
+  message(STATUS "DEBUG_TRACES are activated")
+  add_definitions(-DDEBUG_TRACES)
+endif()
 
-  # For "make user_version"
-  include(${CMAKE_MODULE_PATH}/GUDHI_user_version_target.txt)
-  # For "make doxygen"
-  include(${CMAKE_MODULE_PATH}/GUDHI_doxygen_target.txt)
+# Add your new module in the list, order is not important
+include(GUDHI_modules)
 
-  find_package(GMP)
-  if(GMP_FOUND)
-    message(STATUS "GMP_LIBRARIES = ${GMP_LIBRARIES}")
-    INCLUDE_DIRECTORIES(${GMP_INCLUDE_DIR})
-    find_package(GMPXX)
-    if(GMPXX_FOUND)
-      message(STATUS "GMPXX_LIBRARIES = ${GMPXX_LIBRARIES}")
-      INCLUDE_DIRECTORIES(${GMPXX_INCLUDE_DIR})
+add_gudhi_module(common)
+add_gudhi_module(Alpha_complex)
+add_gudhi_module(Bitmap_cubical_complex)
+add_gudhi_module(Bottleneck_distance)
+add_gudhi_module(Contraction)
+add_gudhi_module(Hasse_complex)
+add_gudhi_module(Persistent_cohomology)
+add_gudhi_module(Rips_complex)
+add_gudhi_module(Simplex_tree)
+add_gudhi_module(Skeleton_blocker)
+add_gudhi_module(Spatial_searching)
+add_gudhi_module(Subsampling)
+add_gudhi_module(Tangential_complex)
+add_gudhi_module(Witness_complex)
+
+message("++ GUDHI_MODULES list is:\"${GUDHI_MODULES}\"")
+
+# Include module CMake subdirectories
+# GUDHI_SUB_DIRECTORIES is managed in CMAKE_MODULE_PATH/GUDHI_modules.cmake
+foreach(GUDHI_MODULE ${GUDHI_MODULES})
+  foreach(GUDHI_SUB_DIRECTORY ${GUDHI_SUB_DIRECTORIES})
+    if(EXISTS ${CMAKE_SOURCE_DIR}/src/${GUDHI_MODULE}/${GUDHI_SUB_DIRECTORY}/CMakeLists.txt)
+      add_subdirectory(src/${GUDHI_MODULE}/${GUDHI_SUB_DIRECTORY}/)
     endif()
-  endif()
+  endforeach()
+endforeach()
 
-  # In CMakeLists.txt, when include(${CGAL_USE_FILE}), CMAKE_CXX_FLAGS are overwritten.
-  # cf. http://doc.cgal.org/latest/Manual/installation.html#title40
-  # A workaround is to include(${CGAL_USE_FILE}) before adding "-std=c++11".
-  # A fix would be to use https://cmake.org/cmake/help/v3.1/prop_gbl/CMAKE_CXX_KNOWN_FEATURES.html 
-  # or even better https://cmake.org/cmake/help/v3.1/variable/CMAKE_CXX_STANDARD.html
-  # but it implies to use cmake version 3.1 at least.
-  find_package(CGAL)
-  # Only CGAL versions > 4.4 supports what Gudhi uses from CGAL
-  if (CGAL_VERSION VERSION_LESS 4.4.0)
-    message("CGAL version ${CGAL_VERSION} is considered too old to be used by Gudhi.")
-    unset(CGAL_FOUND)
-  endif()
-  if(CGAL_FOUND)
-    message(STATUS "CGAL version: ${CGAL_VERSION}.")
-    include( ${CGAL_USE_FILE} )
+add_subdirectory(src/GudhUI)
 
-    if (NOT CGAL_VERSION VERSION_LESS 4.8.0)
-      include_directories(BEFORE "src/common/include/gudhi_patches")
-    endif()
-  endif()
-  
-  if(MSVC)
-    # Turn off some VC++ warnings
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4267 /wd4668 /wd4311 /wd4800 /wd4820 /wd4503 /wd4244 /wd4345 /wd4996 /wd4396 /wd4018")
-  else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -pedantic")
-  endif()
-
-  if(CMAKE_BUILD_TYPE MATCHES Debug)
-    message("++ Debug compilation flags are: ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG}")
-  else()
-    message("++ Release compilation flags are: ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}")
-  endif()
-
-  set(Boost_USE_STATIC_LIBS        ON)
-  set(Boost_USE_MULTITHREADED      ON)
-  set(Boost_USE_STATIC_RUNTIME    OFF)
+if (WITH_GUDHI_PYTHON)
+  # specific for cython module
+  add_subdirectory(${GUDHI_CYTHON_PATH})
+endif()
 
   # Find TBB package for parallel sort - not mandatory, just optional.
   set(TBB_FIND_QUIETLY ON)

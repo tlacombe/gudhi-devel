@@ -24,8 +24,10 @@
 #define DISTANCE_FUNCTIONS_H_
 
 #include <cmath>  // for std::sqrt
-#include <type_traits> // for std::decay
-#include <iterator> // for std::begin, std::end
+#include <type_traits>  // for std::decay
+#include <iterator>  // for std::begin, std::end
+
+namespace Gudhi {
 
 /** @file
  * @brief Global distance functions
@@ -47,5 +49,7 @@ class Euclidean_distance {
     return std::sqrt(dist);
   }
 };
+
+}  // namespace Gudhi
 
 #endif  // DISTANCE_FUNCTIONS_H_
