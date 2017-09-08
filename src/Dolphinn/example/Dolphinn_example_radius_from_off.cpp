@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
   
   for(int i=0; i<nq; ++i){
   	if(result[i]!=-1){
-  		std::cout << "Neighbour of ";
+  		std::cout << "Neighbor of ";
   		for(auto x: queries[i]) std::cout << x << " ";
   		std::cout << "found: ";
   		for(auto x: pointset[result[i]]) std::cout << x << " ";
@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
 			}
   		std::cout << res <<"\n";
   	} else {
-  		std::cout << "No neighbour found for ";
+  		std::cout << "No neighbor found for ";
   		for(auto x: queries[i]) std::cout << x << " ";
   		std::cout << "\n";
   	}

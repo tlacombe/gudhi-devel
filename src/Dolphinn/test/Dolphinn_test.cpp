@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(knn_query) {
 			} else {++no_nn;}
 		}
 	}
-	//are the ouput points some kind of neighbours (will fail with D too large)
+	//are the ouput points some kind of neighbors (will fail with D too large)
 	BOOST_CHECK(mean<std::sqrt(2)*(Q*10-no_nn)-5);
 	
 	std::vector<std::vector<std::pair<int, double>>> result2;
@@ -138,7 +138,7 @@ BOOST_AUTO_TEST_CASE(knn_query) {
 		if(d<min_dist) {min_dist=d; min_idx=i;}
 	}
 		
-	//if all the points are checked, is the actual nearest neighbour output 
+	//if all the points are checked, is the actual nearest neighbor output 
 	BOOST_CHECK(result2[0][0].first==min_idx && result2[0][0].second==min_dist);
 }
 

@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
 		std::cerr << "Error: Wrong number of arguments\n";
 		std::cerr << "First argument is the number of points\n";
 		std::cerr << "Second argument is the dimension of the pointset\n";
-		std::cerr << "Third argument is the number of nearest neighbours\n";
+		std::cerr << "Third argument is the number of nearest neighbors\n";
 		std::cerr << "Fourth argument is a parameter for the LSH function\n";
 		exit(-1);
 	}
@@ -83,7 +83,7 @@ int main(int argc, char **argv) {
   std::cout << "\n";
   
   
-  std::cout << "The nearest neighbours are: \n";
+  std::cout << "The nearest neighbors are: \n";
   for(auto& x:result[0]){
   	for(auto y:pointset[x.first])
   		std::cout << y << " ";
