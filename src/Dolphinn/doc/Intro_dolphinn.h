@@ -13,13 +13,13 @@ namespace dolphinn {
  
 \section dolphinndefinition Definition
 
-Dolphinn is a <a target="_blank" href=https://en.wikipedia.org/wiki/Locality-sensitive_hashing>LSH</a>-based method used for approximate neighbor search (k-nearest neigbors and radius search).
+Dolphinn is an <a target="_blank" href=https://en.wikipedia.org/wiki/Locality-sensitive_hashing>LSH</a>-based method used for approximate neighbor search (k-nearest neigbors and radius search).
 The data structure used is a unit hypercube of dimension  \f$ K \f$  which stores the data points on its vertices.
 The vertex on which a point is stored is determined by the result of  \f$ K \f$  LSH functions (or LSH based functions),
 each determining a coordinate of the vertex (0 or 1 for each coordinate). Building the data structure is linear 
 in time and space in both dimension and number of points. As it is LSH based, the method gives approached results.
 
-The LSH functions currently implemented are the stable distribution and the hyperplane hashing. More details can be found in <a target="_blank" href=https://arxiv.org/abs/1612.07405>this paper</a> (hyperplane hashing was not implmented at the time).
+The LSH functions currently implemented are the stable distribution and the hyperplane hashing. More details can be found in <a target="_blank" href=https://arxiv.org/abs/1612.07405>this paper</a> (hyperplane hashing was not implemented at the time).
 
 
 \section lshsec Locality-Sensitive Hashing
@@ -44,13 +44,13 @@ In the figure above, the small spheres are elements of the dataset, the double l
 
 The hyperplane LSH is a family initially designed for cosine similarity, it offers good properties for a dataset uniformly distributed on a sphere. The idea is to create a random hyperplane passing by the origin and the points that are on the same side of the hyperplane have the same image through the function. To do so, a vector with independent and identically distributed Gaussian coordinates is generated, this is the normal vector of the hyperplane, and the sign of the dot product with the point to hash gives the side of the hyperplane. 
 
-This LSH family is not based on a distance and does not require any parameter making it easier to use. However, this is not a perfect family as the datasets are rarely uniformly distributed on a sphere. To avoid pathologic cases where all the points are on the same side of an hyperplane, the dataset is centered before the hashing. Instead of rewriting all the points, the centering is done by computing the center of the dataset and subtracting this vector from the points before the dot product. The formula obtained is for any point  \f$ p \f$ :  \f$ sgn(<p-c,v>) \f$  where  \f$ sgn \f$  is the function that returns 1 for any non-negative real and 0 otherwise,  \f$ c \f$  is the center of the dataset, and  \f$ v \f$  the normal vector of the hyperplane.
+This LSH family is not based on a distance and does not require any parameter making it easier to use. However, this is not a perfect family as the datasets are rarely uniformly distributed on a sphere. To avoid pathologic cases where all the points are on the same side of a hyperplane, the dataset is centered before the hashing. Instead of rewriting all the points, the centering is done by computing the center of the dataset and subtracting this vector from the points before the dot product. The formula obtained is for any point  \f$ p \f$ :  \f$ sgn(<p-c,v>) \f$  where  \f$ sgn \f$  is the function that returns 1 for any non-negative real and 0 otherwise,  \f$ c \f$  is the center of the dataset, and  \f$ v \f$  the normal vector of the hyperplane.
 
 \image html "hyplsh.png" "Illustration of the line LSH, the arrow its normal vector, and the two types of points the two groups obtained." 
 
 \section doldef Dolphinn
 
-Dolphinn is a LSH based method that consists in using a vector of LSH functions to project the points on the vertices of an hypercube such that two points in the original space will be sent to neighboring vertices of the hypercube. It has three parameters: the choice of the LSH family, the dimension of the hypercube on which the points are sent, and a parameter that corresponds to a timeout.
+Dolphinn is an LSH based method that consists in using a vector of LSH functions to project the points on the vertices of a hypercube such that two points in the original space will be sent to neighboring vertices of the hypercube. It has three parameters: the choice of the LSH family, the dimension of the hypercube on which the points are sent, and a parameter that corresponds to a timeout.
 
 \subsection dolprinc Principle
 
@@ -58,9 +58,9 @@ Let  \f$ K \f$  be a positive integer, and  \f$ \mathbb{F} \f$  an LSH family.
 
 let  \f$ [h_1,...,h_K] \f$  be a vector of  \f$ K \f$  LSH functions of  \f$ \mathbb{F} \f$ . If the codomain of this LSH family is of size greater than  \f$ 2 \f$ : for each  \f$ h_i \f$ , let  \f$ f_i \f$  be a function that assign every possible output of  \f$ h_i \f$  to  \f$ 0 \f$  or  \f$ 1 \f$  uniformly (for each possible output  \f$ y \f$  of  \f$ h_i \f$ , flip a coin, if head  \f$ f_i(y)=0 \f$ ,   \f$ f_i(y)=1 \f$  otherwise), and let's redefine  \f$ h_i=f_i \circ h_i \f$ . 
 
-Now each  \f$ h_i \f$  maps points into  \f$ \{0,1\} \f$  and  \f$ [h_1,...,h_K] \f$  into  \f$ \{0,1\}^K \f$  (which can be seen as the vertices of an hypercube of dimension  \f$ K \f$ ). Dolphinn is based on the observation that if two points have close image through the vector, it means several LSH families mapped them together, and thus the probability of the being close to each other is high.
+Now each  \f$ h_i \f$  maps points into  \f$ \{0,1\} \f$  and  \f$ [h_1,...,h_K] \f$  into  \f$ \{0,1\}^K \f$  (which can be seen as the vertices of a hypercube of dimension  \f$ K \f$ ). Dolphinn is based on the observation that if two points have close image through the vector, it means several LSH families mapped them together, and thus the probability of the being close to each other is high.
 
-Dolphinn's data structure is obtained by hashing all the points of the dataset and storing them on the vertices of an hypercube. The following figure illustrates the construction of an hypercube for a regular dataset in dimension 2, with  \f$ K=2 \f$  and a line LSH. However, for simplicity, the lines used for the LSH are perpendicular, which does not happen in practice. This building is linear in time and space in the size of the dataset, its dimension, and  \f$ K \f$ .
+Dolphinn's data structure is obtained by hashing all the points of the dataset and storing them on the vertices of a hypercube. The following figure illustrates the construction of a hypercube for a regular dataset in dimension 2, with  \f$ K=2 \f$  and a line LSH. However, for simplicity, the lines used for the LSH are perpendicular, which does not happen in practice. This building is linear in time and space in the size of the dataset, its dimension, and  \f$ K \f$ .
 
 \image html dol2.png "Construction of the hypercube"
 
@@ -84,7 +84,7 @@ Starting values: to begin with Dolphinn it is advised to start with  \f$ K \f$  
 
 \section dolhowto How to use Dolphinn?
 
-Dolphinn Works with array of points, points being array of doubles. The first step to use Dolphinn is to fill the hypercube with hte initial dataset, this is done by creating an object of the Dolphinn class. To find the neighbors of a set of points, these have to be put together in an array, and the correponding method called (either k_nearest_neighbors or radius query). These methods fill an array given to them by reference. The following code is an example of use of Dolphinn for the search of the k-nearest neighbors.
+Dolphinn Works with array of points, points being array of doubles. The first step to use Dolphinn is to fill the hypercube with the initial dataset, this is done by creating an object of the Dolphinn class. To find the neighbors of a set of points, these have to be put together in an array, and the correponding method called (either k_nearest_neighbors or radius query). These methods fill an array given to them by reference. The following code is an example of use of Dolphinn for the search of the k-nearest neighbors.
 
 \include Dolphinn/Dolphinn_example_knn_from_points.cpp
 
