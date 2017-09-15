@@ -128,6 +128,7 @@ public:
   typedef Incremental_neighbor_search                       INS_range;
 
   typedef CGAL::Fuzzy_sphere<STraits>                       Fuzzy_sphere;
+
   /// \brief Constructor
   /// @param[in] points Const reference to the point range. This range
   /// is not copied, so it should not be destroyed or modified afterwards.
