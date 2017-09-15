@@ -39,33 +39,28 @@ parser = argparse.ArgumentParser(description='RipsComplex creation from '
 parser.add_argument("-f", "--file", type=str, required=True)
 parser.add_argument("-e", "--max_edge_length", type=float, default=0.5)
 parser.add_argument("-d", "--max_dimension", type=int, default=1)
+parser.add_argument("-b", "--band_boot", type=float, default=0.)
 parser.add_argument('--no-diagram', default=False, action='store_true' , help='Flag for not to display the diagrams')
 
 args = parser.parse_args()
 
-with open(args.file, 'r') as f:
-    first_line = f.readline()
-    if (first_line == 'OFF\n') or (first_line == 'nOFF\n'):
-        print("#####################################################################")
-        print("RipsComplex creation from distance matrix read in a csv file")
-        
-        message = "RipsComplex with max_edge_length=" + repr(args.max_edge_length)
-        print(message)
-        
-        rips_complex = gudhi.RipsComplex(off_file=args.file, max_edge_length=args.max_edge_length)
-        simplex_tree = rips_complex.create_simplex_tree(max_dimension=args.max_dimension)
-    
-        message = "Number of simplices=" + repr(simplex_tree.num_simplices())
-        print(message)
-        
-        diag = simplex_tree.persistence()
-    
-        print("betti_numbers()=")
-        print(simplex_tree.betti_numbers())
-    
-        if args.no_diagram == False:
-            gudhi.plot_persistence_diagram(diag)
-    else:
-        print(args.file, "is not a valid OFF file")
+print("#####################################################################")
+print("RipsComplex creation from distance matrix read in a csv file")
 
-    f.close()
+message = "RipsComplex with max_edge_length=" + repr(args.max_edge_length)
+print(message)
+
+rips_complex = gudhi.RipsComplex(csv_file=args.file, max_edge_length=args.max_edge_length)
+simplex_tree = rips_complex.create_simplex_tree(max_dimension=args.max_dimension)
+
+message = "Number of simplices=" + repr(simplex_tree.num_simplices())
+print(message)
+
+diag = simplex_tree.persistence()
+
+print("betti_numbers()=")
+print(simplex_tree.betti_numbers())
+
+if args.no_diagram == False:
+    pplot = gudhi.plot_persistence_diagram(diag, band_boot=args.band_boot)
+    pplot.show()
