@@ -128,7 +128,6 @@ public:
   typedef Incremental_neighbor_search                       INS_range;
 
   typedef CGAL::Fuzzy_sphere<STraits>                       Fuzzy_sphere;
-
   /// \brief Constructor
   /// @param[in] points Const reference to the point range. This range
   /// is not copied, so it should not be destroyed or modified afterwards.
@@ -280,10 +279,10 @@ public:
   /// @param[in] p The query point.
   /// @param[in] radius The search radius
   /// @param[out] it The points that lie inside the sphere of center `p` and radius `radius`.
-  ///                The `value_type` of the iterator must be `Point`.
+  ///                Note: `it` is used this way: `*it++ = each_point`.
   /// @param[in] eps Approximation factor.
   template <typename OutputIterator>
-  void radius_search(
+  void near_search(
     Point const& p,
     FT radius,
     OutputIterator it,

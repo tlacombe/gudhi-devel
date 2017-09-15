@@ -18,7 +18,7 @@
 #generate_sphere_d												5		0.5 	-		10000	6			N			0.		0.   	1000 		10		1
 #generate_sphere_d												24		0.5 	-		10000	24			N			0.		0.   	1000 		10		1
 #generate_sphere_d												1000	0.5 	-		10000	1000		N			0.		0.   	1000 		10		1
-#generate_points_in_cube_d										100 	2.0 	-		10000	100			N			0.		0.   	1000 		10		1
+#generate_points_in_cube_d										100 	1.0 	-		10000	100			N			0.		0.   	1000 		10		1
 #generate_klein_bottle_4D										4		3		-		1000000	4			N			0.		0.01   	1000		10		1
 #data/sift_base.fvecs     										-		-		-		0		128			N			0.		0.  	2   		10		1 #1M points
 #data/sift_base.fvecs     										-		-		-		0		128			N			0.		0.  	200   		10		1 #1M points

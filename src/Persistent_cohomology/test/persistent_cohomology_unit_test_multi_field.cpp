@@ -9,11 +9,11 @@
 #define BOOST_TEST_MODULE "persistent_cohomology_multi_field"
 #include <boost/test/unit_test.hpp>
 
-#include "gudhi/graph_simplicial_complex.h"
-#include "gudhi/reader_utils.h"
-#include "gudhi/Simplex_tree.h"
-#include "gudhi/Persistent_cohomology.h"
-#include "gudhi/Persistent_cohomology/Multi_field.h"
+#include <gudhi/graph_simplicial_complex.h>
+#include <gudhi/reader_utils.h>
+#include <gudhi/Simplex_tree.h>
+#include <gudhi/Persistent_cohomology.h>
+#include <gudhi/Persistent_cohomology/Multi_field.h>
 
 using namespace Gudhi;
 using namespace Gudhi::persistent_cohomology;
@@ -21,12 +21,10 @@ using namespace boost::unit_test;
 
 typedef Simplex_tree<> typeST;
 
-std::string test_rips_persistence(int min_coefficient, int max_coefficient, int min_persistence) {
-  // file name is given as parameter from CMakeLists.txt
-  const std::string inputFile(framework::master_test_suite().argv[1]);
-
+std::string test_rips_persistence(int min_coefficient, int max_coefficient, double min_persistence) {
+  // file is copied in CMakeLists.txt
   std::ifstream simplex_tree_stream;
-  simplex_tree_stream.open(inputFile.c_str());
+  simplex_tree_stream.open("simplex_tree_file_for_multi_field_unit_test.txt");
   typeST st;
   simplex_tree_stream >> st;
   simplex_tree_stream.close();
@@ -74,7 +72,7 @@ void test_rips_persistence_in_dimension(int min_dimension, int max_dimension) {
   std::cout << "********************************************************************" << std::endl;
   std::cout << "TEST OF RIPS_PERSISTENT_COHOMOLOGY_MULTI_FIELD MIN_DIM=" << min_dimension << " MAX_DIM=" << max_dimension << " MIN_PERS=0" << std::endl;
 
-  std::string str_rips_persistence = test_rips_persistence(min_dimension, max_dimension, static_cast<Filtration_value> (0.0));
+  std::string str_rips_persistence = test_rips_persistence(min_dimension, max_dimension, 0.0);
   std::cout << "str_rips_persistence=" << str_rips_persistence << std::endl;
 
   BOOST_CHECK(str_rips_persistence.find(value0) != std::string::npos); // Check found

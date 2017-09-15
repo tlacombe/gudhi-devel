@@ -110,7 +110,7 @@ class Persistent_cohomology {
         cell_pool_() {
     if (cpx_->num_simplices() > std::numeric_limits<Simplex_key>::max()) {
       // num_simplices must be strictly lower than the limit, because a value is reserved for null_key.
-      throw std::out_of_range ("The number of simplices is more than Simplex_key type numeric limit.");
+      throw std::out_of_range("The number of simplices is more than Simplex_key type numeric limit.");
     }
     Simplex_key idx_fil = 0;
     for (auto sh : cpx_->filtration_simplex_range()) {
@@ -300,8 +300,7 @@ class Persistent_cohomology {
     // with multiplicity. We used to sum the coefficients directly in
     // annotations_in_boundary by using a map, we now do it later.
     typedef std::pair<Column *, int> annotation_t;
-    // Danger: not thread-safe!
-    static std::vector<annotation_t> annotations_in_boundary;
+    thread_local std::vector<annotation_t> annotations_in_boundary;
     annotations_in_boundary.clear();
     int sign = 1 - 2 * (dim_sigma % 2);  // \in {-1,1} provides the sign in the
                                          // alternate sum in the boundary.
@@ -592,10 +591,17 @@ class Persistent_cohomology {
     std::ofstream diagram_out(diagram_name.c_str());
     cmp_intervals_by_length cmp(cpx_);
     std::sort(std::begin(persistent_pairs_), std::end(persistent_pairs_), cmp);
+    bool has_infinity = std::numeric_limits<Filtration_value>::has_infinity;
     for (auto pair : persistent_pairs_) {
-    diagram_out << cpx_->dimension(get<0>(pair)) << " "
-          << cpx_->filtration(get<0>(pair)) << " "
-          << cpx_->filtration(get<1>(pair)) << std::endl;
+      // Special case on windows, inf is "1.#INF"
+      if (has_infinity && cpx_->filtration(get<1>(pair)) == std::numeric_limits<Filtration_value>::infinity()) {
+        diagram_out << cpx_->dimension(get<0>(pair)) << " "
+              << cpx_->filtration(get<0>(pair)) << " inf" << std::endl;
+      } else {
+        diagram_out << cpx_->dimension(get<0>(pair)) << " "
+              << cpx_->filtration(get<0>(pair)) << " "
+              << cpx_->filtration(get<1>(pair)) << std::endl;
+      }
     }
   }
 
@@ -604,7 +610,7 @@ class Persistent_cohomology {
    */
   std::vector<int> betti_numbers() const {
     // Init Betti numbers vector with zeros until Simplicial complex dimension
-    std::vector<int> betti_numbers(cpx_->dimension(), 0);
+    std::vector<int> betti_numbers(dim_max_, 0);
 
     for (auto pair : persistent_pairs_) {
       // Count never ended persistence intervals
@@ -643,8 +649,7 @@ class Persistent_cohomology {
    */
   std::vector<int> persistent_betti_numbers(Filtration_value from, Filtration_value to) const {
     // Init Betti numbers vector with zeros until Simplicial complex dimension
-    std::vector<int> betti_numbers(cpx_->dimension(), 0);
-
+    std::vector<int> betti_numbers(dim_max_, 0);
     for (auto pair : persistent_pairs_) {
       // Count persistence intervals that covers the given interval
       // null_simplex test : if the function is called with to=+infinity, we still get something useful. And it will
@@ -688,6 +693,22 @@ class Persistent_cohomology {
    */
   const std::vector<Persistent_interval>& get_persistent_pairs() const {
     return persistent_pairs_;
+  }
+
+  /** @brief Returns persistence intervals for a given dimension.
+   * @param[in] dimension Dimension to get the birth and death pairs from.
+   * @return A vector of persistence intervals (birth and death) on a fixed dimension.
+   */
+  std::vector< std::pair< Filtration_value , Filtration_value > >
+  intervals_in_dimension(int dimension) {
+    std::vector< std::pair< Filtration_value , Filtration_value > > result;
+    // auto && pair, to avoid unnecessary copying
+    for (auto && pair : persistent_pairs_) {
+      if (cpx_->dimension(get<0>(pair)) == dimension) {
+        result.emplace_back(cpx_->filtration(get<0>(pair)), cpx_->filtration(get<1>(pair)));
+      }
+    }
+    return result;
   }
 
  private:
