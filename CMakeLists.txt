@@ -66,7 +66,7 @@ endforeach()
 if (WITH_GUDHI_PYTHON)
   # specific for cython module
   add_subdirectory(${GUDHI_CYTHON_PATH})
-endif()  
+endif()
 
 # For "make user_version" - Requires GUDHI_modules to be performed
 include(GUDHI_user_version_target)
