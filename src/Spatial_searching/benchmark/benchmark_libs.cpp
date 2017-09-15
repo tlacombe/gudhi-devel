@@ -32,6 +32,7 @@ can be processed in Excel, for example.
 //#define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_SLIDING_MIDPOINT
 //#define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_MEDIAN_OF_MAX_SPREAD
 #define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_MIDPOINT_OF_MAX_SPREAD
+//#define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_INCREMENTAL_SLIDING_MIDPOINT
 #define GUDHI_DO_NOT_TEST_CGAL_KD_TREE_STORING_POINTS
 #define GUDHI_DO_NOT_TEST_CGAL_KD_TREE_STORING_POINTS_AND_INDICES
 #undef GUDHI_SBL_IS_AVAILABLE
@@ -56,9 +57,8 @@ const bool FLANN_KDTREE_REORDER = true;
 
 #include "utilities.h"
 
-#ifndef GUDHI_DO_NOT_TEST_KD_TREE_SEARCH
-# include "functor_GUDHI_Kd_tree_search.h"
-#endif
+#include "functor_GUDHI_Kd_tree_search.h"
+#include "functor_GUDHI_Kd_tree_search_incremental.h"
 
 #ifndef GUDHI_DO_NOT_TEST_CGAL_KD_TREE_STORING_POINTS
 # include "functor_CGAL_Kd_tree_storing_points.h"
@@ -360,6 +360,14 @@ void run_tests(
       points, queries, k, epsilon, "GUDHI Kd_tree_search MIDPOINT_OF_MAX_SPREAD", "", p_ground_truth));
 #endif
 
+#ifndef GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_INCREMENTAL_SLIDING_MIDPOINT
+# ifdef LOOP_ON_VARIOUS_PRECISIONS
+  for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
+# endif
+    perfs.push_back(test__ANN_queries<GUDHI_Kd_tree_search_incremental<Kernel, gss::SLIDING_MIDPOINT>>(
+      points, queries, k, epsilon, "GUDHI Kd_tree_search_incremental SLIDING_MIDPOINT", "", p_ground_truth));
+#endif
+
   //---------------------------------------------------------------------------
   // CGAL (with points stored in the tree)
   //---------------------------------------------------------------------------
@@ -636,7 +644,7 @@ decode_interval(std::string const& interval)
 }
 
 int main() {
-  unsigned int seed = static_cast<unsigned int> (time(NULL));
+  unsigned int seed = 0; // static_cast<unsigned int> (time(NULL));
   CGAL::default_random = CGAL::Random(seed);  // TODO(CJ): use set_default_random
   std::cerr << "Random seed = " << seed << "\n";
 

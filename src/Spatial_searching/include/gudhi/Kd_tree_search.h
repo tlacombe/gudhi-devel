@@ -27,10 +27,12 @@
 #include <CGAL/Orthogonal_incremental_neighbor_search.h>
 #include <CGAL/Search_traits.h>
 #include <CGAL/Search_traits_adapter.h>
+#include <CGAL/Fuzzy_sphere.h>
 #include <CGAL/property_map.h>
 
 #include <boost/property_map/property_map.hpp>
 #include <boost/iterator/counting_iterator.hpp>
+#include <boost/mpl/if.hpp>
 
 #include <cstddef>
 #include <vector>
@@ -63,14 +65,19 @@ namespace spatial_searching {
   *   can be static if you know the ambiant dimension at compile-time, or dynamic if you don't.
   * \tparam Point_range is the type of the range that provides the points.
   *   It must be a range whose iterator type is a `RandomAccessIterator`.
+  * \tparam Split_strategy allows to choose between different splitting strategies: 
+  * `SLIDING_MIDPOINT` (default), `MEDIAN_OF_MAX_SPREAD`, `MIDPOINT_OF_MAX_SPREAD`.
   */
-template <typename Search_traits, typename Point_range>
+
+enum Splitter_enum { SLIDING_MIDPOINT = 0, MEDIAN_OF_MAX_SPREAD, MIDPOINT_OF_MAX_SPREAD };
+
+template <typename Search_traits, typename Point_range, Splitter_enum Split_strategy = SLIDING_MIDPOINT>
 class Kd_tree_search {
   typedef boost::iterator_property_map<
     typename Point_range::const_iterator,
     CGAL::Identity_property_map<std::ptrdiff_t> >           Point_property_map;
 
- public:
+public:
   /// The Traits.
   typedef Search_traits                                     Traits;
   /// Number type used for distances.
@@ -81,7 +88,8 @@ class Kd_tree_search {
   typedef CGAL::Search_traits<
     FT, Point,
     typename Traits::Cartesian_const_iterator_d,
-    typename Traits::Construct_cartesian_const_iterator_d>  Traits_base;
+    typename Traits::Construct_cartesian_const_iterator_d,
+    typename Search_traits::Dimension>                      Traits_base;
 
   typedef CGAL::Search_traits_adapter<
     std::ptrdiff_t,
@@ -91,11 +99,19 @@ class Kd_tree_search {
     std::ptrdiff_t,
     Point_property_map,
     CGAL::Euclidean_distance<Traits_base> >                 Orthogonal_distance;
-  typedef CGAL::Sliding_midpoint<STraits>                   Splitter; // default in CGAL -- best choice in average
-  //typedef CGAL::Median_of_max_spread<STraits>               Splitter;
-  //typedef CGAL::Midpoint_of_max_spread<STraits>             Splitter;
+  
+  typedef typename boost::mpl::if_c <
+    Split_strategy == MEDIAN_OF_MAX_SPREAD,
+    CGAL::Median_of_max_spread<STraits>,
+    typename boost::mpl::if_c <
+      Split_strategy == MIDPOINT_OF_MAX_SPREAD,
+      CGAL::Midpoint_of_max_spread<STraits>,
+      CGAL::Sliding_midpoint<STraits> // default in CGAL -- best choice in average
+    >::type
+  >::type                                                   Splitter;
 
-  typedef CGAL::Kd_tree<STraits, Splitter, CGAL::Tag_true>  Tree;
+  typedef CGAL::Kd_tree<
+    STraits, Splitter, CGAL::Tag_true, CGAL::Tag_true>      Tree;
 
   typedef CGAL::Orthogonal_k_neighbor_search<
     STraits, Orthogonal_distance, Splitter, Tree>           K_neighbor_search;
@@ -110,6 +126,8 @@ class Kd_tree_search {
   /// Its value type is `std::pair<std::size_t, FT>` where `first` is the index
   /// of a point P and `second` is the squared distance between P and the query point.
   typedef Incremental_neighbor_search                       INS_range;
+
+  typedef CGAL::Fuzzy_sphere<STraits>                       Fuzzy_sphere;
 
   /// \brief Constructor
   /// @param[in] points Const reference to the point range. This range
@@ -171,9 +189,9 @@ class Kd_tree_search {
   /// @param[in] k Number of nearest points to search.
   /// @param[in] sorted Indicates if the computed sequence of k-nearest neighbors needs to be sorted.
   /// @param[in] eps Approximation factor.
-  /// @return A range containing the k-nearest neighbors.
-  KNS_range query_k_nearest_neighbors(const
-    Point &p,
+  /// @return A range (whose `value_type` is `std::size_t`) containing the k-nearest neighbors.
+  KNS_range query_k_nearest_neighbors(
+    Point const& p,
     unsigned int k,
     bool sorted = true,
     FT eps = FT(0)) const {
@@ -186,8 +204,7 @@ class Kd_tree_search {
       k,
       eps,
       true,
-      CGAL::Distance_adapter<std::ptrdiff_t, Point_property_map, CGAL::Euclidean_distance<Traits_base> >(
-        std::begin(m_points)), sorted);
+      Orthogonal_distance(std::begin(m_points)), sorted);
 
     return search;
   }
@@ -195,10 +212,11 @@ class Kd_tree_search {
   /// \brief Search incrementally for the nearest neighbors from a query point.
   /// @param[in] p The query point.
   /// @param[in] eps Approximation factor.
-  /// @return A range containing the neighbors sorted by their distance to p.
+  /// @return A range (whose `value_type` is `std::size_t`) containing the 
+  /// neighbors sorted by their distance to p.
   /// All the neighbors are not computed by this function, but they will be
   /// computed incrementally when the iterator on the range is incremented.
-  INS_range query_incremental_nearest_neighbors(const Point &p, FT eps = FT(0)) const {
+  INS_range query_incremental_nearest_neighbors(Point const& p, FT eps = FT(0)) const {
     // Initialize the search structure, and search all N points
     // Note that we need to pass the Distance explicitly since it needs to
     // know the property map
@@ -207,8 +225,7 @@ class Kd_tree_search {
       p,
       eps,
       true,
-      CGAL::Distance_adapter<std::ptrdiff_t, Point_property_map, CGAL::Euclidean_distance<Traits_base> >(
-        std::begin(m_points)) );
+      Orthogonal_distance(std::begin(m_points)) );
 
     return search;
   }
@@ -218,9 +235,9 @@ class Kd_tree_search {
   /// @param[in] k Number of farthest points to search.
   /// @param[in] sorted Indicates if the computed sequence of k-farthest neighbors needs to be sorted.
   /// @param[in] eps Approximation factor.
-  /// @return A range containing the k-farthest neighbors.
-  KNS_range query_k_farthest_neighbors(const
-    Point &p,
+  /// @return A range (whose `value_type` is `std::size_t`) containing the k-farthest neighbors.
+  KNS_range query_k_farthest_neighbors(
+    Point const& p,
     unsigned int k,
     bool sorted = true,
     FT eps = FT(0)) const {
@@ -233,8 +250,7 @@ class Kd_tree_search {
       k,
       eps,
       false,
-      CGAL::Distance_adapter<std::ptrdiff_t, Point_property_map, CGAL::Euclidean_distance<Traits_base> >(
-        std::begin(m_points)), sorted);
+      Orthogonal_distance(std::begin(m_points)), sorted);
 
     return search;
   }
@@ -242,10 +258,11 @@ class Kd_tree_search {
   /// \brief Search incrementally for the farthest neighbors from a query point.
   /// @param[in] p The query point.
   /// @param[in] eps Approximation factor.
-  /// @return A range containing the neighbors sorted by their distance to p.
+  /// @return A range (whose `value_type` is `std::size_t`) 
+  /// containing the neighbors sorted by their distance to p.
   /// All the neighbors are not computed by this function, but they will be
   /// computed incrementally when the iterator on the range is incremented.
-  INS_range query_incremental_farthest_neighbors(const Point &p, FT eps = FT(0)) const {
+  INS_range query_incremental_farthest_neighbors(Point const& p, FT eps = FT(0)) const {
     // Initialize the search structure, and search all N points
     // Note that we need to pass the Distance explicitly since it needs to
     // know the property map
@@ -254,10 +271,25 @@ class Kd_tree_search {
       p,
       eps,
       false,
-      CGAL::Distance_adapter<std::ptrdiff_t, Point_property_map, CGAL::Euclidean_distance<Traits_base> >(
-        std::begin(m_points)) );
+      Orthogonal_distance(std::begin(m_points)) );
 
     return search;
+  }
+
+  /// \brief Search for all the neighbors in a ball.
+  /// @param[in] p The query point.
+  /// @param[in] radius The search radius
+  /// @param[out] it The points that lie inside the sphere of center `p` and radius `radius`.
+  ///                The `value_type` of the iterator must be `Point`.
+  /// @param[in] eps Approximation factor.
+  template <typename OutputIterator>
+  void radius_search(
+    Point const& p,
+    FT radius,
+    OutputIterator it,
+    FT eps = FT(0)) const {
+    
+    m_tree.search(it, Fuzzy_sphere(p, radius, eps, m_tree.traits()));
   }
 
   int tree_depth() const
