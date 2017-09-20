@@ -18,7 +18,7 @@
 
 using Dolphinn = Gudhi::dolphinn::Dolphinn<T>;
 
-BOOST_AUTO_TEST_CASE(hypercube_building_lines) {
+BOOST_AUTO_TEST_CASE(hypercube_building_hyperplanes) {
   std::vector<Point> pointset;
   std::default_random_engine generator(std::chrono::system_clock::now().time_since_epoch().count());
   std::normal_distribution<double> distribution(0.0,1.0/std::sqrt((double)D));
@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE(hypercube_building_lines) {
   	pointset.push_back(p);
   }
     	
-  Dolphinn dolphi(pointset, N, D, K, 0.0001);
+  Dolphinn dolphi(pointset, N, D, K, 0);
   const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> m = dolphi.get_hypercube().get_H()[0].get_m();
   const double* ptr = &pointset[0][0];
   Eigen::Matrix<double, Eigen::Dynamic, 1> v =  m * Eigen::Map<const Eigen::Matrix<double ,Eigen::Dynamic, 1>>(ptr,D,1);
@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE(hypercube_building_lines) {
 }
 
 
-BOOST_AUTO_TEST_CASE(hypercube_building_hyperplanes) {
+BOOST_AUTO_TEST_CASE(hypercube_building_lines) {
 	std::vector<Point> pointset;
   std::default_random_engine generator(std::chrono::system_clock::now().time_since_epoch().count());
   std::normal_distribution<double> distribution(0.0,1.0/std::sqrt((double)D));
@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(hypercube_building_hyperplanes) {
   	}
   	pointset.push_back(p);
   }
-  Dolphinn dolphi(pointset, N, D, K, 0);
+  Dolphinn dolphi(pointset, N, D, K, 0.0001);
   int num=0;
   for(auto x:dolphi.get_hypercube().get_H()[K-1].get_hashtable())
   	num += x.second.size();
