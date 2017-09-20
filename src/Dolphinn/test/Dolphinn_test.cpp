@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE(hypercube_building_lines) {
   	pointset.push_back(p);
   }
     	
-  Dolphinn dolphi(pointset, N, D, K, 0);
+  Dolphinn dolphi(pointset, N, D, K, 0.0001);
   const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> m = dolphi.get_hypercube().get_H()[0].get_m();
   const double* ptr = &pointset[0][0];
   Eigen::Matrix<double, Eigen::Dynamic, 1> v =  m * Eigen::Map<const Eigen::Matrix<double ,Eigen::Dynamic, 1>>(ptr,D,1);
@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(hypercube_building_hyperplanes) {
   	}
   	pointset.push_back(p);
   }
-  Dolphinn dolphi(pointset, N, D, K, 0.0001);
+  Dolphinn dolphi(pointset, N, D, K, 0);
   int num=0;
   for(auto x:dolphi.get_hypercube().get_H()[K-1].get_hashtable())
   	num += x.second.size();
@@ -184,4 +184,30 @@ BOOST_AUTO_TEST_CASE(radius_query) {
 	Dolphinn dolphi2(pointset, N, D, K+5, 0);
 	dolphi2.radius_query(queries, Q, 0.000001, N, result2);
 	
+}
+
+BOOST_AUTO_TEST_CASE(all_radius_query) {
+	std::vector<Point> pointset;
+  std::default_random_engine generator(std::chrono::system_clock::now().time_since_epoch().count());
+  std::normal_distribution<double> distribution(0.0,1.0/std::sqrt((double)D));
+  for(size_t i=0;i<N;++i){
+  	Point p;
+  	for(size_t j=0;j<D;++j){
+  		p.push_back(distribution(generator));
+  	}
+  	pointset.push_back(p);
+  }
+  Dolphinn dolphi(pointset, N, D, K, 0.5);
+  
+  std::vector<Point> queries;
+  std::vector<std::vector<int>> result(Q);
+	for(size_t i=0;i<Q;++i){
+  	Point p;
+  	for(size_t j=0;j<D;++j){
+  		p.push_back(distribution(generator));
+  	}
+  	queries.push_back(p);
+  }
+	
+	dolphi.all_radius_query(queries, Q, 0.8, N/100, result);
 }

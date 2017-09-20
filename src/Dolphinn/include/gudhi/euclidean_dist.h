@@ -53,6 +53,29 @@ int Euclidean_distance_within_radius(iterator pointset, const std::vector<int>& 
   return -1;
 }
 
+/** \brief Collects all the indices of the points that have Euclidean distance
+ * less or equal than a given radius.
+ *
+ * @param pointset         vector of all points
+ * @param points_idxs      indices of candidate points
+ * @param D                dimension of points
+ * @param query_point      vector containing only the coordinates of the query point
+ * @param squared_radius   square value of given radius
+ * @param threshold        max number of points to check
+ * @param answer_point_idx indices of the neighbors already found
+ */
+template <typename iterator>
+void Euclidean_distance_within_radius_all(iterator pointset, const std::vector<int>& points_idxs,
+ const int D, iterator query_point, const double squared_radius, const int threshold, std::vector<int>& answer_point_idx)
+{
+  const int size = points_idxs.size();
+  for(int i = 0; i < threshold && i < size; ++i)
+  {
+    if(squared_Eucl_distance(query_point, pointset + points_idxs[i]) <= squared_radius)
+      answer_point_idx.push_back(points_idxs[i]);
+  }
+}
+
 /** \brief Report M Nearest Neighbors' indices, if something better than the current NN is found.
  *
  * @param pointset              vector of all points

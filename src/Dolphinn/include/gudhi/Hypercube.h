@@ -137,7 +137,7 @@ namespace dolphinn
       * @param Q                   number of queries
       * @param radius              find a point within r with query
       * @param MAX_PNTS_TO_SEARCH  threshold
-      * @param results_idxs        indices of Q points, where Eucl(point[i], query[i]) <= r
+      * @param results_idxs        indices of Q points, where Eucl(point[results_idxs[i]], query[i]) <= r
     */
     void radius_query(const std::vector<Point>& query, const int Q, const double radius, const int MAX_PNTS_TO_SEARCH, std::vector<int>& results_idxs)
     {
@@ -156,6 +156,35 @@ namespace dolphinn
 				for(int q = 0; q < Q; ++q){
 					H[0].hyperplane_hash(query[q], key);
 					results_idxs[q] = H[0].radius_query(std::string(key.begin(), key.end()), radius, K, MAX_PNTS_TO_SEARCH, pointset.begin(), query.begin() + q);
+				}
+		  }
+    }
+    
+    /** \brief Radius query the Hamming cube, .
+      *
+      * @param query               vector of queries
+      * @param Q                   number of queries
+      * @param radius              find a point within r with query
+      * @param MAX_PNTS_TO_SEARCH  threshold
+      * @param results_idxs        indices such that, for each (i,j), Eucl(point[results_idxs[i][j]], query[i]) <= r
+    */
+    void all_radius_query(const std::vector<Point>& query, const int Q, const double radius, const int MAX_PNTS_TO_SEARCH, std::vector<std::vector<int>>& results_idxs)
+    {
+    	if(R>0){
+		    std::vector<bitT> mapped_query(Q * K);
+	      for(int q = 0; q < Q; ++q)
+	      {
+		    	for(int k = 0; k < K; ++k)
+		      {
+		        H[k].assign_random_bit_query((query[q]), (std::begin(mapped_query) + q * K), k);
+		      }
+		      results_idxs[q] = H[K - 1].all_radius_query(std::string(mapped_query.begin() + q * K, mapped_query.begin() + (q + 1) * K), radius, K, MAX_PNTS_TO_SEARCH, pointset.begin(), query.begin() + q);
+	    	}
+		  } else {
+		  	std::vector<bitT> key(K);
+				for(int q = 0; q < Q; ++q){
+					H[0].hyperplane_hash(query[q], key);
+					results_idxs[q] = H[0].all_radius_query(std::string(key.begin(), key.end()), radius, K, MAX_PNTS_TO_SEARCH, pointset.begin(), query.begin() + q);
 				}
 		  }
     }

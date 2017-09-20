@@ -73,7 +73,7 @@ namespace dolphinn {
       * @param Q                   number of queries
       * @param radius              find a point within r with query
       * @param max_pnts_to_search  number of candidates checked before giving up
-      * @param results_idxs        indices of Q points, where Eucl(point[i], query[i]) <= r
+      * @param results_idxs        indices of Q points, where Eucl(point[results_idxs[i]], query[i]) <= r
     */
   	void radius_query(const std::vector<Point>& query, const int Q, const double radius, const int max_pnts_to_search, std::vector<int>& results_idxs) {
   		if(max_pnts_to_search>N){
@@ -82,6 +82,23 @@ namespace dolphinn {
   			hypercube.radius_query(query, Q, radius, max_pnts_to_search, results_idxs);
   		}
   	}
+  	
+  	/** \brief Radius query the Hamming cube, returns the indices of all the points found within distance r for each query.
+      *
+      * @param query               vector of queries
+      * @param Q                   number of queries
+      * @param radius              find a point within r with query
+      * @param max_pnts_to_search  number of candidates checked before giving up
+      * @param results_idxs        indices such that, for each (i,j), Eucl(point[results_idxs[i][j]], query[i]) <= r
+    */
+  	void all_radius_query(const std::vector<Point>& query, const int Q, const double radius, const int max_pnts_to_search, std::vector<std::vector<int>>& results_idxs) {
+  		if(max_pnts_to_search>N){
+  			hypercube.all_radius_query(query, Q, radius, N, results_idxs);
+  		} else {
+  			hypercube.all_radius_query(query, Q, radius, max_pnts_to_search, results_idxs);
+  		}
+  	}
+  	
   	
   	/** \brief Nearest Neighbor query in the Hamming cube.
       *

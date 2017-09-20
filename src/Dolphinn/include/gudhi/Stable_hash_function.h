@@ -423,6 +423,92 @@ class Stable_hash_function
       }
       return stop;
     }
+    
+    /** \brief All radius query the Hamming cube.
+      *
+      * @param mapped_query        mapped query
+      * @param radius              find a point within r with query
+      * @param K                   dimension of the mapped query
+      * @param MAX_PNTS_TO_SEARCH  threshold
+      * @param pointset            original points
+      * @param query_point         original query
+      * @return                    indices of points, where for each index Eucl(point[index], query_point) <= r
+    */
+    template <typename iterator>
+    std::vector<int> all_radius_query(std::string mapped_query, const double radius, const int K, const int MAX_PNTS_TO_SEARCH, iterator pointset, iterator query_point)
+    {
+      int points_checked = 0;
+      std::vector<int> answer_point_idx;
+      double squared_radius = radius * radius;
+      const auto& q_key_it = hashtable_cube.find(mapped_query);
+      // search query's cube vertex, if pointsets' points exist there
+      if(q_key_it != hashtable_cube.end())
+      {
+        //print_string_cast_int(q_key_it->first); std::cout << " " << q_key_it->second.size() << std::endl;
+        Euclidean_distance_within_radius_all<iterator>(pointset, q_key_it->second, dimension, query_point, squared_radius, MAX_PNTS_TO_SEARCH, answer_point_idx);
+        //if(answer_point_idx!=-1) std::cout << squared_Eucl_distance(query_point, query_point + dimension, pointset + answer_point_idx * dimension) << std::endl;
+        points_checked += q_key_it->second.size();
+      }
+      // check neighboring vertices from query's cube vertex
+      int Hamming_dist = 1;
+      while (points_checked < MAX_PNTS_TO_SEARCH)
+      {
+        find_strings_with_fixed_Hamming_dist_for_all_radius_query<iterator>(mapped_query, K - 1, Hamming_dist++, points_checked, MAX_PNTS_TO_SEARCH, squared_radius, pointset, query_point, answer_point_idx);
+      }
+      //std::cout << "ANSWER = " << answer_point_idx << ", checked points = " << points_checked << std::endl;
+      return answer_point_idx;
+    }
+    
+     /** \brief Find strings within a given Hamming distance. Used by 'all_radius_query()'.
+      *
+      * @param str                 given string
+      * @param i                   index
+      * @param changesLeft         changes left to make
+      * @param points_checked      current points checked
+      * @param MAX_PNTS_TO_SEARCH  threshold
+      * @param squared_radius      check if any original point lies in r Euclidean distance from the original query
+      * @param pointset						 original dataset
+      * @param query_point				 pointer to the queried point
+      * @param answer_point_idx    indices of points that have distance less or equal than r with the query
+    */
+    template <typename iterator>
+    bool find_strings_with_fixed_Hamming_dist_for_all_radius_query(std::string& str, const int i, const int changesLeft, 
+      int& points_checked, const int MAX_PNTS_TO_SEARCH, const double squared_radius, iterator& pointset, 
+      iterator& query_point, std::vector<int>& answer_point_idx)
+    {
+      bool stop = false;
+      if (changesLeft == 0) {
+        //print_string_cast_int(str); std::cout << std::endl;
+        const auto& key_value_it = hashtable_cube.find(str);
+        //std::cout << "start checking\n";
+        if(key_value_it != hashtable_cube.end())
+        {
+          //std::cout << " " << key_value_it->second.size() << std::endl;
+          Euclidean_distance_within_radius_all<iterator>(pointset, key_value_it->second, dimension, query_point, squared_radius, MAX_PNTS_TO_SEARCH, answer_point_idx);
+          //if(answer_point_idx!=-1) std::cout << squared_Eucl_distance(query_point, query_point + dimension, pointset + answer_point_idx * dimension) << std::endl;
+          points_checked += key_value_it->second.size();
+          //std::cout << "check: " << points_checked << " " << MAX_PNTS_TO_SEARCH << std::endl;
+          stop = (points_checked > MAX_PNTS_TO_SEARCH);
+          //std::cout << "stop = " << stop << std::endl;
+        }
+        return stop;
+      }
+      if (i < 0)
+        return 0;
+      // flip current bit
+      if(!stop)
+      {
+        str[i] ^= 1;
+        stop = find_strings_with_fixed_Hamming_dist_for_all_radius_query(str, i-1, changesLeft-1, points_checked, MAX_PNTS_TO_SEARCH, squared_radius, pointset, query_point, answer_point_idx);
+      }
+      // or don't flip it (flip it again to undo)
+      if(!stop)
+      {
+        str[i] ^= 1;
+        stop = find_strings_with_fixed_Hamming_dist_for_all_radius_query(str, i-1, changesLeft, points_checked, MAX_PNTS_TO_SEARCH, squared_radius, pointset, query_point, answer_point_idx);
+      }
+      return stop;
+    }
 
     /** \brief Nearest Neighbor query the Hamming cube.
       *
