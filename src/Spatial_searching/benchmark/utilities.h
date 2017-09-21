@@ -27,6 +27,10 @@
 #define SET_PERFORMANCE_DATA(value_name, value) \
         XML_perf_data::set(value_name, value);
 
+#include <gudhi/console_color.h>
+        
+        
+#include <cmath>
 #include <fstream>
 #include <sstream>
 
@@ -86,7 +90,7 @@ protected:
     subelements.push_back("Algo_params");
     subelements.push_back("Type_of_test");
     subelements.push_back("Num_queries");
-    subelements.push_back("K");
+    subelements.push_back("K_or_radius");
     subelements.push_back("Time1_label");
     subelements.push_back("Time1");
     subelements.push_back("Time2_label");
