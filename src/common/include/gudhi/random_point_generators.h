@@ -167,7 +167,7 @@ embed_points_in_higher_dim(
   std::vector<typename Kernel::Point_d> const& points, 
   int new_ambient_dim, 
   bool ramdomly_rotate_points_afterwards = false,
-  typename Kernel::FT ambient_noise = FT(0))
+  typename Kernel::FT ambient_noise = typename Kernel::FT(0))
 {
   typedef typename Kernel::FT FT;
   typedef typename Kernel::Point_d Point;
