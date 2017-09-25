@@ -209,5 +209,28 @@ BOOST_AUTO_TEST_CASE(all_radius_query) {
   	queries.push_back(p);
   }
 	
+	std::vector<int> result2(Q);
+	
+	dolphi.radius_query(queries, Q, 0.8, N/100, result2);
+	
 	dolphi.all_radius_query(queries, Q, 0.8, N/100, result);
+	for(int i=0; i<Q;++i){
+		if(result2[i]!=-1){
+			//is the first point found the one found by the radius query
+			BOOST_CHECK(result[i][0]==result2[i]);
+			for(size_t k=0;k<result[i].size();++k){
+				double d=0;
+				for(size_t j=0;j<D;++j){
+					d+=(queries[i][j]-pointset[result[i][k]][j])*(queries[i][j]-pointset[result[i][k]][j]);
+				}
+				//is the answer inside the radius?
+				BOOST_CHECK(d<=0.8*0.8);
+			}
+		}
+	}
+	
+	std::vector<Point> query2; query2.push_back(queries[0]);
+	dolphi.all_radius_query(query2, 1, 100, N/100, result);
+	
+	BOOST_CHECK(result[0].size() == N/100);
 }
