@@ -535,6 +535,22 @@ class Bitmap_cubical_complex : public T {
  protected:
   std::vector< size_t > key_associated_to_simplex;
   std::vector< size_t > simplex_associated_to_key;
+  
+  /**
+  * Constructor that requires vector of elements of type unsigned, which gives number of top dimensional cells
+  * in the following directions. It initialize all the data structure, but the values of filtration on top dimensional cells remains undefined.
+  **/
+  Bitmap_cubical_complex(const std::vector<unsigned>& dimensions) : T(dimensions), key_associated_to_simplex(this->total_number_of_cells + 1) 
+  {
+    for (size_t i = 0; i != this->total_number_of_cells; ++i) 
+    {
+      this->key_associated_to_simplex[i] = i;
+    }
+    // we initialize this only once, in each constructor, when the bitmap is constructed.
+    // If the user decide to change some elements of the bitmap, then this procedure need
+    // to be called again.
+    this->initialize_simplex_associated_to_key();
+  }
 };  // Bitmap_cubical_complex
 
 template <typename T>
