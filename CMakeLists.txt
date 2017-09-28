@@ -48,6 +48,7 @@ add_gudhi_module(Spatial_searching)
 add_gudhi_module(Subsampling)
 add_gudhi_module(Tangential_complex)
 add_gudhi_module(Witness_complex)
+add_gudhi_module(Topological_inference_with_cubical_complexes)
 
 message("++ GUDHI_MODULES list is:\"${GUDHI_MODULES}\"")
 

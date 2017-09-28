@@ -1,4 +1,4 @@
-/*    This file is part of the Gudhi Library. The Gudhi library
+/*    This file is part of the Gudhi Library. The Gudhi lhibrary
  *    (Geometric Understanding in Higher Dimensions) is a generic C++
  *    library for computational topology.
  *
@@ -58,7 +58,7 @@ public:
 	/**
 	 * Default constructor. 
 	**/
-	Topological_inference( const std::vector< std::pair<K , K> >& coorfinates_of_grid_ , const std::vector< unsigned >& resolution_of_a_grid_ , F& f  );
+	Topological_inference( const std::vector< std::pair<K , K> >& coordinates_of_grid_ , const std::vector< unsigned >& resolution_of_a_grid_ , F& f  );
 	
 	/**
 	 * Writing maximal cells to a file in Perseus format: 
@@ -72,8 +72,8 @@ protected:
     **/ 
     inline std::vector< unsigned > compute_counter_for_maximal_cube( size_t maximal_cube_index )
 	{
-		std::vector< unsigned > result( this->coorfinates_of_grid.size() , 0 );
-		for ( size_t i = 0 ; i != this->coorfinates_of_grid.size() ; ++i )
+		std::vector< unsigned > result( this->coordinates_of_grid.size() , 0 );
+		for ( size_t i = 0 ; i != this->coordinates_of_grid.size() ; ++i )
 		{
 			result[i] = maximal_cube_index%this->resolution_of_a_grid[i];
 			maximal_cube_index = maximal_cube_index/this->resolution_of_a_grid[i];				
@@ -91,21 +91,22 @@ protected:
 		{
 			std::cerr << "Entering compute_center_of_cube_for_given_counter procedure \n";
 			std::cout << "counter.size() : : " << counter.size() << std::endl;
-			std::cout << "this->coorfinates_of_grid.size() : " << this->coorfinates_of_grid.size() << std::endl;
+			std::cout << "this->coordinates_of_grid.size() : " << this->coordinates_of_grid.size() << std::endl;
 		}
-		if ( counter.size() != this->coorfinates_of_grid.size() )throw "Wrong dimensionality of a counter in the procedure compute_center_of_cube_for_given_counter \n";
+		if ( counter.size() != this->coordinates_of_grid.size() )throw "Wrong dimensionality of a counter in the procedure compute_center_of_cube_for_given_counter \n";
 		std::vector< K > result( counter.size() , 0 );
-		
+			
 		for ( size_t dim = 0 ; dim != counter.size() ; ++dim )
 		{
 			if ( counter[dim] >= this->resolution_of_a_grid[dim] )throw "The counter in some dimension extends dimensionality of a grid. The program will now terminate \n";					
-			result[dim] = dx_vector[dim]*counter[dim] + this->coorfinates_of_grid[dim].first + dx_vector[dim]/2.0;
+			result[dim] = dx_vector[dim]*counter[dim] + this->coordinates_of_grid[dim].first + dx_vector[dim]/2.0;
 		}	
+				
 		return result;
 	}
 	
 	//data:
-	std::vector< std::pair< K , K > > coorfinates_of_grid;
+	std::vector< std::pair< K , K > > coordinates_of_grid;
 	std::vector< unsigned > resolution_of_a_grid;
 	std::vector< K > dx_vector;
 	F& f;
@@ -114,23 +115,29 @@ protected:
 
 
 template <typename T , typename K , typename F>
-Topological_inference<T,K,F>::Topological_inference( const std::vector< std::pair<K , K> >& coorfinates_of_grid_ , const std::vector< unsigned >& resolution_of_a_grid_ , F& f ):T(resolution_of_a_grid_), f(f)
+Topological_inference<T,K,F>::Topological_inference( const std::vector< std::pair<K , K> >& coordinates_of_grid_ , const std::vector< unsigned >& resolution_of_a_grid_ , F& f ):T(resolution_of_a_grid_), f(f)
 {
 	bool dbg = false;
 	if ( dbg )
 	{
 		std::cerr << "Entering constructor of a Topological_inference object \n";
-		std::cout << "coorfinates_of_grid_.size() : " << coorfinates_of_grid_.size() << std::endl;
+		std::cout << "coordinates_of_grid_.size() : " << coordinates_of_grid_.size() << std::endl;
 		std::cout << "resolution_of_a_grid_.size() : " << resolution_of_a_grid_.size() << std::endl;
 	}
-	if ( coorfinates_of_grid_.size() != resolution_of_a_grid_.size() )throw "Incompatible sizes of coorfiantes of a grid, and the resoution of a grid in the constructore of Topological_inference. The program will now terminate \n";
+	if ( coordinates_of_grid_.size() != resolution_of_a_grid_.size() )throw "Incompatible sizes of coorfiantes of a grid, and the resoution of a grid in the constructore of Topological_inference. The program will now terminate \n";
 	
-	this->coorfinates_of_grid = coorfinates_of_grid_;
+	this->coordinates_of_grid = coordinates_of_grid_;
 	this->resolution_of_a_grid = resolution_of_a_grid_;		
 	
 	size_t number_of_maximal_cubes = 1;
 	for ( size_t i = 0 ; i != resolution_of_a_grid_.size() ; ++i ) number_of_maximal_cubes *= resolution_of_a_grid_[i];
 	std::vector< K > values_on_maximal_cells( number_of_maximal_cubes , 0 );
+	
+	this->dx_vector = std::vector< K >(coordinates_of_grid_.size());
+	for ( size_t dim = 0 ; dim != coordinates_of_grid_.size() ; ++dim )
+	{				
+		this->dx_vector[dim] = (this->coordinates_of_grid[dim].second - this->coordinates_of_grid[dim].first)/this->resolution_of_a_grid[dim];
+	}
 	
 	
 	
@@ -151,9 +158,8 @@ Topological_inference<T,K,F>::Topological_inference( const std::vector< std::pai
 				std::cout << counter[yy] << std::endl;
 			}
 			getchar();
-		}
-		std::vector< K > point = this->compute_center_of_cube_for_given_counter( counter );
-		
+		}		
+		std::vector< K > point = this->compute_center_of_cube_for_given_counter( counter );		
 		if ( dbg )
 		{
 			std::cerr << "Here is the the center of the considered cube (point) : " << i << std::endl;
@@ -179,16 +185,11 @@ Topological_inference<T,K,F>::Topological_inference( const std::vector< std::pai
 		size_t position = this->compute_position_in_bitmap( counter );
 		this->get_cell_data( position ) = value;
 	}	
-	std::vector<size_t> counter_v( coorfinates_of_grid_.size() , 0 );
-	size_t i = 0;
+	std::vector<size_t> counter_v( coordinates_of_grid_.size() , 0 );	
 	this->impose_lower_star_filtration();
 	this->initialize_simplex_associated_to_key();
 	
-	this->dx_vector = std::vector< K >(coorfinates_of_grid_.size());
-	for ( size_t dim = 0 ; dim != coorfinates_of_grid_.size() ; ++dim )
-	{				
-		this->dx_vector[dim] = (this->coorfinates_of_grid[dim].second - this->coorfinates_of_grid[dim].first)/this->resolution_of_a_grid[dim];
-	}
+
 }//Topological_inference
 
 

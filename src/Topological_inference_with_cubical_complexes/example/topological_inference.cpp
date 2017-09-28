@@ -43,9 +43,11 @@ using Point = std::vector<double>;
 using Points_off_reader = Gudhi::Points_off_reader<Point>;
 
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv) 
+{	
+	
   std::cout << "The parameters of the program are: \n";
-  std::cout << "(1) A file with points coordinates, \n";
+  std::cout << "(1) A file in an OFF format with points coordinates, \n";
   std::cout << "(2) Dimension of a space, \n";
   std::cout << "(3) Minimum of a grid in first direction, \n";
   std::cout << "(4) Maximum of a grin in first direction, \n";
@@ -55,8 +57,10 @@ int main(int argc, char** argv) {
   std::cout << "(i+2) resolution of a grid in the first direction,\n";
   std::cout << " ... ,\n";
   std::cout << "(2i-2) resolution of a grid in the last direction.\n";
+  std::cout << "and finally the positive interger k, such that the considered\
+   function is the distance to the k-th nearest neighbor.\n";
 
-		int p = 2;
+  int p = 2;
   double min_persistence = 0;
 
   const char* filename = argv[1];
@@ -84,20 +88,28 @@ int main(int argc, char** argv) {
 	  std::cout << "Resolution of a grid in direcion number : " << i << " is : " << resolution_in_this_direction << std::endl;
   }	
   
-   
-  Gudhi::Topological_inference_with_cubical_complexes::Distance_to_k_th_closest_point f( off_reader.get_point_cloud() );
+  
+  unsigned number_of_nearest_neighbors = (unsigned)atoi( argv[3+3*dimension] );
+  std::cout << "We will compute a distance to the " << number_of_nearest_neighbors << "-th nearest neighbor.\n";
+  
+  
+  Gudhi::Topological_inference_with_cubical_complexes::Euclidan_distance_squared eu;
+  Gudhi::Topological_inference_with_cubical_complexes::Distance_to_k_th_closest_point<Gudhi::Topological_inference_with_cubical_complexes::Euclidan_distance_squared> 
+  f( off_reader.get_point_cloud() ,eu ,  number_of_nearest_neighbors );
   
   typedef Gudhi::Cubical_complex::Bitmap_cubical_complex_base<double> Bitmap_cubical_complex_base;
   typedef Gudhi::Cubical_complex::Bitmap_cubical_complex<Bitmap_cubical_complex_base> Bitmap_cubical_complex;
-  typedef Gudhi::Topological_inference_with_cubical_complexes::Topological_inference< Bitmap_cubical_complex , double , Distance_to_closest_point > topological_inference;
+  typedef Gudhi::Topological_inference_with_cubical_complexes::Topological_inference< Bitmap_cubical_complex , double ,   
+  Gudhi::Topological_inference_with_cubical_complexes::Distance_to_k_th_closest_point<Gudhi::Topological_inference_with_cubical_complexes::Euclidan_distance_squared> > topological_inference;
   
   typedef Gudhi::persistent_cohomology::Field_Zp Field_Zp;
   typedef Gudhi::persistent_cohomology::Persistent_cohomology<topological_inference, Field_Zp> Persistent_cohomology;
 
+   std::cerr << "Begin \n";
    
   topological_inference b( coorfinates_of_grid , resolution_of_a_grid , f );
 
-  
+  std::cerr << "End \n";
   //b.write_to_file_Perseus_format("perse");
 
   // Compute the persistence diagram of the complex
@@ -111,95 +123,8 @@ int main(int argc, char** argv) {
   std::ofstream out( ss.str().c_str() );
   pcoh.output_diagram(out);
   out.close();
+  
+  
 
   return 0;
 }
-
-
-/*
-int main(int argc, char** argv) {
-  std::cout << "This program computes persistent homology, by using bitmap_cubical_complex class, of cubical " <<
-      "complexes provided in text files in Perseus style (the only numbered in the first line is a dimension D of a" <<
-      "bitmap. In the lines I between 2 and D+1 there are numbers of top dimensional cells in the direction I. Let " <<
-      "N denote product of the numbers in the lines between 2 and D. In the lines D+2 to D+2+N there are " <<
-      "filtrations of top dimensional cells. We assume that the cells are in the lexicographical order. See " <<
-      "CubicalOneSphere.txt or CubicalTwoSphere.txt for example.\n" << std::endl;
-
-  int p = 2;
-  double min_persistence = 0;
-  
-  
-  std::vector< std::vector<double> > point_cloud_;
-  
-  //point_cloud_ = read_points_from_file<double>( "circle1" );
-  
-  point_cloud_ = read_points_from_file<double>( "2000_random_points_on_3D_Torus.csv" );
-  
-  
-  //std::vector<double> point1;
-  //point1.push_back( 0 );
-  //point1.push_back( 1);
-  //std::vector<double> point2;
-  //point2.push_back( 1 );
-  //point2.push_back( 2 );
-  //std::vector<double> point3;
-  //point3.push_back( 2 );
-  //point3.push_back( 1 );
-  //point_cloud_.push_back( point1 );
-  //point_cloud_.push_back( point2 );
-  //point_cloud_.push_back( point3 );
-  
-  
-  
-  Distance_to_closest_point f( point_cloud_ );
-  
-  typedef Gudhi::Cubical_complex::Bitmap_cubical_complex_base<double> Bitmap_cubical_complex_base;
-  typedef Gudhi::Cubical_complex::Bitmap_cubical_complex<Bitmap_cubical_complex_base> Bitmap_cubical_complex;
-  typedef Gudhi::Cubical_complex::Topological_inference< Bitmap_cubical_complex , double , Distance_to_closest_point > topological_inference;
-  
-  typedef Gudhi::persistent_cohomology::Field_Zp Field_Zp;
-  typedef Gudhi::persistent_cohomology::Persistent_cohomology<topological_inference, Field_Zp> Persistent_cohomology;
-
- 
-  std::vector< std::pair< double, double > > coorfinates_of_grid;
-  coorfinates_of_grid.push_back( std::make_pair(-4.0,4.0) );
-  coorfinates_of_grid.push_back( std::make_pair(-4.0,4.0) );
-  coorfinates_of_grid.push_back( std::make_pair(-2.0,2.0) );
-  std::vector< unsigned > resolution_of_a_grid(3);
-  resolution_of_a_grid[0] = 100;
-  resolution_of_a_grid[1] = 100;
-  resolution_of_a_grid[2] = 50;
-  
-
-
-  //std::vector< std::pair< double, double > > coorfinates_of_grid;
-  //coorfinates_of_grid.push_back( std::make_pair(-2,2) );
-  //coorfinates_of_grid.push_back( std::make_pair(-2,2) );  
-  //std::vector< unsigned > resolution_of_a_grid(2);
-  //resolution_of_a_grid[0] = 1;
-  //resolution_of_a_grid[1] = 2;
-
-  
-  
-  
-  
-  
-  
-   
-  topological_inference b( coorfinates_of_grid , resolution_of_a_grid , f );
-
-  
-  b.write_to_file_Perseus_format("perse");
-
-  // Compute the persistence diagram of the complex
-  Persistent_cohomology pcoh(b);
-  pcoh.init_coefficients(p);  // initializes the coefficient field for homology
-  pcoh.compute_persistent_cohomology(min_persistence);
-
-  std::ofstream out("top_inference");
-  pcoh.output_diagram(out);
-  out.close();
-
-  return 0;
-}
-*/
