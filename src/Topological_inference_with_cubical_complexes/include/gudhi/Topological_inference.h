@@ -141,7 +141,7 @@ Topological_inference<T,K,F>::Topological_inference( const std::vector< std::pai
 	
 	
 	
-	
+//TODO - make it TBB Pararell.	
 #ifdef GUDHI_USE_TBB    
       //tbb::parallel_for(tbb::blocked_range<size_t>(0, number_of_maximal_cubes))    
       for ( size_t i = 0 ; i < number_of_maximal_cubes ; ++i )
@@ -177,19 +177,12 @@ Topological_inference<T,K,F>::Topological_inference( const std::vector< std::pai
 			std::cin.ignore();
 		}
 		
-		//now we need to translate the counter we used so far into a counter in the real bitmap:
-		for ( size_t i = 0 ; i != counter.size() ; ++i )
-		{
-			counter[i] = 2*counter[i]+1;
-		}		
-		size_t position = this->compute_position_in_bitmap( counter );
-		this->get_cell_data( position ) = value;
+		this->set_the_value_of_top_dimensional_cell( counter , value );	
+		
 	}	
 	std::vector<size_t> counter_v( coordinates_of_grid_.size() , 0 );	
 	this->impose_lower_star_filtration();
 	this->initialize_simplex_associated_to_key();
-	
-
 }//Topological_inference
 
 

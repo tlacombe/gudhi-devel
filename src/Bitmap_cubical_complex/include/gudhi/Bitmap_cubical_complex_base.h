@@ -185,6 +185,23 @@ class Bitmap_cubical_complex_base {
    * Functions to find min and max values of filtration.
    **/
   std::pair< T, T > min_max_filtration();
+  
+  
+  /**
+   * This procedure is used to set the value of a top dimensional cell specified by vector<unsigned>
+   * counter given as a parameter. Note that counter is used to enumerate top dimensional cells only. To
+   * be precise, the counder for the first top dimensional bitmap element is [0,0,..,0]. 
+  **/ 
+  void set_the_value_of_top_dimensional_cell( const std::vector< unsigned >& counter , T& value )
+  {
+	std::vector< unsigned > copy_counter(counter);
+	for ( size_t i = 0 ; i != copy_counter.size() ; ++i )
+	{
+		copy_counter[i] = 2*counter[i]+1;
+	}		
+	size_t position = this->compute_position_in_bitmap( copy_counter );
+	this->data[position] = value;
+  }//set_the_value_of_top_dimensional_cells
 
   // ITERATORS
 

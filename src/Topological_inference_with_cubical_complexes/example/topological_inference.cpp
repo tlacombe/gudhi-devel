@@ -105,11 +105,7 @@ int main(int argc, char** argv)
   typedef Gudhi::persistent_cohomology::Field_Zp Field_Zp;
   typedef Gudhi::persistent_cohomology::Persistent_cohomology<topological_inference, Field_Zp> Persistent_cohomology;
 
-   std::cerr << "Begin \n";
-   
   topological_inference b( coorfinates_of_grid , resolution_of_a_grid , f );
-
-  std::cerr << "End \n";
   //b.write_to_file_Perseus_format("perse");
 
   // Compute the persistence diagram of the complex
@@ -124,7 +120,5 @@ int main(int argc, char** argv)
   pcoh.output_diagram(out);
   out.close();
   
-  
-
   return 0;
 }
