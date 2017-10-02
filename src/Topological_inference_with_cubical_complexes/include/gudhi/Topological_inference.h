@@ -140,13 +140,16 @@ Topological_inference<T,K,F>::Topological_inference( const std::vector< std::pai
 	}
 	
 	
+	//std::ofstream out( "illustration" );
+	//int counter_ = 0;
 	
 //TODO - make it TBB Pararell.	
 #ifdef GUDHI_USE_TBB    
+	 //task_scheduler_init init;
       //tbb::parallel_for(tbb::blocked_range<size_t>(0, number_of_maximal_cubes))    
       for ( size_t i = 0 ; i < number_of_maximal_cubes ; ++i )
 #else 
-      for ( size_t i = 0 ; i < number_of_maximal_cubes ; ++i )
+     for ( size_t i = 0 ; i < number_of_maximal_cubes ; ++i )
 #endif		
 	{
 		std::vector< unsigned > counter = this->compute_counter_for_maximal_cube( i );
@@ -177,9 +180,14 @@ Topological_inference<T,K,F>::Topological_inference( const std::vector< std::pai
 			std::cin.ignore();
 		}
 		
-		this->set_the_value_of_top_dimensional_cell( counter , value );	
-		
+		this->set_the_value_of_top_dimensional_cell( counter , value );			
+		//out << value << " ";
+		//if ( counter_%80==79 )out << std::endl;
+		//++counter_;
 	}	
+	
+	//out.close();
+	
 	std::vector<size_t> counter_v( coordinates_of_grid_.size() , 0 );	
 	this->impose_lower_star_filtration();
 	this->initialize_simplex_associated_to_key();

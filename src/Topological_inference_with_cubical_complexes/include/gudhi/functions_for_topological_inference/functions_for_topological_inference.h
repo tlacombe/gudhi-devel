@@ -23,14 +23,17 @@
 #define FUNCTIONS_FOR_TOPOLOGICAL_INFERENCE_H
 
 
+#define GUDHI_USE_CGAL
+
+
 #include <cmath>
 #include <vector>
 #include <algorithm>
 #include <limits>
-//#ifdef GUDHI_USE_CGAL
+#ifdef GUDHI_USE_CGAL
 	#include <gudhi/Kd_tree_search.h>
 	#include <CGAL/Epick_d.h>
-//#endif
+#endif
 
 namespace Gudhi {
 
@@ -178,15 +181,7 @@ private:
 template < typename distance >
 class Distance_to_k_th_closest_point
 {
-public:
-	//#ifdef GUDHI_USE_CGAL
-		////typedef CGAL::Epick_d<CGAL::Dimension_tag< dimension > > K;
-		//typedef CGAL::Epick_d< CGAL::Dynamic_dimension_tag > K;
-		//typedef typename K::Point_d Point;
-		//typedef std::vector<Point> Points;
-		//typedef Gudhi::spatial_searching::Kd_tree_search<K, Points> k_d_tree;							
-	//#endif 
-
+public:	
 	Distance_to_k_th_closest_point( const std::vector< std::vector<double> >& point_cloud_ , distance& dist_ , unsigned k_ ):dist(dist_),k(k_)
 	{
 		//check if all the points have the same dimension:
@@ -200,19 +195,36 @@ public:
 			}
 		}						
 		this->point_cloud = point_cloud_;			
-		//#ifdef GUDHI_USE_CGAL
-		//	Points points;
-		//	for (size_t i = 0; i != point_cloud_.size() ; ++i)
-		//		points.push_back( Point( point_cloud_[i] ) );
-		//	this->points_ds(points);
-		//#endif	
+		#ifdef GUDHI_USE_CGAL
+			std::vector< CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d > points;
+			for (size_t i = 0; i != point_cloud_.size() ; ++i)
+			{				
+				points.push_back( CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d( point_cloud_[i] ) );
+			}
+			this->points_ds = new Gudhi::spatial_searching::Kd_tree_search< CGAL::Epick_d< CGAL::Dynamic_dimension_tag > , 
+		    std::vector< CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d > >(points);
+		#endif	
 	}
     double operator()( const std::vector<double>& point )const
     {
-		//#ifdef GUDHI_USE_CGAL
-			//auto knn_range = this->points_ds.query_k_nearest_neighbors(point, k, true);
-			//return knn_range[k-1]; //test it if it should not be k!!!
-		 //#else
+		#ifdef GUDHI_USE_CGAL		
+			auto knn_range = this->points_ds->query_k_nearest_neighbors(
+			CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d(point), k+1, true);					
+			size_t counter = 0;
+			double dist = 0;
+			for (auto const& nghb : knn_range)
+			{
+				
+				std::cout << nghb.first << " (sq. dist. = " << nghb.second << ")\n"; 
+				++counter;
+				if ( counter == k )
+				{
+					dist = nghb.second;
+					break;
+				}				
+			}
+			return dist;
+		 #else		 
 			//this is brutal, version, in case we do not have a k-d tree from CGAL. 
 			bool dbg = false;
 			
@@ -268,16 +280,17 @@ public:
 			{
 				if ( heap[i] > result )result = heap[i];
 			}  
-			return result;
-		//#endif
+			return result;		
+		#endif
     }
 private:
 	std::vector< std::vector<double> > point_cloud;
 	distance& dist;
 	unsigned k;
-	//#ifdef GUDHI_USE_CGAL
-	//	k_d_tree points_ds;
-	//#endif
+	#ifdef GUDHI_USE_CGAL
+		Gudhi::spatial_searching::Kd_tree_search< CGAL::Epick_d< CGAL::Dynamic_dimension_tag > , 
+		std::vector< CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d > >* points_ds;		
+	#endif
 };
 
 
