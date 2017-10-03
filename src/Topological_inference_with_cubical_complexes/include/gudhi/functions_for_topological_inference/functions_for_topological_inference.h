@@ -182,7 +182,11 @@ template < typename distance >
 class Distance_to_k_th_closest_point
 {
 public:	
-	Distance_to_k_th_closest_point( const std::vector< std::vector<double> >& point_cloud_ , distance& dist_ , unsigned k_ ):dist(dist_),k(k_)
+	Distance_to_k_th_closest_point( const std::vector< std::vector<double> >& point_cloud_ , distance& dist_ , unsigned k_ ):
+	dist(dist_),k(k_)
+	#ifdef GUDHI_USE_CGAL
+		,points_ds( this->convert_points(point_cloud_) )
+	#endif	
 	{
 		//check if all the points have the same dimension:
 		if ( point_cloud_.empty() )return;
@@ -194,22 +198,26 @@ public:
 				throw "Point cloud containing points of different dimension in Distance_to_closest_point constructor.\n";
 			}
 		}						
-		this->point_cloud = point_cloud_;			
-		#ifdef GUDHI_USE_CGAL
-			std::vector< CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d > points;
-			for (size_t i = 0; i != point_cloud_.size() ; ++i)
-			{				
-				points.push_back( CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d( point_cloud_[i] ) );
-			}
-			this->points_ds = new Gudhi::spatial_searching::Kd_tree_search< CGAL::Epick_d< CGAL::Dynamic_dimension_tag > , 
-		    std::vector< CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d > >(points);
-		#endif	
+		this->point_cloud = point_cloud_;				
 	}
     double operator()( const std::vector<double>& point )const
     {
 		#ifdef GUDHI_USE_CGAL		
-			auto knn_range = this->points_ds->query_k_nearest_neighbors(
-			CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d(point), k+1, true);					
+		std::cerr << "this->point_cloud.size() : " << this->point_cloud.size() << std::endl;
+		std::cerr << "point.size()  : " << point.size() << std::endl;
+		std::cerr << "this->k :  " << this->k << std::endl;
+		
+		std::cout << "depth : " << this->points_ds.tree_depth() << "\n";
+		
+		
+			auto knn_range = this->points_ds.query_k_nearest_neighbors(
+			CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d( point.begin() , point.end() ), this->k+1, true);					
+			
+			
+			std::cerr << "We are here \n";
+			
+			getchar();
+			
 			size_t counter = 0;
 			double dist = 0;
 			for (auto const& nghb : knn_range)
@@ -284,12 +292,32 @@ public:
 		#endif
     }
 private:
+
+	#ifdef GUDHI_USE_CGAL
+		std::vector< CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d > convert_points( const std::vector< std::vector<double> >& point_cloud_ )
+		{
+			std::vector< CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d > points;
+			points.reserve( point_cloud_.size() );
+			for (size_t i = 0; i != point_cloud_.size() ; ++i)
+			{				
+				points.push_back( CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d( point_cloud_[i].begin() , point_cloud_[i].end() ) );				
+			}	
+			
+			for ( auto c : points[2] )
+				std::cout << c << std::endl;
+			
+			std::cerr << "points.size() : "  << points.size() << std::endl;
+						
+			return points;
+		}
+	#endif
+
 	std::vector< std::vector<double> > point_cloud;
 	distance& dist;
 	unsigned k;
 	#ifdef GUDHI_USE_CGAL
 		Gudhi::spatial_searching::Kd_tree_search< CGAL::Epick_d< CGAL::Dynamic_dimension_tag > , 
-		std::vector< CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d > >* points_ds;		
+		std::vector< CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d > > points_ds;		
 	#endif
 };
 

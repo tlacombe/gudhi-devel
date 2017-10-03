@@ -131,7 +131,7 @@ Topological_inference<T,K,F>::Topological_inference( const std::vector< std::pai
 	
 	size_t number_of_maximal_cubes = 1;
 	for ( size_t i = 0 ; i != resolution_of_a_grid_.size() ; ++i ) number_of_maximal_cubes *= resolution_of_a_grid_[i];
-	std::vector< K > values_on_maximal_cells( number_of_maximal_cubes , 0 );
+	//std::vector< K > values_on_maximal_cells( number_of_maximal_cubes , 0 );
 	
 	this->dx_vector = std::vector< K >(coordinates_of_grid_.size());
 	for ( size_t dim = 0 ; dim != coordinates_of_grid_.size() ; ++dim )
@@ -145,47 +145,20 @@ Topological_inference<T,K,F>::Topological_inference( const std::vector< std::pai
 	
 //TODO - make it TBB Pararell.	
 #ifdef GUDHI_USE_TBB    
-	 //task_scheduler_init init;
-      //tbb::parallel_for(tbb::blocked_range<size_t>(0, number_of_maximal_cubes))    
-      for ( size_t i = 0 ; i < number_of_maximal_cubes ; ++i )
+	tbb::parallel_for(size_t(0), number_of_maximal_cubes, [=](size_t i) 
 #else 
      for ( size_t i = 0 ; i < number_of_maximal_cubes ; ++i )
 #endif		
 	{
-		std::vector< unsigned > counter = this->compute_counter_for_maximal_cube( i );
-		if ( dbg )
-		{
-			std::cerr << "Here is the counter corresponding to the cube : " << i << std::endl;
-			for ( size_t yy = 0 ; yy != counter.size() ; ++yy )
-			{
-				std::cout << counter[yy] << std::endl;
-			}
-			getchar();
-		}		
-		std::vector< K > point = this->compute_center_of_cube_for_given_counter( counter );		
-		if ( dbg )
-		{
-			std::cerr << "Here is the the center of the considered cube (point) : " << i << std::endl;
-			for ( size_t yy = 0 ; yy != point.size() ; ++yy )
-			{
-				std::cout << point[yy] << std::endl;
-			}			
-		}
-		
+		std::vector< unsigned > counter = this->compute_counter_for_maximal_cube( i );		
+		std::vector< K > point = this->compute_center_of_cube_for_given_counter( counter );				
 		K value = this->f( point );
-		values_on_maximal_cells[i] = value;		
-		if ( dbg )
-		{
-			std::cerr << "Value of a function at this point: " << value << std::endl;
-			std::cin.ignore();
-		}
-		
+		//values_on_maximal_cells[i] = value;		
 		this->set_the_value_of_top_dimensional_cell( counter , value );			
-		//out << value << " ";
-		//if ( counter_%80==79 )out << std::endl;
-		//++counter_;
 	}	
-	
+	#ifdef GUDHI_USE_TBB    
+	);
+	#endif
 	//out.close();
 	
 	std::vector<size_t> counter_v( coordinates_of_grid_.size() , 0 );	
