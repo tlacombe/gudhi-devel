@@ -23,13 +23,15 @@
 #define FUNCTIONS_FOR_TOPOLOGICAL_INFERENCE_H
 
 
-#define GUDHI_USE_CGAL
+//#define GUDHI_USE_CGAL
 
 
 #include <cmath>
 #include <vector>
 #include <algorithm>
 #include <limits>
+#include <iterator>
+#include <gudhi/Bitmap_cubical_complex/counter.h>
 #ifdef GUDHI_USE_CGAL
 	#include <gudhi/Kd_tree_search.h>
 	#include <CGAL/Epick_d.h>
@@ -105,6 +107,78 @@ public:
 		}
 		return result;
 	}
+};
+
+template <typename standard_distance>
+class periodic_domain_distance
+{
+public:
+	periodic_domain_distance( const std::vector< std::pair< double , double > >& coordinates_of_grid , standard_distance& dist_ ):dist( dist_ )
+	{	
+		bool dbg = false;
+		this->translation_vector.reserve( coordinates_of_grid.size() );
+		for ( size_t i = 0 ; i != coordinates_of_grid.size() ; ++i )
+		{			
+			this->translation_vector.push_back( coordinates_of_grid[i].second - coordinates_of_grid[i].first );
+		}
+		if ( dbg )
+		{
+			std::cout << "Here is the translation vector: \n";
+			for ( size_t i = 0 ; i != this->translation_vector.size() ; ++i )
+			{
+				std::cout << this->translation_vector[i] << " ";
+			}
+		}
+	}
+	double operator()( const std::vector<double>& point1 , const std::vector<double>& point2 )
+	{		
+		bool dbg = false;
+		if ( point1.size() != point2.size() )
+		{
+			std::cerr << "Incompatible dimensions of points.\n";
+			throw "Incompatible dimensions of points.\n";
+		}
+		//transate in all possible directions and compute the minimal between translated
+		//points by using this->dist. 
+		std::vector< unsigned > beginn_counter(point1.size(),0);
+		std::vector< unsigned > end_counter(point1.size(),2);
+		Gudhi::cubical_complex::counter count(beginn_counter,end_counter);
+		
+		//structure to store shifted versions of point2:
+		std::vector<double> shifted_point2(point2.size(),0);
+		double new_distance;
+		
+		double minimal_distance = std::numeric_limits<double>::max();
+		while ( true )
+		{				
+			if ( dbg )std::cerr << "Here is the current counter : " << count << std::endl << "And here is the shifted point " << std::endl;			
+			//shift point2
+			for ( size_t i = 0 ; i != point2.size() ; ++i )
+			{
+				shifted_point2[i] = point2[i]+((int)count[i]-1)*this->translation_vector[i];
+				if ( dbg ) std::cerr << shifted_point2[i] << " ";
+			}			
+			if ( dbg ) std::cerr << std::endl;
+			
+			//compute distance between point1 and shited version of point2;
+			new_distance = this->dist(point1,shifted_point2);
+			if ( new_distance < minimal_distance )
+			{
+				minimal_distance = new_distance;
+			}
+			if ( dbg )std::cout << "new_distance : " << new_distance << std::endl;
+			
+			bool can_be_incremented = count.increment();
+			if ( !can_be_incremented )break;			
+		}
+		if ( dbg )std::cout << "We are done, the minimal distance is : " << minimal_distance << std::endl;
+		return minimal_distance;
+	}
+protected:
+	//in this very simple case, when all the boxes are squares, translation vectors are zero
+	//in all the coordinates except from the i-th one for i-th translation vector. 
+	std::vector< double > translation_vector;
+	standard_distance dist;
 };
 //to be continued. 
 //****************************************************************
@@ -209,17 +283,11 @@ public:
 		
 		std::cout << "depth : " << this->points_ds.tree_depth() << "\n";
 		
-		
+			//I have tried to use kere std::advance, but it got too messy with the constant interators of unknown type. So I did it by a bruteforce. 
 			auto knn_range = this->points_ds.query_k_nearest_neighbors(
-			CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d( point.begin() , point.end() ), this->k+1, true);					
-			
-			
-			std::cerr << "We are here \n";
-			
-			getchar();
-			
+			CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d( point.begin() , point.end() ), this->k+1, true);										
 			size_t counter = 0;
-			double dist = 0;
+			double dist_ = 0;
 			for (auto const& nghb : knn_range)
 			{
 				
@@ -227,11 +295,11 @@ public:
 				++counter;
 				if ( counter == k )
 				{
-					dist = nghb.second;
+					dist_ = nghb.second;
 					break;
 				}				
 			}
-			return dist;
+			return dist_;
 		 #else		 
 			//this is brutal, version, in case we do not have a k-d tree from CGAL. 
 			bool dbg = false;

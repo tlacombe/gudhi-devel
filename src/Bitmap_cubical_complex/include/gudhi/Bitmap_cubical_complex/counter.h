@@ -128,6 +128,22 @@ class counter {
     }
     return out;
   }
+  
+  /**
+   * Return the pos position of the counter. This method do not allow to change
+   * the values of the counter, just to read them off. 
+  **/ 
+  unsigned operator[]( unsigned pos )
+  {
+	  if ( pos < this->current.size() )
+	  {
+		  return this->current[pos];
+	  }
+	  else
+	  {
+		  throw "Index out of range in the operator [] in counter class.\n";
+	  }
+  }
 
  private:
   std::vector< unsigned > begin;
