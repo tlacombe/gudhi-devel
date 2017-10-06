@@ -65,21 +65,85 @@ int main()
 	std::vector< unsigned > resolution_of_a_grid(2);	
 	resolution_of_a_grid[0] = resolution_of_a_grid[1] = 100;
 	
-	//Lastly, some distance functions require additional parameters. For instance, distance to the k-th
-	//nearest neighbor require the parameter k, which is known here as number_of_nearest_neighbors
-	unsigned number_of_nearest_neighbors = 5;
+	
 	
 	//A few typedefs to make the code easy to read:
+	
+	
+	//********************************************************************************************
+	
+/*	
+	//Use this set of typedefs if you want to use distance to k-th nearest neighbor as your function:
+	
+	//Some distance functions require additional parameters. For instance, distance to the k-th
+	//nearest neighbor require the parameter k, which is known here as number_of_nearest_neighbors
+	unsigned number_of_nearest_neighbors = 5;	
 	//distance function typedefs
-    Gudhi::Topological_inference_with_cubical_complexes::Euclidan_distance_squared eu;
-    Gudhi::Topological_inference_with_cubical_complexes::Distance_to_k_th_closest_point<Gudhi::Topological_inference_with_cubical_complexes::Euclidan_distance_squared> 
-    f( point_cloud ,eu ,  number_of_nearest_neighbors );
+    typedef Gudhi::Topological_inference_with_cubical_complexes::Euclidan_distance_squared local_distance;    
+    typedef Gudhi::Topological_inference_with_cubical_complexes::Distance_to_k_th_closest_point<local_distance> actual_distance;    
+    local_distance eu;
+    actual_distance f( point_cloud ,eu ,  number_of_nearest_neighbors );
+*/  
+    
+    
+    //********************************************************************************************    
+    
+    
+ /*   
+    //Use this set of typedefs if you want to use kernels_centerd_in_point_cloud class as your function.
+    //Class kernels_centerd_in_point_cloud is a class that for every point x under considertation, iterate 
+    //through the initial point cloud, and for every point p in this point cloud, compute a kernel (which is a template
+    //parameter of the kernels_centerd_in_point_cloud of x and p. The overal value of a kernel is the accumulated value
+    //for all points. 
+    //There is a number of kernels you can choose over here. Please look for them at:
+    //functions_for_topological_inference/functions_for_topological_inference.h
+    //Sample examples tested here are: Euclidan_distance_squared, Manhattan_distance and Max_norm_distance
+    //They can be used both in periodic and non-periodic wersion regardless of the (periodic or not periodic)
+    //cubical complex that is going to be created for topological_inference.
+    
+    //distance function typedefs
+    typedef Gudhi::Topological_inference_with_cubical_complexes::Euclidan_distance_squared local_distance;
+    typedef Gudhi::Topological_inference_with_cubical_complexes::kernels_centerd_in_point_cloud<local_distance> actual_distance;
+    local_distance eu;
+    actual_distance f( eu , point_cloud );
+ */ 
+    
+      //********************************************************************************************    
+    
+    /*
+    //to use Sum_of_distances_from_points, please use those templates:   
+    typedef Gudhi::Topological_inference_with_cubical_complexes::Sum_of_distances_from_points actual_distance;
+    actual_distance f( point_cloud );
+	*/
+    
+   
+    //Use the code below to constrct periodic version of Manhattan_distance distance
+    //on the periodic grid [-1,1]^2
+    //define the periodic grid    
+    std::vector< std::pair< double , double > > coordinates_of_grid(2);
+    coordinates_of_grid[0] = coordinates_of_grid[1] = std::pair<double,double>( -1.0,1.0 );
+    
+    //Periodic version of Manhattan_distance
+    Gudhi::Topological_inference_with_cubical_complexes::Manhattan_distance manhattan;
+    typedef Gudhi::Topological_inference_with_cubical_complexes::periodic_domain_distance< Gudhi::Topological_inference_with_cubical_complexes::Manhattan_distance > local_distance;   
+    local_distance periodic_sum( coordinates_of_grid,manhattan );
+    
+    //now we have distance to the k-th closest points 
+    unsigned number_of_nearest_neighbors = 5;
+    typedef Gudhi::Topological_inference_with_cubical_complexes::Distance_to_k_th_closest_point
+    < local_distance  > actual_distance;
+    
+    actual_distance f( point_cloud , periodic_sum , number_of_nearest_neighbors );
+    
+   
+  
+    
+    
   
 	//topological inference typedefs
     typedef Gudhi::Cubical_complex::Bitmap_cubical_complex_base<double> Bitmap_cubical_complex_base;
     typedef Gudhi::Cubical_complex::Bitmap_cubical_complex<Bitmap_cubical_complex_base> Bitmap_cubical_complex;
-    typedef Gudhi::Topological_inference_with_cubical_complexes::Topological_inference< Bitmap_cubical_complex , double ,   
-    Gudhi::Topological_inference_with_cubical_complexes::Distance_to_k_th_closest_point<Gudhi::Topological_inference_with_cubical_complexes::Euclidan_distance_squared> > topological_inference;
+    typedef Gudhi::Topological_inference_with_cubical_complexes::Topological_inference< Bitmap_cubical_complex , double ,   actual_distance > topological_inference;
   
     //computations of persistence typedefs
     typedef Gudhi::persistent_cohomology::Field_Zp Field_Zp;
@@ -87,7 +151,11 @@ int main()
 
 	//now we can create our topological inference object
     topological_inference b( coorfinates_of_grid , resolution_of_a_grid , f );
-        
+    
+    //you can vizualize some of the 2d functions with gnuplot. Proper output is obtained by using this format.
+    //later call: load 'to_view' matrix with image
+    b.write_to_file_with_newlines_at_the_ends_of_structure("to_view");
+    
 
     //And compute its persistence diagram
     Persistent_cohomology pcoh(b);

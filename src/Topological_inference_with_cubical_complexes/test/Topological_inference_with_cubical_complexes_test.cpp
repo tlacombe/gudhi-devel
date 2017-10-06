@@ -307,10 +307,7 @@ BOOST_AUTO_TEST_CASE(test_of_top_inference_2d)
     typedef Gudhi::persistent_cohomology::Field_Zp Field_Zp;
     typedef Gudhi::persistent_cohomology::Persistent_cohomology<topological_inference, Field_Zp> Persistent_cohomology;
 
-    topological_inference b( coorfinates_of_grid , resolution_of_a_grid , f );
-    
-    b.write_to_file_with_newlines_at_the_ends_of_structure("bla");
-    b.write_to_file_Perseus_format("bla_pers");
+    topological_inference b( coorfinates_of_grid , resolution_of_a_grid , f );   
 
     // Compute the persistence diagram of the complex
     Persistent_cohomology pcoh(b);
