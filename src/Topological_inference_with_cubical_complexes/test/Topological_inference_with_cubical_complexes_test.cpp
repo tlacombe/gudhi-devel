@@ -63,6 +63,39 @@
 
 double epsilon = 0.0000001;
 
+//auxiliary distance functions:
+class distnace_from_unit_sphere
+{
+public:
+	distnace_from_unit_sphere(){}
+	double operator()( const std::vector< double >& point )
+	{
+		double norm = 0;
+		for ( size_t i = 0 ; i != point.size() ; ++i )
+		{
+			norm += point[i]*point[i];
+		}
+		norm = sqrt(norm);
+		return fabs( norm-1 );
+	}
+};
+
+class distnace_from_x_axis
+{
+public:
+	distnace_from_x_axis(){}
+	double operator()( const std::vector< double >& point )
+	{
+		double norm = 0;
+		for ( size_t i = 1 ; i != point.size() ; ++i )
+		{
+			norm += point[i]*point[i];
+		}
+		norm = sqrt(norm);
+		return norm;
+	}
+};
+
 
 BOOST_AUTO_TEST_CASE(check_distance_functions) 
 {
@@ -305,22 +338,6 @@ BOOST_AUTO_TEST_CASE(test_of_top_inference_2d)
 	}
 }
 
-
-class distnace_from_unit_sphere
-{
-public:
-	distnace_from_unit_sphere(){}
-	double operator()( const std::vector< double >& point )
-	{
-		double norm = 0;
-		for ( size_t i = 0 ; i != point.size() ; ++i )
-		{
-			norm += point[i]*point[i];
-		}
-		norm = sqrt(norm);
-		return fabs( norm-1 );
-	}
-};
 
 BOOST_AUTO_TEST_CASE(test_of_top_inference_distance_funtion_to_unit_circle)
 {
@@ -719,3 +736,76 @@ BOOST_AUTO_TEST_CASE(periodic_domain_nonperiodic_function)
     
 }//periodic_domain_nonperiodic_function
 
+
+
+BOOST_AUTO_TEST_CASE(periodic_domain_function_having_minimum_on_x_axis)
+{
+	std::vector< std::pair< double,double > > coorfinates_of_grid(2);
+	coorfinates_of_grid[0] = coorfinates_of_grid[1] = std::pair<double,double>( -2.0 , 2.0 );
+	std::vector< unsigned > resolution_of_a_grid(2);	
+	resolution_of_a_grid[0] = resolution_of_a_grid[1] = 100;
+	std::vector<bool> directions_in_which_periodic_b_cond_are_to_be_imposed(2);
+	directions_in_which_periodic_b_cond_are_to_be_imposed[0] = true;
+	directions_in_which_periodic_b_cond_are_to_be_imposed[1] = true;
+		
+	
+    distnace_from_x_axis dist_x_axis;    
+  
+    typedef Gudhi::Cubical_complex::Bitmap_cubical_complex_periodic_boundary_conditions_base<double> Periodic_bitmap_cubical_complex_base;
+    typedef Gudhi::Cubical_complex::Bitmap_cubical_complex<Periodic_bitmap_cubical_complex_base> Periodic_bitmap_cubical_complex;
+    typedef Gudhi::Topological_inference_with_cubical_complexes::Topological_inference< Periodic_bitmap_cubical_complex , double ,   
+    distnace_from_x_axis > topological_inference;
+  
+    typedef Gudhi::persistent_cohomology::Field_Zp Field_Zp;
+    typedef Gudhi::persistent_cohomology::Persistent_cohomology<topological_inference, Field_Zp> Persistent_cohomology;
+
+    topological_inference b( coorfinates_of_grid , resolution_of_a_grid , dist_x_axis , directions_in_which_periodic_b_cond_are_to_be_imposed );
+    
+   // Compute the persistence diagram of the complex
+    Persistent_cohomology pcoh(b,true);
+    pcoh.init_coefficients(2);  // initializes the coefficient field for homology
+    pcoh.compute_persistent_cohomology(0);    
+
+    std::vector< std::tuple<size_t, size_t, int> > intervals = pcoh.get_persistent_pairs();   
+    for ( size_t i = 0 ; i != intervals.size() ; ++i )
+    {
+		//std::cout << b.filtration(std::get<0>(intervals[i])) << " " << b.filtration(std::get<1>(intervals[i])) << " " << b.get_dimension_of_a_cell(std::get<0>(intervals[i])) << std::endl;
+		if ( b.get_dimension_of_a_cell(std::get<0>(intervals[i])) == 0 )
+		{
+			//We expect to see:
+			//0.02 inf 0
+			BOOST_CHECK( fabs(  b.filtration(std::get<0>(intervals[i])) - 0.02 ) < 0.001 );
+			BOOST_CHECK( b.filtration(std::get<1>(intervals[i])) == std::numeric_limits<double>::infinity() );
+		}
+		else
+		{
+			if ( b.get_dimension_of_a_cell(std::get<0>(intervals[i])) == 1 )
+			{
+				//We expect to see:
+				//0.02 inf 1
+				//1.98 inf 1
+				BOOST_CHECK( 
+							(fabs(  b.filtration(std::get<0>(intervals[i])) - 0.02 ) < 0.001)
+							||
+							(fabs(  b.filtration(std::get<0>(intervals[i])) - 1.98 ) < 0.001)
+				           );
+				BOOST_CHECK( b.filtration(std::get<1>(intervals[i])) == std::numeric_limits<double>::infinity() );
+			}
+			else
+			{
+				if ( b.get_dimension_of_a_cell(std::get<0>(intervals[i])) == 2  )
+				{
+					//We expect to see:
+					//1.98 inf 2
+					BOOST_CHECK( fabs(  b.filtration(std::get<0>(intervals[i])) - 1.98 ) < 0.001 );
+					BOOST_CHECK( b.filtration(std::get<1>(intervals[i])) == std::numeric_limits<double>::infinity() );
+				}
+				else
+				{
+					//we should not get anything here, so we want the test to fail
+					BOOST_CHECK(1==0);
+				}
+			}
+		}		
+	}	
+}
