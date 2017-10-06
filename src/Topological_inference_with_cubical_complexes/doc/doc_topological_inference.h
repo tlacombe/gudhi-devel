@@ -62,9 +62,14 @@ namespace Topological_inference_with_cubical_complexes {
  * (a) kernels_centerd_in_point_cloud - for any given point p it compute sum of values of kernel function for p and any other point q from the initial point cloud. 
  * (b) Sum_of_distances_from_points - for any given point p it compute sum of distances of p to the points of the point cloud.
  * (c) Distance_to_k_th_closest_point - return the distance to the k-th nearest neighbor in the point cloud given a the input. 
- * As an example please consult the 
+ * As an example please consult the periodic (on a domain [-1.5,1.5]^2) function obtained using class Sum_of_distances_from_points
+ * where for every point of a grid the sum of Euclidean distances to the point cloud sampled from unit circle have been computed.
+ * \image html periodic_distance_from_cicrle_nonperiodic_domain.png
+ * (3) Distance function from a collection of cubes that satisfy certain predicate. TODO
+ * 
+ * All the cubical complexes used here may, or may not have periodic boundary conditions imposed. Please consult examples and utilities for further details. 
+ * 
  *
- * \image html perturb_pd.png On this picture, the red edges represent the matching. The bottleneck distance is the length of the longest edge.
  *
  */
 /** @} */  // end defgroup bottleneck_distance
