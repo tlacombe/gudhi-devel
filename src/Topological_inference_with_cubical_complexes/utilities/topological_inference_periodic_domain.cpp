@@ -54,9 +54,9 @@ int main(int argc, char** argv)
   std::cout << " ... ,\n";
   std::cout << "(i) Minimum of a grid in last direction, \n";
   std::cout << "(i+1) Maximum of a grin in last direction, \n";
-  std::cout << "(i+2) resolution of a grid in the first direction,\n";
+  std::cout << "(i+2) resolution of a grid in the first direction (set to negative if periodic boundary conditions in this direction are to be imposed),\n";
   std::cout << " ... ,\n";
-  std::cout << "(2i-2) resolution of a grid in the last direction.\n";
+  std::cout << "(2i-2) resolution of a grid in the last direction (set to negative if periodic boundary conditions in this direction are to be imposed).\n";
   std::cout << "and finally the positive interger k, such that the considered\
    function is the distance to the k-th nearest neighbor.\n";
 
@@ -71,23 +71,36 @@ int main(int argc, char** argv)
   int dimension = atoi( argv[2] );
   std::cout << "The dimension is : " << dimension << std::endl;
   
-  std::vector< std::pair< double, double > > coorfinates_of_grid;
+  std::vector< std::pair< double, double > > coordinates_of_grid;
+  coordinates_of_grid.reserve(dimension);  
   for ( int i = 0 ; i != dimension ; ++i )
   {
 	  int min_ = atof( argv[3+2*i] );
 	  int max_ = atof( argv[3+2*i+1] );
-	  coorfinates_of_grid.push_back( std::make_pair(min_,max_) );
+	  coordinates_of_grid.push_back( std::make_pair(min_,max_) );
 	  std::cout << "Coordinates in direcion number : " << i << " are : " << min_ << " and " << max_ << std::endl;
   }	
   
   std::vector< unsigned > resolution_of_a_grid;
+  std::vector< bool > directions_in_which_periodic_boundary_conditions_should_be_imposed(dimension,false);
   for ( int i = 0 ; i != dimension ; ++i )
   {	 
-	  size_t resolution_in_this_direction = (size_t)atoi( argv[3+2*dimension+i] );
+	  int resolution_in_this_direction = atoi( argv[3+2*dimension+i] );
+	  if ( resolution_in_this_direction < 0 )
+	  {
+		  resolution_in_this_direction *= -1;
+		  directions_in_which_periodic_boundary_conditions_should_be_imposed[i] = true;
+	  }
+	  
 	  resolution_of_a_grid.push_back( resolution_in_this_direction );
 	  std::cout << "Resolution of a grid in direcion number : " << i << " is : " << resolution_in_this_direction << std::endl;
   }	
   
+  std::cout << "Here are the directions in which peridic boundary conditions will be imposed: \n";
+  for ( size_t i = 0 ; i != directions_in_which_periodic_boundary_conditions_should_be_imposed.size() ; ++i )
+  {
+	  std::cout << "Directon : " << i << " - " << directions_in_which_periodic_boundary_conditions_should_be_imposed[i] << std::endl;
+  }
   
   unsigned number_of_nearest_neighbors = (unsigned)atoi( argv[3+3*dimension] );
   std::cout << "We will compute a distance to the " << number_of_nearest_neighbors << "-th nearest neighbor.\n";
@@ -105,7 +118,7 @@ int main(int argc, char** argv)
   typedef Gudhi::persistent_cohomology::Field_Zp Field_Zp;
   typedef Gudhi::persistent_cohomology::Persistent_cohomology<topological_inference, Field_Zp> Persistent_cohomology;
 
-  topological_inference b( coorfinates_of_grid , resolution_of_a_grid , f );
+  topological_inference b( coordinates_of_grid , resolution_of_a_grid , f , directions_in_which_periodic_boundary_conditions_should_be_imposed );
   //b.write_to_file_Perseus_format("perse");
 
   // Compute the persistence diagram of the complex
