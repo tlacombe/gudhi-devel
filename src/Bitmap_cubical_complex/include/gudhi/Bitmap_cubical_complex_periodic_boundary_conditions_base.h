@@ -96,6 +96,19 @@ class Bitmap_cubical_complex_periodic_boundary_conditions_base : public Bitmap_c
    * Bitmap_cubical_complex_periodic_boundary_conditions_base class.
    */
   virtual std::vector< size_t > get_coboundary_of_a_cell(size_t cell) const;
+  
+  /**
+   * This is a procedure to check if the cubical complex is periodic
+   * in a given direction.
+  **/ 
+  bool is_periodic_in_this_direction( unsigned direction )
+  {
+	  if ( direction < this->directions_in_which_periodic_b_cond_are_to_be_imposed.size() )
+	  {
+		  return this->directions_in_which_periodic_b_cond_are_to_be_imposed[ direction ];
+	  }
+	  return false;
+  }
 
  protected:
   std::vector< bool > directions_in_which_periodic_b_cond_are_to_be_imposed;
@@ -142,7 +155,7 @@ void Bitmap_cubical_complex_periodic_boundary_conditions_base<T>::construct_comp
 template <typename T>
 Bitmap_cubical_complex_periodic_boundary_conditions_base<T>::Bitmap_cubical_complex_periodic_boundary_conditions_base(const std::vector<unsigned>& sizes,
                                                                                                                       const std::vector<bool>& directions_in_which_periodic_b_cond_are_to_be_imposed) {
-  this->directions_in_which_periodic_b_cond_are_to_be_imposed(directions_in_which_periodic_b_cond_are_to_be_imposed);
+  this->directions_in_which_periodic_b_cond_are_to_be_imposed = directions_in_which_periodic_b_cond_are_to_be_imposed;
   this->set_up_containers(sizes);
 }
 

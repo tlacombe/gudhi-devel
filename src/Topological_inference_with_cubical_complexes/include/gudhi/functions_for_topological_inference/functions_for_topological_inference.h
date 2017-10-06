@@ -47,6 +47,9 @@ namespace Topological_inference_with_cubical_complexes {
 //****************************************************************
 //Sample kernels to be used in kernels_centerd_in_point_cloud
 //****************************************************************
+/**
+ * A class that compute square of Euclidean distance between points.
+**/ 
 class Euclidan_distance_squared
 {
 public:
@@ -67,7 +70,9 @@ public:
 	}
 };
 
-
+/**
+ * A class that compute square of Manhattan distance between points.
+**/ 
 class Manhattan_distance
 {
 public:
@@ -89,6 +94,9 @@ public:
 };
 
 
+/**
+ * A class that compute square of Max norm distance between points.
+**/ 
 class Max_norm_distance
 {
 public:
@@ -109,10 +117,23 @@ public:
 	}
 };
 
+/**
+ * A class that any type of distance in a periodic domain. The template parameter 
+ * of that class is a distace in non periodic domain that is used to compute distance
+ * in the periodic domain. See the description of constructor of this class
+ * for further details.
+**/ 
 template <typename standard_distance>
 class periodic_domain_distance
 {
 public:
+	/**
+	 * This is a constructor of a periodic_domain_distance class. It take as a parameter the 
+	 * std::vector< std::pair< double , double > >& coordinates_of_grid describing coodinates of
+	 * the grid. See coordinates_of_grid in the Topological_inference_with_cubical_complexes class
+	 * for details. The second parameter of the constructor is a distance that is used to compute
+	 * distance in periodic domain. 
+	**/ 
 	periodic_domain_distance( const std::vector< std::pair< double , double > >& coordinates_of_grid , standard_distance& dist_ ):dist( dist_ )
 	{	
 		bool dbg = false;
@@ -130,6 +151,12 @@ public:
 			}
 		}
 	}
+	/**
+	* Computations of distance between point1 and point2 on the predefined periodic domain.
+	* The code keep point1 fixed, and copy point 2 in a covering space in all possible directions.
+	* For each of them, standard distance in the covering space is computed, and the minimal one
+	* is returned. 
+	**/ 
 	double operator()( const std::vector<double>& point1 , const std::vector<double>& point2 )
 	{		
 		bool dbg = false;
@@ -252,6 +279,13 @@ private:
 };
 
 
+/**
+ * A class that take a point cloud P, and allows to compute distance from any
+ * given point to the k-th nearest neighbour in P. 
+ * Once CGAL is used, it uses the spatial search module from Gudhi. If CGAL
+ * is not installed, a aive heap-based algorithm is used to get the distance
+ * to the k-th nearest neighor. 
+**/ 
 template < typename distance >
 class Distance_to_k_th_closest_point
 {

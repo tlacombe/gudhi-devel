@@ -457,6 +457,15 @@ class Bitmap_cubical_complex_base {
   inline size_t number_cells()const {
     return this->total_number_of_cells;
   }
+  
+  /**
+   * This is a procedure to check if the cubical complex is periodic
+   * in a given direction.
+  **/ 
+  bool is_periodic_in_this_direction( unsigned direction )
+  {
+	  return false;
+  }
 
   //****************************************************************************************************************//
   //****************************************************************************************************************//

@@ -531,6 +531,36 @@ class Bitmap_cubical_complex : public T {
   }
 
   friend class is_before_in_filtration<T>;
+  
+  /**
+   * Function to store bitmap cubical complex in a Persues style file
+  **/ 
+  void store_in_perseus_format( const char* filename )
+  {
+	unsigned number_of_top_dimensional_cells = 1;
+	for ( size_t dim = 0 ; dim != this->sizes.size() ; ++dim )
+	{
+		number_of_top_dimensional_cells *= this->sizes[dim];
+	} 
+	
+	std::ofstream out(filename);
+	out << number_of_top_dimensional_cells << std::endl;	
+	
+	for ( size_t dim = 0 ; dim != this->sizes.size() ; ++dim )
+	{
+		if ( this->is_periodic_in_this_direction( dim ) )  
+		{
+			out << "-";		
+		}
+		out << this->sizes[dim] << std::endl;
+	}
+	
+	for ( auto it = this->top_dimensional_cells_iterator_begin() ; it != this->top_dimensional_cells_iterator_end() ; ++it )
+	{
+		out << this->get_cell_data(*it) << std::endl;					
+	}
+	out.close();
+  }//store_in_perseus_format
 
  protected:
   std::vector< size_t > key_associated_to_simplex;
@@ -541,6 +571,25 @@ class Bitmap_cubical_complex : public T {
   * in the following directions. It initialize all the data structure, but the values of filtration on top dimensional cells remains undefined.
   **/
   Bitmap_cubical_complex(const std::vector<unsigned>& dimensions) : T(dimensions), key_associated_to_simplex(this->total_number_of_cells + 1) 
+  {
+    for (size_t i = 0; i != this->total_number_of_cells; ++i) 
+    {
+      this->key_associated_to_simplex[i] = i;
+    }
+    // we initialize this only once, in each constructor, when the bitmap is constructed.
+    // If the user decide to change some elements of the bitmap, then this procedure need
+    // to be called again.
+    this->initialize_simplex_associated_to_key();
+  }
+  
+  /**
+  * Constructor that requires vector of elements of type unsigned, which gives number of top dimensional cells
+  * in the following directions and directions in which periodic boundary conditions are to be imposed. 
+  * It initialize all the data structure, but the values of filtration on top dimensional cells remains undefined.
+  **/
+  Bitmap_cubical_complex(const std::vector<unsigned>& dimensions,
+  const std::vector<bool>& directions_in_which_periodic_b_cond_are_to_be_imposed) : 
+  T(dimensions,directions_in_which_periodic_b_cond_are_to_be_imposed), key_associated_to_simplex(this->total_number_of_cells + 1) 
   {
     for (size_t i = 0; i != this->total_number_of_cells; ++i) 
     {
