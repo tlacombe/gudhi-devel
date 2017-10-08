@@ -20,6 +20,9 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
+
+wydaje mi sie ze morphological operation byloby bardziej stosowna nazwa. 
 #ifndef DISTANCE_FROM_COLLECTION_OF_CUBES_
 #define DISTANCE_FROM_COLLECTION_OF_CUBES_
 
@@ -31,220 +34,236 @@
 #endif
 
 #include <limits>
-#include <utility>  // for pair<>
-#include <algorithm>  // for sort
+#include <utility>  
+#include <algorithm>
 #include <vector>
 #include <cmath>
-#include <numeric>  // for iota
+#include <numeric>  
+
+
+TODO:
+1) W bitmap cubical complex, w impose lower star filtration, dodac defaultowy parametr mowiacy czy trzeba oczyscic warosci filtracji dla
+nizej wymiarowych kostek czy nie. W przypadku konstrukcji kompleksu 'from skratch' tego nie trzeba robic. Ale to sie przyda przy 
+przedefiniowaniu filtracji tak jak to tutaj robimy.
+
+2) Sprawdzic cz yw bitmap cubical complex hjest metoda ktora zwraca wszyskich sasiadow / siasiadow przez pelne sciany maksymalnej kostki.
+Dodac ja a nastepnie wykozystac tutaj przy obliczaniu dylacji. 
+
+3) Rozwazyc zarowno erozje jak dylacje. 
+
 
 namespace Gudhi 
 {
 
-namespace Topological_inferznce_with_cubical_complexes 
+namespace Topological_inference_with_cubical_complexes 
 {
+	
+
 /**
- * The function presented here construct a cubical complex with a filtration. The constructed filtration is integer--valued and the value indicate the Manhattan distance from a celected collection of cubes
- **/ 
+ * When computing dylation of a set of cubes, we can either consider the direct neighbors of a cube C being all the cubes 
+ * that have nonempty intersection C, or only the cubes that share co-dimension-1 face with 1. In the first case, all neighbourhood
+ * should be choosen. In the former: full_face neighborhood. 
+**/ 
+enum considered_neighberhoods { all , full_face }
+
+/**
  
-//dodac typy sasiadzwa jakie mozemy tutaj miec. 
-//dodac czytanie czarno-bialych bitmap i liczenie odleglosci albo od carnych albo od bialych komorek. 
- 
-template < typename Cubical_complex >
-Cubical_complex* construct_cubical_complex_and_set_up_the_filtration_to_distance_from_selected_cubes( const std::vector< std::vector< unsigned > >& top_dimensional_cubes_that_are_in_the_set , 
-																									  std::vector< unsigned > sizes = std::vector< unsigned >() )
+**/ 
+
+/**
+ * This is a predicate that can be used to pinpoint the initial cubes for diltion.
+ * The function check_predicaten in this class evaluate to true if the given value is greater or equal the given
+ * cutoff value.
+**/ 
+template <typename T>
+class filtration_above_certain_value
 {
-	bool dbg = false;
-	if ( sizes.empty() )
-	{
-		if ( dbg )std::cout << "the ranges of the cubical complex were not set by the user. We will set them now based on top_dimensional_cubes_that_are_in_the_set vector \n";
-		if ( top_dimensional_cubes_that_are_in_the_set.size() == 0 )return new Cubical_complex;//in this case, we return an empty strucutre of the desired type. 
-		sizes = std::vector< unsigned >( top_dimensional_cubes_that_are_in_the_set[0].size() , 0 );		
-		//in this case, we should set up the sizes by ourselves. 
-		for ( size_t i = 0 ; i != top_dimensional_cubes_that_are_in_the_set.size() ; ++i )
-		{
-			if ( top_dimensional_cubes_that_are_in_the_set[0].size() != top_dimensional_cubes_that_are_in_the_set[i].size() )
-			{
-				std::cerr << "Different embedding dimensions of cubes in the procedure construct_cubical_complex_and_set_up_the_filtration_to_distance_from_selected_cubes. The program will now terminate.\n";
-				throw "Different embedding dimensions of cubes in the procedure construct_cubical_complex_and_set_up_the_filtration_to_distance_from_selected_cubes. The program will now terminate.\n";
-			}
-			for ( size_t j = 0 ; j != top_dimensional_cubes_that_are_in_the_set[0].size() ; ++j )
-			{
-				if ( sizes[j] < top_dimensional_cubes_that_are_in_the_set[i][j] )sizes[j] = top_dimensional_cubes_that_are_in_the_set[i][j];
-			} 
-		}
-		//since there is a cell that assigns maximum, we need one more top dimensional cube in each direction:
-		for ( size_t i = 0 ; i != sizes.size() ; ++i )
-		{
-			++sizes[i];
-		}
-		if ( dbg )
-		{
-			std::cerr << "Here are the sizes of the cubical complex to create (in max cubes units) \n";
-			for ( size_t i = 0 ; i != sizes.size() ; ++i )
-			{
-				std::cout << i << " " << sizes[i] << std::endl;
-			}
-		}
+public:
+    filtration_above_certain_value( T cutoff_value_ ):cutoff_value(cutoff_value_){}
+    bool check_predicate( double filtration_value ){return (filtration_value >= this->cutoff_value);}
+protected:
+	T cutoff_value;
+};
+
+/**
+ * This is a predicate that can be used to pinpoint the initial cubes for diltion.
+ * The function check_predicaten in this class evaluate to true if the given value is smaller the given
+ * cutoff value.
+**/
+template <typename T>
+class filtration_below_certain_value
+{
+public:
+    filtration_above_certain_value( T cutoff_value_ ):cutoff_value(cutoff_value_){}
+    bool check_predicate( double filtration_value ){return (filtration_value < this->cutoff_value);}
+protected:
+	T cutoff_value;
+};
+
+/**
+ * This is a predicate that can be used to pinpoint the initial cubes for diltion.
+ * The function check_predicaten in this class evaluate to true if the given value is between two given cutoff values.
+**/
+template <typename T>
+class filtration_in_range
+{
+public:
+    filtration_above_certain_value( T cutoff_value_min_ , T cutoff_value_max_ ):cutoff_value_min(cutoff_value_min_),cutoff_value_max(cutoff_value_max_){}
+    bool check_predicate( double filtration_value )
+    {
+		return ( (filtration_value >= this->cutoff_value_min) && (filtration_value <= this->cutoff_value_max) );
 	}
-	//compute total number of maximal cells:
-	size_t number_of_maximal_cells = 1;
-	for ( size_t i = 0 ; i != sizes.size() ; ++i )number_of_maximal_cells *= sizes[i];
+protected:
+	T cutoff_value_min;
+	T cutoff_value_max;
+};	
+
+/**
+ * This is a predicate that can be used to pinpoint the initial cubes for diltion.
+ * The function check_predicaten in this class evaluate to true if the given value is equal to the cutoff values.
+**/
+template <typename T>
+class filtration_equal
+{
+public:
+    filtration_above_certain_value( T cutoff_value_ ):cutoff_value(cutoff_value_){}
+    bool check_predicate( double filtration_value ){return (filtration_value == this->cutoff_value);}
+protected:
+	T cutoff_value;
+};	
 	
-	if ( dbg )std::cout << "number_of_maximal_cells : " << number_of_maximal_cells << std::endl;
-	
-	//now the sizes are set up, we have the data to create the complex:	
-	std::vector< typename Cubical_complex::filtration_type > top_dimensional_cells( number_of_maximal_cells , std::numeric_limits< typename Cubical_complex::filtration_type >::max() );
-	
-	//and create the cubical complex:	
-	Cubical_complex* result = new Cubical_complex( sizes , top_dimensional_cells );
-	
-	std::vector< size_t > next_iteration_top_dimensional_cubes;
-	
-	//set the value 0 for all the cubes in top_dimensional_cubes_that_are_in_the_set:
-	for ( size_t cube_no = 0 ; cube_no != top_dimensional_cubes_that_are_in_the_set.size() ; ++cube_no )
-	{
-		if ( dbg )
-		{
-			std::cout << "Setting up the value of the cube : " << std::endl;
-			for ( size_t i = 0 ; i != top_dimensional_cubes_that_are_in_the_set[cube_no].size() ; ++i )
-			{
-				std::cout << top_dimensional_cubes_that_are_in_the_set[cube_no][i] << " ";
-			}
-		}
-		size_t position = result->give_position_of_top_dimensional_cell( top_dimensional_cubes_that_are_in_the_set[cube_no] );
-		if ( dbg )
-		{
-			std::cout << "Its position in the bitmap : " << position << std::endl;
-		}
-		result->get_cell_data(position) = 0;
-		std::vector< size_t > neigs = result->give_neighbouring_top_dimensional_cells( position );
-		next_iteration_top_dimensional_cubes.insert( next_iteration_top_dimensional_cubes.end() , neigs.begin() , neigs.end() );
-		if ( dbg )
-		{
-			std::cout << "And here are its top dimensional neighs : " << std::endl;
-			for ( size_t i = 0 ; i != neigs.size() ; ++i )
-			{
-				std::cout << neigs[i] << " ";
-			}
-			std::cout << std::endl;
-			//getchar();
-		}
-	}
-	
-	std::cout << "Initial stuff set, we can move on \n";
-	
-	size_t counter = 1;
-	//now for every cube in the neighboorhood of the cubes that have the value already assigned:
-	while ( !next_iteration_top_dimensional_cubes.empty() )
-	{
-		if ( dbg )std::cout << "next_iteration_top_dimensional_cubes.size() : " << next_iteration_top_dimensional_cubes.size() << std::endl;
-		std::vector< size_t > next_next_iteration_top_dimensional_cubes;
-		for ( size_t i = 0 ; i != next_iteration_top_dimensional_cubes.size() ; ++i )
-		{
-			if ( result->get_cell_data( next_iteration_top_dimensional_cubes[i] ) != std::numeric_limits<typename Cubical_complex::filtration_type>::max() )continue;//this cube was already set.
-			//if we are here, that means that the value of this cube was not set yet. We will now set it to counter.
-			result->get_cell_data( next_iteration_top_dimensional_cubes[i] )  = counter;
-			if ( dbg )
-			{
-				std::cerr << "The maximal cube at the position : " << next_iteration_top_dimensional_cubes[i] << " gets the value : " << counter << std::endl;
-			}
-			//and add the top dimensional neighs of this cube to the next_next_iteration_top_dimensional_cubes
-			std::vector< size_t > neighs = result->give_neighbouring_top_dimensional_cells( next_iteration_top_dimensional_cubes[i] );
-			next_next_iteration_top_dimensional_cubes.insert( next_next_iteration_top_dimensional_cubes.end() , neighs.begin() , neighs.end() );
-		}
-		next_iteration_top_dimensional_cubes.swap( next_next_iteration_top_dimensional_cubes );
-		++counter;
-	}
-	
-	if ( dbg )std::cout << "We are done, now imposing the lower star filtration \n";
-	
-	result->impose_lower_star_filtration();
-	
-	return result;
-}//construct_cubical_complex_and_set_up_the_filtration_to_distance_from_selected_cubes
 
 
-//We need another function which should be obtained in the following way: We have a filtration equal to 0 at every element of a set. We increase it by a given stepsize, which is the real diameter of a cube
-//for the neighboouring cubes, untill we get it all done. 
-//Such a functionality can be very usefu when we make a tresholding at a complex, and then want to compute something like erosion operation othe resulting bladk and white image. 
-//Overhere it make sense to assume that elements of the set have filtration 0, and all the other have a filtration std::numeric_limits< typename Cubical_complex::filtration_type >::max(). And then we change them until nothing have filtration +infty.
-template < typename Cubical_complex >
-void dylate_cubes_in_the_set( Cubical_complex& cmplx , double diameter_of_cube )
-{ 
-	bool dbg = false;
-	std::vector< size_t > cubes_to_consider;
-	//we will initially reserve the space for all the top dimensional cubes:	
-	cubes_to_consider.reserve( cmplx.number_of_maximal_cubes() );
+
+
+
+
+Jezeli rozwazymy zarowno erozje jak i dylacje, to trzeba zmienic nazwe klasy.
+Btw, czy mozna te dwie rzeczy robic jednoczenie??
+Jezeli tak, to przedzialy ktore maja dodatnie konce byyby z dylacji, a te ujemne z erozji. 
+Byc moze mozna znowu emu azdefiniwac:
+enum considered_operation { erosion, dilation, both };???
+Trzeba wtedy w dokumentacji zaznaczyc, ze erosion dilation nie zawsze to to samo co dilation erosion.
+/**
+ * The class Dylate_collection_of_cubes_in_cubical_complex construct an object of a type
+ * Cubical_complex.
+ **/ 
+template <typenale Cubical_complex , Predicator>
+class Dylate_collection_of_cubes_in_cubical_complex	
+{
+public:
+//how to relate constructors of this class to methods we have at the moment??
+	Dylate_collection_of_cubes_in_cubical_complex(){}
+	Dylate_collection_of_cubes_in_cubical_complex( Cubical_complex* to_process , const Predicator& pred );
 	
-	unsigned dim_of_complex = cmplx.dimension();
-	for ( size_t i = 0 ; i != cmplx.data.size() ; ++i )
+private:
+	void dilation( Cubical_complex* result , std::vector< size_t >& next_iteration_top_dimensional_cubes , Cubical_complex::filtration_type diameter_of_cube = 1)
 	{
-		if ( cmplx.data[i] != 0 )
+		
+		typename Cubical_complex::filtration_type value = diameter_of_cube;
+		while ( !cubes_to_consider.empty() )
+		{	
+			//now we iterate through cubes_to_consider, and find the neighbouring cells:
+			std::vector< size_t > new_cubes_to_consider;			
+			new_cubes_to_consider.reserve( cmplx.number_of_maximal_cubes() );
+			
+			for ( size_t i = 0 ; i != cubes_to_consider.size() ; ++i )
+			{		
+				if ( dbg )std::cerr << "Looking at the neighs of a cube number : " << cubes_to_consider[i] << std::endl;	
+				
+				tutaj w zaleznosci od sasiedztwa ktore wybieramy trzeba wolac rozne funkcje!!!
+				std::vector< size_t > neighs = cmplx.give_neighbouring_top_dimensional_cells( cubes_to_consider[i] );
+				for ( size_t neigh = 0 ; neigh != neighs.size() ; ++neigh )
+				{
+					if ( cmplx.data[ neighs[neigh] ] == std::numeric_limits< typename Cubical_complex::filtration_type >::max() )
+					{
+						cmplx.data[ neighs[neigh] ] = value;												
+						new_cubes_to_consider.push_back( neighs[neigh] );								
+					}
+				}			
+			}
+			
+			 
+			cubes_to_consider = new_cubes_to_consider;
+			value += diameter_of_cube;
+		}	
+			
+		//now we need to coean up the data strucutres after scrambling the filtration values.     
+		cmplx.impose_lower_star_filtration();
+		for (size_t i = 0; i != cmplx.total_number_of_cells; ++i) 
 		{
-			cmplx.data[i] = std::numeric_limits< typename Cubical_complex::filtration_type >::max();//std::numeric_limits< typename Cubical_complex::filtration_type >::max();
+		    cmplx.key_associated_to_simplex[i] = i;
+		}
+		cmplx.initialize_simplex_associated_to_key();
+		
+		if ( dbg )std::cout << "We are done, now imposing the lower star filtration \n";
+		
+		
+		upewnic sie, ze ta procedura dziala niezaleznie od tego jakie sa poczatkowe wartosci
+		Tj. dodac odpowiednia flage
+		result->impose_lower_star_filtration();
+	}
+	
+	
+	
+	Widac, ze tutaj mamy dwie mozliwosci dzialania
+	1) Mamy juz kompleks + predykat + sasiedztwo i chemy zrobic erozje / dylacje. 
+	2) Nie mamy kompleksu, ale mamy liste kostek maksymalnych. Moze w tej sytuacji po prostu zarzadac od uzytkownika, by stworzyl nam taki kompleks
+	i my zaplimy tutaj kostki maksymalne i zrobmy dylacje? A moze po prostu lepiej jest tak jak teraz, ze przyjmujemy parametry,a kompls stworzymy my tutaj
+	lokalnie. Teraz jestem za 2g aopcja, tak jak jest. 
+	Cubical_complex* construct_cubical_complex_and_set_up_the_filtration_to_distance_from_selected_cubes( const std::vector< std::vector< unsigned > >& top_dimensional_cubes_that_are_in_the_set , 
+																										  std::vector< unsigned > sizes = std::vector< unsigned >() )
+	{
+		bool dbg = false;
+
+		//compute total number of maximal cells:
+		size_t number_of_maximal_cells = 1;
+		for ( size_t i = 0 ; i != sizes.size() ; ++i )number_of_maximal_cells *= sizes[i];		
+		
+		//now the sizes are set up, we have the data to create the complex:	
+		std::vector< typename Cubical_complex::filtration_type > top_dimensional_cells( number_of_maximal_cells , std::numeric_limits< typename Cubical_complex::filtration_type >::max() );
+		
+		//and create the cubical complex:	
+		Cubical_complex* result = new Cubical_complex( sizes , top_dimensional_cells );
+		
+		std::vector< size_t > next_iteration_top_dimensional_cubes;
+		
+		//set the value 0 for all the cubes in top_dimensional_cubes_that_are_in_the_set:
+		for ( size_t cube_no = 0 ; cube_no != top_dimensional_cubes_that_are_in_the_set.size() ; ++cube_no )
+		{	
+			size_t position = result->give_position_of_top_dimensional_cell( top_dimensional_cubes_that_are_in_the_set[cube_no] );
+			result->get_cell_data(position) = 0;
+			std::vector< size_t > neigs = result->give_neighbouring_top_dimensional_cells( position );
+			next_iteration_top_dimensional_cubes.insert( next_iteration_top_dimensional_cubes.end() , neigs.begin() , neigs.end() );			
+		}
+		
+		this->dylate_cubes_in_the_set( result , next_iteration_top_dimensional_cubes );
+	
+		return result;
+	}//construct_cubical_complex_and_set_up_the_filtration_to_distance_from_selected_cubes
+	
+	
+	
+
+
+};
+
+template <typenale Cubical_complex , Predicator>
+Dylate_collection_of_cubes_in_cubical_complex::Dylate_collection_of_cubes_in_cubical_complex( Cubical_complex* to_process , const Predicator& pred )
+{
+	for ( auto it = cmplx->top_dimensional_cells_iterator_begin() ; it != top_dimensional_cells_iterator_end() ; ++it )
+	{
+		auto& cell_data = cmplx.get_cell_data(*it);
+		if ( pred( cell_data ) )
+		{
+			cell_data = 0;			
 		}
 		else
 		{
-			//in this case, cmplx.data[i] == 0. We should check if the dimension of a cube is full or not.
-			if ( cmplx.get_dimension_of_a_cell(i) != dim_of_complex )
-			{
-				cmplx.data[i] = std::numeric_limits< typename Cubical_complex::filtration_type >::max();//std::numeric_limits< typename Cubical_complex::filtration_type >::max();
-			}
-		}
+			cell_data = std::numeric_limits< typename Cubical_complex::filtration_type >::infinity();
+		}		
 	}	
-	
-	for ( typename Cubical_complex::Top_dimensional_cells_iterator it = cmplx.top_dimensional_cells_iterator_begin() ; it != cmplx.top_dimensional_cells_iterator_end() ; ++it )
-	{
-		//if filtration of this cube is 0, add it to cubes_to_consider vector.
-		if ( cmplx.data[ *it ] == 0 )
-		{
-			cubes_to_consider.push_back( *it );
-		}
-	}
-	if ( dbg )std::cerr << "cubes_to_consider.size() : " << cubes_to_consider.size() << std::endl;
-	
-	
-	typename Cubical_complex::filtration_type value = diameter_of_cube;
-	while ( !cubes_to_consider.empty() )
-	{
-		if ( dbg )
-		{
-			std::cerr << "Taking the next iteration, now we have : " << cubes_to_consider.size() << " cubes to consider \n";
-			std::cerr << "value : " << value << std::endl;
-			getchar();
-		}
-		//now we iterate through cubes_to_consider, and find the neighbouring cells:
-		std::vector< size_t > new_cubes_to_consider;
-		new_cubes_to_consider.reserve( cmplx.number_of_maximal_cubes() );
-		
-		for ( size_t i = 0 ; i != cubes_to_consider.size() ; ++i )
-		{		
-			if ( dbg )std::cerr << "Looking at the neighs of a cube number : " << cubes_to_consider[i] << std::endl;	
-			
-			std::vector< size_t > neighs = cmplx.give_neighbouring_top_dimensional_cells( cubes_to_consider[i] );
-			for ( size_t neigh = 0 ; neigh != neighs.size() ; ++neigh )
-			{
-				if ( cmplx.data[ neighs[neigh] ] == std::numeric_limits< typename Cubical_complex::filtration_type >::max() )
-				{
-					cmplx.data[ neighs[neigh] ] = value;												
-					new_cubes_to_consider.push_back( neighs[neigh] );								
-				}
-			}			
-		}
-		
-		 
-		cubes_to_consider = new_cubes_to_consider;
-		value += diameter_of_cube;
-	}	
-	    
-	//now we need to coean up the data strucutres after scrambling the filtration values.     
-    cmplx.impose_lower_star_filtration();
-    for (size_t i = 0; i != cmplx.total_number_of_cells; ++i) 
-    {
-      cmplx.key_associated_to_simplex[i] = i;
-    }
-    cmplx.initialize_simplex_associated_to_key();
-}//dylate_cubes_in_the_set
+}
 
  
 }//namespace TOPOLOGICAL_INFERENCE_H_ 

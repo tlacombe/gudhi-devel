@@ -466,6 +466,17 @@ class Bitmap_cubical_complex_base {
   {
 	  return false;
   }
+  
+  /**
+  * Function use to set the valyes of all the elements in the Bitmap cubical complex to a desired value. 
+  **/ 
+  void set_value_of_all_cells_to_a_given_value( T value )
+  {
+	  for ( size_t i = 0 ; i != this->data.size() ; ++i )
+	  {
+		  this->data[i] = value;
+	  }
+  }//set_value_of_all_cells_to_a_given_value
 
   //****************************************************************************************************************//
   //****************************************************************************************************************//
