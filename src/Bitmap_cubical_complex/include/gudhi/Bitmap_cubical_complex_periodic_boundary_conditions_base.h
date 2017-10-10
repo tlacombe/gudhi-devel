@@ -97,6 +97,19 @@ class Bitmap_cubical_complex_periodic_boundary_conditions_base : public Bitmap_c
    */
   virtual std::vector< size_t > get_coboundary_of_a_cell(size_t cell) const;
   
+   /**
+   * For a given cube C this procedure returns a vector of position of all top dimensional cubes
+   * having nonemtpy itersection with C.
+  **/ 	
+  virtual inline std::vector<size_t> get_all_top_dimensional_cubes_incident_to_the_given_top_dimensional_cell(size_t cell)const;
+  
+  /**
+   * For a given cube C this procedure returns a vector of position of all top dimensional cubes
+   * sharing co-dimension 1 face with C (i.e. all the cubes D such that C intersect D has a dimension
+   * of C (or D) minus 1).
+  **/ 	
+  virtual inline std::vector<size_t> get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube(size_t cell)const;
+  
   /**
    * This is a procedure to check if the cubical complex is periodic
    * in a given direction.
@@ -311,6 +324,120 @@ std::vector< size_t > Bitmap_cubical_complex_periodic_boundary_conditions_base<T
   }
   return coboundary_elements;
 }
+
+
+
+
+
+
+
+
+template <typename T>
+std::vector< size_t > Bitmap_cubical_complex_periodic_boundary_conditions_base<T>::get_all_top_dimensional_cubes_incident_to_the_given_top_dimensional_cell(size_t cell)const
+{ 
+  std::vector< size_t > neighbor_elements;
+  
+  std::vector<unsigned> counter = this->compute_counter_for_given_cell(cell);  
+  counter = this->convert_bitmap_counter_to_top_dimensional_cube_counter(counter);  
+  
+  for ( size_t position = 0 ; position != counter.size() ; ++position )
+  {
+	  if ( counter[position] != 0 )
+	  {
+		 counter[ position ] -= 1; 
+		 std::vector<unsigned> bitmap_counter = 
+		 this->convert_top_dimensional_cube_counter_to_bitmap_counter(counter);
+		 counter[ position ] += 1; 		 		
+		 neighbor_elements.push_back( this->compute_position_in_bitmap(bitmap_counter) );
+	  }	  	  
+	  else
+	  {
+		  //counter[position] == 0
+		  counter[ position ] = this->sizes[position]-1; 
+		 std::vector<unsigned> bitmap_counter = 
+		 this->convert_top_dimensional_cube_counter_to_bitmap_counter(counter);
+		 counter[ position ] = 0; 		 		
+		 neighbor_elements.push_back( this->compute_position_in_bitmap(bitmap_counter) );
+	  }
+	  if ( counter[position] != this->sizes[position]-1 )
+	  {
+		  counter[ position ] += 1;
+		  std::vector<unsigned> bitmap_counter = 
+		  this->convert_top_dimensional_cube_counter_to_bitmap_counter(counter);
+		  counter[ position ] -= 1; 		  
+		  neighbor_elements.push_back( this->compute_position_in_bitmap(bitmap_counter) );
+	  }
+	  else
+	  {
+		  //counter[position] = this->sizes[position]-1
+		  counter[ position ] = 0;
+		  std::vector<unsigned> bitmap_counter = 
+		  this->convert_top_dimensional_cube_counter_to_bitmap_counter(counter);
+		  counter[ position ] = this->sizes[position]-1; 		  
+		  neighbor_elements.push_back( this->compute_position_in_bitmap(bitmap_counter) );
+	  }
+  }  
+  return neighbor_elements; 
+}//get_all_top_dimensional_cubes_incident_to_the_given_cell
+  
+ 	
+template <typename T>
+std::vector< size_t > Bitmap_cubical_complex_periodic_boundary_conditions_base<T>::get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube(size_t cell)const
+{	  
+  std::vector< size_t > neighbor_elements;
+ 
+  std::vector<unsigned> counter = this->compute_counter_for_given_cell(cell);    
+  counter = this->convert_bitmap_counter_to_top_dimensional_cube_counter(counter);    
+  std::vector<unsigned> inital(this->sizes.size(),0);
+  std::vector<unsigned> final(this->sizes.size(),2);
+  Gudhi::cubical_complex::counter c(inital,final);
+  
+  while ( true )
+  {	   			    
+	    //here we create the copy of the counter which will be feeded with modified counter	    
+	    std::vector<unsigned> copy_counter( counter.size() );
+	    
+	    //Here we initialize the copy counter:
+	    for ( size_t i = 0 ; i != c.size() ; ++i )
+	    {
+			int shift = (int)c[i]-1;
+			if ( ((int)counter[i] + shift == -1) || ((int)counter[i] + shift  == (int)this->sizes[i]) )
+			{
+				if ((int)counter[i] + shift == -1) 
+				{
+					//shift it as far right as possible.
+					copy_counter[i] = this->sizes[i]-1;
+				}
+				else
+				{
+					//((int)counter[i] + shift  == (int)this->sizes[i]) 
+					//shift it as far left as possible.
+					copy_counter[i] = 0;
+				}
+			}
+			else
+			{
+				//in this case we feed copy_counter with moficied version of counter. 
+				copy_counter[i] = (unsigned)((int)counter[i] + shift);
+			}
+		}					    		
+				
+		std::vector<unsigned> bitmap_counter = 
+		this->convert_top_dimensional_cube_counter_to_bitmap_counter(copy_counter);			
+											
+		size_t position_in_bitmap = this->compute_position_in_bitmap(bitmap_counter);			
+		//not that one of the solutions will be the cell itself. We do not want to store it:
+		if ( position_in_bitmap != cell )neighbor_elements.push_back( position_in_bitmap );						
+	    	  
+		bool can_we_increment = c.increment();
+		if ( !can_we_increment )break;	 	  
+  }
+  return neighbor_elements;
+}//get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube
+
+
+
+
 
 }  // namespace cubical_complex
 

@@ -1547,12 +1547,6 @@ BOOST_AUTO_TEST_CASE(get_all_top_dimensional_cubes_sharing_codimension_1_face_wi
 }
 
 
-
-
-
-
-
-
 BOOST_AUTO_TEST_CASE(get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube_check_3d)
 {
 	std::vector< std::vector<unsigned> > result = 
@@ -1611,6 +1605,237 @@ BOOST_AUTO_TEST_CASE(get_all_top_dimensional_cubes_sharing_codimension_1_face_wi
 			BOOST_CHECK( neighs[i] == result[counter][i] );
 		}
 		//std::cout << std::endl;	
+		++counter;
+	}	
+}
+
+
+
+
+
+
+BOOST_AUTO_TEST_CASE(get_all_top_dimensional_cubes_incident_to_the_given_top_dimensional_cell_check_2d_periodic)
+{
+	std::vector< std::vector<unsigned> > result = 
+	{
+		{10,12,22,36}, 
+		{8,12,24,38}, 
+		{8,10,26,40}, 
+		{8,24,26,36}, 
+		{10,22,26,38}, 
+		{12,22,24,40}, 
+		{8,22,38,40}, 
+		{10,24,36,40}, 
+		{12,26,36,38}
+	};
+	
+	std::vector< unsigned > sizes(2);
+    sizes[0] = 3;
+    sizes[1] = 3;
+
+    std::vector< double > data(9);
+    data[0] = 0;
+    data[1] = 1;
+    data[2] = 2;
+    data[3] = 3;
+    data[4] = 4;
+    data[5] = 5;
+    data[6] = 6;
+    data[7] = 7;
+    data[8] = 8;
+    
+    Bitmap_cubical_complex_periodic_boundary_conditions b( sizes , data );
+    
+    size_t counter = 0;
+    for ( Bitmap_cubical_complex_periodic_boundary_conditions::Top_dimensional_cells_iterator it = b.top_dimensional_cells_iterator_begin() ; 
+																	  it != b.top_dimensional_cells_iterator_end() ; ++it )
+	{
+		std::vector< size_t > neighs = b.get_all_top_dimensional_cubes_incident_to_the_given_top_dimensional_cell( *it );
+		std::sort( neighs.begin() , neighs.end() );
+		
+		BOOST_CHECK( neighs.size() == result[counter].size() );
+				
+		for ( size_t i = 0 ; i != neighs.size() ; ++i )
+		{
+			//std::cout << neighs[i] << " ";
+			BOOST_CHECK( neighs[i] == result[counter][i] );
+		}
+		//std::cout << std::endl;
+		//getchar();
+		++counter;
+	}	
+}
+
+
+
+
+BOOST_AUTO_TEST_CASE(get_all_top_dimensional_cubes_incident_to_the_given_top_dimensional_cell_3d_periodic)
+{
+	std::vector< std::vector<unsigned> > result = 
+	{			
+		{59,61,71,85,155,253},
+		{57,61,73,87,157,255},
+		{57,59,75,89,159,257},
+		{57,73,75,85,169,267},
+		{59,71,75,87,171,269},
+		{61,71,73,89,173,271},
+		{57,71,87,89,183,281},
+		{59,73,85,89,185,283},
+		{61,75,85,87,187,285},
+		{57,157,159,169,183,253},
+		{59,155,159,171,185,255},
+		{61,155,157,173,187,257},
+		{71,155,171,173,183,267},
+		{73,157,169,173,185,269},
+		{75,159,169,171,187,271},
+		{85,155,169,185,187,281},
+		{87,157,171,183,187,283},
+		{89,159,173,183,185,285},
+		{57,155,255,257,267,281},
+		{59,157,253,257,269,283},
+		{61,159,253,255,271,285},
+		{71,169,253,269,271,281},
+		{73,171,255,267,271,283},
+		{75,173,257,267,269,285},
+		{85,183,253,267,283,285},
+		{87,185,255,269,281,285},
+		{89,187,257,271,281,283}
+	};
+	
+	std::vector< unsigned > sizes(3);
+    sizes[0] = 3;
+    sizes[1] = 3;
+    sizes[2] = 3;
+
+    std::vector< double > data(27);
+    for ( size_t i = 0 ; i != 27 ; ++i )data[i] = i;    
+    
+    Bitmap_cubical_complex_periodic_boundary_conditions b( sizes , data );
+    
+    size_t counter = 0;
+    for ( Bitmap_cubical_complex_periodic_boundary_conditions::Top_dimensional_cells_iterator it = b.top_dimensional_cells_iterator_begin() ; 
+																	  it != b.top_dimensional_cells_iterator_end() ; ++it )
+	{
+		std::vector< size_t > neighs = b.get_all_top_dimensional_cubes_incident_to_the_given_top_dimensional_cell( *it );
+		std::sort( neighs.begin() , neighs.end() );				
+		
+		BOOST_CHECK( neighs.size() == result[counter].size() );
+				
+		for ( size_t i = 0 ; i != neighs.size() ; ++i )
+		{		
+			//std::cout << neighs[i] << " ";	
+			BOOST_CHECK( neighs[i] == result[counter][i] );
+		}
+		//std::cout << std::endl;	
+		//getchar();
+		++counter;
+	}	
+}
+
+
+
+BOOST_AUTO_TEST_CASE(get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube_2d_periodic)
+{
+	std::vector< std::vector<unsigned> > result = 
+	{		
+		{10,12,22,24,26,36,38,40},
+		{8,12,22,24,26,36,38,40},
+		{8,10,22,24,26,36,38,40},
+		{8,10,12,24,26,36,38,40},
+		{8,10,12,22,26,36,38,40},
+		{8,10,12,22,24,36,38,40},
+		{8,10,12,22,24,26,38,40},
+		{8,10,12,22,24,26,36,40},
+		{8,10,12,22,24,26,36,38}
+	};
+	
+	std::vector< unsigned > sizes(2);
+    sizes[0] = 3;
+    sizes[1] = 3;
+
+    std::vector< double > data(9);
+    data[0] = 0;
+    data[1] = 1;
+    data[2] = 2;
+    data[3] = 3;
+    data[4] = 4;
+    data[5] = 5;
+    data[6] = 6;
+    data[7] = 7;
+    data[8] = 8;
+    
+    Bitmap_cubical_complex_periodic_boundary_conditions b( sizes , data );
+    
+    size_t counter = 0;
+    for ( Bitmap_cubical_complex_periodic_boundary_conditions::Top_dimensional_cells_iterator it = b.top_dimensional_cells_iterator_begin() ; 
+																	  it != b.top_dimensional_cells_iterator_end() ; ++it )
+	{
+		std::vector< size_t > neighs = b.get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube( *it );
+		std::sort( neighs.begin() , neighs.end() );
+		
+		BOOST_CHECK( neighs.size() == result[counter].size() );
+				
+		for ( size_t i = 0 ; i != neighs.size() ; ++i )
+		{
+			//std::cout << neighs[i] << " ";
+			BOOST_CHECK( neighs[i] == result[counter][i] );
+		}
+		//std::cout << std::endl;
+		//getchar();
+		++counter;
+	}	
+}
+
+std::vector< unsigned > remove_ith_element( const std::vector<unsigned>& initial , size_t position_to_remove )
+{
+	size_t pos = 0;
+	std::vector< unsigned >result;
+	result.reserve( initial.size()-1 );
+	while ( pos != initial.size() )
+	{
+		if ( pos != position_to_remove )
+		{
+			result.push_back( initial[pos] );
+		}
+		++pos;
+	}
+	return result;
+}
+
+
+
+BOOST_AUTO_TEST_CASE(get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube_3d_periodic)
+{
+	std::vector< unsigned > template_result = {57,59,61,71,73,75,85,87,89,155,157,159,169,171,173,183,185,187,253,255,257,267,269,271,281,283,285};
+	
+	std::vector< unsigned > sizes(3);
+    sizes[0] = 3;
+    sizes[1] = 3;
+    sizes[2] = 3;
+
+    std::vector< double > data(27);
+    for ( size_t i = 0 ; i != 27 ; ++i )data[i] = i;    
+    
+    Bitmap_cubical_complex_periodic_boundary_conditions b( sizes , data );
+    
+    size_t counter = 0;
+    for ( Bitmap_cubical_complex_periodic_boundary_conditions::Top_dimensional_cells_iterator it = b.top_dimensional_cells_iterator_begin() ; 
+																	  it != b.top_dimensional_cells_iterator_end() ; ++it )
+	{
+		std::vector< size_t > neighs = b.get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube( *it );
+		std::sort( neighs.begin() , neighs.end() );				
+		
+		std::vector< unsigned > template_ = remove_ith_element( template_result , counter );
+		
+		BOOST_CHECK( neighs.size() == template_.size() );
+				
+		for ( size_t i = 0 ; i != neighs.size() ; ++i )
+		{		
+			//std::cout << neighs[i] << " ";	
+			BOOST_CHECK( neighs[i] == template_[i] );
+		}
+		//std::cout << std::endl;	
+		//getchar();
 		++counter;
 	}	
 }
