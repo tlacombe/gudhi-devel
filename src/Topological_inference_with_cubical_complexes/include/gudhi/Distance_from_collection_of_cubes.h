@@ -42,10 +42,6 @@ wydaje mi sie ze morphological operation byloby bardziej stosowna nazwa.
 
 
 TODO:
-1) W bitmap cubical complex, w impose lower star filtration, dodac defaultowy parametr mowiacy czy trzeba oczyscic warosci filtracji dla
-nizej wymiarowych kostek czy nie. W przypadku konstrukcji kompleksu 'from skratch' tego nie trzeba robic. Ale to sie przyda przy 
-przedefiniowaniu filtracji tak jak to tutaj robimy.
-
 2) Sprawdzic cz yw bitmap cubical complex hjest metoda ktora zwraca wszyskich sasiadow / siasiadow przez pelne sciany maksymalnej kostki.
 Dodac ja a nastepnie wykozystac tutaj przy obliczaniu dylacji. 
 

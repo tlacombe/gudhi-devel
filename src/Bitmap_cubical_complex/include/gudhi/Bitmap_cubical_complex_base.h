@@ -114,6 +114,21 @@ class Bitmap_cubical_complex_base {
    * positions of (co)boundary element of the input cell.
    **/
   virtual inline std::vector< size_t > get_coboundary_of_a_cell(size_t cell)const;
+  
+  /**
+   * For a given cube C this procedure returns a vector of position of all top dimensional cubes
+   * having nonemtpy itersection with C.
+  **/ 	
+  virtual inline std::vector<size_t> get_all_top_dimensional_cubes_incident_to_the_given_top_dimensional_cell(size_t cell)const;
+  
+  /**
+   * For a given cube C this procedure returns a vector of position of all top dimensional cubes
+   * sharing co-dimension 1 face with C (i.e. all the cubes D such that C intersect D has a dimension
+   * of C (or D) minus 1).
+  **/ 	
+  virtual inline std::vector<size_t> get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube(size_t cell)const;
+  
+  
   /**
    * In the case of get_dimension_of_a_cell function, the output is a non-negative integer
    * indicating the dimension of a cell.
@@ -135,6 +150,8 @@ class Bitmap_cubical_complex_base {
    * constructor which takes the top dimensional cells. If you use such a constructor,
    * then there is no need to call this function. Call it only if you are putting the filtration
    * of the cells by your own (for instance by using Top_dimensional_cells_iterator).
+   * This procedure can be used to set up the filtration values of lower dimensional cells from scratch
+   * or to re-define the existing values of the top dimensional cells. 
    **/
   void impose_lower_star_filtration();  // assume that top dimensional cells are already set.
 
@@ -483,7 +500,7 @@ class Bitmap_cubical_complex_base {
   //****************************************************************************************************************//
   //****************************************************************************************************************//
 
- protected:
+protected:
   std::vector<unsigned> sizes;
   std::vector<unsigned> multipliers;
   std::vector<T> data;
@@ -499,8 +516,54 @@ class Bitmap_cubical_complex_base {
     this->data = std::vector<T>(multiplier, std::numeric_limits<T>::max());
     this->total_number_of_cells = multiplier;
   }
+  
+  //this procedure converts a counter that allows to iterate on the whole
+  //bitmap to the counter describing a position of top dimensional cube
+  //in a bitmap. This procedure assimes that the counter given as the 
+  //argument comes from top dimensional element in the complex.
+  inline std::vector<unsigned> convert_bitmap_counter_to_top_dimensional_cube_counter( std::vector<unsigned> counter )const
+  {	  
+	  for ( size_t i = 0 ; i != counter.size() ; ++i )
+	  {
+		  if ( (counter[i]-1)%2 != 0 )
+		  {
+			  std::cerr << "This is not a counter of a top dimensional cell.\n";
+			  throw "This is not a counter of a top dimensional cell.\n";
+		  }
+		  counter[i] = (counter[i]-1)/2;
+	  }
+	  return counter;
+  }
+  
+  //this procedure converts a counter that allows to iterate on the top
+  //dimensional elements in bitmap to a proper counter that allows to iterate
+  //on all elements of bitmap. 
+  inline std::vector<unsigned> convert_top_dimensional_cube_counter_to_bitmap_counter( std::vector<unsigned> counter )const
+  {
+	  bool dbg = false;
+	  if ( dbg )
+	  {
+		  std::cout << "Here is the initial counter : \n";
+		  for ( size_t i = 0 ; i != counter.size() ; ++i )
+		  {		
+			  std::cout << counter[i] << " ";			  
+		  }
+		  std::cout << std::endl;
+	  }
+	  std::vector<unsigned> result(counter);
+	  for ( size_t i = 0 ; i != counter.size() ; ++i )
+	  {		  
+		  if ( counter[i] > this->sizes[i] )
+		  {
+			  std::cerr << "This is not a proper top dimensional cells counter, its index is out of the range of this bitmap.\n";
+			  throw "This is not a proper top dimensional cells counter, its index is out of the range of this bitmap.\n";
+		  }
+		  counter[i] = 2*counter[i]+1;
+	  }
+	  return counter;
+  }
 
-  size_t compute_position_in_bitmap(const std::vector< unsigned >& counter) {
+  size_t compute_position_in_bitmap(const std::vector< unsigned >& counter)const {
     size_t position = 0;
     for (size_t i = 0; i != this->multipliers.size(); ++i) {
       position += this->multipliers[i] * counter[i];
@@ -745,6 +808,214 @@ std::vector< size_t > Bitmap_cubical_complex_base<T>::get_coboundary_of_a_cell(s
 }
 
 template <typename T>
+std::vector< size_t > Bitmap_cubical_complex_base<T>::get_all_top_dimensional_cubes_incident_to_the_given_top_dimensional_cell(size_t cell)const
+{
+  bool dbg = false;
+  std::vector< size_t > neighbor_elements;
+  
+  std::vector<unsigned> counter = this->compute_counter_for_given_cell(cell);
+  
+  if ( dbg )
+  {
+	  std::cout << "This is a counter before conversion : \n";
+	  for ( size_t i = 0 ; i != counter.size() ; ++i ) std::cout << counter[i] << " ";
+	  std::cout << std::endl;
+  }
+  
+  counter = this->convert_bitmap_counter_to_top_dimensional_cube_counter(counter);  
+  
+  if ( dbg )
+  {
+	  std::cout << "This is a counter agter conversion : \n";
+	  for ( size_t i = 0 ; i != counter.size() ; ++i ) std::cout << counter[i] << " ";
+	  std::cout << std::endl;
+	  getchar();
+  }
+  
+  for ( size_t position = 0 ; position != counter.size() ; ++position )
+  {
+	  if ( counter[position] != 0 )
+	  {
+		 counter[ position ] -= 1; 
+		 std::vector<unsigned> bitmap_counter = 
+		 this->convert_top_dimensional_cube_counter_to_bitmap_counter(counter);
+		 counter[ position ] += 1; 		 
+		 
+		if ( dbg )
+		{
+		  std::cout << "First case bitmap counter : \n";
+		  for ( size_t i = 0 ; i != bitmap_counter.size() ; ++i ) std::cout << bitmap_counter[i] << " ";
+		  std::cout << std::endl;
+		  getchar();
+		}
+		 
+		 neighbor_elements.push_back( this->compute_position_in_bitmap(bitmap_counter) );
+	  }	  	  
+	  if ( counter[position] != this->sizes[position]-1 )
+	  {
+		  counter[ position ] += 1;
+		  std::vector<unsigned> bitmap_counter = 
+		  this->convert_top_dimensional_cube_counter_to_bitmap_counter(counter);
+		  counter[ position ] -= 1; 
+		  
+		  if ( dbg )
+		  {
+			  std::cout << "Second case bitmap counter : \n";
+			  for ( size_t i = 0 ; i != bitmap_counter.size() ; ++i ) std::cout << bitmap_counter[i] << " ";
+			  std::cout << std::endl;
+			  getchar();
+		  }
+		  
+		  neighbor_elements.push_back( this->compute_position_in_bitmap(bitmap_counter) );
+	  }
+  }
+  if ( dbg )
+  {
+	  std::cout << "Here is the result : \n";
+	  for ( size_t i = 0 ; i != neighbor_elements.size() ; ++i )
+	  {
+		  std::cout << neighbor_elements[i] << " ";
+	  }
+	  std::cout << std::endl;
+	  getchar();
+  }
+  return neighbor_elements;
+  
+  //size_t cell1 = cell;  
+  //unsigned dimension_of_top_dim_cube = this->sizes.size();
+  //for (size_t i = this->multipliers.size(); i != 0; --i) 
+  //{
+  //  unsigned position = cell1 / this->multipliers[i - 1];
+  //  if (position % 2 == 1) {			
+  //    if ((cell > 2*this->multipliers[i - 1])         
+  //        && (counter[i - 1] != 0) 
+  //        && (this->get_dimension_of_a_cell(cell - 2*this->multipliers[i - 1]) == dimension_of_top_dim_cube)) {		  
+  //      neighbor_elements.push_back(cell - 2*this->multipliers[i - 1]);
+  //    }
+  //    if (
+  //        (cell + 2*this->multipliers[i - 1] < this->data.size()) && (counter[i - 1] != 2 * this->sizes[i - 1])
+  //        && (this->get_dimension_of_a_cell(cell + 2*this->multipliers[i - 1]) == dimension_of_top_dim_cube)) {	    
+  //      neighbor_elements.push_back(cell + 2*this->multipliers[i - 1]);
+  //    }
+  //  }
+  //  else
+  //  {
+  //		std::cerr << "In procedure get_all_top_dimensional_cubes_incident_to_the_given_top_dimensional_cell, given cube is not top dimensional. \n";
+  //		throw "In procedure get_all_top_dimensional_cubes_incident_to_the_given_top_dimensional_cell, given cube is not top dimensional. \n";
+  //	}    
+  // cell1 = cell1 % this->multipliers[i - 1];
+  //}  
+}//get_all_top_dimensional_cubes_incident_to_the_given_cell
+  
+ 	
+template <typename T>
+std::vector< size_t > Bitmap_cubical_complex_base<T>::get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube(size_t cell)const
+{
+  bool dbg = false;
+  std::vector< size_t > neighbor_elements;
+  
+  std::vector<unsigned> counter = this->compute_counter_for_given_cell(cell);
+  
+  if ( dbg )
+  {
+	  std::cout << "This is a counter before conversion : \n";
+	  for ( size_t i = 0 ; i != counter.size() ; ++i ) std::cout << counter[i] << " ";
+	  std::cout << std::endl;
+  }
+  
+  counter = this->convert_bitmap_counter_to_top_dimensional_cube_counter(counter);  
+  
+  if ( dbg )
+  {
+	  std::cout << "This is a counter agter conversion : \n";
+	  for ( size_t i = 0 ; i != counter.size() ; ++i ) std::cout << counter[i] << " ";
+	  std::cout << std::endl;
+	  getchar();
+  }
+  
+  std::vector<unsigned> inital(this->sizes.size(),0);
+  std::vector<unsigned> final(this->sizes.size(),2);
+  Gudhi::cubical_complex::counter c(inital,final);
+  
+  while ( true )
+  {	   		
+	    bool is_this_feasible_transformation = true;
+	    //here we create the copy of the counter which will be feeded with modified counter
+	    //in the same time when we check if the modification is possible. If the modification
+	    //turn out not to be possible, the boolean variable is_this_feasible_transformation
+	    //will be set to false, and copy_counter will be never user
+	    std::vector<unsigned> copy_counter( counter.size() );
+	    
+	    //Here we check if modification of the counter given c is possible:
+	    for ( size_t i = 0 ; i != c.size() ; ++i )
+	    {
+			int shift = (int)c[i]-1;
+			if ( ((int)counter[i] + shift == -1) || ((int)counter[i] + shift  == (int)this->sizes[i]) )
+			{
+				is_this_feasible_transformation = false;
+			}
+			else
+			{
+				//in this case we feed copy_counter with moficied version of counter. 
+				copy_counter[i] = (unsigned)((int)counter[i] + shift);
+			}
+		}
+		
+		if ( dbg )
+		{
+			if ( is_this_feasible_transformation )
+			{
+				std::cout << "\n\n Here is the shift amount : \n";
+				for ( size_t i = 0 ; i != c.size() ; ++i )
+				{
+					std::cout << (int)c[i]-1 << " ";
+				}
+				std::cout << std::endl;	
+				std::cout << "Here is the counter : \n";
+				for ( size_t i = 0 ; i != counter.size() ; ++i )
+				{
+					std::cout << counter[i] << " ";
+				}
+				std::cout << "\n And here the copy counter : \n";
+				for ( size_t i = 0 ; i != copy_counter.size() ; ++i )
+				{
+					std::cout << copy_counter[i] << " ";
+				}
+				getchar();
+			}
+		}
+			    		
+		if ( is_this_feasible_transformation )
+		{ 
+			//if the modification of the counter using c is possible, we make it here:						
+			std::vector<unsigned> bitmap_counter = 
+			this->convert_top_dimensional_cube_counter_to_bitmap_counter(copy_counter);			
+			 				
+			 				
+			size_t position_in_bitmap = this->compute_position_in_bitmap(bitmap_counter);			
+			//not that one of the solutions will be the cell itself. We do not want to store it:
+			if ( position_in_bitmap != cell )neighbor_elements.push_back( position_in_bitmap );						
+	    }
+	   
+
+		bool can_we_increment = c.increment();
+		if ( !can_we_increment )break;	 	  
+  }
+  if ( dbg )
+  {
+	  std::cout << "Here is the result : \n";
+	  for ( size_t i = 0 ; i != neighbor_elements.size() ; ++i )
+	  {
+		  std::cout << neighbor_elements[i] << " ";
+	  }
+	  std::cout << std::endl;
+	  getchar();
+  }
+  return neighbor_elements;
+}//get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube
+  
+
+template <typename T>
 unsigned Bitmap_cubical_complex_base<T>::get_dimension_of_a_cell(size_t cell)const {
   bool dbg = false;
   if (dbg) std::cerr << "\n\n\n Computing position o a cell of an index : " << cell << std::endl;
@@ -822,6 +1093,8 @@ void Bitmap_cubical_complex_base<T>::impose_lower_star_filtration() {
           }
         }
         if (is_this_cell_considered[ bd[boundaryIt] ] == false) {
+		  //this is the first time we visit this cell, so we set up its filtration value to the filtration value of a coboundary cube	
+		  this->data[ bd[boundaryIt] ] = this->data[ indices_to_consider[i] ];
           new_indices_to_consider.push_back(bd[boundaryIt]);
           is_this_cell_considered[ bd[boundaryIt] ] = true;
         }

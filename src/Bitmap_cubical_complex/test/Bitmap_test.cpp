@@ -1376,3 +1376,241 @@ BOOST_AUTO_TEST_CASE(Top_dimensional_cells_iterator_range_check)
     }
 }
 
+
+BOOST_AUTO_TEST_CASE(get_all_top_dimensional_cubes_incident_to_the_given_top_dimensional_cell_check_2d)
+{
+	std::vector< std::vector<unsigned> > result = 
+	{
+		{10,22},
+		{8,12,24}, 
+		{10,26},
+		{8,24,36}, 
+		{10,22,26,38},
+		{12,24,40}, 
+		{22,38}, 
+		{24,36,40}, 
+		{26,38}
+	};
+	
+	std::vector< unsigned > sizes(2);
+    sizes[0] = 3;
+    sizes[1] = 3;
+
+    std::vector< double > data(9);
+    data[0] = 0;
+    data[1] = 1;
+    data[2] = 2;
+    data[3] = 3;
+    data[4] = 4;
+    data[5] = 5;
+    data[6] = 6;
+    data[7] = 7;
+    data[8] = 8;
+    
+    Bitmap_cubical_complex_base b( sizes , data );
+    
+    size_t counter = 0;
+    for ( Bitmap_cubical_complex_base::Top_dimensional_cells_iterator it = b.top_dimensional_cells_iterator_begin() ; 
+																	  it != b.top_dimensional_cells_iterator_end() ; ++it )
+	{
+		std::vector< size_t > neighs = b.get_all_top_dimensional_cubes_incident_to_the_given_top_dimensional_cell( *it );
+		std::sort( neighs.begin() , neighs.end() );
+		
+		BOOST_CHECK( neighs.size() == result[counter].size() );
+				
+		for ( size_t i = 0 ; i != neighs.size() ; ++i )
+		{
+			BOOST_CHECK( neighs[i] == result[counter][i] );
+		}
+		++counter;
+	}	
+}
+
+
+BOOST_AUTO_TEST_CASE(get_all_top_dimensional_cubes_incident_to_the_given_top_dimensional_cell_check_3d)
+{
+	std::vector< std::vector<unsigned> > result = 
+	{
+		{59,71,155}, 
+		{57,61,73,157},
+		{59,75,159},
+		{57,73,85,169}, 
+		{59,71,75,87,171},
+		{61,73,89,173}, 
+		{71,87,183},
+		{73,85,89,185}, 
+		{75,87,187},
+		{57,157,169,253}, 
+		{59,155,159,171,255},
+		{61,157,173,257}, 
+		{71,155,171,183,267},
+		{73,157,169,173,185,269}, 
+		{75,159,171,187,271},
+		{85,169,185,281}, 
+		{87,171,183,187,283},
+		{89,173,185,285}, 
+		{155,255,267},
+		{157,253,257,269}, 
+		{159,255,271},
+		{169,253,269,281},
+		{171,255,267,271,283},
+		{173,257,269,285},
+		{183,267,283}, 
+		{185,269,281,285},
+		{187,271,283} 		
+	};
+	
+	std::vector< unsigned > sizes(3);
+    sizes[0] = 3;
+    sizes[1] = 3;
+    sizes[2] = 3;
+
+    std::vector< double > data(27);
+    for ( size_t i = 0 ; i != 27 ; ++i )data[i] = i;    
+    
+    Bitmap_cubical_complex_base b( sizes , data );
+    
+    size_t counter = 0;
+    for ( Bitmap_cubical_complex_base::Top_dimensional_cells_iterator it = b.top_dimensional_cells_iterator_begin() ; 
+																	  it != b.top_dimensional_cells_iterator_end() ; ++it )
+	{
+		std::vector< size_t > neighs = b.get_all_top_dimensional_cubes_incident_to_the_given_top_dimensional_cell( *it );
+		std::sort( neighs.begin() , neighs.end() );
+		
+		BOOST_CHECK( neighs.size() == result[counter].size() );
+				
+		for ( size_t i = 0 ; i != neighs.size() ; ++i )
+		{			
+			BOOST_CHECK( neighs[i] == result[counter][i] );
+		}
+		++counter;
+	}	
+}
+
+
+
+
+
+
+
+
+
+
+BOOST_AUTO_TEST_CASE(get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube_check_2d)
+{
+	std::vector< std::vector<unsigned> > result = 
+	{
+		{10,22,24},
+		{8,12,22,24,26},
+		{10,24,26},
+		{8,10,24,36,38},
+		{8,10,12,22,26,36,38,40},
+		{10,12,24,38,40}, 
+		{22,24,38}, 
+		{22,24,26,36,40}, 
+		{24,26,38} 
+	};
+	
+	std::vector< unsigned > sizes(2);
+    sizes[0] = 3;
+    sizes[1] = 3;
+
+    std::vector< double > data(9);
+    data[0] = 0;
+    data[1] = 1;
+    data[2] = 2;
+    data[3] = 3;
+    data[4] = 4;
+    data[5] = 5;
+    data[6] = 6;
+    data[7] = 7;
+    data[8] = 8;
+    
+    Bitmap_cubical_complex_base b( sizes , data );
+   
+    size_t counter = 0;
+    for ( Bitmap_cubical_complex_base::Top_dimensional_cells_iterator it = b.top_dimensional_cells_iterator_begin() ; 
+																	  it != b.top_dimensional_cells_iterator_end() ; ++it )
+	{
+		std::vector< size_t > neighs = b.get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube( *it );
+		std::sort( neighs.begin() , neighs.end() );
+		
+		BOOST_CHECK( neighs.size() == result[counter].size() );
+				
+		for ( size_t i = 0 ; i != neighs.size() ; ++i )
+		{
+			//std::cout << neighs[i] << " ";
+			BOOST_CHECK( neighs[i] == result[counter][i] );
+		}
+		++counter;		
+	}	
+}
+
+
+
+
+
+
+
+
+BOOST_AUTO_TEST_CASE(get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube_check_3d)
+{
+	std::vector< std::vector<unsigned> > result = 
+	{		
+		{59,71,73,155,157,169,171},
+		{57,61,71,73,75,155,157,159,169,171,173},
+		{59,73,75,157,159,171,173},
+		{57,59,73,85,87,155,157,169,171,183,185},
+		{57,59,61,71,75,85,87,89,155,157,159,169,171,173,183,185,187},
+		{59,61,73,87,89,157,159,171,173,185,187},
+		{71,73,87,169,171,183,185},
+		{71,73,75,85,89,169,171,173,183,185,187},
+		{73,75,87,171,173,185,187},
+		{57,59,71,73,157,169,171,253,255,267,269},
+		{57,59,61,71,73,75,155,159,169,171,173,253,255,257,267,269,271},
+		{59,61,73,75,157,171,173,255,257,269,271},
+		{57,59,71,73,85,87,155,157,171,183,185,253,255,267,269,281,283},
+		{57,59,61,71,73,75,85,87,89,155,157,159,169,173,183,185,187,253,255,257,267,269,271,281,283,285},
+		{59,61,73,75,87,89,157,159,171,185,187,255,257,269,271,283,285},
+		{71,73,85,87,169,171,185,267,269,281,283},
+		{71,73,75,85,87,89,169,171,173,183,187,267,269,271,281,283,285},
+		{73,75,87,89,171,173,185,269,271,283,285},
+		{155,157,169,171,255,267,269},
+		{155,157,159,169,171,173,253,257,267,269,271},
+		{157,159,171,173,255,269,271},
+		{155,157,169,171,183,185,253,255,269,281,283},
+		{155,157,159,169,171,173,183,185,187,253,255,257,267,271,281,283,285},
+		{157,159,171,173,185,187,255,257,269,283,285},
+		{169,171,183,185,267,269,283},
+		{169,171,173,183,185,187,267,269,271,281,285},
+		{171,173,185,187,269,271,283}
+	};
+	
+	std::vector< unsigned > sizes(3);
+    sizes[0] = 3;
+    sizes[1] = 3;
+    sizes[2] = 3;
+
+    std::vector< double > data(27);
+    for ( size_t i = 0 ; i != 27 ; ++i )data[i] = i;    
+    
+    Bitmap_cubical_complex_base b( sizes , data );
+    
+    size_t counter = 0;
+    for ( Bitmap_cubical_complex_base::Top_dimensional_cells_iterator it = b.top_dimensional_cells_iterator_begin() ; 
+																	  it != b.top_dimensional_cells_iterator_end() ; ++it )
+	{
+		std::vector< size_t > neighs = b.get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube( *it );
+		std::sort( neighs.begin() , neighs.end() );
+		
+		BOOST_CHECK( neighs.size() == result[counter].size() );
+				
+		for ( size_t i = 0 ; i != neighs.size() ; ++i )
+		{		
+			//std::cout << neighs[i] << " ";	
+			BOOST_CHECK( neighs[i] == result[counter][i] );
+		}
+		//std::cout << std::endl;	
+		++counter;
+	}	
+}

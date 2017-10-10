@@ -62,7 +62,7 @@ class counter {
    * then the incrementation process was successful.
    * If the value of the function is false, that means, that the counter have reached its end-value.
    **/
-  bool increment() {
+  inline bool increment() {
     size_t i = 0;
     while ((i != this->end.size()) && (this->current[i] == this->end[i])) {
       ++i;
@@ -79,7 +79,7 @@ class counter {
   /**
    * Function to check if we are at the end of counter.
    **/
-  bool isFinal() {
+  inline bool isFinal() {
     for (size_t i = 0; i != this->current.size(); ++i) {
       if (this->current[i] == this->end[i])return true;
     }
@@ -91,7 +91,7 @@ class counter {
    * Its aim is to find an counter corresponding to the element the following
    * boundary element is identified with when periodic boundary conditions are imposed.
    **/
-  std::vector< unsigned > find_opposite(const std::vector< bool >& directionsForPeriodicBCond) {
+  inline std::vector< unsigned > find_opposite(const std::vector< bool >& directionsForPeriodicBCond) {
     std::vector< unsigned > result;
     for (size_t i = 0; i != this->current.size(); ++i) {
       if ((this->current[i] == this->end[i]) && (directionsForPeriodicBCond[i] == true)) {
@@ -106,7 +106,7 @@ class counter {
   /**
    * Function checking at which positions the current value of a counter is the final value of the counter.
    **/
-  std::vector< bool > directions_of_finals() {
+  inline std::vector< bool > directions_of_finals() {
     std::vector< bool > result;
     for (size_t i = 0; i != this->current.size(); ++i) {
       if (this->current[i] == this->end[i]) {
@@ -133,7 +133,7 @@ class counter {
    * Return the pos position of the counter. This method do not allow to change
    * the values of the counter, just to read them off. 
   **/ 
-  unsigned operator[]( unsigned pos )
+  inline unsigned operator[]( unsigned pos )
   {
 	  if ( pos < this->current.size() )
 	  {
@@ -144,6 +144,8 @@ class counter {
 		  throw "Index out of range in the operator [] in counter class.\n";
 	  }
   }
+  
+  inline size_t size(){return this->current.size();}
 
  private:
   std::vector< unsigned > begin;
