@@ -180,6 +180,11 @@ public:
     }
   }*/
 
+  int tree_depth() const
+  {
+    return -1;
+  }
+
 private:
   typedef Point_cloud_adaptator__nanoflann<K, Points> Adaptor;
   typedef nanoflann::KDTreeSingleIndexAdaptor<

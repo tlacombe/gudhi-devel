@@ -16,12 +16,13 @@ can be processed in Excel, for example.
 
 #ifdef _DEBUG
 # define PRINT_FOUND_NEIGHBORS
-//# define CHECK_ACTUAL_EPSILON
+//# define KNN_CHECK_ACTUAL_EPSILON
 
 #else // RELEASE
 //# define PRINT_FOUND_NEIGHBORS
-//# define CHECK_ACTUAL_EPSILON
-//# define LOOP_ON_VARIOUS_PRECISIONS
+# define KNN_CHECK_ACTUAL_EPSILON
+# define ALLNN_CHECK_ACTUAL_SUCCESS_RATE
+# define LOOP_ON_VARIOUS_PRECISIONS
 #endif
 
 //#define EXPORT_POINTCLOUD
@@ -29,26 +30,27 @@ can be processed in Excel, for example.
 #define GENERATE_QUERIES_CLOSE_TO_EXISTING_POINTS
 //#define PICK_QUERIES_OUT_OF_EXISTING_POINTS // default
 
-//#define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_SLIDING_MIDPOINT
-//#define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_MEDIAN_OF_MAX_SPREAD
+#define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_SLIDING_MIDPOINT
+#define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_MEDIAN_OF_MAX_SPREAD
 #define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_MIDPOINT_OF_MAX_SPREAD
-//#define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_INCREMENTAL_SLIDING_MIDPOINT
+#define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_INCREMENTAL_SLIDING_MIDPOINT
 #define GUDHI_DO_NOT_TEST_CGAL_KD_TREE_STORING_POINTS
 #define GUDHI_DO_NOT_TEST_CGAL_KD_TREE_STORING_POINTS_AND_INDICES
+#undef GUDHI_DOLPHINN_IS_AVAILABLE
 #undef GUDHI_SBL_IS_AVAILABLE
 #undef GUDHI_NMSLIB_IS_AVAILABLE
 #undef GUDHI_NANOFLANN_IS_AVAILABLE
 #undef GUDHI_ANN_IS_AVAILABLE
-//#undef GUDHI_FLANN_IS_AVAILABLE
+#undef GUDHI_FLANN_IS_AVAILABLE
   //#define GUDHI_FLANN_TEST_BRUTEFORCE
   #define GUDHI_FLANN_TEST_SINGLE_KDTREE
   //#define GUDHI_FLANN_TEST_OTHER_VARIANTS
 #undef GUDHI_COVERTREE_DNCRANE_IS_AVAILABLE  // DNCrane and Manzil cannot be used at the same time
 #undef GUDHI_COVERTREE_MANZIL_IS_AVAILABLE
-#undef GUDHI_FALCONN_IS_AVAILABLE
+//#undef GUDHI_FALCONN_IS_AVAILABLE
 #undef GUDHI_RORKD_FOREST_IS_AVAILABLE
 
-const int ONLY_THE_FIRST_N_POINTS = 10000000; // 0 = no limit
+const int ONLY_THE_FIRST_N_POINTS = 100000; // 0 = no limit
 const bool FLANN_KDTREE_REORDER = true;
 
 #include <cstddef>
@@ -66,6 +68,10 @@ const bool FLANN_KDTREE_REORDER = true;
 
 #ifndef GUDHI_DO_NOT_TEST_CGAL_KD_TREE_STORING_POINTS_AND_INDICES
 # include "functor_CGAL_Kd_tree_storing_points_and_indices.h"
+#endif
+
+#ifdef GUDHI_DOLPHINN_IS_AVAILABLE
+#include "functor_Dolphinn_for_GUDHI.h"
 #endif
 
 #ifdef GUDHI_SBL_IS_AVAILABLE
@@ -148,7 +154,7 @@ typedef Kernel::Vector_d Vector;
 
 // Returns the timing for the building and the queries
 template <typename ANN_Functor, typename Point, typename Range_of_query_results, typename... Targs>
-std::tuple<std::string, double, double, std::size_t> test__ANN_queries(
+std::tuple<std::string, double, double, std::size_t> test__KNN_queries(
   std::vector<Point> const& points,
   std::vector<Point> const& queries,
   int k,
@@ -160,15 +166,15 @@ std::tuple<std::string, double, double, std::size_t> test__ANN_queries(
 {
   WallClockTimer t;
   
-  std::cerr << black_on_white << "Testing " << algorith_name << "...\n" << white;
+  std::cerr << black_on_white << "Testing KNN with " << algorith_name << "...\n" << white;
 
   SET_PERFORMANCE_DATA("Num_points", points.size());
   SET_PERFORMANCE_DATA("Epsilon", epsilon);
   SET_PERFORMANCE_DATA("Algorithm", algorith_name);
   SET_PERFORMANCE_DATA("Algo_params", algorith_params);
-  SET_PERFORMANCE_DATA("Type_of_test", "ANN queries");
+  SET_PERFORMANCE_DATA("Type_of_test", "KNN queries");
   SET_PERFORMANCE_DATA("Num_queries", queries.size());
-  SET_PERFORMANCE_DATA("K", k);
+  SET_PERFORMANCE_DATA("K_or_radius", k);
 
   std::size_t mem_before = CGAL::Memory_sizer().virtual_size();
   std::cerr << red << "***************** Mem before: " << mem_before / (1024 * 1024) << white << "\n";
@@ -204,10 +210,12 @@ std::tuple<std::string, double, double, std::size_t> test__ANN_queries(
 
     SET_PERFORMANCE_DATA("Actual_eps", actual_eps_and_recall.first);
     SET_PERFORMANCE_DATA("Actual_recall", actual_eps_and_recall.second);
+    SET_PERFORMANCE_DATA("Worst_recall", -1.);
   }
   else {
     SET_PERFORMANCE_DATA("Actual_eps", -1.);
     SET_PERFORMANCE_DATA("Actual_recall", -1.);
+    SET_PERFORMANCE_DATA("Worst_recall", -1.);
   }
 
   std::cerr << black_on_white << "DONE" << white << " testing " << algorith_name << " ("
@@ -229,23 +237,214 @@ std::tuple<std::string, double, double, std::size_t> test__ANN_queries(
 
   std::cerr << red << "***************** Mem after: " << mem_after / (1024 * 1024) << white << "\n";
 
-  return std::make_tuple(algorith_name, build_time, avg_query_time_in_ms, (mem_after - mem_before) / (1024 * 1024));
+  return std::make_tuple(algorith_name + " (" + algorith_params + ")", build_time, avg_query_time_in_ms, (mem_after - mem_before) / (1024 * 1024));
 }
 
-void run_tests(
-  int ambient_dim,
+// Returns the timing for the building and the queries
+template <typename ANN_Functor, typename Point, typename... Targs>
+std::tuple<std::string, double, double, std::size_t> test__any_near_neighbor(
   std::vector<Point> const& points,
   std::vector<Point> const& queries,
-  int k,
+  double radius,
   double epsilon,
-  const char *input_name = "") {
+  std::string const& algorith_name,
+  std::string const& algorith_params,
+  Targs... functor_additional_args)
+{
+  WallClockTimer t;
 
-  //===========================================================================
-  // Init
-  //===========================================================================
-  Gudhi::Clock t;
+  std::cerr << black_on_white << "Testing any-near-neighbor " << algorith_name << "...\n" << white;
 
-  // Get input_name_stripped
+  SET_PERFORMANCE_DATA("Num_points", points.size());
+  SET_PERFORMANCE_DATA("Epsilon", epsilon);
+  SET_PERFORMANCE_DATA("Algorithm", algorith_name);
+  SET_PERFORMANCE_DATA("Algo_params", algorith_params);
+  SET_PERFORMANCE_DATA("Type_of_test", "Any-near-neighbor");
+  SET_PERFORMANCE_DATA("Num_queries", queries.size());
+  SET_PERFORMANCE_DATA("K_or_radius", radius);
+
+  std::size_t mem_before = CGAL::Memory_sizer().virtual_size();
+  std::cerr << red << "***************** Mem before: " << mem_before / (1024 * 1024) << white << "\n";
+
+  // Build the structure
+  t.reset();
+  ANN_Functor functor(points, epsilon, functor_additional_args...);
+  double build_time = t.elapsed();
+
+  SET_PERFORMANCE_DATA("Tree_depth", functor.tree_depth());
+
+  // Perform the queries
+  std::ptrdiff_t checksum = 0;
+  std::size_t num_success = 0;
+  double worst_eps = 0.;
+  std::vector<std::pair<std::size_t, double>> results(
+    queries.size(), std::pair<std::size_t, double>());
+  t.reset();
+  auto it_res = results.begin();
+  for (Point const& q : queries) {
+    std::pair<std::ptrdiff_t, double> res;
+    checksum += functor.query_any_near_neighbor(q, radius, epsilon, &res);
+    *it_res++ = res;
+
+    if (res.second > radius*radius) {
+      double eps = res.second / (radius*radius) - 1.;
+      if (eps > worst_eps)
+        worst_eps = eps;
+    }
+    else {
+      ++num_success;
+    }
+  }
+  double recall = static_cast<double>(num_success) / queries.size();
+
+  // CJTODO from here
+  double q_time = t.elapsed();
+  if (worst_eps > epsilon)
+    std::cerr << red << "WARNING: Actual epsilon = " << worst_eps << " > " << epsilon << white << "\n";
+  else
+    std::cerr << green << "OK: Actual epsilon = " << worst_eps << " <= " << epsilon << white << "\n";
+
+  if (recall < 1. - epsilon)
+    std::cerr << red << "WARNING: Actual recall = " << recall << " < " << 1. - epsilon << white << "\n";
+  else
+    std::cerr << green << "OK: Actual recall = " << recall << " >= " << 1. - epsilon << white << "\n";
+
+  SET_PERFORMANCE_DATA("Actual_eps", worst_eps);
+  SET_PERFORMANCE_DATA("Actual_recall", recall);
+  SET_PERFORMANCE_DATA("Worst_recall", -1.);
+
+  std::cerr << black_on_white << "DONE" << white << " testing " << algorith_name << " ("
+    << "checksum = " << checksum
+    << ", build = " << build_time
+    << ", queries = " << q_time
+    << ").\n\n";
+
+  double avg_query_time_in_ms = 1000 * q_time / static_cast<double>(queries.size());
+  std::size_t mem_after = CGAL::Memory_sizer().virtual_size();
+
+  SET_PERFORMANCE_DATA("Time1_label", "Build");
+  SET_PERFORMANCE_DATA("Time1", build_time);
+  SET_PERFORMANCE_DATA("Time2_label", "Avg query time in ms");
+  SET_PERFORMANCE_DATA("Time2", avg_query_time_in_ms);
+  SET_PERFORMANCE_DATA("Mem_MB", (mem_after - mem_before) / (1024 * 1024));
+  SET_PERFORMANCE_DATA("Checksum", checksum);
+  XML_perf_data::commit(false);
+
+  std::cerr << red << "***************** Mem after: " << mem_after / (1024 * 1024) << white << "\n";
+
+  return std::make_tuple(algorith_name + " (" + algorith_params + ")", build_time, avg_query_time_in_ms, (mem_after - mem_before) / (1024 * 1024));
+}
+
+// Returns the timing for the building and the queries
+template <typename ANN_Functor, typename Point, typename Range_of_query_results, typename... Targs>
+std::tuple<std::string, double, double, std::size_t> test__all_near_neighbors(
+  std::vector<Point> const& points,
+  std::vector<Point> const& queries,
+  double radius,
+  double epsilon,
+  std::string const& algorith_name,
+  std::string const& algorith_params,
+  Range_of_query_results const *ground_truth, // NULL if unknown
+  Targs... functor_additional_args)
+{
+  WallClockTimer t;
+
+  std::cerr << black_on_white << "Testing all-near-neighbors with " << algorith_name << " (" << algorith_params << ")...\n" << white;
+
+  SET_PERFORMANCE_DATA("Num_points", points.size());
+  SET_PERFORMANCE_DATA("Epsilon", epsilon);
+  SET_PERFORMANCE_DATA("Algorithm", algorith_name);
+  SET_PERFORMANCE_DATA("Algo_params", algorith_params);
+  SET_PERFORMANCE_DATA("Type_of_test", "All-near-neighbors");
+  SET_PERFORMANCE_DATA("Num_queries", queries.size());
+  SET_PERFORMANCE_DATA("K_or_radius", radius);
+
+  std::size_t mem_before = CGAL::Memory_sizer().virtual_size();
+  std::cerr << red << "***************** Mem before: " << mem_before / (1024 * 1024) << white << "\n";
+
+  // Build the structure
+  t.reset();
+  ANN_Functor functor(points, epsilon, functor_additional_args...);
+  double build_time = t.elapsed();
+
+  SET_PERFORMANCE_DATA("Tree_depth", functor.tree_depth());
+
+  // Perform the queries
+  std::size_t checksum = 0;
+  auto num_queries = queries.size();
+  std::vector<std::vector<std::pair<std::size_t, double>>> results(
+    num_queries, std::vector<std::pair<std::size_t, double>>());
+  t.reset();
+  auto it_res = results.begin();
+  for (Point const& q : queries)
+    checksum += functor.query_all_near_neighbors(q, radius, epsilon, &(*it_res++));
+
+  double q_time = t.elapsed();
+
+  if (ground_truth) {
+    // Only compute success rate for now
+    double worst_success_rate = 1.;
+    double avg_success_rate = 0.;
+    double avg_number_of_points = 0.;
+    for (int i = 0; i < num_queries; ++i) {
+      std::size_t num_answers_lying_inside_ball = 0;
+      for (auto res : results[i]) {
+        if (res.second <= radius*radius)
+          ++num_answers_lying_inside_ball;
+      }
+
+      double success_rate = ((*ground_truth)[i].size() > 0 ?
+        static_cast<double>(num_answers_lying_inside_ball) / (*ground_truth)[i].size()
+        : 1.);
+
+      avg_success_rate += success_rate;
+      if (success_rate < worst_success_rate)
+        worst_success_rate = success_rate;
+
+      avg_number_of_points += static_cast<double>(num_answers_lying_inside_ball) / num_queries;
+    }
+
+    avg_success_rate /= num_queries;
+
+    std::cerr << yellow << "Average / worst success rate among all queries = " 
+      << avg_success_rate << " / " << worst_success_rate << white << "\n";
+    std::cerr << yellow << "Average number of answers per query = "
+      << avg_number_of_points << white << "\n";
+
+    SET_PERFORMANCE_DATA("Actual_eps", -1.);
+    SET_PERFORMANCE_DATA("Actual_recall", avg_success_rate);
+    SET_PERFORMANCE_DATA("Worst_recall", worst_success_rate);
+  }
+  else {
+    SET_PERFORMANCE_DATA("Actual_eps", -1.);
+    SET_PERFORMANCE_DATA("Actual_recall", -1.);
+    SET_PERFORMANCE_DATA("Worst_recall", -1.);
+  }
+
+  std::cerr << black_on_white << "DONE" << white << " testing " << algorith_name << " ("
+    << "checksum = " << checksum
+    << ", build = " << build_time
+    << ", queries = " << q_time
+    << ").\n\n";
+
+  double avg_query_time_in_ms = 1000 * q_time / static_cast<double>(num_queries);
+  std::size_t mem_after = CGAL::Memory_sizer().virtual_size();
+
+  SET_PERFORMANCE_DATA("Time1_label", "Build");
+  SET_PERFORMANCE_DATA("Time1", build_time);
+  SET_PERFORMANCE_DATA("Time2_label", "Avg query time in ms");
+  SET_PERFORMANCE_DATA("Time2", avg_query_time_in_ms);
+  SET_PERFORMANCE_DATA("Mem_MB", (mem_after - mem_before) / (1024 * 1024));
+  SET_PERFORMANCE_DATA("Checksum", checksum);
+  XML_perf_data::commit(false);
+
+  std::cerr << red << "***************** Mem after: " << mem_after / (1024 * 1024) << white << "\n";
+
+  return std::make_tuple(algorith_name + " (" + algorith_params + ")", build_time, avg_query_time_in_ms, (mem_after - mem_before) / (1024 * 1024));
+}
+
+// Remove path and extension for input name
+std::string strip_input_name(std::string const& input_name) {
   std::string input_name_stripped(input_name);
   size_t slash_index = input_name_stripped.find_last_of('/');
   if (slash_index == std::string::npos)
@@ -257,12 +456,27 @@ void run_tests(
   input_name_stripped = input_name_stripped.substr(
     slash_index, input_name_stripped.find_last_of('.') - slash_index);
 
+  return input_name_stripped;
+}
+
+void run_KNN_test(
+  int ambient_dim,
+  std::vector<Point> const& points,
+  std::vector<Point> const& queries,
+  int k,
+  double epsilon,
+  const char *input_name = "") {
+
+  //===========================================================================
+  // Init
+  //===========================================================================
+  Gudhi::Clock t;
+  std::string input_name_stripped = strip_input_name(input_name);
+
   //===========================================================================
   // Compute ground truth for all queries
   //===========================================================================
-#ifdef CHECK_ACTUAL_EPSILON
-  typedef std::vector<std::pair<std::size_t, double>> Query_res;
-
+#ifdef KNN_CHECK_ACTUAL_EPSILON
   GUDHI_Kd_tree_search<Kernel> gkts(points);
 
   std::vector<std::vector<std::pair<std::size_t, double>>> ground_truth(
@@ -277,7 +491,6 @@ void run_tests(
 #else
   std::vector<std::vector<std::pair<std::size_t, double>>> const* p_ground_truth = NULL;
 #endif
-
 
   //===========================================================================
   // Run the tests
@@ -321,13 +534,13 @@ void run_tests(
         std::string algo_params_3 = algo_params_2 + ", efSearch=";
         algo_params_3 += std::to_string(efSearch);
 
-        perfs.push_back(test__ANN_queries<NMSLIB_hnsw>(
+        perfs.push_back(test__KNN_queries<NMSLIB_hnsw>(
           points, queries, k, epsilon, "NMSLIB HNSW", algo_params_3, p_ground_truth, M, 0, efConstruction, efSearch));
       }
     }
   }
   
-  //perfs.push_back(test__ANN_queries<NMSLIB_swgraph>(
+  //perfs.push_back(test__KNN_queries<NMSLIB_swgraph>(
   //  points, queries, k, epsilon, "NMSLIB SWgraph", "", p_ground_truth));
 #endif
 
@@ -340,7 +553,7 @@ void run_tests(
 # ifdef LOOP_ON_VARIOUS_PRECISIONS
   for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
 # endif
-  perfs.push_back(test__ANN_queries<GUDHI_Kd_tree_search<Kernel, gss::SLIDING_MIDPOINT>>(
+  perfs.push_back(test__KNN_queries<GUDHI_Kd_tree_search<Kernel, gss::SLIDING_MIDPOINT>>(
     points, queries, k, epsilon, "GUDHI Kd_tree_search SLIDING_MIDPOINT", "", p_ground_truth));
 #endif
 
@@ -348,7 +561,7 @@ void run_tests(
 # ifdef LOOP_ON_VARIOUS_PRECISIONS
   for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
 # endif
-    perfs.push_back(test__ANN_queries<GUDHI_Kd_tree_search<Kernel, gss::MEDIAN_OF_MAX_SPREAD>>(
+    perfs.push_back(test__KNN_queries<GUDHI_Kd_tree_search<Kernel, gss::MEDIAN_OF_MAX_SPREAD>>(
       points, queries, k, epsilon, "GUDHI Kd_tree_search MEDIAN_OF_MAX_SPREAD", "", p_ground_truth));
 #endif
 
@@ -356,7 +569,7 @@ void run_tests(
 # ifdef LOOP_ON_VARIOUS_PRECISIONS
   for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
 # endif
-    perfs.push_back(test__ANN_queries<GUDHI_Kd_tree_search<Kernel, gss::MIDPOINT_OF_MAX_SPREAD>>(
+    perfs.push_back(test__KNN_queries<GUDHI_Kd_tree_search<Kernel, gss::MIDPOINT_OF_MAX_SPREAD>>(
       points, queries, k, epsilon, "GUDHI Kd_tree_search MIDPOINT_OF_MAX_SPREAD", "", p_ground_truth));
 #endif
 
@@ -364,7 +577,7 @@ void run_tests(
 # ifdef LOOP_ON_VARIOUS_PRECISIONS
   for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
 # endif
-    perfs.push_back(test__ANN_queries<GUDHI_Kd_tree_search_incremental<Kernel, gss::SLIDING_MIDPOINT>>(
+    perfs.push_back(test__KNN_queries<GUDHI_Kd_tree_search_incremental<Kernel, gss::SLIDING_MIDPOINT>>(
       points, queries, k, epsilon, "GUDHI Kd_tree_search_incremental SLIDING_MIDPOINT", "", p_ground_truth));
 #endif
 
@@ -376,7 +589,7 @@ void run_tests(
 # ifdef LOOP_ON_VARIOUS_PRECISIONS
   for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
 # endif
-    perfs.push_back(test__ANN_queries<CGAL_Kd_tree_storing_points<Kernel>>(
+    perfs.push_back(test__KNN_queries<CGAL_Kd_tree_storing_points<Kernel>>(
       points, queries, k, epsilon, "CGAL_Kd_tree_storing_points", "", p_ground_truth));
 #endif
 
@@ -388,8 +601,17 @@ void run_tests(
 # ifdef LOOP_ON_VARIOUS_PRECISIONS
   for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
 # endif
-    perfs.push_back(test__ANN_queries<CGAL_Kd_tree_storing_points_and_indices<Kernel>>(
+    perfs.push_back(test__KNN_queries<CGAL_Kd_tree_storing_points_and_indices<Kernel>>(
       points, queries, k, epsilon, "CGAL_Kd_tree_storing_points_and_indices", "", p_ground_truth));
+#endif
+
+  //---------------------------------------------------------------------------
+  // Dolphinn for GUDHI
+  //---------------------------------------------------------------------------
+
+#ifdef GUDHI_DOLPHINN_IS_AVAILABLE
+  perfs.push_back(test__KNN_queries<Dolphinn_for_GUDHI<Kernel>>(
+    points, queries, k, epsilon, "Dolphinn for GUDHI - r=0", "", p_ground_truth, 0));
 #endif
 
   //---------------------------------------------------------------------------
@@ -401,7 +623,7 @@ void run_tests(
 # ifdef LOOP_ON_VARIOUS_PRECISIONS
   for (num_trees = 2; num_trees <= 2048; num_trees *= 2)
 # endif
-    perfs.push_back(test__ANN_queries<SBL_Proximity_Forest>(
+    perfs.push_back(test__KNN_queries<SBL_Proximity_Forest>(
       points, queries, k, epsilon, "SBL Proximity Forest",
       std::string("num_trees=") + std::to_string(num_trees),
       p_ground_truth, num_trees));
@@ -415,8 +637,8 @@ void run_tests(
 # ifdef LOOP_ON_VARIOUS_PRECISIONS
   for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
 # endif
-  perfs.push_back(test__ANN_queries<Nanoflann>(
-    points, queries, k, epsilon, "Nanoflann", "", p_ground_truth));
+  perfs.push_back(test__KNN_queries<Nanoflann>(
+    points, queries, k, epsilon, "Nanoflann", "", p_ground_tth));
 #endif
 
   //---------------------------------------------------------------------------
@@ -428,13 +650,13 @@ void run_tests(
   for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
 # endif
   {
-    perfs.push_back(test__ANN_queries<Ann<ANNkd_tree, false>>(
+    perfs.push_back(test__KNN_queries<Ann<ANNkd_tree, false>>(
       points, queries, k, epsilon, "ANN (kd+std)", "", p_ground_truth));
-    perfs.push_back(test__ANN_queries<Ann<ANNkd_tree, true>>(
+    perfs.push_back(test__KNN_queries<Ann<ANNkd_tree, true>>(
       points, queries, k, epsilon, "ANN (kd+prio)", "", p_ground_truth));
-    perfs.push_back(test__ANN_queries<Ann<ANNbd_tree, false>>(
+    perfs.push_back(test__KNN_queries<Ann<ANNbd_tree, false>>(
       points, queries, k, epsilon, "ANN (bd+std)", "", p_ground_truth));
-    perfs.push_back(test__ANN_queries<Ann<ANNbd_tree, true>>(
+    perfs.push_back(test__KNN_queries<Ann<ANNbd_tree, true>>(
       points, queries, k, epsilon, "ANN (bd+prio)", "", p_ground_truth));
   }
 #endif
@@ -486,37 +708,37 @@ void run_tests(
   auto p_gt_queries = &gt_queries;
 #   endif
 
-  perfs.push_back(test__ANN_queries<Flann<Kernel>>(
+  perfs.push_back(test__KNN_queries<Flann<Kernel>>(
     points, queries, k, epsilon, 
     "Flann - randomized kd-trees - 4 trees",
     std::string("checks=") + std::to_string(flann_checks), 
     p_ground_truth, flann::KDTreeIndexParams(4), flann_checks, p_gt_for_flann, p_gt_queries));
 
-  perfs.push_back(test__ANN_queries<Flann<Kernel>>(
+  perfs.push_back(test__KNN_queries<Flann<Kernel>>(
     points, queries, k, epsilon,
     "Flann - randomized kd-trees - 16 trees",
     std::string("checks=") + std::to_string(flann_checks),
     p_ground_truth, flann::KDTreeIndexParams(16), flann_checks, p_gt_for_flann, p_gt_queries));
 
-  perfs.push_back(test__ANN_queries<Flann<Kernel>>(
+  perfs.push_back(test__KNN_queries<Flann<Kernel>>(
     points, queries, k, epsilon,
     "Flann - hierarchical k-means",
     std::string("checks=") + std::to_string(flann_checks),
     p_ground_truth, flann::KMeansIndexParams(), flann_checks, p_gt_for_flann, p_gt_queries));
 
-  perfs.push_back(test__ANN_queries<Flann<Kernel>>(
+  perfs.push_back(test__KNN_queries<Flann<Kernel>>(
     points, queries, k, epsilon,
     "Flann - composite (4 kd-trees + k-means)",
     std::string("checks=") + std::to_string(flann_checks),
     p_ground_truth, flann::CompositeIndexParams(4), flann_checks, p_gt_for_flann, p_gt_queries));
 
-  perfs.push_back(test__ANN_queries<Flann<Kernel>>(
+  perfs.push_back(test__KNN_queries<Flann<Kernel>>(
     points, queries, k, epsilon,
     "Flann - composite (16 kd-trees + k-means)",
     std::string("checks=") + std::to_string(flann_checks),
     p_ground_truth, flann::CompositeIndexParams(16), flann_checks, p_gt_for_flann, p_gt_queries));
 
-  perfs.push_back(test__ANN_queries<Flann<Kernel>>(
+  perfs.push_back(test__KNN_queries<Flann<Kernel>>(
     points, queries, k, epsilon,
     "Flann - hierarchical clustering",
     std::string("checks=") + std::to_string(flann_checks),
@@ -529,7 +751,7 @@ void run_tests(
 # endif // GUDHI_FLANN_TEST_OTHER_VARIANTS
 
 # ifdef GUDHI_FLANN_TEST_BRUTEFORCE
-  perfs.push_back(test__ANN_queries<Flann<Kernel>>(
+  perfs.push_back(test__KNN_queries<Flann<Kernel>>(
     points, queries, k, epsilon, "Flann - linear bruteforce", "", p_ground_truth, flann::LinearIndexParams()));
 # endif //GUDHI_FLANN_TEST_BRUTEFORCE
 
@@ -537,7 +759,7 @@ void run_tests(
 #   ifdef LOOP_ON_VARIOUS_PRECISIONS
   for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
 #   endif
-  perfs.push_back(test__ANN_queries<Flann<Kernel>>(
+  perfs.push_back(test__KNN_queries<Flann<Kernel>>(
     points, queries, k, epsilon, "Flann - single kd-tree", "", p_ground_truth, flann::KDTreeSingleIndexParams(10, FLANN_KDTREE_REORDER)));
 # endif //GUDHI_FLANN_TEST_SINGLE_KDTREE
 
@@ -548,7 +770,7 @@ void run_tests(
   //---------------------------------------------------------------------------
 
 #ifdef GUDHI_COVERTREE_DNCRANE_IS_AVAILABLE
-  perfs.push_back(test__ANN_queries<Cover_tree_DNCrane>(
+  perfs.push_back(test__KNN_queries<Cover_tree_DNCrane>(
     points, queries, k, epsilon, "Cover-tree DNCrane", "", p_ground_truth));
 #endif
 
@@ -557,7 +779,7 @@ void run_tests(
   //---------------------------------------------------------------------------
 
 #ifdef GUDHI_COVERTREE_MANZIL_IS_AVAILABLE
-  perfs.push_back(test__ANN_queries<Cover_tree_Manzil>(
+  perfs.push_back(test__KNN_queries<Cover_tree_Manzil>(
     points, queries, k, epsilon, "Cover-tree Manzil", "", p_ground_truth));
 #endif
 
@@ -570,7 +792,7 @@ void run_tests(
 # ifdef LOOP_ON_VARIOUS_PRECISIONS
   for (num_probes = 16 ; num_probes <= 4096 ; num_probes *= 4)
 # endif
-  perfs.push_back(test__ANN_queries<Falconn>(
+  perfs.push_back(test__KNN_queries<Falconn>(
     points, queries, k, epsilon, "FALCONN", 
     std::string("num_probes=") + std::to_string(num_probes),
     p_ground_truth, num_probes));
@@ -584,8 +806,154 @@ void run_tests(
 # ifdef LOOP_ON_VARIOUS_PRECISIONS
   for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
 # endif
-    perfs.push_back(test__ANN_queries<RORKD_forest>(
+    perfs.push_back(test__KNN_queries<RORKD_forest>(
       points, queries, k, epsilon, "Randomly-oriented RKD-forest", "", p_ground_truth));
+#endif
+
+  //===========================================================================
+  // Display info
+  //===========================================================================
+
+  std::cerr
+    << "\n================================================\n"
+    << "Ambient dimension: " << ambient_dim << "\n"
+    << "Number of points: " << points.size() << "\n"
+    << "Number of queries: " << queries.size() << "\n"
+    << "Computation times in seconds: build + avg query time (ms) + memory (MB)\n\n";
+  
+  int c = 0;
+  for (auto perf : perfs)
+  {
+    //std::cerr << (c % 2 ? white : black_on_white);
+    std::cerr << std::left << "  "
+      << std::setw(50) << std::setfill(' ') << std::get<0>(perf)
+      << std::setw(20) << std::setfill(' ') << std::get<1>(perf)
+      << std::setw(20) << std::setfill(' ') << std::get<2>(perf)
+      << std::setw(20) << std::setfill(' ') << std::get<3>(perf) << "\n\n";
+    ++c;
+  }
+  std::cerr << white;
+  std::cerr << "================================================\n";
+}
+
+void run_AllNN_test(
+  int ambient_dim,
+  std::vector<Point> const& points,
+  std::vector<Point> const& queries,
+  double radius,
+  double epsilon,
+  double bbox_diagonal,
+  const char *input_name = "") {
+
+  //===========================================================================
+  // Init
+  //===========================================================================
+  Gudhi::Clock t;
+  std::string input_name_stripped = strip_input_name(input_name);
+
+  //===========================================================================
+  // Compute ground truth for all queries
+  //===========================================================================
+#ifdef ALLNN_CHECK_ACTUAL_SUCCESS_RATE
+  GUDHI_Kd_tree_search<Kernel> gkts(points);
+
+  std::vector<std::vector<std::pair<std::size_t, double>>> ground_truth(
+    queries.size(), std::vector<std::pair<std::size_t, double>>());
+
+  auto ground_truth_it = ground_truth.begin();
+  for (auto const& q : queries)
+    gkts.query_all_near_neighbors(q, radius, 0., &(*ground_truth_it++));
+
+  std::vector<std::vector<std::pair<std::size_t, double>>> const* p_ground_truth = &ground_truth;
+
+#else
+  std::vector<std::vector<std::pair<std::size_t, double>>> const* p_ground_truth = NULL;
+#endif
+
+  //===========================================================================
+  // Run the tests
+  //===========================================================================
+
+  std::vector<std::tuple<std::string, double, double, std::size_t>> perfs;
+
+  //---------------------------------------------------------------------------
+  // CGAL/GUDHI
+  //---------------------------------------------------------------------------
+
+#ifndef GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_SLIDING_MIDPOINT
+/*# ifdef LOOP_ON_VARIOUS_PRECISIONS
+  for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
+# endif*/
+  perfs.push_back(test__all_near_neighbors<GUDHI_Kd_tree_search<Kernel, gss::SLIDING_MIDPOINT>>(
+    points, queries, radius, epsilon, "GUDHI Kd_tree_search SLIDING_MIDPOINT", "", p_ground_truth));
+#endif
+
+#ifndef GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_MEDIAN_OF_MAX_SPREAD
+/*# ifdef LOOP_ON_VARIOUS_PRECISIONS
+  for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
+# endif*/
+    perfs.push_back(test__all_near_neighbors<GUDHI_Kd_tree_search<Kernel, gss::MEDIAN_OF_MAX_SPREAD>>( // CJTODO TEMP
+      points, queries, radius, epsilon, "GUDHI Kd_tree_search MEDIAN_OF_MAX_SPREAD", "", p_ground_truth));
+#endif
+
+#ifndef GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_MIDPOINT_OF_MAX_SPREAD
+/*# ifdef LOOP_ON_VARIOUS_PRECISIONS
+  for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
+# endif*/
+    perfs.push_back(test__all_near_neighbors<GUDHI_Kd_tree_search<Kernel, gss::MIDPOINT_OF_MAX_SPREAD>>(
+      points, queries, radius, epsilon, "GUDHI Kd_tree_search MIDPOINT_OF_MAX_SPREAD", "", p_ground_truth));
+#endif
+
+#ifndef GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_INCREMENTAL_SLIDING_MIDPOINT
+# ifdef LOOP_ON_VARIOUS_PRECISIONS
+  for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
+# endif
+    perfs.push_back(test__all_near_neighbors<GUDHI_Kd_tree_search_incremental<Kernel, gss::SLIDING_MIDPOINT>>(
+      points, queries, radius, epsilon, "GUDHI Kd_tree_search_incremental SLIDING_MIDPOINT", "", p_ground_truth));
+#endif
+
+  //---------------------------------------------------------------------------
+  // Dolphinn for GUDHI
+  //---------------------------------------------------------------------------
+
+#ifdef GUDHI_DOLPHINN_IS_AVAILABLE
+# ifdef LOOP_ON_VARIOUS_PRECISIONS
+  for (int div = 1; div <= 128; div *= 2)
+# endif
+  {
+    std::size_t max_pts_to_search = (std::max)(static_cast<std::size_t>(10), points.size() / div);
+    perfs.push_back(test__all_near_neighbors<Dolphinn_for_GUDHI<Kernel>>(
+      points, queries, radius, epsilon, "Dolphinn for GUDHI - r=0", 
+      std::string("max_pts_to_search=") + std::to_string(max_pts_to_search),
+      p_ground_truth, 0, max_pts_to_search));
+    perfs.push_back(test__all_near_neighbors<Dolphinn_for_GUDHI<Kernel>>(
+      points, queries, radius, epsilon, "Dolphinn for GUDHI - r=1.5*bbox_diagonal", 
+      std::string("max_pts_to_search=") + std::to_string(max_pts_to_search),
+      p_ground_truth, 1.5*bbox_diagonal, max_pts_to_search));
+    perfs.push_back(test__all_near_neighbors<Dolphinn_for_GUDHI<Kernel>>(
+      points, queries, radius, epsilon, "Dolphinn for GUDHI - r=2*bbox_diagonal",
+      std::string("max_pts_to_search=") + std::to_string(max_pts_to_search),
+      p_ground_truth, 2.*bbox_diagonal, max_pts_to_search));
+    perfs.push_back(test__all_near_neighbors<Dolphinn_for_GUDHI<Kernel>>(
+      points, queries, radius, epsilon, "Dolphinn for GUDHI - r=2.5*bbox_diagonal",
+      std::string("max_pts_to_search=") + std::to_string(max_pts_to_search),
+      p_ground_truth, 2.5*bbox_diagonal, max_pts_to_search));
+  }
+#endif
+
+  //---------------------------------------------------------------------------
+  // FALCONN
+  //---------------------------------------------------------------------------
+
+#ifdef GUDHI_FALCONN_IS_AVAILABLE
+  int num_probes = 32; // either 1, or >= 10
+# ifdef LOOP_ON_VARIOUS_PRECISIONS
+  for (num_probes = 10 ; num_probes <= 1280 ; num_probes *= 2)
+# endif
+  perfs.push_back(test__all_near_neighbors<Falconn>(
+    points, queries, radius, epsilon, "FALCONN",
+    std::string("num_probes=") + std::to_string(num_probes),
+    p_ground_truth, num_probes));
 #endif
 
   //===========================================================================
@@ -692,7 +1060,7 @@ int main() {
         double ambient_noise;
         double epsilon;
         int num_queries;
-        int k;
+        double k_or_radius;
         int num_iteration;
         sstr >> input;
         sstr >> param1;
@@ -704,7 +1072,7 @@ int main() {
         sstr >> ambient_noise;
         sstr >> epsilon;
         sstr >> num_queries;
-        sstr >> k;
+        sstr >> k_or_radius;
         sstr >> num_iteration;
 
         auto ambient_dims = decode_interval<int>(ambient_dim_interval);
@@ -714,16 +1082,7 @@ int main() {
           ambient_dim <= std::get<1>(ambient_dims); 
           ambient_dim += std::get<2>(ambient_dims)) {
 
-          std::string input_stripped = input;
-          size_t slash_index = input_stripped.find_last_of('/');
-          if (slash_index == std::string::npos)
-            slash_index = input_stripped.find_last_of('\\');
-          if (slash_index == std::string::npos)
-            slash_index = 0;
-          else
-            ++slash_index;
-          input_stripped = input_stripped.substr(
-            slash_index, input_stripped.find_last_of('.') - slash_index);
+          std::string input_stripped = strip_input_name(input);
 
           SET_PERFORMANCE_DATA("Input", input_stripped);
           SET_PERFORMANCE_DATA("Param1", param1);
@@ -870,6 +1229,8 @@ int main() {
             FT bbox_squared_diagonal = 0;
             for (int i = 0; i < ambient_dim; ++i)
               bbox_squared_diagonal += (bbox_maxs[i] - bbox_mins[i])*(bbox_maxs[i] - bbox_mins[i]);
+            FT bbox_diagonal = CGAL::sqrt(bbox_squared_diagonal);
+            std::cerr << "Bounding-box diagonal: " << bbox_diagonal << "\n";
 
             std::vector<Point> queries;
             queries.reserve(num_queries);
@@ -879,7 +1240,7 @@ int main() {
             CGAL::Random rng;
 #ifdef GENERATE_QUERIES_CLOSE_TO_EXISTING_POINTS
             Kernel kernel;
-            CGAL::Random_points_on_sphere_d<Point> pertub_gen(ambient_dim, CGAL::sqrt(bbox_squared_diagonal)/100);
+            CGAL::Random_points_on_sphere_d<Point> pertub_gen(ambient_dim, bbox_diagonal / 100);
 #endif
             for (int i = 0; i < num_queries; ++i) {
 #ifdef GENERATE_QUERIES_IN_BBOX
@@ -901,7 +1262,8 @@ int main() {
               queries.push_back(p);
             }
 
-            run_tests(ambient_dim, points, queries, k, epsilon, input.c_str());
+            //run_KNN_test(ambient_dim, points, queries, k_or_radius, epsilon, input.c_str());
+            run_AllNN_test(ambient_dim, points, queries, k_or_radius, epsilon, bbox_diagonal, input.c_str());
 
             std::cerr << "Run #" << run_number++ << " done.\n";
             std::cerr << "\n---------------------------------\n";

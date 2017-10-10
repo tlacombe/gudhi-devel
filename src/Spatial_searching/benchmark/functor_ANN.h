@@ -114,6 +114,11 @@ public:
     return sum;
   }
 
+  int tree_depth() const
+  {
+    return -1;
+  }
+
 private:
   ANNpoint create_point(Point const& p) const
   {

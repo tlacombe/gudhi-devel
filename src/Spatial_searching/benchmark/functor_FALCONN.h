@@ -62,8 +62,6 @@ public:
   {
     std::vector<int> neighbors_indices;
     neighbors_indices.reserve(k);
-    std::vector<double> neighbors_sq_distances;
-    neighbors_sq_distances.reserve(k);
 
     m_table->find_k_nearest_neighbors(create_point(p), k, &neighbors_indices);
 
@@ -89,11 +87,51 @@ public:
     return sum;
   }
 
+  std::size_t query_all_near_neighbors(
+    Point const& p,
+    double radius,
+    double /*eps*/ = 0.,
+    std::vector<std::pair<std::size_t, double>> *result = NULL)
+  {
+    std::vector<int> neighbors;
+
+    m_table->find_near_neighbors(create_point(p), radius, &neighbors);
+
+#ifdef PRINT_FOUND_NEIGHBORS
+    std::cerr << "Query:\n";
+    for (auto nb : neighbors) {
+      double sqdist = m_k.squared_distance_d_object()(m_original_points[nb], p);
+      std::cerr << "  " << nb << " : " << sqdist << "\n";
+    }
+#endif
+
+    std::size_t sum = 0;
+    if (result) {
+      for (auto nb : neighbors)
+      {
+        sum += nb;
+        double sqdist = m_k.squared_distance_d_object()(m_original_points[nb], p);
+        result->push_back(std::make_pair(nb, sqdist));
+      }
+    }
+    else {
+      for (auto nb : neighbors)
+        sum += nb;
+    }
+
+    return sum;
+  }
+
+  int tree_depth() const
+  {
+    return -1;
+  }
+
 private:
   falconn::LSHConstructionParameters get_params(std::size_t num_points, int dim)
   {
     falconn::LSHConstructionParameters params =
-      falconn::get_default_parameters<Falconn_point>(num_points, dim, falconn::DistanceFunction::EuclideanSquared, true);
+      falconn::get_default_parameters<Falconn_point>(num_points, dim, falconn::DistanceFunction::EuclideanSquared, false);
     params.num_setup_threads = 1;
     return params;
   }

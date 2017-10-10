@@ -117,6 +117,11 @@ public:
     return sum;
   }
 
+  int tree_depth() const
+  {
+    return -1;
+  }
+
 private:
   Points const& m_points;
   Squared_distance m_sq_dist_functor;

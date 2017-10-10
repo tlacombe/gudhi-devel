@@ -78,6 +78,11 @@ public:
     return 0;
   }
 
+  int tree_depth() const
+  {
+    return -1;
+  }
+
 private:
   MyPoint create_point(Point const& p) const
   {

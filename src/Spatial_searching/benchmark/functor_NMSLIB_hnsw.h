@@ -165,6 +165,11 @@ public:
     return sum;
   }
 
+  int tree_depth() const
+  {
+    return -1;
+  }
+
 private:
 
   nms::Object *create_point(Point const& p, int index = 0) const

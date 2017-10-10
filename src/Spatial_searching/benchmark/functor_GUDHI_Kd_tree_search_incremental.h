@@ -20,8 +20,8 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef FUNCTOR_GUDHI_KD_TREE_SEARCH_
-#define FUNCTOR_GUDHI_KD_TREE_SEARCH_
+#ifndef FUNCTOR_GUDHI_KD_TREE_SEARCH_INCREMENTAL_
+#define FUNCTOR_GUDHI_KD_TREE_SEARCH_INCREMENTAL_
 
 #include <gudhi/Kd_tree_search.h>
 #include <CGAL/Epick_d.h>
@@ -32,7 +32,7 @@
 namespace gss = Gudhi::spatial_searching;
 
 template <typename Kernel, gss::Splitter_enum Splitting_strategy = gss::SLIDING_MIDPOINT>
-class GUDHI_Kd_tree_search
+class GUDHI_Kd_tree_search_incremental
 {
   typedef Kernel                                      K;
   typedef typename K::Point_d                         Point;
@@ -41,10 +41,8 @@ class GUDHI_Kd_tree_search
   typedef gss::Kd_tree_search<K, Points, Splitting_strategy> Points_ds;
 
 public:
-  GUDHI_Kd_tree_search(Points const& points, double /*epsilon*/ = 0.)
+  GUDHI_Kd_tree_search_incremental(Points const& points, double /*epsilon*/ = 0.)
     : m_tree(points)
-    , m_k(K().point_dimension_d_object()(*points.begin()))
-    , m_original_points(points)
   {}
 
   // Returns the sum of the indices
@@ -54,7 +52,17 @@ public:
     double eps = 0.,
     std::vector<std::pair<std::size_t, double>> *result = NULL) const
   {
-    Points_ds::KNS_range neighbors = m_tree.query_k_nearest_neighbors(p, k, true, eps);
+    Points_ds::INS_range neighbors_range = m_tree.query_incremental_nearest_neighbors(p, eps);
+    std::vector<std::pair<std::size_t, double>> neighbors;
+    neighbors.reserve(k);
+    int i = 0;
+    for (auto nb : neighbors_range)
+    {
+      if (i >= k)
+        break;
+      neighbors.push_back(nb);
+      ++i;
+    }
 
 #ifdef PRINT_FOUND_NEIGHBORS
     std::cerr << "Query:\n";
@@ -77,66 +85,6 @@ public:
     return sum;
   }
 
-  // Returns the sum of the indices
-  std::size_t query_all_near_neighbors(
-    Point const& p,
-    double radius,
-    double eps = 0.,
-    std::vector<std::pair<std::size_t, double>> *result = NULL) const
-  {
-    std::vector<std::size_t> neighbors;
-    m_tree.near_search(p, radius, std::back_inserter(neighbors), eps);
-
-#ifdef PRINT_FOUND_NEIGHBORS
-    std::cerr << "Query:\n";
-    for (auto nb : neighbors) {
-      double sqdist = m_k.squared_distance_d_object()(m_original_points[nb], p);
-      std::cerr << "  " << nb << " : " << sqdist << "\n";
-    }
-#endif
-
-    std::size_t sum = 0;
-    if (result) {
-      for (auto nb : neighbors)
-      {
-        sum += nb;
-        double sqdist = m_k.squared_distance_d_object()(m_original_points[nb], p);
-        result->push_back(std::make_pair(nb, sqdist));
-      }
-    }
-    else {
-      for (auto nb : neighbors)
-        sum += nb;
-    }
-
-    return sum;
-  }
-
-  std::ptrdiff_t query_any_near_neighbor(
-    Point const& p,
-    double radius,
-    double eps = 0.,
-    std::pair<std::ptrdiff_t, double> *result = NULL) const
-  {
-    std::ptrdiff_t ret = m_tree.any_near_neighbor(p, radius, eps);
-
-#ifdef PRINT_FOUND_NEIGHBORS
-    if (ret == -1)
-      std::cerr << "Any near neighbor: none\n";
-    else
-      std::cerr << "Any near neighbor: " << ret << ": "
-        << m_k.squared_distance_d_object()(m_original_points[ret], p) << "\n";
-#endif
-
-
-    if (result) {
-      double sqdist = (ret == -1 ? -1. : m_k.squared_distance_d_object()(m_original_points[ret], p));
-      *result = std::make_pair(ret, sqdist);
-    }
-
-    return ret;
-  }
-
   int tree_depth() const
   {
     return m_tree.tree_depth();
@@ -144,8 +92,6 @@ public:
 
 private:
   Points_ds m_tree;
-  K m_k;
-  Points const& m_original_points;
 };
 
-#endif // FUNCTOR_GUDHI_KD_TREE_SEARCH_
+#endif // FUNCTOR_GUDHI_KD_TREE_SEARCH_INCREMENTAL_

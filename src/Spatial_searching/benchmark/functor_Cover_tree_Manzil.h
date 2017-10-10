@@ -61,6 +61,11 @@ public:
     return 0;
   }
 
+  int tree_depth() const
+  {
+    return -1;
+  }
+
 private:
   Eigen::VectorXd create_point(Point const& p) const
   {

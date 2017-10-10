@@ -292,6 +292,21 @@ public:
     m_tree.search(it, Fuzzy_sphere(p, radius, eps, m_tree.traits()));
   }
 
+  /// \brief Search for any neighbor in a ball.
+  /// @param[in] p The query point.
+  /// @param[in] radius The search radius
+  /// @param[in] eps Approximation factor.
+  /// @return The index of a point approximately contained by the sphere of center `p`
+  ///         and radius `radius`, or -1 if no point could be found.
+  std::ptrdiff_t any_near_neighbor(
+    Point const& p,
+    FT radius,
+    FT eps = FT(0)) const {
+
+    auto ret = m_tree.search_any_point(Fuzzy_sphere(p, radius, eps, m_tree.traits()));
+    return (ret ? *ret : -1);
+  }
+
   int tree_depth() const
   {
     return m_tree.root()->depth();

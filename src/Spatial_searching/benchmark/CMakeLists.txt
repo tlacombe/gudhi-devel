@@ -63,6 +63,10 @@ if(CGAL_FOUND)
 	  include_directories("D:/INRIA/Libs/FALCONN-1.2.2/src/include") # CJTODO TEMP
       add_definitions(-DGUDHI_FALCONN_IS_AVAILABLE)
       
+	  # Dolphinn (GUDHI version)
+	  include_directories("D:/INRIA/Libs/dolphinn_from_gudhi_branch") # CJTODO TEMP
+      add_definitions(-DGUDHI_DOLPHINN_IS_AVAILABLE)
+      
     endif(EIGEN3_FOUND)
   endif (NOT CGAL_VERSION VERSION_LESS 4.8.0)
 endif(CGAL_FOUND)
