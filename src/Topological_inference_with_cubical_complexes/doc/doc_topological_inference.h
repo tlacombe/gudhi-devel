@@ -35,10 +35,11 @@ namespace Topological_inference_with_cubical_complexes {
  * 
  * \section Topological_inference_with_cubical_complexes_introduction Introduction.
  * 
- * There are various objects that introduce intersting topology and persistent topology. 
- * Typical ones are: sublevelsets of continuous functions, point clouds, distance functions 
- * from sets, distributions and similar. The class Topological_inference_with_cubical_complexes_introduction
- * allows all sorts of those computations. Sometimes using it is superior to use Rips, Cech or Alpha complexes. 
+ * There are various objects that introduce intersting homology and persistent homology. 
+ * Typical ones are: sublevelsets of continuous functions, filtered complexes created based 
+ * in point clouds, distance functions from sets, distributions and similar. The class Topological_inference_with_cubical_complexes_introduction
+ * allows create a cubical complexes that can approximate all those functions. 
+ * Sometimes using it to approximate distance from a point cloud may be superior to use Rips, Cech or Alpha complexes for very large complexes. 
  * 
  * \section Topological_inference_with_cubical_complexes_idea Idea
  * The class Topological_inference_with_cubical_complexes create a cubical complex that provides partially constant
@@ -47,24 +48,28 @@ namespace Topological_inference_with_cubical_complexes {
  * Later the approximation of a given function is obtained by computing the value of the function on the center of every 
  * top dimensional cube. 
  * 
- * There are various ways, some of them listed below, the functions can be obtained. Some of them are implemented in this 
- * package and can be used as a unit. 
+ * There are various ways, the functions we use to compute values on cubical grid can be obtained. 
+ * A lot of them are implemented in this package:
  * 
- * (1) Function can be given as an algorithm that given a point x, compute f(x). It can be given by a formula, numerical mentod or any other way.
- * Consult the figure below for a distance function from a unit curcle in the plane. From left to right, the resolutions of the grid are:
+ * (1) Function can be given as an algorithm that given a point x, compute f(x). The algorithm can implement a formula, numerical mentod or any other way of getting f(x) given x.
+ * Consult the figure below for a filtered cubical complexes approximating distance function from a unit circle in the plane. From left to right, the resolutions of the grid are:
  * 5 by 5, 10 by 10, 50 by 50 and 80 by 80.
  * \image html top_inference.png
  * (2) One can consider distance functions from a collection of points. This package implement various distance functions from point cloud. They are 
- * typically build based on a based (kernel) distance. Currently we support the following kernel distances:  Euclidean, Manhattan, maximum distance.
- * Each of the kernel distances can be computed in Euclidean space, or in a periodic domain by using periodic_domain_distance class. 
+ * typically build based on a basic (kernel) distance. Currently we support the following kernel distances:  Euclidean, Manhattan and maximum distance.
+ * Each of the kernel distances can be computed in a standard Euclidean space or in a periodic domain.
  * The kernel distance is later used to define a function based on a point cloud. Here are the functions of the point clouds that are currently supported
  * (and can be used with any of the kernel distances):
+ * 
  * (a) kernels_centerd_in_point_cloud - for any given point p it compute sum of values of kernel function for p and any other point q from the initial point cloud. 
+ * 
  * (b) Sum_of_distances_from_points - for any given point p it compute sum of distances of p to the points of the point cloud.
+ * 
  * (c) Distance_to_k_th_closest_point - return the distance to the k-th nearest neighbor in the point cloud given a the input. 
  * As an example please consult the periodic (on a domain [-1.5,1.5]^2) function obtained using class Sum_of_distances_from_points
  * where for every point of a grid the sum of Euclidean distances to the point cloud sampled from unit circle have been computed.
  * \image html periodic_distance_from_cicrle_nonperiodic_domain.png
+ * 
  * (3) Distance function from a collection of cubes that satisfy certain predicate. TODO
  * 
  * All the cubical complexes used here may, or may not have periodic boundary conditions imposed. Please consult examples and utilities for further details. 
