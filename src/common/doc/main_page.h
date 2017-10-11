@@ -212,6 +212,27 @@
     </td>
  </tr>
 </table>
+
+
+
+
+\subsection Topological_inference_with_cubical_complexes Topological inference with cubical complexes
+ \image html "periodic_distance_from_cicrle_nonperiodic_domain.png" "Levelsets of a distance function form a univ circle in periodic domain."
+<table border="0">
+  <tr>
+    <td width="25%">
+      <b>Author:</b> Pawel Dlotko<br>
+      <b>Introduced in:</b> GUDHI 2.2.0<br>
+      <b>Copyright:</b> GPL v3<br>
+    </td>
+    <td width="75%">
+    This toolbox allows to approximate persistent homology of sublevelsets of scalar value functions in a cubical grid. 
+    It implements vaious functions that can be used in data analysis. Some of them are based on point cloud encapsulated in a cubical grid.
+    Others are based on distance from a collection of cubes the values of which satisfy gien predicate.
+    <b>User manual:</b> \ref Topological_inference_with_cubical_complexes - <b>Reference manual:</b> Gudhi::Topological_inference_with_cubical_complexes
+    </td>
+ </tr>
+</table>
 */
 
 /*! \page installation GUDHI installation

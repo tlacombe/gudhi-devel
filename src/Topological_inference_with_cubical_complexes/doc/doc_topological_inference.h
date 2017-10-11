@@ -28,7 +28,7 @@ namespace Gudhi {
 // needs namespace for Doxygen to link on classes
 namespace Topological_inference_with_cubical_complexes {
 
-/**  \defgroup Topological_inference_with_cubical_complexes Topological_inference_with_cubical_complexes distance
+/**  \defgroup Topological_inference_with_cubical_complexes Topological_inference_with_cubical_complexes
  * 
  * \author    Pawel Dlotko
  * @{

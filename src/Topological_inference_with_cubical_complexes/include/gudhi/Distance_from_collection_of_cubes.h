@@ -42,10 +42,7 @@ wydaje mi sie ze morphological operation byloby bardziej stosowna nazwa.
 
 
 TODO:
-2) Sprawdzic cz yw bitmap cubical complex hjest metoda ktora zwraca wszyskich sasiadow / siasiadow przez pelne sciany maksymalnej kostki.
-Dodac ja a nastepnie wykozystac tutaj przy obliczaniu dylacji. 
-
-3) Rozwazyc zarowno erozje jak dylacje. 
+3) Rozwazyc zarowno erozje jak dylacje -- przemyslec jak to zrobic algoritymicznie.
 
 
 namespace Gudhi 
@@ -237,10 +234,6 @@ private:
 	
 		return result;
 	}//construct_cubical_complex_and_set_up_the_filtration_to_distance_from_selected_cubes
-	
-	
-	
-
 
 };
 
