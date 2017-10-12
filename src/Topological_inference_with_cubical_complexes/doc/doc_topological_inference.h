@@ -77,9 +77,9 @@ namespace Topological_inference_with_cubical_complexes {
  *
  *
  */
-/** @} */  // end defgroup bottleneck_distance
+/** @} */   // end defgroup Topological_inference_with_cubical_complexes
 
-}  // Topological_inference_with_cubical_complexes persistence_diagram
+}  // Topological_inference_with_cubical_complexes
 
 }  // namespace Gudhi
 

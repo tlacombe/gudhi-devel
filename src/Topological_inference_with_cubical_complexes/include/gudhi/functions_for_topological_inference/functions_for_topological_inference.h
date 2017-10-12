@@ -23,7 +23,7 @@
 #define FUNCTIONS_FOR_TOPOLOGICAL_INFERENCE_H
 
 
-//#define GUDHI_USE_CGAL
+
 
 
 #include <cmath>

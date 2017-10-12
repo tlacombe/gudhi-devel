@@ -806,3 +806,7 @@ BOOST_AUTO_TEST_CASE(periodic_domain_function_having_minimum_on_x_axis)
 		}		
 	}	
 }
+
+
+
+

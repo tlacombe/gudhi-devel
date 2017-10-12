@@ -10,13 +10,13 @@ target_link_libraries(topological_inference_periodic_domain ${Boost_SYSTEM_LIBRA
 #add_executable ( distance_from_collection_of_cubes distance_from_collection_of_cubes.cpp )	
 #target_link_libraries(distance_from_collection_of_cubes ${Boost_SYSTEM_LIBRARY})
 
-if(NOT CGAL_WITH_EIGEN3_VERSION VERSION_LESS 4.8.1)
+if (CGAL_FOUND)
 	target_link_libraries(topological_inference ${CGAL_LIBRARY})	
-endif(NOT CGAL_WITH_EIGEN3_VERSION VERSION_LESS 4.8.1)
+endif (CGAL_FOUND)
 
 if (TBB_FOUND)
 	target_link_libraries(topological_inference ${TBB_LIBRARIES})
 	target_link_libraries(topological_inference_periodic_domain ${TBB_LIBRARIES})
 	#target_link_libraries(distance_from_collection_of_cubes ${TBB_LIBRARIES})
-endif(FOUND)
+endif(TBB_FOUND)
 

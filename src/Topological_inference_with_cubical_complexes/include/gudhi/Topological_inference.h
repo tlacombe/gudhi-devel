@@ -44,6 +44,11 @@ namespace Gudhi {
 namespace Topological_inference_with_cubical_complexes {
 
 /**
+ * \brief Topological inference class.
+ *
+ * \ingroup Topological_inference_with_cubical_complexes
+ *
+ * \details
  * This is a topological inference class. Given a function, and a rectangular domain in R^n
  * it computes the values of the function on the top dimensional cubes of the domain. Later
  * it compute persistence of a function obtained in this way.

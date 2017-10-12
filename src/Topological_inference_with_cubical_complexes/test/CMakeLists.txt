@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6)
-project(Topological_inference_with_cubical_complexes_test.cpp)
+project(Topological_inference_with_cubical_complexes_test)
 
 if (GCOVR_PATH)
   # for gcovr to make coverage reports - Corbera Jenkins plugin
