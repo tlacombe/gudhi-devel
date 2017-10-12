@@ -61,6 +61,7 @@ template <typename T>
 class Bitmap_cubical_complex_base {
  public:
   typedef T filtration_type;
+  typedef size_t position_index_type;
 
   /**
    *Default constructor
@@ -400,7 +401,7 @@ class Bitmap_cubical_complex_base {
      * boundary and coboundary and dimension
      * and in function get_cell_data to get a filtration of a cell.
      */
-    size_t operator*() {
+    position_index_type operator*() {
       return this->compute_index_in_bitmap();
     }
 
@@ -494,6 +495,19 @@ class Bitmap_cubical_complex_base {
 		  this->data[i] = value;
 	  }
   }//set_value_of_all_cells_to_a_given_value
+  
+  /**
+   * Return the number of top dimensional cells in the complex.
+  **/ 
+  inline size_t number_of_top_dimnensional_cells()
+  {
+	  size_t result = 1;
+	  for ( size_t i = 0 ; i != this->sizes.size() ; ++i )
+	  {
+		  result *= this->sizes[i];
+	  }
+	  return result;
+  }
 
   //****************************************************************************************************************//
   //****************************************************************************************************************//
@@ -808,7 +822,7 @@ std::vector< size_t > Bitmap_cubical_complex_base<T>::get_coboundary_of_a_cell(s
 }
 
 template <typename T>
-std::vector< size_t > Bitmap_cubical_complex_base<T>::get_all_top_dimensional_cubes_incident_to_the_given_top_dimensional_cell(size_t cell)const
+std::vector< position_index_type > Bitmap_cubical_complex_base<T>::get_all_top_dimensional_cubes_incident_to_the_given_top_dimensional_cell(size_t cell)const
 {
   bool dbg = false;
   std::vector< size_t > neighbor_elements;
@@ -909,7 +923,7 @@ std::vector< size_t > Bitmap_cubical_complex_base<T>::get_all_top_dimensional_cu
   
  	
 template <typename T>
-std::vector< size_t > Bitmap_cubical_complex_base<T>::get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube(size_t cell)const
+std::vector< position_index_type > Bitmap_cubical_complex_base<T>::get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube(size_t cell)const
 {
   bool dbg = false;
   std::vector< size_t > neighbor_elements;
