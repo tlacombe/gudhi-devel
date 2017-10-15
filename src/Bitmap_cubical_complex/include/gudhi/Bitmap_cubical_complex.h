@@ -78,17 +78,14 @@ class Bitmap_cubical_complex : public T {
    * Constructor form a Perseus-style file.
    **/
   Bitmap_cubical_complex(const char* perseus_style_file) :
-      T(perseus_style_file), key_associated_to_simplex(this->total_number_of_cells + 1) {
+      T(perseus_style_file){
     if (globalDbg) {
       std::cerr << "Bitmap_cubical_complex( const char* perseus_style_file )\n";
-    }
-    for (size_t i = 0; i != this->total_number_of_cells; ++i) {
-      this->key_associated_to_simplex[i] = i;
     }
     // we initialize this only once, in each constructor, when the bitmap is constructed.
     // If the user decide to change some elements of the bitmap, then this procedure need
     // to be called again.
-    this->initialize_simplex_associated_to_key();
+    this->initialize_arrays_for_persistence_computation();
   }
 
   /**
@@ -98,15 +95,11 @@ class Bitmap_cubical_complex : public T {
    **/
   Bitmap_cubical_complex(const std::vector<unsigned>& dimensions,
                          const std::vector<Filtration_value>& top_dimensional_cells) :
-      T(dimensions, top_dimensional_cells),
-      key_associated_to_simplex(this->total_number_of_cells + 1) {
-    for (size_t i = 0; i != this->total_number_of_cells; ++i) {
-      this->key_associated_to_simplex[i] = i;
-    }
+      T(dimensions, top_dimensional_cells){    
     // we initialize this only once, in each constructor, when the bitmap is constructed.
     // If the user decide to change some elements of the bitmap, then this procedure need
     // to be called again.
-    this->initialize_simplex_associated_to_key();
+    this->initialize_arrays_for_persistence_computation();
   }
 
   /**
@@ -119,21 +112,19 @@ class Bitmap_cubical_complex : public T {
   Bitmap_cubical_complex(const std::vector<unsigned>& dimensions,
                          const std::vector<Filtration_value>& top_dimensional_cells,
                          std::vector< bool > directions_in_which_periodic_b_cond_are_to_be_imposed) :
-      T(dimensions, top_dimensional_cells, directions_in_which_periodic_b_cond_are_to_be_imposed),
-      key_associated_to_simplex(this->total_number_of_cells + 1) {
-    for (size_t i = 0; i != this->total_number_of_cells; ++i) {
-      this->key_associated_to_simplex[i] = i;
-    }
+      T(dimensions, top_dimensional_cells, directions_in_which_periodic_b_cond_are_to_be_imposed){    
     // we initialize this only once, in each constructor, when the bitmap is constructed.
     // If the user decide to change some elements of the bitmap, then this procedure need
     // to be called again.
-    this->initialize_simplex_associated_to_key();
+    this->initialize_arrays_for_persistence_computation();
   }
 
   /**
    * Destructor of the Bitmap_cubical_complex class.
    **/
   virtual ~Bitmap_cubical_complex() {}
+  
+  
 
   //*********************************************//
   // Other 'easy' functions
@@ -237,7 +228,7 @@ class Bitmap_cubical_complex : public T {
   /**
    * Function called from a constructor. It is needed for Filtration_simplex_iterator to work.
    **/
-  void initialize_simplex_associated_to_key();
+  void initialize_arrays_for_persistence_computation();
 
   //*********************************************//
   // Iterators
@@ -570,16 +561,12 @@ class Bitmap_cubical_complex : public T {
   * Constructor that requires vector of elements of type unsigned, which gives number of top dimensional cells
   * in the following directions. It initialize all the data structure, but the values of filtration on top dimensional cells remains undefined.
   **/
-  Bitmap_cubical_complex(const std::vector<unsigned>& dimensions) : T(dimensions), key_associated_to_simplex(this->total_number_of_cells + 1) 
+  Bitmap_cubical_complex(const std::vector<unsigned>& dimensions) : T(dimensions)
   {
-    for (size_t i = 0; i != this->total_number_of_cells; ++i) 
-    {
-      this->key_associated_to_simplex[i] = i;
-    }
     // we initialize this only once, in each constructor, when the bitmap is constructed.
     // If the user decide to change some elements of the bitmap, then this procedure need
     // to be called again.
-    this->initialize_simplex_associated_to_key();
+    this->initialize_arrays_for_persistence_computation();
   }
   
   /**
@@ -589,24 +576,26 @@ class Bitmap_cubical_complex : public T {
   **/
   Bitmap_cubical_complex(const std::vector<unsigned>& dimensions,
   const std::vector<bool>& directions_in_which_periodic_b_cond_are_to_be_imposed) : 
-  T(dimensions,directions_in_which_periodic_b_cond_are_to_be_imposed), key_associated_to_simplex(this->total_number_of_cells + 1) 
-  {
-    for (size_t i = 0; i != this->total_number_of_cells; ++i) 
-    {
-      this->key_associated_to_simplex[i] = i;
-    }
+  T(dimensions,directions_in_which_periodic_b_cond_are_to_be_imposed)
+  {  
     // we initialize this only once, in each constructor, when the bitmap is constructed.
     // If the user decide to change some elements of the bitmap, then this procedure need
     // to be called again.
-    this->initialize_simplex_associated_to_key();
+    this->initialize_arrays_for_persistence_computation();
   }
 };  // Bitmap_cubical_complex
 
 template <typename T>
-void Bitmap_cubical_complex<T>::initialize_simplex_associated_to_key() {
+void Bitmap_cubical_complex<T>::initialize_arrays_for_persistence_computation() {
   if (globalDbg) {
     std::cerr << "void Bitmap_cubical_complex<T>::initialize_elements_ordered_according_to_filtration() \n";
   }
+  this->key_associated_to_simplex = std::vector< size_t >( this->total_number_of_cells + 1  );
+  for (size_t i = 0; i != this->total_number_of_cells; ++i) 
+  {
+    this->key_associated_to_simplex[i] = i;
+  }
+  
   this->simplex_associated_to_key = std::vector<size_t>(this->data.size());
   std::iota(std::begin(simplex_associated_to_key), std::end(simplex_associated_to_key), 0);
 #ifdef GUDHI_USE_TBB

@@ -237,7 +237,7 @@ void Topological_inference<T,K,F>::construct_topological_inference_object( )
 	
 	std::vector<size_t> counter_v( this->coordinates_of_grid.size() , 0 );	
 	this->impose_lower_star_filtration();
-	this->initialize_simplex_associated_to_key();	
+	this->initialize_arrays_for_persistence_computation();	
 }
 
 

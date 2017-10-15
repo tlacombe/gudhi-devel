@@ -48,7 +48,7 @@ namespace cubical_complex {
 template <typename T>
 class Bitmap_cubical_complex_periodic_boundary_conditions_base : public Bitmap_cubical_complex_base<T> {
  public:
-  // constructors that take an extra parameter:
+  // constructors that take an extra parameter:   
 
   /**
    * Default constructor of Bitmap_cubical_complex_periodic_boundary_conditions_base class.
@@ -89,26 +89,26 @@ class Bitmap_cubical_complex_periodic_boundary_conditions_base : public Bitmap_c
    * A version of a function that return boundary of a given cell for an object of
    * Bitmap_cubical_complex_periodic_boundary_conditions_base class.
    */
-  virtual std::vector< size_t > get_boundary_of_a_cell(size_t cell) const;
+  virtual std::vector< typename Bitmap_cubical_complex_base<T>::position_index_type > get_boundary_of_a_cell(size_t cell) const;
 
   /**
    * A version of a function that return coboundary of a given cell for an object of
    * Bitmap_cubical_complex_periodic_boundary_conditions_base class.
    */
-  virtual std::vector< size_t > get_coboundary_of_a_cell(size_t cell) const;
+  virtual std::vector< typename Bitmap_cubical_complex_base<T>::position_index_type > get_coboundary_of_a_cell(size_t cell) const;
   
    /**
    * For a given cube C this procedure returns a vector of position of all top dimensional cubes
    * having nonemtpy itersection with C.
   **/ 	
-  virtual inline std::vector<size_t> get_all_top_dimensional_cubes_incident_to_the_given_top_dimensional_cell(size_t cell)const;
+  virtual inline std::vector<  typename Bitmap_cubical_complex_base<T>::position_index_type  > get_all_top_dimensional_cubes_incident_to_the_given_top_dimensional_cell(size_t cell)const;
   
   /**
    * For a given cube C this procedure returns a vector of position of all top dimensional cubes
    * sharing co-dimension 1 face with C (i.e. all the cubes D such that C intersect D has a dimension
    * of C (or D) minus 1).
   **/ 	
-  virtual inline std::vector<size_t> get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube(size_t cell)const;
+  virtual inline std::vector< typename Bitmap_cubical_complex_base<T>::position_index_type > get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube(size_t cell)const;
   
   /**
    * This is a procedure to check if the cubical complex is periodic
@@ -244,7 +244,7 @@ Bitmap_cubical_complex_periodic_boundary_conditions_base(const std::vector<unsig
 // ***********************Methods************************ //
 
 template <typename T>
-std::vector< size_t > Bitmap_cubical_complex_periodic_boundary_conditions_base<T>::get_boundary_of_a_cell(size_t cell) const {
+std::vector<  typename Bitmap_cubical_complex_base<T>::position_index_type  > Bitmap_cubical_complex_periodic_boundary_conditions_base<T>::get_boundary_of_a_cell(size_t cell) const {
   bool dbg = false;
   if (dbg) {
     std::cerr << "Computations of boundary of a cell : " << cell << std::endl;
@@ -291,7 +291,7 @@ std::vector< size_t > Bitmap_cubical_complex_periodic_boundary_conditions_base<T
 }
 
 template <typename T>
-std::vector< size_t > Bitmap_cubical_complex_periodic_boundary_conditions_base<T>::get_coboundary_of_a_cell(size_t cell) const {
+std::vector<  typename Bitmap_cubical_complex_base<T>::position_index_type  > Bitmap_cubical_complex_periodic_boundary_conditions_base<T>::get_coboundary_of_a_cell(size_t cell) const {
   std::vector<unsigned> counter = this->compute_counter_for_given_cell(cell);
   std::vector< size_t > coboundary_elements;
   size_t cell1 = cell;
@@ -333,7 +333,7 @@ std::vector< size_t > Bitmap_cubical_complex_periodic_boundary_conditions_base<T
 
 
 template <typename T>
-std::vector< size_t > Bitmap_cubical_complex_periodic_boundary_conditions_base<T>::get_all_top_dimensional_cubes_incident_to_the_given_top_dimensional_cell(size_t cell)const
+std::vector<  typename Bitmap_cubical_complex_base<T>::position_index_type  > Bitmap_cubical_complex_periodic_boundary_conditions_base<T>::get_all_top_dimensional_cubes_incident_to_the_given_top_dimensional_cell(size_t cell)const
 { 
   std::vector< size_t > neighbor_elements;
   
@@ -382,7 +382,7 @@ std::vector< size_t > Bitmap_cubical_complex_periodic_boundary_conditions_base<T
   
  	
 template <typename T>
-std::vector< size_t > Bitmap_cubical_complex_periodic_boundary_conditions_base<T>::get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube(size_t cell)const
+std::vector<  typename Bitmap_cubical_complex_base<T>::position_index_type  > Bitmap_cubical_complex_periodic_boundary_conditions_base<T>::get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube(size_t cell)const
 {	  
   std::vector< size_t > neighbor_elements;
  

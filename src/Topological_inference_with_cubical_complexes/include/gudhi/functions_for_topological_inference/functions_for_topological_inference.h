@@ -22,10 +22,6 @@
 #ifndef FUNCTIONS_FOR_TOPOLOGICAL_INFERENCE_H
 #define FUNCTIONS_FOR_TOPOLOGICAL_INFERENCE_H
 
-
-
-
-
 #include <cmath>
 #include <vector>
 #include <algorithm>
@@ -286,15 +282,19 @@ private:
  * is not installed, a aive heap-based algorithm is used to get the distance
  * to the k-th nearest neighor. 
 **/ 
+
+
+//careful, using k-d trees works only for Euclidean distance, while the method is more general. 
+//maybe those functionalities should be separated???
 template < typename distance >
 class Distance_to_k_th_closest_point
 {
 public:	
 	Distance_to_k_th_closest_point( const std::vector< std::vector<double> >& point_cloud_ , distance& dist_ , unsigned k_ ):
 	dist(dist_),k(k_)
-	#ifdef GUDHI_USE_CGAL
-		,points_ds( this->convert_points(point_cloud_) )
-	#endif	
+	//#ifdef GUDHI_USE_CGAL
+	//	,points_ds( this->convert_points(point_cloud_) )
+	//#endif	
 	{
 		//check if all the points have the same dimension:
 		if ( point_cloud_.empty() )return;
@@ -310,16 +310,25 @@ public:
 	}
     double operator()( const std::vector<double>& point )const
     {
-		#ifdef GUDHI_USE_CGAL		
+		/*#ifdef GUDHI_USE_CGAL		
 		std::cerr << "this->point_cloud.size() : " << this->point_cloud.size() << std::endl;
 		std::cerr << "point.size()  : " << point.size() << std::endl;
 		std::cerr << "this->k :  " << this->k << std::endl;
 		
+		std::cout << "point : " << point.size() << std::endl;
+		
+		auto pt = CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d( point.begin() , point.end() );
+		
+		std::cerr  << "pt : " << pt << std::endl;
+				
+		
 		std::cout << "depth : " << this->points_ds.tree_depth() << "\n";
 		
 			//I have tried to use kere std::advance, but it got too messy with the constant interators of unknown type. So I did it by a bruteforce. 
-			auto knn_range = this->points_ds.query_k_nearest_neighbors(
-			CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d( point.begin() , point.end() ), this->k+1, true);										
+			auto knn_range = this->points_ds.query_k_nearest_neighbors(	pt, this->k+1, true);										
+			
+			std::cerr << "Aaa \n";
+			
 			size_t counter = 0;
 			double dist_ = 0;
 			for (auto const& nghb : knn_range)
@@ -334,7 +343,7 @@ public:
 				}				
 			}
 			return dist_;
-		 #else		 
+		 #else*/		 
 			//this is brutal, version, in case we do not have a k-d tree from CGAL. 
 			bool dbg = false;
 			
@@ -391,10 +400,10 @@ public:
 				if ( heap[i] > result )result = heap[i];
 			}  
 			return result;		
-		#endif
+		//#endif
     }
 private:
-
+/*
 	#ifdef GUDHI_USE_CGAL
 		std::vector< CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d > convert_points( const std::vector< std::vector<double> >& point_cloud_ )
 		{
@@ -402,25 +411,21 @@ private:
 			points.reserve( point_cloud_.size() );
 			for (size_t i = 0; i != point_cloud_.size() ; ++i)
 			{				
-				points.push_back( CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d( point_cloud_[i].begin() , point_cloud_[i].end() ) );				
-			}	
-			
-			for ( auto c : points[2] )
-				std::cout << c << std::endl;
-			
-			std::cerr << "points.size() : "  << points.size() << std::endl;
-						
+				auto pt = CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d( point_cloud_[i].begin() , point_cloud_[i].end() );
+				points.push_back( pt );								
+				//std::cout << pt << std::endl;getchar();
+			}								
 			return points;
 		}
-	#endif
+	#endif*/
 
 	std::vector< std::vector<double> > point_cloud;
 	distance& dist;
 	unsigned k;
-	#ifdef GUDHI_USE_CGAL
-		Gudhi::spatial_searching::Kd_tree_search< CGAL::Epick_d< CGAL::Dynamic_dimension_tag > , 
-		std::vector< CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d > > points_ds;		
-	#endif
+	//#ifdef GUDHI_USE_CGAL
+	//	Gudhi::spatial_searching::Kd_tree_search< CGAL::Epick_d< CGAL::Dynamic_dimension_tag > , 
+	//	std::vector< CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d > > points_ds;		
+	//#endif
 };
 
 

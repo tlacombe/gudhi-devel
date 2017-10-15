@@ -20,27 +20,6 @@
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/*    This file is part of the Gudhi Library. The Gudhi library
- *    (Geometric Understanding in Higher Dimensions) is a generic C++
- *    library for computational topology.
- *
- *    Author(s):       Pawel Dlotko
- *
- *    Copyright (C) 2015  INRIA Saclay (France)
- *
- *    This program is free software: you can redistribute it and/or modify
- *    it under the terms of the GNU General Public License as published by
- *    the Free Software Foundation, either version 3 of the License, or
- *    (at your option) any later version.
- *
- *    This program is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *    GNU General Public License for more details.
- *
- *    You should have received a copy of the GNU General Public License
- *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
 
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE "cubical_complex"
@@ -51,6 +30,7 @@
 
 #include <gudhi/functions_for_topological_inference/functions_for_topological_inference.h>
 #include <gudhi/Topological_inference.h>
+#include <gudhi/Morphological_operations_cubical_complex.h>
 #include <gudhi/Bitmap_cubical_complex.h>
 #include <gudhi/Persistent_cohomology.h>
 
@@ -183,22 +163,8 @@ BOOST_AUTO_TEST_CASE(Sum_of_distances_from_points_test)
 
  
 BOOST_AUTO_TEST_CASE(Distance_to_k_th_closest_point_test)
-{
-	std::vector< double > point1(2);
-    std::vector< double > point2(2);
-    std::vector< double > point3(2);
-    std::vector< double > point4(2);
-    
-    point1[0] = 0;point1[1] = 1;
-    point2[0] = 0;point2[1] = -1;
-    point3[0] = -1;point3[1] = 0;
-    point4[0] = 1;point4[1] = 0;
-    
-    std::vector< std::vector< double > > point_cloud(4);
-    point_cloud[0] = point1;
-    point_cloud[1] = point2;
-    point_cloud[2] = point3;
-    point_cloud[3] = point4;
+{	
+    std::vector< std::vector< double > > point_cloud = { {0,1}, {0,-1}, {-1,0}, {1,0} };
     
     Gudhi::Topological_inference_with_cubical_complexes::Euclidan_distance_squared eu;
     
@@ -210,15 +176,21 @@ BOOST_AUTO_TEST_CASE(Distance_to_k_th_closest_point_test)
 	Gudhi::Topological_inference_with_cubical_complexes::Distance_to_k_th_closest_point<Gudhi::Topological_inference_with_cubical_complexes::Euclidan_distance_squared> kernel6( point_cloud,eu,6 );
 	
 	
-	std::vector< double > test_point(2);
-	test_point[0] = test_point[1] = 0;
+	std::vector< double > test_point = {0,0};	
+	
+	//std::cout << "kernel1( test_point ) : " << kernel1( test_point ) << std::endl;
+	//std::cout << "kernel2( test_point ) : " << kernel2( test_point ) << std::endl;
+	//std::cout << "kernel3( test_point ) : " << kernel3( test_point ) << std::endl;
+	//std::cout << "kernel4( test_point ) : " << kernel4( test_point ) << std::endl;
+	//std::cout << "kernel5( test_point ) : " << kernel5( test_point ) << std::endl;
+	//std::cout << "kernel6( test_point ) : " << kernel6( test_point ) << std::endl;
+	
 	BOOST_CHECK( kernel1( test_point ) == 1 );
 	BOOST_CHECK( kernel2( test_point ) == 1 );//here we get  memory access violation at address: 0x00000001: no mapping at fault address error. 
 	BOOST_CHECK( kernel3( test_point ) == 1 );
 	BOOST_CHECK( kernel4( test_point ) == 1 );
 	BOOST_CHECK( kernel5( test_point ) == std::numeric_limits<double>::max() );
-	BOOST_CHECK( kernel6( test_point ) == std::numeric_limits<double>::max() );
-	
+	BOOST_CHECK( kernel6( test_point ) == std::numeric_limits<double>::max() );	
 }
 
 
@@ -809,4 +781,419 @@ BOOST_AUTO_TEST_CASE(periodic_domain_function_having_minimum_on_x_axis)
 
 
 
+
+BOOST_AUTO_TEST_CASE(Morphological_operations_cubical_complex_dylation_test_1_2d)
+{
+	//This is the cubical complex we are going to consider:
+	// 2  2  2  2 2  
+	// 2 -1 -1 -1 2
+	// 2 -1  2 -1 2
+	// 2 -1 -1 -1 2   
+	// 2  2  2  2 2
+	std::vector< unsigned > sizes(2);
+	sizes[0] = sizes[1] = 5;
+	std::vector< double > top_dimensional_cells = {
+		                                          2, 2, 2, 2,2,
+		                                          2,-1,-1,-1,2,   
+		                                          2,-1, 2,-1,2,
+		                                          2,-1,-1,-1,2,
+		                                          2, 2, 2, 2,2   
+		                                         };	
+	typedef Gudhi::Cubical_complex::Bitmap_cubical_complex_base<double> Bitmap_cubical_complex_base;
+    typedef Gudhi::Cubical_complex::Bitmap_cubical_complex<Bitmap_cubical_complex_base> Bitmap_cubical_complex;
+    typedef Gudhi::Topological_inference_with_cubical_complexes::Filtration_below_certain_value<double> Predictor_type;
+    typedef Gudhi::Topological_inference_with_cubical_complexes::Morphological_operations_cubical_complex<Bitmap_cubical_complex,Predictor_type> MOCC;
+    
+    Bitmap_cubical_complex cmplx( sizes,top_dimensional_cells );
+    Predictor_type pred(0);//cutoff value at zero.
+        
+	MOCC mor( cmplx , pred );
+	
+	
+	std::vector< double > after_runninng_predicate = {std::numeric_limits<double>::infinity(),std::numeric_limits<double>::infinity(),
+	std::numeric_limits<double>::infinity(),std::numeric_limits<double>::infinity(),std::numeric_limits<double>::infinity(),std::numeric_limits<double>::infinity(),
+	0,0,0,std::numeric_limits<double>::infinity(),std::numeric_limits<double>::infinity(),0,std::numeric_limits<double>::infinity(),0,std::numeric_limits<double>::infinity(),
+	std::numeric_limits<double>::infinity(),0,0,0,std::numeric_limits<double>::infinity(),std::numeric_limits<double>::infinity(),std::numeric_limits<double>::infinity(),
+	std::numeric_limits<double>::infinity(),std::numeric_limits<double>::infinity(),std::numeric_limits<double>::infinity()};
+
+	
+	//now iterate through all the top dimensional cells of the complex:
+	size_t count = 0;
+	for ( auto it = cmplx.top_dimensional_cells_iterator_begin() ; it != cmplx.top_dimensional_cells_iterator_end() ; ++it )
+	{
+		BOOST_CHECK( after_runninng_predicate[count] == cmplx.get_cell_data( *it ) );
+		++count;
+	}
+	
+	//now run dilation:
+	using Gudhi::Topological_inference_with_cubical_complexes::considered_neighberhoods;
+	mor.dilation( 1 , Gudhi::Topological_inference_with_cubical_complexes::considered_neighberhoods::full_face );
+			
+	std::vector<double> result_of_inference = {2,1,1,1,2,		
+											   1,0,0,0,1,
+											   1,0,1,0,1,
+											   1,0,0,0,1, 
+											   2,1,1,1,2};
+	count = 0;
+	for ( auto it = cmplx.top_dimensional_cells_iterator_begin() ; it != cmplx.top_dimensional_cells_iterator_end() ; ++it )
+	{
+		BOOST_CHECK( result_of_inference[count] == cmplx.get_cell_data( *it ) );		
+		++count;
+	}
+	
+	//compute persistence:
+	typedef Gudhi::persistent_cohomology::Field_Zp Field_Zp;
+    typedef Gudhi::persistent_cohomology::Persistent_cohomology<Bitmap_cubical_complex, Field_Zp> Persistent_cohomology;
+    
+        
+	Persistent_cohomology pcoh(cmplx,true);
+    pcoh.init_coefficients(2);  // initializes the coefficient field for homology
+    pcoh.compute_persistent_cohomology(0.05);
+    
+    std::vector< std::tuple<size_t, size_t, int> > intervals = pcoh.get_persistent_pairs();  
+    //we expect to have the following persistence intervals:
+    //dim1 : 0 1
+	//dim 0: 0 inf.
+ 
+    for ( size_t i = 0 ; i != intervals.size() ; ++i )
+    {
+		//std::cout << b->filtration(std::get<0>(intervals[i])) << " " << b->filtration(std::get<1>(intervals[i]))  << " " << b->get_dimension_of_a_cell(std::get<0>(intervals[i])) << std::endl;		
+		if ( cmplx.filtration(std::get<1>(intervals[i])) == std::numeric_limits< double >::infinity() )
+		{
+			BOOST_CHECK( cmplx.filtration(std::get<0>(intervals[i])) == 0 );
+		}
+		else
+		{
+			BOOST_CHECK( cmplx.filtration(std::get<0>(intervals[i])) == 0 );
+			BOOST_CHECK( cmplx.filtration(std::get<1>(intervals[i])) == 1 );
+		}
+	}	
+	
+}//Morphological_operations_cubical_complex_test_1
+
+
+
+
+
+BOOST_AUTO_TEST_CASE(Morphological_operations_cubical_complex_erosion_test_1_2d)
+{
+	//This is the cubical complex we are going to consider:
+	// 2 -1 -1 -1 2  
+	// 2 -1 -1 -1 2
+	// 2 -1  1 -1 2
+	// 2 -1 -1 -1 2   
+	// 2 -1 -1 -1 2
+	std::vector< unsigned > sizes(2);
+	sizes[0] = sizes[1] = 5;
+	std::vector< double > top_dimensional_cells = {
+		                                          2,-1,-1,-1,2,
+		                                          2,-1,-1,-1,2,   
+		                                          2,-1,-1,-1,2,
+		                                          2,-1,-1,-1,2,
+		                                          2,-1,-1,-1,2   
+		                                         };	
+	
+		                                         
+	typedef Gudhi::Cubical_complex::Bitmap_cubical_complex_base<double> Bitmap_cubical_complex_base;
+    typedef Gudhi::Cubical_complex::Bitmap_cubical_complex<Bitmap_cubical_complex_base> Bitmap_cubical_complex;
+    typedef Gudhi::Topological_inference_with_cubical_complexes::Filtration_below_certain_value<double> Predictor_type;
+    typedef Gudhi::Topological_inference_with_cubical_complexes::Morphological_operations_cubical_complex<Bitmap_cubical_complex,Predictor_type> MOCC;
+    
+    Bitmap_cubical_complex cmplx( sizes,top_dimensional_cells );
+    Predictor_type pred(0);//cutoff value at zero.
+        
+	MOCC mor( cmplx , pred );	
+	
+	//now run erosion:
+	using Gudhi::Topological_inference_with_cubical_complexes::considered_neighberhoods;
+	mor.erosion( 1 , Gudhi::Topological_inference_with_cubical_complexes::considered_neighberhoods::full_face );
+	
+	std::vector<double> result_of_inference = {
+		std::numeric_limits< double >::infinity(),0,-1,0,std::numeric_limits< double >::infinity(),
+        std::numeric_limits< double >::infinity(),0,-1,0,std::numeric_limits< double >::infinity(),
+        std::numeric_limits< double >::infinity(),0,-1,0,std::numeric_limits< double >::infinity(),
+        std::numeric_limits< double >::infinity(),0,-1,0,std::numeric_limits< double >::infinity(),
+        std::numeric_limits< double >::infinity(),0,-1,0,std::numeric_limits< double >::infinity()
+		};
+	size_t count = 0;
+	for ( auto it = cmplx.top_dimensional_cells_iterator_begin() ; it != cmplx.top_dimensional_cells_iterator_end() ; ++it )
+	{
+		BOOST_CHECK( result_of_inference[count] == cmplx.get_cell_data( *it ) );		
+		//std::cout << cmplx.get_cell_data( *it ) << std::endl;
+		++count;
+	}
+}
+
+
+
+
+
+
+BOOST_AUTO_TEST_CASE(Morphological_operations_cubical_complex_both_erosion_and_dilation_test_2d)
+{
+	//This is the cubical complex we are going to consider:
+	//2	2	2	2	2	2	2	2	2	2	2
+	//2	2	2	2	2	2	2	2	2	2	2
+	//2	2	3	3	3	3	3	3	3	2	2
+	//2	2	3	3	3	3	3	3	3	2	2
+	//2	2	3	3	3	3	3	3	3	2	2
+	//2	2	3	3	3	2	3	3	3	2	2
+	//2	2	3	3	3	3	3	3	3	2	2
+	//2	2	3	3	3	3	3	3	3	2	2
+	//2	2	3	3	3	3	3	3	3	2	2
+	//2	2	2	2	2	2	2	2	2	2	2
+	//2	2	2	2	2	2	2	2	2	2	2
+	
+
+	std::vector< unsigned > sizes(2);
+	sizes[0] = sizes[1] = 11;
+	
+	std::vector< double > top_dimensional_cells = {
+													2,2,2,2,2,2,2,2,2,2,2,
+													2,2,2,2,2,2,2,2,2,2,2,
+													2,2,3,3,3,3,3,3,3,2,2,
+													2,2,3,3,3,3,3,3,3,2,2,
+													2,2,3,3,3,3,3,3,3,2,2,
+													2,2,3,3,3,2,3,3,3,2,2,
+													2,2,3,3,3,3,3,3,3,2,2,
+													2,2,3,3,3,3,3,3,3,2,2,
+													2,2,3,3,3,3,3,3,3,2,2,
+													2,2,2,2,2,2,2,2,2,2,2,
+													2,2,2,2,2,2,2,2,2,2,2
+		                                         };	
+		                                         
+	typedef Gudhi::Cubical_complex::Bitmap_cubical_complex_base<double> Bitmap_cubical_complex_base;
+    typedef Gudhi::Cubical_complex::Bitmap_cubical_complex<Bitmap_cubical_complex_base> Bitmap_cubical_complex;
+    typedef Gudhi::Topological_inference_with_cubical_complexes::Filtration_above_certain_value<double> Predictor_type;
+    typedef Gudhi::Topological_inference_with_cubical_complexes::Morphological_operations_cubical_complex<Bitmap_cubical_complex,Predictor_type> MOCC;
+    
+    Bitmap_cubical_complex cmplx( sizes,top_dimensional_cells );
+    Predictor_type pred(2.5);//cutoff value at 2.5.
+        
+	MOCC mor( cmplx , pred );		
+	
+	double inf = std::numeric_limits< double >::infinity();	
+	std::vector<double> set_and_complement =
+	{
+		inf,inf,inf,inf,inf,inf,inf,inf,inf,inf,inf,
+		inf,inf,inf,inf,inf,inf,inf,inf,inf,inf,inf,
+		inf,inf,0,0,0,0,0,0,0,inf,inf,
+		inf,inf,0,0,0,0,0,0,0,inf,inf,
+		inf,inf,0,0,0,0,0,0,0,inf,inf,
+		inf,inf,0,0,0,inf,0,0,0,inf,inf,
+		inf,inf,0,0,0,0,0,0,0,inf,inf,
+		inf,inf,0,0,0,0,0,0,0,inf,inf,
+		inf,inf,0,0,0,0,0,0,0,inf,inf,
+		inf,inf,inf,inf,inf,inf,inf,inf,inf,inf,inf,
+		inf,inf,inf,inf,inf,inf,inf,inf,inf,inf,inf 	
+	};
+	
+	size_t count = 0;
+	for ( auto it = cmplx.top_dimensional_cells_iterator_begin() ; it != cmplx.top_dimensional_cells_iterator_end() ; ++it )
+	{
+		BOOST_CHECK( set_and_complement[count] == cmplx.get_cell_data( *it ) );				
+		++count;
+	}		
+	//now run erosion:
+	mor.both_erosion_and_dilation( 1 , Gudhi::Topological_inference_with_cubical_complexes::considered_neighberhoods::full_face );	
+	
+	
+	std::vector<double> result_of_inference = {	
+		4,3,2, 2, 2, 2, 2, 2,2,3,4,
+		3,2,1, 1, 1, 1, 1, 1,1,2,3,
+		2,1,0, 0, 0, 0, 0, 0,0,1,2,
+		2,1,0,-1,-1,-1,-1,-1,0,1,2,
+		2,1,0,-1,-1, 0,-1,-1,0,1,2,
+		2,1,0,-1, 0, 1, 0,-1,0,1,2,
+		2,1,0,-1,-1, 0,-1,-1,0,1,2,
+		2,1,0,-1,-1,-1,-1,-1,0,1,2,
+		2,1,0, 0, 0, 0, 0, 0,0,1,2,
+		3,2,1, 1, 1, 1, 1, 1,1,2,3,
+		4,3,2, 2, 2, 2, 2, 2,2,3,4	
+		};
+		
+	count = 0;
+	for ( auto it = cmplx.top_dimensional_cells_iterator_begin() ; it != cmplx.top_dimensional_cells_iterator_end() ; ++it )
+	{
+		BOOST_CHECK( result_of_inference[count] == cmplx.get_cell_data( *it ) );		
+		//std::cout << cmplx.get_cell_data( *it ) << " ";
+		++count;
+	}	
+}
+
+BOOST_AUTO_TEST_CASE(Morphological_operations_cubical_complex_dilation_test_2d_point_cloud)
+{
+	std::vector< std::vector<double> > point_cloud = 
+	{
+	{0.023875911,0.3819170594},{0.8273467752,0.2570094084},{0.2246383489,0.8974934225},{0.1000787409,0.5004473543},
+	{0.392248322,0.1793392003},{0.0330905591,0.6366295242},{0.6505259087,0.6786510674},{0.9932294958,0.959717162},
+	{0.3341948902,0.8669278021},{0.6569386947,0.8378932301},{0.6144418737,0.3400138197},{0.916686812,0.4007980435},
+	{0.1678472976,0.9727493613},{0.4554182182,0.3805637609},{0.2032318886,0.7224295405},{0.7785319716,0.7035288359},
+	{0.8183017471,0.3757726145},{0.6548842834,0.9780715294},{0.0597022544,0.0439436375},{0.8900984228,0.0563630168},
+	{0.6750005598,0.6869571838},{0.2697740323,0.3053609708},{0.3748816792,0.5403353469},{0.8445334057,0.6003744896},
+	{0.9362474468,0.8929047585},{0.0744779278,0.4765794161},{0.186476755,0.2841711254},{0.0092118601,0.6635902137},
+	{0.4242709139,0.5454525957},{0.7765266201,0.7759299499},{0.8012906341,0.5699157678},{0.2628584001,0.9410507081},
+	{0.2137785519,0.2910071306},{0.4552011553,0.1213308845},{0.1057428913,0.0729731533},{0.5868712259,0.3754960189},
+	{0.9556682452,0.1321922166},{0.4998900071,0.6114943502},{0.1164180543,0.4240477013},{0.9319797899,0.8147350496},
+	{-0.976124089,0.3819170594},{-0.1726532248,0.2570094084},{-0.7753616511,0.8974934225},{-0.8999212591,0.5004473543},
+	{-0.607751678,0.1793392003},{-0.9669094409,0.6366295242},{-0.3494740913,0.6786510674},{-0.0067705042,0.959717162},
+	{-0.6658051098,0.8669278021},{-0.3430613053,0.8378932301},{-0.3855581263,0.3400138197},{-0.083313188,0.4007980435},
+	{-0.8321527024,0.9727493613},{-0.5445817818,0.3805637609},{-0.7967681114,0.7224295405},{-0.2214680284,0.7035288359},
+	{-0.1816982529,0.3757726145},{-0.3451157166,0.9780715294},{-0.9402977456,0.0439436375},{-0.1099015772,0.0563630168},
+	{-0.3249994402,0.6869571838},{-0.7302259677,0.3053609708},{-0.6251183208,0.5403353469},{-0.1554665943,0.6003744896},
+	{-0.0637525532,0.8929047585},{-0.9255220722,0.4765794161},{-0.813523245,0.2841711254},{-0.9907881399,0.6635902137},
+	{-0.5757290861,0.5454525957},{-0.2234733799,0.7759299499},{-0.1987093659,0.5699157678},{-0.7371415999,0.9410507081},
+	{-0.7862214481,0.2910071306},{-0.5447988447,0.1213308845},{-0.8942571087,0.0729731533},{-0.4131287741,0.3754960189},
+	{-0.0443317548,0.1321922166},{-0.5001099929,0.6114943502},{-0.8835819457,0.4240477013},{-0.0680202101,0.8147350496},
+	{-1.976124089,0.3819170594},{-1.1726532248,0.2570094084},{-1.7753616511,0.8974934225},{-1.8999212591,0.5004473543},
+	{-1.607751678,0.1793392003},{-1.9669094409,0.6366295242},{-1.3494740913,0.6786510674},{-1.0067705042,0.959717162},
+	{-1.6658051098,0.8669278021},{-1.3430613053,0.8378932301},{-1.3855581263,0.3400138197},{-1.083313188,0.4007980435},
+	{-1.8321527024,0.9727493613},{-1.5445817818,0.3805637609},{-1.7967681114,0.7224295405},{-1.2214680284,0.7035288359},
+	{-1.1816982529,0.3757726145},{-1.3451157166,0.9780715294},{-1.9402977456,0.0439436375},{-1.1099015772,0.0563630168},
+	{-1.3249994402,0.6869571838},{-1.7302259677,0.3053609708},{-1.6251183208,0.5403353469},{-1.1554665943,0.6003744896},
+	{-1.0637525532,0.8929047585},{-1.9255220722,0.4765794161},{-1.813523245,0.2841711254},{-1.9907881399,0.6635902137},
+	{-1.5757290861,0.5454525957},{-1.2234733799,0.7759299499},{-1.1987093659,0.5699157678},{-1.7371415999,0.9410507081},
+	{-1.7862214481,0.2910071306},{-1.5447988447,0.1213308845},{-1.8942571087,0.0729731533},{-1.4131287741,0.3754960189},
+	{-1.0443317548,0.1321922166},{-1.5001099929,0.6114943502},{-1.8835819457,0.4240477013},{-1.0680202101,0.8147350496},
+	{0.023875911,-0.6180829406},{0.8273467752,-0.7429905916},{0.2246383489,-0.1025065775},{0.1000787409,-0.4995526457},
+	{0.392248322,-0.8206607997},{0.0330905591,-0.3633704758},{0.6505259087,-0.3213489326},{0.9932294958,-0.040282838},
+	{0.3341948902,-0.1330721979},{0.6569386947,-0.1621067699},{0.6144418737,-0.6599861803},{0.916686812,-0.5992019565},
+	{0.1678472976,-0.0272506387},{0.4554182182,-0.6194362391},{0.2032318886,-0.2775704595},{0.7785319716,-0.2964711641},
+	{0.8183017471,-0.6242273855},{0.6548842834,-0.0219284706},{0.0597022544,-0.9560563625},{0.8900984228,-0.9436369832},
+	{0.6750005598,-0.3130428162},{0.2697740323,-0.6946390292},{0.3748816792,-0.4596646531},{0.8445334057,-0.3996255104},
+	{0.9362474468,-0.1070952415},{0.0744779278,-0.5234205839},{0.186476755,-0.7158288746},{0.0092118601,-0.3364097863},
+	{0.4242709139,-0.4545474043},{0.7765266201,-0.2240700501},{0.8012906341,-0.4300842322},{0.2628584001,-0.0589492919},
+	{0.2137785519,-0.7089928694},{0.4552011553,-0.8786691155},{0.1057428913,-0.9270268467},{0.5868712259,-0.6245039811},
+	{0.9556682452,-0.8678077834},{0.4998900071,-0.3885056498},{0.1164180543,-0.5759522987},{0.9319797899,-0.1852649504},
+	{-1.976124089,0.3819170594},{-1.1726532248,0.2570094084},{-1.7753616511,0.8974934225},{-1.8999212591,0.5004473543},
+	{-1.607751678,0.1793392003},{-1.9669094409,0.6366295242},{-1.3494740913,0.6786510674},{-1.0067705042,0.959717162},
+	{-1.6658051098,0.8669278021},{-1.3430613053,0.8378932301},{-1.3855581263,0.3400138197},{-1.083313188,0.4007980435},
+	{-1.8321527024,0.9727493613},{-1.5445817818,0.3805637609},{-1.7967681114,0.7224295405},{-1.2214680284,0.7035288359},
+	{-1.1816982529,0.3757726145},{-1.3451157166,0.9780715294},{-1.9402977456,0.0439436375},{-1.1099015772,0.0563630168},
+	{-1.3249994402,0.6869571838},{-1.7302259677,0.3053609708},{-1.6251183208,0.5403353469},{-1.1554665943,0.6003744896},
+	{-1.0637525532,0.8929047585},{-1.9255220722,0.4765794161},{-1.813523245,0.2841711254},{-1.9907881399,0.6635902137},
+	{-1.5757290861,0.5454525957},{-1.2234733799,0.7759299499},{-1.1987093659,0.5699157678},{-1.7371415999,0.9410507081},
+	{-1.7862214481,0.2910071306},{-1.5447988447,0.1213308845},{-1.8942571087,0.0729731533},{-1.4131287741,0.3754960189},
+	{-1.0443317548,0.1321922166},{-1.5001099929,0.6114943502},{-1.8835819457,0.4240477013},{-1.0680202101,0.8147350496},
+	{-1.976124089,-0.6180829406},{-1.1726532248,-0.7429905916},{-1.7753616511,-0.1025065775},{-1.8999212591,-0.4995526457},
+	{-1.607751678,-0.8206607997},{-1.9669094409,-0.3633704758},{-1.3494740913,-0.3213489326},{-1.0067705042,-0.040282838},
+	{-1.6658051098,-0.1330721979},{-1.3430613053,-0.1621067699},{-1.3855581263,-0.6599861803},{-1.083313188,-0.5992019565},
+	{-1.8321527024,-0.0272506387},{-1.5445817818,-0.6194362391},{-1.7967681114,-0.2775704595},{-1.2214680284,-0.2964711641},
+	{-1.1816982529,-0.6242273855},{-1.3451157166,-0.0219284706},{-1.9402977456,-0.9560563625},{-1.1099015772,-0.9436369832},
+	{-1.3249994402,-0.3130428162},{-1.7302259677,-0.6946390292},{-1.6251183208,-0.4596646531},{-1.1554665943,-0.3996255104},
+	{-1.0637525532,-0.1070952415},{-1.9255220722,-0.5234205839},{-1.813523245,-0.7158288746},{-1.9907881399,-0.3364097863},
+	{-1.5757290861,-0.4545474043},{-1.2234733799,-0.2240700501},{-1.1987093659,-0.4300842322},{-1.7371415999,-0.0589492919},
+	{-1.7862214481,-0.7089928694},{-1.5447988447,-0.8786691155},{-1.8942571087,-0.9270268467},{-1.4131287741,-0.6245039811},
+	{-1.0443317548,-0.8678077834},{-1.5001099929,-0.3885056498},{-1.8835819457,-0.5759522987},{-1.0680202101,-0.1852649504},
+	{-1.976124089,-1.6180829406},{-1.1726532248,-1.7429905916},{-1.7753616511,-1.1025065775},{-1.8999212591,-1.4995526457},
+	{-1.607751678,-1.8206607997},{-1.9669094409,-1.3633704758},{-1.3494740913,-1.3213489326},{-1.0067705042,-1.040282838},
+	{-1.6658051098,-1.1330721979},{-1.3430613053,-1.1621067699},{-1.3855581263,-1.6599861803},{-1.083313188,-1.5992019565},
+	{-1.8321527024,-1.0272506387},{-1.5445817818,-1.6194362391},{-1.7967681114,-1.2775704595},{-1.2214680284,-1.2964711641},
+	{-1.1816982529,-1.6242273855},{-1.3451157166,-1.0219284706},{-1.9402977456,-1.9560563625},{-1.1099015772,-1.9436369832},
+	{-1.3249994402,-1.3130428162},{-1.7302259677,-1.6946390292},{-1.6251183208,-1.4596646531},{-1.1554665943,-1.3996255104},
+	{-1.0637525532,-1.1070952415},{-1.9255220722,-1.5234205839},{-1.813523245,-1.7158288746},{-1.9907881399,-1.3364097863},
+	{-1.5757290861,-1.4545474043},{-1.2234733799,-1.2240700501},{-1.1987093659,-1.4300842322},{-1.7371415999,-1.0589492919},
+	{-1.7862214481,-1.7089928694},{-1.5447988447,-1.8786691155},{-1.8942571087,-1.9270268467},{-1.4131287741,-1.6245039811},
+	{-1.0443317548,-1.8678077834},{-1.5001099929,-1.3885056498},{-1.8835819457,-1.5759522987},{-1.0680202101,-1.1852649504},
+	{-0.976124089,-1.6180829406},{-0.1726532248,-1.7429905916},{-0.7753616511,-1.1025065775},{-0.8999212591,-1.4995526457},
+	{-0.607751678,-1.8206607997},{-0.9669094409,-1.3633704758},{-0.3494740913,-1.3213489326},{-0.0067705042,-1.040282838},
+	{-0.6658051098,-1.1330721979},{-0.3430613053,-1.1621067699},{-0.3855581263,-1.6599861803},{-0.083313188,-1.5992019565},
+	{-0.8321527024,-1.0272506387},{-0.5445817818,-1.6194362391},{-0.7967681114,-1.2775704595},{-0.2214680284,-1.2964711641},
+	{-0.1816982529,-1.6242273855},{-0.3451157166,-1.0219284706},{-0.9402977456,-1.9560563625},{-0.1099015772,-1.9436369832},
+	{-0.3249994402,-1.3130428162},{-0.7302259677,-1.6946390292},{-0.6251183208,-1.4596646531},{-0.1554665943,-1.3996255104},
+	{-0.0637525532,-1.1070952415},{-0.9255220722,-1.5234205839},{-0.813523245,-1.7158288746},{-0.9907881399,-1.3364097863},
+	{-0.5757290861,-1.4545474043},{-0.2234733799,-1.2240700501},{-0.1987093659,-1.4300842322},{-0.7371415999,-1.0589492919},
+	{-0.7862214481,-1.7089928694},{-0.5447988447,-1.8786691155},{-0.8942571087,-1.9270268467},{-0.4131287741,-1.6245039811},
+	{-0.0443317548,-1.8678077834},{-0.5001099929,-1.3885056498},{-0.8835819457,-1.5759522987},{-0.0680202101,-1.1852649504},
+	{0.7756642951,-1.3875174306},{0.0007477794,-1.7535263395},{0.1486754336,-1.6949861362},{0.4112578223,-1.5778728577},
+	{0.2404401968,-1.2271274638},{0.0103501924,-1.7481459239},{0.0296794723,-1.3997980794},{0.4371474069,-1.3633766191},
+	{0.3145105685,-1.0780697165},{0.9038771724,-1.9043819481},{0.5861932419,-1.7660002813},{0.1688468996,-1.5831418226},
+	{0.787674079,-1.423473675},{0.9695329207,-1.8228401768},{0.3954715841,-1.7778132861},{0.0765325117,-1.8046477444},
+	{0.7355093854,-1.5665583133},{0.0726364553,-1.8255274778},{0.3235042021,-1.7918204865},{0.5873798011,-1.5158537489},
+	{0.4781294588,-1.1906945852},{0.602906262,-1.78618134},{0.795998682,-1.3270501599},{0.8979716203,-1.5026051586},
+	{0.5480689027,-1.9169896541},{0.8907558299,-1.7365587598},{0.4805090041,-1.2965910463},{0.5968469442,-1.917501193},
+	{0.3574692875,-1.0557353233},{0.6534147975,-1.2346216682},{0.4900979213,-1.3873518452},{0.3194338754,-1.6314795793},
+	{0.8625183925,-1.0589964024},{0.4055090565,-1.3075602588},{0.0782075296,-1.2786135017},{0.2948574151,-1.8746728378},
+	{0.3118235911,-1.2126379462},{0.9623518405,-1.2105501306},{0.2637937481,-1.4808701964},{0.4598901793,-1.5049176225}
+	};
+	
+	//now creat an object of topoogical inference based on it:
+	std::vector< std::pair< double,double > > coorfinates_of_grid(2);
+	coorfinates_of_grid[0] = coorfinates_of_grid[1] = std::pair<double,double>( -2.0 , 1 );
+	std::vector< unsigned > resolution_of_a_grid(2);	
+	resolution_of_a_grid[0] = resolution_of_a_grid[1] = 100;
+	unsigned number_of_nearest_neighbors = 5;
+	
+	//typedefs:
+    Gudhi::Topological_inference_with_cubical_complexes::Euclidan_distance_squared eu;
+    Gudhi::Topological_inference_with_cubical_complexes::Distance_to_k_th_closest_point<Gudhi::Topological_inference_with_cubical_complexes::Euclidan_distance_squared> 
+    f( point_cloud ,eu ,  number_of_nearest_neighbors );
+  
+    typedef Gudhi::Cubical_complex::Bitmap_cubical_complex_base<double> Bitmap_cubical_complex_base;
+    typedef Gudhi::Cubical_complex::Bitmap_cubical_complex<Bitmap_cubical_complex_base> Bitmap_cubical_complex;
+    typedef Gudhi::Topological_inference_with_cubical_complexes::Topological_inference< Bitmap_cubical_complex , double ,   
+    Gudhi::Topological_inference_with_cubical_complexes::Distance_to_k_th_closest_point<Gudhi::Topological_inference_with_cubical_complexes::Euclidan_distance_squared> > topological_inference;
+  
+    typedef Gudhi::persistent_cohomology::Field_Zp Field_Zp;
+    typedef Gudhi::persistent_cohomology::Persistent_cohomology<topological_inference, Field_Zp> Persistent_cohomology;
+
+    topological_inference b( coorfinates_of_grid , resolution_of_a_grid , f );  
+    
+    
+    //now build Morphological_operations_cubical_complex based on topological inference object:
+    typedef Gudhi::Topological_inference_with_cubical_complexes::Filtration_below_certain_value<double> Predictor_type;
+    typedef Gudhi::Topological_inference_with_cubical_complexes::Morphological_operations_cubical_complex<topological_inference,Predictor_type> MOCC;
+        
+    Predictor_type pred(0.1);
+        
+	MOCC mor( b , pred );	
+	
+	//mor.compute_complement();
+	
+	mor.dilation(1 , Gudhi::Topological_inference_with_cubical_complexes::considered_neighberhoods::all );
+	
+	b.write_to_file_with_newlines_at_the_ends_of_structure("annulus");
+    
+     
+
+    // Compute the persistence diagram of the complex
+    Persistent_cohomology pcoh(b);
+    pcoh.init_coefficients(2);  // initializes the coefficient field for homology
+    pcoh.compute_persistent_cohomology(0.2);
+    
+ 
+    
+    std::vector< std::tuple<size_t, size_t, int> > intervals = pcoh.get_persistent_pairs();   
+    //Here are the intervals we expect to see:
+    //dimenion : 1, 0 1
+	//dimenion : 1, 0 10
+	//dimenion : 0, 0 inf
+
+    for ( size_t i = 0 ; i != intervals.size() ; ++i )
+    {
+		//std::cout << "dimenion : " << b.get_dimension_of_a_cell(std::get<0>(intervals[i])) << " " << b.filtration(std::get<0>(intervals[i])) << " " << b.filtration(std::get<1>(intervals[i])) << std::endl;
+		if ( b.get_dimension_of_a_cell(std::get<0>(intervals[i])) == 0 )
+		{			
+		    BOOST_CHECK( b.filtration(std::get<0>(intervals[i])) == 0) ;
+		    BOOST_CHECK( b.filtration(std::get<1>(intervals[i])) == std::numeric_limits<double>::infinity()	);
+	   
+		}
+		else
+		{		
+			if ( b.get_dimension_of_a_cell(std::get<0>(intervals[i])) == 1 )
+		    {				
+				if ( b.filtration(std::get<1>(intervals[i])) == 1 )
+				{
+					 BOOST_CHECK( b.filtration(std::get<0>(intervals[i]))  == 0 );
+					 BOOST_CHECK( b.filtration(std::get<1>(intervals[i])) == 1 );			 
+				}
+				else
+				{
+					 BOOST_CHECK( b.filtration(std::get<0>(intervals[i]))  == 0 );
+					 BOOST_CHECK( b.filtration(std::get<1>(intervals[i])) == 10 );				
+				}
+			}
+		}
+	}
+}
 

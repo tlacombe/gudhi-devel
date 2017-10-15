@@ -1376,8 +1376,8 @@ BOOST_AUTO_TEST_CASE(Top_dimensional_cells_iterator_range_check)
     }
 }
 
-
-BOOST_AUTO_TEST_CASE(get_all_top_dimensional_cubes_incident_to_the_given_top_dimensional_cell_check_2d)
+/*
+BOOST_AUTO_TEST_CASE(get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube_check_2d_)
 {
 	std::vector< std::vector<unsigned> > result = 
 	{
@@ -1413,21 +1413,22 @@ BOOST_AUTO_TEST_CASE(get_all_top_dimensional_cubes_incident_to_the_given_top_dim
     for ( Bitmap_cubical_complex_base::Top_dimensional_cells_iterator it = b.top_dimensional_cells_iterator_begin() ; 
 																	  it != b.top_dimensional_cells_iterator_end() ; ++it )
 	{
-		std::vector< size_t > neighs = b.get_all_top_dimensional_cubes_incident_to_the_given_top_dimensional_cell( *it );
+		std::vector< size_t > neighs = b.get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube( *it );
 		std::sort( neighs.begin() , neighs.end() );
 		
 		BOOST_CHECK( neighs.size() == result[counter].size() );
 				
 		for ( size_t i = 0 ; i != neighs.size() ; ++i )
 		{
+			//std::cout << neighs[i] << " ";
 			BOOST_CHECK( neighs[i] == result[counter][i] );
-		}
+		}		
 		++counter;
 	}	
 }
 
 
-BOOST_AUTO_TEST_CASE(get_all_top_dimensional_cubes_incident_to_the_given_top_dimensional_cell_check_3d)
+BOOST_AUTO_TEST_CASE(get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube_check_3d_)
 {
 	std::vector< std::vector<unsigned> > result = 
 	{
@@ -1474,18 +1475,21 @@ BOOST_AUTO_TEST_CASE(get_all_top_dimensional_cubes_incident_to_the_given_top_dim
     for ( Bitmap_cubical_complex_base::Top_dimensional_cells_iterator it = b.top_dimensional_cells_iterator_begin() ; 
 																	  it != b.top_dimensional_cells_iterator_end() ; ++it )
 	{
-		std::vector< size_t > neighs = b.get_all_top_dimensional_cubes_incident_to_the_given_top_dimensional_cell( *it );
+		std::vector< size_t > neighs = b.get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube( *it );
 		std::sort( neighs.begin() , neighs.end() );
 		
 		BOOST_CHECK( neighs.size() == result[counter].size() );
 				
 		for ( size_t i = 0 ; i != neighs.size() ; ++i )
 		{			
+			//std::cout << neighs[i] << " ";
 			BOOST_CHECK( neighs[i] == result[counter][i] );
 		}
+		//getchar();
 		++counter;
 	}	
 }
+*/
 
 
 
@@ -1496,7 +1500,7 @@ BOOST_AUTO_TEST_CASE(get_all_top_dimensional_cubes_incident_to_the_given_top_dim
 
 
 
-BOOST_AUTO_TEST_CASE(get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube_check_2d)
+BOOST_AUTO_TEST_CASE(get_all_top_dimensional_cubes_incident_to_the_given_top_dimensional_cellcheck_2d)
 {
 	std::vector< std::vector<unsigned> > result = 
 	{
@@ -1513,7 +1517,7 @@ BOOST_AUTO_TEST_CASE(get_all_top_dimensional_cubes_sharing_codimension_1_face_wi
 	
 	std::vector< unsigned > sizes(2);
     sizes[0] = 3;
-    sizes[1] = 3;
+    sizes[1] = 3;    
 
     std::vector< double > data(9);
     data[0] = 0;
@@ -1526,28 +1530,29 @@ BOOST_AUTO_TEST_CASE(get_all_top_dimensional_cubes_sharing_codimension_1_face_wi
     data[7] = 7;
     data[8] = 8;
     
-    Bitmap_cubical_complex_base b( sizes , data );
+    Bitmap_cubical_complex_base b( sizes , data );   
    
     size_t counter = 0;
     for ( Bitmap_cubical_complex_base::Top_dimensional_cells_iterator it = b.top_dimensional_cells_iterator_begin() ; 
 																	  it != b.top_dimensional_cells_iterator_end() ; ++it )
 	{
-		std::vector< size_t > neighs = b.get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube( *it );
+		std::vector< size_t > neighs = b.get_all_top_dimensional_cubes_incident_to_the_given_top_dimensional_cell( *it );				
 		std::sort( neighs.begin() , neighs.end() );
 		
+		//std::cout << "neighs.size() : " << neighs.size() << std::endl;		
 		BOOST_CHECK( neighs.size() == result[counter].size() );
 				
 		for ( size_t i = 0 ; i != neighs.size() ; ++i )
 		{
 			//std::cout << neighs[i] << " ";
 			BOOST_CHECK( neighs[i] == result[counter][i] );
-		}
+		}		
 		++counter;		
 	}	
 }
 
 
-BOOST_AUTO_TEST_CASE(get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube_check_3d)
+BOOST_AUTO_TEST_CASE(get_all_top_dimensional_cubes_incident_to_the_given_top_dimensional_cell_check_3d)
 {
 	std::vector< std::vector<unsigned> > result = 
 	{		
@@ -1594,7 +1599,7 @@ BOOST_AUTO_TEST_CASE(get_all_top_dimensional_cubes_sharing_codimension_1_face_wi
     for ( Bitmap_cubical_complex_base::Top_dimensional_cells_iterator it = b.top_dimensional_cells_iterator_begin() ; 
 																	  it != b.top_dimensional_cells_iterator_end() ; ++it )
 	{
-		std::vector< size_t > neighs = b.get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube( *it );
+		std::vector< size_t > neighs = b.get_all_top_dimensional_cubes_incident_to_the_given_top_dimensional_cell( *it );
 		std::sort( neighs.begin() , neighs.end() );
 		
 		BOOST_CHECK( neighs.size() == result[counter].size() );
@@ -1602,7 +1607,7 @@ BOOST_AUTO_TEST_CASE(get_all_top_dimensional_cubes_sharing_codimension_1_face_wi
 		for ( size_t i = 0 ; i != neighs.size() ; ++i )
 		{		
 			//std::cout << neighs[i] << " ";	
-			BOOST_CHECK( neighs[i] == result[counter][i] );
+			BOOST_CHECK( neighs[i] == result[counter][i] );			
 		}
 		//std::cout << std::endl;	
 		++counter;
@@ -1838,4 +1843,29 @@ BOOST_AUTO_TEST_CASE(get_all_top_dimensional_cubes_sharing_codimension_1_face_wi
 		//getchar();
 		++counter;
 	}	
+}
+
+
+
+BOOST_AUTO_TEST_CASE(which_top_dimensional_cube_this_is_test)
+{
+	std::vector< unsigned > position_of_top_dimensional_cubes = 
+	{8,10,12,22,24,26,36,38,40};
+	
+	std::vector< unsigned > sizes(2);
+    sizes[0] = 3;
+    sizes[1] = 3;
+    
+
+    std::vector< double > data(9);
+    for ( size_t i = 0 ; i != 9 ; ++i )data[i] = i;    
+    
+    Bitmap_cubical_complex_periodic_boundary_conditions b( sizes , data );
+    
+    for ( size_t i = 0 ; i != position_of_top_dimensional_cubes.size() ; ++i )
+    {	
+		BOOST_CHECK(  b.which_top_dimensional_cube_this_is( position_of_top_dimensional_cubes[i] ) == i );
+	}
+    
+    
 }

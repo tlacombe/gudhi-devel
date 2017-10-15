@@ -102,7 +102,7 @@ class Bitmap_cubical_complex_base {
    * In the case of functions that compute (co)boundary, the output is a vector if non-negative integers pointing to
    * the positions of (co)boundary element of the input cell.
    */
-  virtual inline std::vector< size_t > get_boundary_of_a_cell(size_t cell)const;
+  virtual inline std::vector< position_index_type > get_boundary_of_a_cell(size_t cell)const;
   /**
    * The functions get_coboundary_of_a_cell, get_coboundary_of_a_cell,
    * get_dimension_of_a_cell and get_cell_data are the basic
@@ -114,20 +114,20 @@ class Bitmap_cubical_complex_base {
    * non-negative integers pointing to the
    * positions of (co)boundary element of the input cell.
    **/
-  virtual inline std::vector< size_t > get_coboundary_of_a_cell(size_t cell)const;
+  virtual inline std::vector< position_index_type > get_coboundary_of_a_cell(size_t cell)const;
   
   /**
    * For a given cube C this procedure returns a vector of position of all top dimensional cubes
    * having nonemtpy itersection with C.
   **/ 	
-  virtual inline std::vector<size_t> get_all_top_dimensional_cubes_incident_to_the_given_top_dimensional_cell(size_t cell)const;
+  virtual inline std::vector< position_index_type > get_all_top_dimensional_cubes_incident_to_the_given_top_dimensional_cell(size_t cell)const;
   
   /**
    * For a given cube C this procedure returns a vector of position of all top dimensional cubes
    * sharing co-dimension 1 face with C (i.e. all the cubes D such that C intersect D has a dimension
    * of C (or D) minus 1).
   **/ 	
-  virtual inline std::vector<size_t> get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube(size_t cell)const;
+  virtual inline std::vector< position_index_type > get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube(size_t cell)const;
   
   
   /**
@@ -508,6 +508,25 @@ class Bitmap_cubical_complex_base {
 	  }
 	  return result;
   }
+  
+  /**
+   * Given a posion of top dimensional cube (top_dim_cube_pos), this procedure 
+   * compute a number being the number of top dimensional cubes having index 
+   * smaller or equal to top_dim_cube_pos.
+  **/ 
+  inline unsigned which_top_dimensional_cube_this_is( unsigned top_dim_cube_pos )
+  {
+	  std::vector<unsigned> counter = this->compute_counter_for_given_cell( top_dim_cube_pos );
+	  std::vector<unsigned> top_dim_counter = this->convert_bitmap_counter_to_top_dimensional_cube_counter( counter );
+	  unsigned result = 0;
+	  unsigned multipliers = 1;
+	  for ( size_t i = 0 ; i != this->sizes.size() ; ++i )
+	  {
+		  result += top_dim_counter[i]*multipliers;
+		  multipliers *= this->sizes[i];
+	  }
+	  return result;
+  }
 
   //****************************************************************************************************************//
   //****************************************************************************************************************//
@@ -531,10 +550,12 @@ protected:
     this->total_number_of_cells = multiplier;
   }
   
-  //this procedure converts a counter that allows to iterate on the whole
-  //bitmap to the counter describing a position of top dimensional cube
-  //in a bitmap. This procedure assimes that the counter given as the 
-  //argument comes from top dimensional element in the complex.
+  /**
+  * This procedure converts a counter that allows to iterate on the whole
+  * bitmap to the counter describing a position of top dimensional cube
+  * in a bitmap. This procedure assimes that the counter given as the 
+  * argument comes from top dimensional element in the complex.
+  **/ 
   inline std::vector<unsigned> convert_bitmap_counter_to_top_dimensional_cube_counter( std::vector<unsigned> counter )const
   {	  
 	  for ( size_t i = 0 ; i != counter.size() ; ++i )
@@ -549,9 +570,11 @@ protected:
 	  return counter;
   }
   
-  //this procedure converts a counter that allows to iterate on the top
-  //dimensional elements in bitmap to a proper counter that allows to iterate
-  //on all elements of bitmap. 
+  /**
+   * This procedure converts a counter that allows to iterate on the top
+  * dimensional elements in bitmap to a proper counter that allows to iterate
+  * on all elements of bitmap. 
+  **/ 
   inline std::vector<unsigned> convert_top_dimensional_cube_counter_to_bitmap_counter( std::vector<unsigned> counter )const
   {
 	  bool dbg = false;
@@ -576,8 +599,10 @@ protected:
 	  }
 	  return counter;
   }
+  
+  
 
-  size_t compute_position_in_bitmap(const std::vector< unsigned >& counter)const {
+  inline size_t compute_position_in_bitmap(const std::vector< unsigned >& counter)const {
     size_t position = 0;
     for (size_t i = 0; i != this->multipliers.size(); ++i) {
       position += this->multipliers[i] * counter[i];
@@ -585,7 +610,7 @@ protected:
     return position;
   }
 
-  std::vector<unsigned> compute_counter_for_given_cell(size_t cell)const {
+  inline std::vector<unsigned> compute_counter_for_given_cell(size_t cell)const {
     std::vector<unsigned> counter;
     counter.reserve(this->sizes.size());
     for (size_t dim = this->sizes.size(); dim != 0; --dim) {
@@ -822,10 +847,10 @@ std::vector< size_t > Bitmap_cubical_complex_base<T>::get_coboundary_of_a_cell(s
 }
 
 template <typename T>
-std::vector< position_index_type > Bitmap_cubical_complex_base<T>::get_all_top_dimensional_cubes_incident_to_the_given_top_dimensional_cell(size_t cell)const
+std::vector< typename Bitmap_cubical_complex_base<T>::position_index_type > Bitmap_cubical_complex_base<T>::get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube(size_t cell)const
 {
   bool dbg = false;
-  std::vector< size_t > neighbor_elements;
+  std::vector< typename Bitmap_cubical_complex_base<T>::position_index_type > neighbor_elements;
   
   std::vector<unsigned> counter = this->compute_counter_for_given_cell(cell);
   
@@ -923,10 +948,10 @@ std::vector< position_index_type > Bitmap_cubical_complex_base<T>::get_all_top_d
   
  	
 template <typename T>
-std::vector< position_index_type > Bitmap_cubical_complex_base<T>::get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube(size_t cell)const
+std::vector< typename Bitmap_cubical_complex_base<T>::position_index_type > Bitmap_cubical_complex_base<T>::get_all_top_dimensional_cubes_incident_to_the_given_top_dimensional_cell(size_t cell)const
 {
   bool dbg = false;
-  std::vector< size_t > neighbor_elements;
+  std::vector< typename Bitmap_cubical_complex_base<T>::position_index_type > neighbor_elements;
   
   std::vector<unsigned> counter = this->compute_counter_for_given_cell(cell);
   
