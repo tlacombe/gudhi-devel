@@ -45,7 +45,8 @@ using Points_off_reader = Gudhi::Points_off_reader<Point>;
 
 int main(int argc, char** argv) 
 {	
-	
+  std::cout << "The program take a point cloud, build a periodic cubical grid that encapsulate them, and compute persistent homology of the distance function\
+  from the center point of every grid element to k-th nearest neighbors in the point cloud.\n";	
   std::cout << "The parameters of the program are: \n";
   std::cout << "(1) A file in an OFF format with points coordinates, \n";
   std::cout << "(2) Dimension of a space, \n";

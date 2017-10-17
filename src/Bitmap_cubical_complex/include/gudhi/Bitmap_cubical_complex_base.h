@@ -131,6 +131,24 @@ class Bitmap_cubical_complex_base {
   
   
   /**
+   * Given a counter, return position of the element.
+  **/ 
+  virtual inline position_index_type get_position_of_cube_given_counter( const std::vector<unsigned>& counter )
+  {
+	  if ( this->multipliers.size() != counter.size() )
+	  {
+		  throw "Wrong dimension of a counter in get_position_of_cube_given_counter procedure.";
+	  }
+	  position_index_type result = 0;
+	  for ( size_t i = 0 ; i != this->multipliers.size() ; ++i )
+	  {
+		  result += this->multipliers[i]*counter[i];
+	  }
+	  return result;
+  }
+  
+  
+  /**
    * In the case of get_dimension_of_a_cell function, the output is a non-negative integer
    * indicating the dimension of a cell.
    **/
@@ -510,9 +528,9 @@ class Bitmap_cubical_complex_base {
   }
   
   /**
-   * Given a posion of top dimensional cube (top_dim_cube_pos), this procedure 
-   * compute a number being the number of top dimensional cubes having index 
-   * smaller or equal to top_dim_cube_pos.
+   * Given a posion of top dimensional cube (top_dim_cube_pos), in the bitmap
+   * containing cubes of all dimensions, this procedure compute a number of 
+   * top dimensional cubes having index smaller or equal to top_dim_cube_pos.
   **/ 
   inline unsigned which_top_dimensional_cube_this_is( unsigned top_dim_cube_pos )
   {
@@ -527,28 +545,88 @@ class Bitmap_cubical_complex_base {
 	  }
 	  return result;
   }
-
-  //****************************************************************************************************************//
-  //****************************************************************************************************************//
-  //****************************************************************************************************************//
-  //****************************************************************************************************************//
-
-protected:
-  std::vector<unsigned> sizes;
-  std::vector<unsigned> multipliers;
-  std::vector<T> data;
-  size_t total_number_of_cells;
-
-  void set_up_containers(const std::vector<unsigned>& sizes) {
-    unsigned multiplier = 1;
-    for (size_t i = 0; i != sizes.size(); ++i) {
-      this->sizes.push_back(sizes[i]);
-      this->multipliers.push_back(multiplier);
-      multiplier *= 2 * sizes[i] + 1;
-    }
-    this->data = std::vector<T>(multiplier, std::numeric_limits<T>::max());
-    this->total_number_of_cells = multiplier;
+  
+  /**
+   * Inverse to which_top_dimensional_cube_this_is, given the order number of a top dimensional
+   * cube, this procedure compute its position in the bitmap.
+  **/ 
+  inline position_index_type compute_position_of_nth_top_dimensional_cube_in_bitmap( unsigned number_of_top_dimensional_cube )
+  {
+	  bool dbg = false;
+	  //compute the local multipliers for the top dimensional cubes:
+	  std::vector< unsigned > local_multipliers( this->sizes.size() , 0 );
+	  unsigned mul = 1;
+	  for ( size_t i = 0 ; i != this->sizes.size() ; ++i )
+	  {		  
+		  local_multipliers[i] = mul;		  
+		  mul *= this->sizes[0];
+	  }
+	  
+	  if ( dbg )
+	  {
+		  std::cout << "Here are the locla multipliers : \n";
+		  for ( size_t i = 0 ; i != local_multipliers.size() ; ++i )
+		  {
+			  std::cout << local_multipliers[i] << std::endl;			 
+		  }
+		  getchar();
+	  }
+	  
+	  //now we can compute the counter for number_of_top_dimensional_cube:
+	  std::vector< unsigned > counter;
+	  counter.reserve(this->sizes.size());
+      for (size_t dim = local_multipliers.size(); dim != 0; --dim) 
+      {
+          counter.push_back(number_of_top_dimensional_cube / local_multipliers[dim - 1]);
+          number_of_top_dimensional_cube = number_of_top_dimensional_cube % local_multipliers[dim - 1];
+      }
+      std::reverse(counter.begin(), counter.end());
+      
+      if ( dbg )
+      {
+		  std::cout << "Here is the counter : \n";
+		  for ( size_t i = 0 ; i != counter.size() ; ++i )
+		  {
+			  std::cout << counter[i] << std::endl;			 
+		  }
+		  getchar();
+	  }
+      
+      //now we have a counter of this element, and we can use:
+      std::vector<unsigned> bitmap_counter = 
+      counter = this->convert_top_dimensional_cube_counter_to_bitmap_counter( counter );
+      
+      if ( dbg )
+      {
+		  std::cout << "Here is the counter on the full bitmap : \n";
+		  for ( size_t i = 0 ; i != counter.size() ; ++i )
+		  {
+			  std::cout << counter[i] << std::endl;			 
+		  }
+		  getchar();
+	  }
+      
+      //and now, given the bitmap counter, we can recover the position of this element:
+      return this->get_position_of_cube_given_counter( counter );	  
   }
+  
+
+  //****************************************************************************************************************//
+  //****************************************************************************************************************//
+  //****************************************************************************************************************//
+  //****************************************************************************************************************//
+  
+  /**
+   * This procedure compute posistion in a bitmap of an element given by a counter. 
+  **/ 
+  virtual inline position_index_type compute_position_in_bitmap(const std::vector< unsigned >& counter)const {
+    size_t position = 0;
+    for (size_t i = 0; i != this->multipliers.size(); ++i) {
+      position += this->multipliers[i] * counter[i];
+    }
+    return position;
+  }
+  
   
   /**
   * This procedure converts a counter that allows to iterate on the whole
@@ -599,16 +677,26 @@ protected:
 	  }
 	  return counter;
   }
-  
-  
 
-  inline size_t compute_position_in_bitmap(const std::vector< unsigned >& counter)const {
-    size_t position = 0;
-    for (size_t i = 0; i != this->multipliers.size(); ++i) {
-      position += this->multipliers[i] * counter[i];
+protected:
+  std::vector<unsigned> sizes;
+  std::vector<unsigned> multipliers;
+  std::vector<T> data;
+  size_t total_number_of_cells;
+
+  void set_up_containers(const std::vector<unsigned>& sizes) {
+    unsigned multiplier = 1;
+    for (size_t i = 0; i != sizes.size(); ++i) {
+      this->sizes.push_back(sizes[i]);
+      this->multipliers.push_back(multiplier);
+      multiplier *= 2 * sizes[i] + 1;
     }
-    return position;
+    this->data = std::vector<T>(multiplier, std::numeric_limits<T>::max());
+    this->total_number_of_cells = multiplier;
   }
+  
+  
+  
 
   inline std::vector<unsigned> compute_counter_for_given_cell(size_t cell)const {
     std::vector<unsigned> counter;
@@ -1039,7 +1127,7 @@ std::vector< typename Bitmap_cubical_complex_base<T>::position_index_type > Bitm
 
 		bool can_we_increment = c.increment();
 		if ( !can_we_increment )break;	 	  
-  }
+  }  
   if ( dbg )
   {
 	  std::cout << "Here is the result : \n";

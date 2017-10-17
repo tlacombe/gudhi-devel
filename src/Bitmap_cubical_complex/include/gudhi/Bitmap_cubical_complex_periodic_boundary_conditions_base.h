@@ -48,7 +48,7 @@ namespace cubical_complex {
 template <typename T>
 class Bitmap_cubical_complex_periodic_boundary_conditions_base : public Bitmap_cubical_complex_base<T> {
  public:
-  // constructors that take an extra parameter:   
+  typedef size_t position_index_type;
 
   /**
    * Default constructor of Bitmap_cubical_complex_periodic_boundary_conditions_base class.
@@ -110,6 +110,26 @@ class Bitmap_cubical_complex_periodic_boundary_conditions_base : public Bitmap_c
   **/ 	
   virtual inline std::vector< typename Bitmap_cubical_complex_base<T>::position_index_type > get_all_top_dimensional_cubes_sharing_codimension_1_face_with_given_top_dimensional_cube(size_t cell)const;
   
+  
+  /**
+   * Given a counter, return position of the element.
+  **/  
+  virtual inline position_index_type get_position_of_cube_given_counter( const std::vector<unsigned>& counter )
+  {
+     if ( this->multipliers.size() != counter.size() )
+    {
+      throw "Wrong dimension of a counter in get_position_of_cube_given_counter procedure.";
+    }	  
+    std::vector<unsigned> copy_counter(counter);
+    position_index_type result = 0;
+    for ( size_t i = 0 ; i != this->multipliers.size() ; ++i )
+    {
+      if ( copy_counter[i] == 2*this->sizes[i]+1 )copy_counter[i] = 0;
+      result += this->multipliers[i]*copy_counter[i];
+    }
+    return result;
+  }
+  
   /**
    * This is a procedure to check if the cubical complex is periodic
    * in a given direction.
@@ -121,6 +141,23 @@ class Bitmap_cubical_complex_periodic_boundary_conditions_base : public Bitmap_c
 		  return this->directions_in_which_periodic_b_cond_are_to_be_imposed[ direction ];
 	  }
 	  return false;
+  }
+  
+  
+  /**
+   * This procedure compute posistion in a bitmap of an element given by a counter. 
+  **/ 
+  virtual inline position_index_type compute_position_in_bitmap(const std::vector< unsigned >& counter)const {
+	std::vector< unsigned > copy_counter(counter);
+    size_t position = 0;
+    for (size_t i = 0; i != this->multipliers.size(); ++i) {
+	  if ( copy_counter[i] == 2*this->sizes[i] )	
+	  {
+		  copy_counter[i] = 0;
+	  }
+      position += this->multipliers[i] * copy_counter[i];
+    }
+    return position;
   }
 
  protected:
@@ -379,6 +416,7 @@ std::vector<  typename Bitmap_cubical_complex_base<T>::position_index_type  > Bi
   }  
   return neighbor_elements; 
 }//get_all_top_dimensional_cubes_incident_to_the_given_cell
+  
   
  	
 template <typename T>

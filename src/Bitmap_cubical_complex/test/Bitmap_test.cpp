@@ -1866,6 +1866,218 @@ BOOST_AUTO_TEST_CASE(which_top_dimensional_cube_this_is_test)
     {	
 		BOOST_CHECK(  b.which_top_dimensional_cube_this_is( position_of_top_dimensional_cubes[i] ) == i );
 	}
-    
-    
+}
+
+
+BOOST_AUTO_TEST_CASE(compute_position_of_nth_top_dimensional_cube_in_bitmap_non_periodic_test)
+{
+	//2d case, full dimensional cubes:
+	{
+		std::vector< unsigned > sizes(2);
+		sizes[0] = sizes[1] = 5;
+		std::vector<double> data(25,0);	
+		Bitmap_cubical_complex_periodic_boundary_conditions b1(sizes,data);
+		
+		std::vector<unsigned> result1 = 
+		{
+		 12,14,16,18,20,
+		 34,36,38,40,42,     
+		 56,58,60,62,64,
+		 78,80,82,84,86,
+		 100,102,104,106,108
+		};
+		
+		for ( size_t i = 0 ; i <= 24 ; ++i )
+		{
+			//std::cout << b.compute_position_of_nth_top_dimensional_cube_in_bitmap(i) << std::endl;
+			BOOST_CHECK( b1.compute_position_of_nth_top_dimensional_cube_in_bitmap(i) == result1[i] );
+		}
+	}
+	
+	//3d case, full dimensional cubes:
+	{
+		std::vector< unsigned > sizes(3);
+		sizes[0] = sizes[1] = sizes[2] = 3;
+		std::vector<double> data(27,0);	
+		Bitmap_cubical_complex b1(sizes,data);
+		
+		std::vector<unsigned> result1 = 
+		{
+		57,	59, 61,
+		71, 73,	75,
+		85, 87,	89,
+		
+		155,157,159,
+		169,171,173,
+		183,185,187,
+		
+		253,255,257,
+		267,269,271,
+		281,283,285
+		};
+		
+		for ( size_t i = 0 ; i <= 26 ; ++i )
+		{
+			//std::cout << b1.compute_position_of_nth_top_dimensional_cube_in_bitmap(i) << std::endl;
+			BOOST_CHECK( b1.compute_position_of_nth_top_dimensional_cube_in_bitmap(i) == result1[i] );
+		}
+	}
+}
+
+
+BOOST_AUTO_TEST_CASE(get_position_of_cube_given_counter_test)
+{
+	//cos jest mocno nie tak z compute_position_in_bitmap, sprawdz to!!!
+	//2d non periodic case:
+	{
+		std::vector< unsigned > sizes(2);
+		sizes[0] = sizes[1] = 3;
+		std::vector<double> data(9);	
+		for ( size_t i = 0 ; i != data.size() ; ++i )
+		{
+			data[i] = i;
+		}
+		Bitmap_cubical_complex b(sizes,data);
+		
+		std::vector<unsigned> end_counter = {6,6};
+		
+		
+		Gudhi::cubical_complex::counter c(end_counter);
+		size_t counter = 0;
+		while (true)
+		{
+			Bitmap_cubical_complex::position_index_type position =
+			b.compute_position_in_bitmap( c.give_me_current() );			
+			BOOST_CHECK( b.compute_position_in_bitmap( c.give_me_current() ) == counter );
+			
+			bool can_we_go_on = c.increment();
+			if ( !can_we_go_on )break;
+			++counter;
+		}	
+	}
+	
+	//2d periodic case:
+	{
+		std::vector< unsigned > sizes(2);
+		sizes[0] = sizes[1] = 3;
+		std::vector<double> data(9);	
+		for ( size_t i = 0 ; i != data.size() ; ++i )
+		{
+			data[i] = i;
+		}
+		std::vector<bool> directions_of_periodic_boundary_conditions(2);
+		directions_of_periodic_boundary_conditions[0] = 
+		directions_of_periodic_boundary_conditions[1] = true;
+		Bitmap_cubical_complex_periodic_boundary_conditions b(sizes,data,directions_of_periodic_boundary_conditions);
+		
+		std::vector<unsigned> end_counter = {6,6};
+		
+		
+		Gudhi::cubical_complex::counter c(end_counter);
+		
+		std::vector<unsigned> result = 
+		{
+		0,1,2,3,4,5,0,6,7,8,9,10,11,6,12,13,14,15,16,17,12,18,19,20,21,22,23,18,24,25,26,27,28,29,24,30,31,32,33,34,35,30,0,1,2,3,4,5,0
+		};
+		
+		
+		size_t counter = 0;
+		while (true)
+		{
+			Bitmap_cubical_complex::position_index_type position =
+			b.compute_position_in_bitmap( c.give_me_current() );
+			
+						
+			//for ( size_t i = 0 ; i != c.give_me_current().size() ; ++i )
+			//{
+			//	std::cout << c.give_me_current()[i] << " ";
+			//}		
+			//std::cout << position << " ";
+			//getchar();
+			 
+			
+			BOOST_CHECK( b.compute_position_in_bitmap( c.give_me_current() ) == result[counter] );
+			
+			bool can_we_go_on = c.increment();
+			if ( !can_we_go_on )break;
+			++counter;
+		}	
+	}
+	
+	
+	//3d non periodic test
+	{
+		std::vector< unsigned > sizes(3);
+		sizes[0] = sizes[1] = sizes[2] = 3;
+		std::vector<double> data(27);	
+		for ( size_t i = 0 ; i != data.size() ; ++i )
+		{
+			data[i] = i;
+		}
+		Bitmap_cubical_complex b(sizes,data);
+		
+		std::vector<unsigned> end_counter = {6,6,6};
+		
+		
+		Gudhi::cubical_complex::counter c(end_counter);
+		size_t counter = 0;
+		while (true)
+		{
+			Bitmap_cubical_complex::position_index_type position =
+			b.compute_position_in_bitmap( c.give_me_current() );						
+			BOOST_CHECK( b.compute_position_in_bitmap( c.give_me_current() ) == counter );
+			
+			bool can_we_go_on = c.increment();
+			if ( !can_we_go_on )break;
+			++counter;
+		}	
+	}
+	
+	
+	//3d periodic test
+	{
+		std::vector< unsigned > sizes(3);
+		sizes[0] = sizes[1] = sizes[2] = 3;
+		std::vector<double> data(27);	
+		for ( size_t i = 0 ; i != data.size() ; ++i )
+		{
+			data[i] = i;
+		}
+		std::vector<bool> directions_of_periodic_boundary_conditions(3);
+		directions_of_periodic_boundary_conditions[0] = 
+		directions_of_periodic_boundary_conditions[1] = 
+		directions_of_periodic_boundary_conditions[2] = true;
+		Bitmap_cubical_complex_periodic_boundary_conditions b(sizes,data);
+		
+		std::vector<unsigned> end_counter = {6,6,6};
+		
+		std::vector<unsigned> result = 
+		{
+			0,1,2,3,4,5,0,7,8,9,10,11,12,7,14,15,16,17,18,19,14,21,22,23,24,25,26,21,28,29,30,31,32,33,28,35,36,37,38,
+			39,40,35,0,1,2,3,4,5,0,49,50,51,52,53,54,49,56,57,58,59,60,61,56,63,64,65,66,67,68,63,70,71,72,73,74,75,70,
+			77,78,79,80,81,82,77,84,85,86,87,88,89,84,49,50,51,52,53,54,49,98,99,100,101,102,103,98,105,106,107,108,109,
+			110,105,112,113,114,115,116,117,112,119,120,121,122,123,124,119,126,127,128,129,130,131,126,133,134,135,136,
+			137,138,133,98,99,100,101,102,103,98,147,148,149,150,151,152,147,154,155,156,157,158,159,154,161,162,163,164,
+			165,166,161,168,169,170,171,172,173,168,175,176,177,178,179,180,175,182,183,184,185,186,187,182,147,148,149,150,
+			151,152,147,196,197,198,199,200,201,196,203,204,205,206,207,208,203,210,211,212,213,214,215,210,217,218,219,220,
+			221,222,217,224,225,226,227,228,229,224,231,232,233,234,235,236,231,196,197,198,199,200,201,196,245,246,247,248,
+			249,250,245,252,253,254,255,256,257,252,259,260,261,262,263,264,259,266,267,268,269,270,271,266,273,274,275,276,
+			277,278,273,280,281,282,283,284,285,280,245,246,247,248,249,250,245,0,1,2,3,4,5,0,7,8,9,10,11,12,7,14,15,16,17,18,
+			19,14,21,22,23,24,25,26,21,28,29,30,31,32,33,28,35,36,37,38,39,40,35,0,1,2,3,4,5,0
+		};
+		
+		
+		Gudhi::cubical_complex::counter c(end_counter);
+		size_t counter = 0;
+		while (true)
+		{
+			Bitmap_cubical_complex::position_index_type position =
+			b.compute_position_in_bitmap( c.give_me_current() );						
+			BOOST_CHECK( b.compute_position_in_bitmap( c.give_me_current() ) == result[counter] );
+			
+			bool can_we_go_on = c.increment();
+			if ( !can_we_go_on )break;
+			++counter;
+		}	
+	}
 }

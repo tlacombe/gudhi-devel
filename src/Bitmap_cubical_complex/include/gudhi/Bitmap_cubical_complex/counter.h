@@ -146,6 +146,12 @@ class counter {
   }
   
   inline size_t size(){return this->current.size();}
+  
+  inline std::vector< unsigned > give_me_current()
+  {
+	  std::vector< unsigned > cur( this->current );
+	  return cur;
+  }
 
  private:
   std::vector< unsigned > begin;

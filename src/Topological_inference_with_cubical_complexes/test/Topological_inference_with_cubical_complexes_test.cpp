@@ -807,7 +807,7 @@ BOOST_AUTO_TEST_CASE(Morphological_operations_cubical_complex_dylation_test_1_2d
     Bitmap_cubical_complex cmplx( sizes,top_dimensional_cells );
     Predictor_type pred(0);//cutoff value at zero.
         
-	MOCC mor( cmplx , pred );
+	MOCC mor( &cmplx , pred );
 	
 	
 	std::vector< double > after_runninng_predicate = {std::numeric_limits<double>::infinity(),std::numeric_limits<double>::infinity(),
@@ -902,7 +902,7 @@ BOOST_AUTO_TEST_CASE(Morphological_operations_cubical_complex_erosion_test_1_2d)
     Bitmap_cubical_complex cmplx( sizes,top_dimensional_cells );
     Predictor_type pred(0);//cutoff value at zero.
         
-	MOCC mor( cmplx , pred );	
+	MOCC mor( &cmplx , pred );	
 	
 	//now run erosion:
 	using Gudhi::Topological_inference_with_cubical_complexes::considered_neighberhoods;
@@ -970,7 +970,7 @@ BOOST_AUTO_TEST_CASE(Morphological_operations_cubical_complex_both_erosion_and_d
     Bitmap_cubical_complex cmplx( sizes,top_dimensional_cells );
     Predictor_type pred(2.5);//cutoff value at 2.5.
         
-	MOCC mor( cmplx , pred );		
+	MOCC mor( &cmplx , pred );		
 	
 	double inf = std::numeric_limits< double >::infinity();	
 	std::vector<double> set_and_complement =
@@ -1145,14 +1145,16 @@ BOOST_AUTO_TEST_CASE(Morphological_operations_cubical_complex_dilation_test_2d_p
     typedef Gudhi::Topological_inference_with_cubical_complexes::Morphological_operations_cubical_complex<topological_inference,Predictor_type> MOCC;
         
     Predictor_type pred(0.1);
+    
         
-	MOCC mor( b , pred );	
+	MOCC mor( &b , pred );	
 	
 	//mor.compute_complement();
 	
 	mor.dilation(1 , Gudhi::Topological_inference_with_cubical_complexes::considered_neighberhoods::all );
 	
-	b.write_to_file_with_newlines_at_the_ends_of_structure("annulus");
+	//b.write_to_file_with_newlines_at_the_ends_of_structure("annulus");
+	
     
      
 
@@ -1191,6 +1193,103 @@ BOOST_AUTO_TEST_CASE(Morphological_operations_cubical_complex_dilation_test_2d_p
 				{
 					 BOOST_CHECK( b.filtration(std::get<0>(intervals[i]))  == 0 );
 					 BOOST_CHECK( b.filtration(std::get<1>(intervals[i])) == 10 );				
+				}
+			}
+		}
+	}
+}
+
+
+
+BOOST_AUTO_TEST_CASE(Morphological_operations_cubical_complex_dilation_test_2d_periodic_point_cloud)
+{
+	std::vector< std::vector<double> > point_cloud = 
+	{
+		{0.8969653195,0.8669824321},{0.948787326,0.1550864119},{0.6808391865,0.1174833223},{0.380992071,0.685172674},
+		{0.5667654248,0.7725275909},{0.7717394382,0.8585212138},{0.0832100753,0.6969464312},{0.6902645568,0.895427923},
+		{0.1910863747,0.1352325361},{0.4057740739,0.7557078151},{0.3033710681,0.1300876634},{0.9716873935,0.5043000265},
+		{0.1003751704,0.4719773203},{0.8046362116,0.9671608615},{0.807659992,0.2279810838},{0.2642463297,0.5731411912},
+		{0.9149513317,0.0878322234},{0.1725596942,0.8915775996},{0.1494219254,0.5552247122},{0.6168100361,0.0783634349},
+		{0.2417251917,0.9171568255},{0.5437938895,0.3794184935},{0.1963619224,0.5923618199},{0.2248295015,0.3775884192},
+		{0.3289951666,0.1755200389},{0.4835049524,0.5809588695},{0.8769045991,0.1403569882},{0.5677420071,0.6600178697},
+		{0.0566576829,0.2155916393},{0.2042365933,0.6464692687},{0.624759804,0.8349595866},{0.3600770941,0.7845088479},
+		{0.0542968004,0.4673010844},{0.0068651608,0.2392006286},{0.695079451,0.6422875135},{0.6452568541,0.5775681087},
+		{0.6109693649,0.429406171},{0.0660107879,0.63594877},{0.2174559585,0.2505642476},{0.3623426859,0.5123264501}
+	};
+	
+	//now creat an object of topoogical inference based on it:
+	std::vector< std::pair< double,double > > coorfinates_of_grid(2);
+	coorfinates_of_grid[0] = std::pair<double,double>( -1 , 2 );
+	coorfinates_of_grid[1] = std::pair<double,double>( 0 , 1 );
+	std::vector< unsigned > resolution_of_a_grid(2);	
+	resolution_of_a_grid[0] = resolution_of_a_grid[1] = 100;
+	unsigned number_of_nearest_neighbors = 5;
+	
+	std::vector<bool> directions_in_which_periodic_boudary_conditions_are_to_be_imposed(2);
+	directions_in_which_periodic_boudary_conditions_are_to_be_imposed[0] = true;
+	directions_in_which_periodic_boudary_conditions_are_to_be_imposed[1] = true;
+	
+	
+	//typedefs:
+    Gudhi::Topological_inference_with_cubical_complexes::Euclidan_distance_squared eu;
+    Gudhi::Topological_inference_with_cubical_complexes::Distance_to_k_th_closest_point<Gudhi::Topological_inference_with_cubical_complexes::Euclidan_distance_squared> 
+    f( point_cloud ,eu ,  number_of_nearest_neighbors );
+  
+    typedef Gudhi::Cubical_complex::Bitmap_cubical_complex_periodic_boundary_conditions_base<double> Bitmap_cubical_complex_periodic_base;
+    typedef Gudhi::Cubical_complex::Bitmap_cubical_complex<Bitmap_cubical_complex_periodic_base> Bitmap_cubical_complex_periodic;
+    typedef Gudhi::Topological_inference_with_cubical_complexes::Topological_inference< Bitmap_cubical_complex_periodic , double ,   
+    Gudhi::Topological_inference_with_cubical_complexes::Distance_to_k_th_closest_point<Gudhi::Topological_inference_with_cubical_complexes::Euclidan_distance_squared> > topological_inference;
+  
+    typedef Gudhi::persistent_cohomology::Field_Zp Field_Zp;
+    typedef Gudhi::persistent_cohomology::Persistent_cohomology<topological_inference, Field_Zp> Persistent_cohomology;
+
+    topological_inference b( coorfinates_of_grid , resolution_of_a_grid , f , directions_in_which_periodic_boudary_conditions_are_to_be_imposed );  
+    
+    
+    //now build Morphological_operations_cubical_complex based on topological inference object:    
+    typedef Gudhi::Topological_inference_with_cubical_complexes::Filtration_below_certain_value<double> Predictor_type;
+    typedef Gudhi::Topological_inference_with_cubical_complexes::Morphological_operations_cubical_complex<topological_inference,Predictor_type> MOCC;
+        
+    Predictor_type pred(0.3);        
+	MOCC mor( &b , pred );			
+	
+	mor.dilation(1 , Gudhi::Topological_inference_with_cubical_complexes::considered_neighberhoods::all );
+	    
+
+    // Compute the persistence diagram of the complex
+    Persistent_cohomology pcoh(b);
+    pcoh.init_coefficients(2);  // initializes the coefficient field for homology
+    pcoh.compute_persistent_cohomology(2);
+    
+    
+    std::vector< std::tuple<size_t, size_t, int> > intervals = pcoh.get_persistent_pairs();   
+    //Here are the intervals we expect to see:
+	//dimenion : 0 0 inf
+	//dimenion : 1 0 inf
+	//dimenion : 1 21 inf
+
+    for ( size_t i = 0 ; i != intervals.size() ; ++i )
+    {
+		//std::cout << "dimenion : " << b.get_dimension_of_a_cell(std::get<0>(intervals[i])) << " " << b.filtration(std::get<0>(intervals[i])) << " " << b.filtration(std::get<1>(intervals[i])) << std::endl;
+		if ( b.get_dimension_of_a_cell(std::get<0>(intervals[i])) == 0 )
+		{			
+		    BOOST_CHECK( b.filtration(std::get<0>(intervals[i])) == 0) ;
+		    BOOST_CHECK( b.filtration(std::get<1>(intervals[i])) == std::numeric_limits<double>::infinity()	);
+	   
+		}
+		else
+		{		
+			if ( b.get_dimension_of_a_cell(std::get<0>(intervals[i])) == 0 )
+		    {				
+				if ( b.filtration(std::get<0>(intervals[i])) == 1 )
+				{
+					 BOOST_CHECK( b.filtration(std::get<0>(intervals[i]))  == 1 );
+					 BOOST_CHECK( b.filtration(std::get<1>(intervals[i])) == std::numeric_limits<double>::infinity() );			 
+				}
+				else
+				{								
+					 BOOST_CHECK( fabs(b.filtration(std::get<0>(intervals[i]))  - 21) < 0.0001 );
+					 BOOST_CHECK( b.filtration(std::get<1>(intervals[i])) == std::numeric_limits<double>::infinity() );				
 				}
 			}
 		}

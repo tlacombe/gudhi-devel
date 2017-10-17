@@ -15,10 +15,14 @@ target_link_libraries(topological_inference_from_function_example ${Boost_SYSTEM
 add_executable ( topological_inference_from_function_periodic_domain_example topological_inference_from_function_periodic_domain_example.cpp )
 target_link_libraries(topological_inference_from_function_periodic_domain_example ${Boost_SYSTEM_LIBRARY})
 
+add_executable ( morphological_operations_cubical_complexes_example morphological_operations_cubical_complexes_example.cpp )
+target_link_libraries(morphological_operations_cubical_complexes_example ${Boost_SYSTEM_LIBRARY})
+
 if (TBB_FOUND)
    target_link_libraries(topological_inference_from_point_cloud_example ${TBB_LIBRARIES})
    target_link_libraries(topological_inference_from_point_cloud_periodic_domain_example ${TBB_LIBRARIES})
    target_link_libraries(topological_inference_from_function_example ${TBB_LIBRARIES})
    target_link_libraries(topological_inference_from_function_periodic_domain_example ${TBB_LIBRARIES})
+   target_link_libraries(morphological_operations_cubical_complexes_example ${TBB_LIBRARIES})
 endif()
 
