@@ -214,17 +214,30 @@ public:
 
 //methods	
     /**
-     * TODO
+     * This is a implementation of erosion operation. When it is performed, the maximal cubes that belong
+     * to a set, will obtain new filtration values. Value 1 will be given to all the cubes which,
+     * in the considered_neighberhoods, have a neighbor in the set's complement. Value 2 will be given to 
+     * the cubes which are neighbors of cubes with filtration value 1 (assigned in the previous step). And
+     * so on. 
     **/ 
 	void erosion( typename Cubical_complex::filtration_type step_size , considered_neighberhoods neigh );
 
     /**
-     * TODO
+     * This is a implementation of dilation operation. When it is performed, the maximal cubes that belong
+     * to a set's complement, will obtain new filtration values. Value 1 will be given to all the cubes 
+     * from the set's complement which, in the considered_neighberhoods, have a neighbor in the set. Value 2 
+     * will be given to the cubes from the set's complement which are neighbors of cubes with filtration value 1 
+     * (assigned in the previous step). And so on.
     **/ 
 	void dilation( typename Cubical_complex::filtration_type step_size , considered_neighberhoods neigh );
 	
 	/**
-     * TODO
+     * This procedure perform both erosion and dilation. For a desciption of erosion and dilation, please refere to the 
+     * suitable methods. 
+     * The procedure start from the top dimensional cubes in the set, that are neighbors of cubes in the set's complement.
+     * Startign from them, bothe erosion and dilation is performed. 
+     * If you would rather start from the sollection of cubes in the set complement that have neighbors in the set, please
+     * use compute_complement() function to swap set and set complement. 
     **/ 
 	void both_erosion_and_dilation( typename Cubical_complex::filtration_type step_size , considered_neighberhoods neigh_type );	
 	

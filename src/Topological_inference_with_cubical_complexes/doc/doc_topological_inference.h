@@ -70,7 +70,40 @@ namespace Topological_inference_with_cubical_complexes {
  * where for every point of a grid the sum of Euclidean distances to the point cloud sampled from unit circle have been computed.
  * \image html periodic_distance_from_cicrle_nonperiodic_domain.png
  * 
- * (3) Distance function from a collection of cubes that satisfy certain predicate. TODO
+ * (3) Distance function from a collection of cubes that satisfy certain predicate using Morphological_operations_cubical_complex class.
+ * This class allows us to re-define the filtration of a cubical complex taking into accound the original filtration. 
+ * Initially, once a cubical complex is given or constructed, Morphological_operations_cubical_complex class iterate through all its top dimensional cubes.
+ * The ones that satisfy choosen predicate are considered to belong to the 'set'. All other top dimensional cubes are elements of 'set complement'.
+ * Given a set and its complement, three basic morphological operations can be performed:
+ * (a) Erosion - the elements of the set that are direct neighbors of elements from the set complement are given a new filtration value equal to predefined step_size.
+ * The element of the set that did not have already assigned value, and are neighbors of the elements which get the value step_size, will get the value 2*step_size. And so on.
+ * (b) Dilation - the elements of the set complement that are direct neighbors of elements from the set are given a new filtration value equal to predefined step_size.
+ * The element of the set complement that did not have already assigned value, and are neighbors of the elements which get the value step_size, will get the value 2*step_size. And so on. s
+ * (c) Both erosion and dilation - In this case, both erosion and dilation is performed at the same time. In this case, the procedure starts from the elements of the set that are 
+ * neighbors of the elements of the set complement.
+ * 
+ * We can choose here between two types of neighborhoods:
+ * (a) full_face - neighbors of a top dimensional cube C are all those top dimensional cubes D that share with C codimension 1 face.
+ * (b) all - neighbors of a top dimensional cube C are all those top dimensional cubes D that have nonempty intersection with C.
+ * 
+ * At the moment we have the following predicates implemented:
+ * (a) Filtration_above_certain_value - predicate will return true iff given filtration is above certain value. 
+ * (b) Filtration_below_certain_value - predicate will return true iff given filtration is below certain value. 
+ * (c) Filtration_in_range - predicate will return true iff given filtration is in a given range. 
+ * (d) Filtration_equal - predicate will return true iff given filtration is equal certain value. 
+ * (e) Always_true  - predicate that will always return true. This is a default tempate parameter of a class Morphological_operations_cubical_complex 
+ * Consult Morphological_operations_cubical_complex.h for further details.
+ * 
+ * An example of the the construction described above is given at the following picture. On the left, the initial filtration of a two dimensiona
+ * cubical complex. Second from the left: a result of a Filtration_below_certain_value with a parameter 5. All the cubes with value below 5 became
+ * the elements of the set. Third from the left: the result of erosion using full_face neighborhood. Fourth from the left: the result of dilation
+ * of the set using full_face neighborhood. In both cases, step_size is set to 1.s
+ * \image html morphological_op_illustration.png
+ * 
+ * There is also another way of constructing objects of Morphological_operations_cubical_complex. One can start with the sizes of the bitmap and 
+ * the counters describing the top dimensional cubes in a set. The constructor require the sizes of the bitmap, and vectors being counters of a cube.
+ * Please consult the picture below for a quite how the counters of cubes should be constructed.
+ * \image html counters_of_cubes.png
  * 
  * All the cubical complexes used here may, or may not have periodic boundary conditions imposed. Please consult examples and utilities for further details. 
  * 
