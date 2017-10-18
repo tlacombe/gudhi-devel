@@ -84,6 +84,21 @@ int main()
     local_distance eu;
     actual_distance f( point_cloud ,eu ,  number_of_nearest_neighbors );
 */  
+
+	//********************************************************************************************
+	
+
+	//Use this set of typedefs if you want to use distance to k-th nearest neighbor using k_d_trees as your function:
+	
+	//Some distance functions require additional parameters. For instance, distance to the k-th
+	//nearest neighbor require the parameter k, which is known here as number_of_nearest_neighbors
+	unsigned number_of_nearest_neighbors = 5;	
+	//distance function typedefs
+     
+    typedef Gudhi::Topological_inference_with_cubical_complexes::Distance_to_k_th_closest_point_k_d_tree actual_distance;        
+    actual_distance f( point_cloud ,  number_of_nearest_neighbors );
+
+	
     
     
     //********************************************************************************************    
@@ -116,7 +131,7 @@ int main()
     actual_distance f( point_cloud );
 	*/
     
-   
+   /*
     //Use the code below to constrct periodic version of Manhattan_distance distance
     //on the periodic grid [-1,1]^2
     //define the periodic grid    
@@ -134,7 +149,7 @@ int main()
     < local_distance  > actual_distance;
     
     actual_distance f( point_cloud , periodic_sum , number_of_nearest_neighbors );
-    
+    */
    
   
     

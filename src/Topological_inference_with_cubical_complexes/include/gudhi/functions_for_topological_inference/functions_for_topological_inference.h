@@ -104,7 +104,7 @@ public:
 			std::cerr << "Incompatible dimensions of points.\n";
 			throw "Incompatible dimensions of points.\n";
 		}
-		double result = -std::numeric_limits<double>::max();
+		double result = -std::numeric_limits<double>::infinity();
 		for ( size_t i = 0 ; i != point1.size() ; ++i )
 		{
 			if ( result < fabs(point1[i]-point2[i]) )result = fabs(point1[i]-point2[i]);
@@ -171,7 +171,7 @@ public:
 		std::vector<double> shifted_point2(point2.size(),0);
 		double new_distance;
 		
-		double minimal_distance = std::numeric_limits<double>::max();
+		double minimal_distance = std::numeric_limits<double>::infinity();
 		while ( true )
 		{				
 			if ( dbg )std::cerr << "Here is the current counter : " << count << std::endl << "And here is the shifted point " << std::endl;			
@@ -203,7 +203,7 @@ protected:
 	std::vector< double > translation_vector;
 	standard_distance dist;
 };
-//to be continued. 
+//to be continued when new inspiration comes. 
 //****************************************************************
 //End sample kernels to be used in kernels_centerd_in_point_cloud
 //****************************************************************
@@ -276,28 +276,22 @@ private:
 
 
 /**
- * A class that take a point cloud P, and allows to compute distance from any
+ * A class that take a point cloud P, and compute distance from any
  * given point to the k-th nearest neighbour in P. 
- * Once CGAL is used, it uses the spatial search module from Gudhi. If CGAL
- * is not installed, a aive heap-based algorithm is used to get the distance
- * to the k-th nearest neighor. 
+ * This is a general class that can be used for any distance, and both periodic 
+ * and non-periodic domains. For more efficeint version (usng gudhi spatial searchig
+ * requiering CGAL) designed only for Euclidean distance in non-periodic domain, 
+ * please use Distance_to_k_th_closest_point_k_d_tree.
 **/ 
-
-
-//careful, using k-d trees works only for Euclidean distance, while the method is more general. 
-//maybe those functionalities should be separated???
 template < typename distance >
 class Distance_to_k_th_closest_point
 {
 public:	
 	Distance_to_k_th_closest_point( const std::vector< std::vector<double> >& point_cloud_ , distance& dist_ , unsigned k_ ):
-	dist(dist_),k(k_)
-	//#ifdef GUDHI_USE_CGAL
-	//	,points_ds( this->convert_points(point_cloud_) )
-	//#endif	
+	dist(dist_),k(k_)	
 	{
 		//check if all the points have the same dimension:
-		if ( point_cloud_.empty() )return;
+		if ( point_cloud_.empty() )return;		
 		for ( size_t i = 0 ; i != point_cloud_.size() ; ++i )
 		{
 			if ( point_cloud_[i].size() != point_cloud_[0].size() )
@@ -309,81 +303,24 @@ public:
 		this->point_cloud = point_cloud_;				
 	}
     double operator()( const std::vector<double>& point )const
-    {
-		/*#ifdef GUDHI_USE_CGAL		
-		std::cerr << "this->point_cloud.size() : " << this->point_cloud.size() << std::endl;
-		std::cerr << "point.size()  : " << point.size() << std::endl;
-		std::cerr << "this->k :  " << this->k << std::endl;
+    {		
+		//this is brutal, version, in case we do not have a k-d tree from CGAL. 
+		bool dbg = false;
 		
-		std::cout << "point : " << point.size() << std::endl;
-		
-		auto pt = CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d( point.begin() , point.end() );
-		
-		std::cerr  << "pt : " << pt << std::endl;
-				
-		
-		std::cout << "depth : " << this->points_ds.tree_depth() << "\n";
-		
-			//I have tried to use kere std::advance, but it got too messy with the constant interators of unknown type. So I did it by a bruteforce. 
-			auto knn_range = this->points_ds.query_k_nearest_neighbors(	pt, this->k+1, true);										
-			
-			std::cerr << "Aaa \n";
-			
-			size_t counter = 0;
-			double dist_ = 0;
-			for (auto const& nghb : knn_range)
-			{
-				
-				std::cout << nghb.first << " (sq. dist. = " << nghb.second << ")\n"; 
-				++counter;
-				if ( counter == k )
-				{
-					dist_ = nghb.second;
-					break;
-				}				
-			}
-			return dist_;
-		 #else*/		 
-			//this is brutal, version, in case we do not have a k-d tree from CGAL. 
-			bool dbg = false;
-			
-			std::vector< double > heap( k , std::numeric_limits<double>::max() );
-			std::make_heap (heap.begin(),heap.end());
-			//now compute the distances between point and any other point, and put it into heap:			
-			for ( size_t i = 0 ; i != this->point_cloud.size() ; ++i )
-			{
-				//compute distance
-				double distance_ = this->dist( this->point_cloud[i] , point );
-				//check if it is smaller than the largest element in the heap:
-				
-				if ( dbg )
-				{
-					std::cout << "distance_ : " << distance_ << std::endl;
-					std::cout << "heap.front() : " << heap.front() << std::endl;
-					std::cout << "Here is the whole heap: \n";
-					for ( size_t i = 0 ; i != heap.size() ; ++i )
-					{
-						std::cout << heap[i] << " ";
-					}
-					getchar();
-				}
-				
-				if ( distance_ < heap.front() )
-				{				
-					if ( dbg ){std::cerr << "Adding new element to the heap \n";}
-						
-					//remove the largest element from the heap.
-					std::pop_heap (heap.begin(),heap.end()); 
-					heap.pop_back();
-					//put distance to the heap.
-					heap.push_back( distance_ );				   
-					//update the heap.
-					std::push_heap (heap.begin(),heap.end());
-				}			
-			}
+		std::vector< double > heap( k , std::numeric_limits<double>::infinity() );
+		std::make_heap (heap.begin(),heap.end());
+		//now compute the distances between point and any other point, and put it into heap:			
+		for ( size_t i = 0 ; i != this->point_cloud.size() ; ++i )
+		{
+			//compute distance
+			double distance_ = this->dist( this->point_cloud[i] , point );
+			//check if it is smaller than the largest element in the heap:
 			
 			if ( dbg )
 			{
+				std::cout << "distance_ : " << distance_ << std::endl;
+				std::cout << "heap.front() : " << heap.front() << std::endl;
+				std::cout << "Here is the whole heap: \n";
 				for ( size_t i = 0 ; i != heap.size() ; ++i )
 				{
 					std::cout << heap[i] << " ";
@@ -391,42 +328,113 @@ public:
 				getchar();
 			}
 			
-			
-			//and now we have a heap of smallest distances from point to the point in the point cloud. 
-			//we will now find the minimal one:
-			double result = -std::numeric_limits<double>::max();
+			if ( distance_ < heap.front() )
+			{				
+				if ( dbg ){std::cerr << "Adding new element to the heap \n";}
+					
+				//remove the largest element from the heap.
+				std::pop_heap (heap.begin(),heap.end()); 
+				heap.pop_back();
+				//put distance to the heap.
+				heap.push_back( distance_ );				   
+				//update the heap.
+				std::push_heap (heap.begin(),heap.end());
+			}			
+		}
+		
+		if ( dbg )
+		{
 			for ( size_t i = 0 ; i != heap.size() ; ++i )
 			{
-				if ( heap[i] > result )result = heap[i];
-			}  
-			return result;		
-		//#endif
+				std::cout << heap[i] << " ";
+			}
+			getchar();
+		}
+			
+		//and now we have a heap of smallest distances from point to the point in the point cloud. 
+		//we will now find the minimal one:
+		double result = -std::numeric_limits<double>::infinity();
+		for ( size_t i = 0 ; i != heap.size() ; ++i )
+		{
+			if ( heap[i] > result )result = heap[i];
+		}  
+		return result;	
+	
     }
 private:
-/*
-	#ifdef GUDHI_USE_CGAL
-		std::vector< CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d > convert_points( const std::vector< std::vector<double> >& point_cloud_ )
-		{
-			std::vector< CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d > points;
-			points.reserve( point_cloud_.size() );
-			for (size_t i = 0; i != point_cloud_.size() ; ++i)
-			{				
-				auto pt = CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d( point_cloud_[i].begin() , point_cloud_[i].end() );
-				points.push_back( pt );								
-				//std::cout << pt << std::endl;getchar();
-			}								
-			return points;
-		}
-	#endif*/
-
 	std::vector< std::vector<double> > point_cloud;
 	distance& dist;
-	unsigned k;
-	//#ifdef GUDHI_USE_CGAL
-	//	Gudhi::spatial_searching::Kd_tree_search< CGAL::Epick_d< CGAL::Dynamic_dimension_tag > , 
-	//	std::vector< CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d > > points_ds;		
-	//#endif
+	unsigned k;	
 };
+
+
+
+#ifdef GUDHI_USE_CGAL
+/**
+ * A class that take a point cloud P, and compute Euclidean distance from any
+ * given point to the k-th nearest neighbour in P. 
+ * CGAL is required to compile it. 
+**/ 
+class Distance_to_k_th_closest_point_k_d_tree
+{
+public:	
+	Distance_to_k_th_closest_point_k_d_tree( const std::vector< std::vector<double> >& point_cloud_ , unsigned k_ ):
+	points(convert_points(point_cloud_)),points_ds(this->points),k(k_)
+	{
+		//check if all the points have the same dimension:
+		if ( point_cloud_.empty() )return;		
+		for ( size_t i = 0 ; i != point_cloud_.size() ; ++i )
+		{
+			if ( point_cloud_[i].size() != point_cloud_[0].size() )
+			{
+				std::cerr << "Point cloud containing points of different dimension in Distance_to_closest_point constructor.\n";
+				throw "Point cloud containing points of different dimension in Distance_to_closest_point constructor.\n";
+			}
+		}						
+		this->point_cloud = point_cloud_;				
+	}
+	
+	
+    double operator()( const std::vector<double>& point )const
+    {				
+		auto pt = CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d( point.begin() , point.end() );				
+		//I have tried to use kere std::advance, but it got too messy with the constant interators of unknown type. So I did it by a bruteforce. 
+		auto knn_range = this->points_ds.query_k_nearest_neighbors(	pt, this->k+1, true);		
+		size_t counter = 0;
+		double dist_ = std::numeric_limits< double >::infinity();
+		for (auto const& nghb : knn_range)
+		{						
+			++counter;
+			if ( counter == k )
+			{
+				dist_ = nghb.second;
+				break;
+			}				
+		}			
+		return dist_;	
+    }
+private:
+	std::vector< CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d >	
+	convert_points( const std::vector< std::vector<double> >& point_cloud_ )
+	{		
+		std::vector< CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d > points_;
+		points_.reserve( point_cloud_.size() );
+		for (size_t i = 0; i != point_cloud_.size() ; ++i)
+		{							
+			points_.push_back( CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d( point_cloud_[i].begin() , point_cloud_[i].end() ) );											
+		}
+		return points_;		    
+	}
+
+	std::vector< std::vector<double> > point_cloud;
+	std::vector< CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d > points;
+	
+	Gudhi::spatial_searching::Kd_tree_search< CGAL::Epick_d< CGAL::Dynamic_dimension_tag > , 
+	std::vector< CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d > > points_ds;			
+	
+	unsigned k;		
+};
+#endif
 
 
 

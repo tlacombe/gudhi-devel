@@ -30,10 +30,13 @@ if (CGAL_VERSION VERSION_LESS 4.4.0)
   message("CGAL version ${CGAL_VERSION} is considered too old to be used by Gudhi.")
   unset(CGAL_FOUND)
 endif()
+
 if(CGAL_FOUND)
   message(STATUS "CGAL version: ${CGAL_VERSION}.")
   include( ${CGAL_USE_FILE} )
-  add_definitions(-DGUDHI_USE_CGAL)
+  if(CGAL_VERSION VERSION_GREATER 4.9.0)
+      add_definitions(-DGUDHI_USE_CGAL)
+  endif()
 
   if (NOT CGAL_VERSION VERSION_LESS 4.8.0)
     # HACK to detect CGAL version 4.8.0

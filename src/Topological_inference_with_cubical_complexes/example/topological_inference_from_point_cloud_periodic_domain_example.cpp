@@ -86,6 +86,7 @@ int main()
 	
 	//A few typedefs to make the code easy to read:
 	//distance function typedefs
+	//this is for brute force, but more general distance to k-th closest point
     Gudhi::Topological_inference_with_cubical_complexes::Euclidan_distance_squared eu;
     Gudhi::Topological_inference_with_cubical_complexes::Distance_to_k_th_closest_point<Gudhi::Topological_inference_with_cubical_complexes::Euclidan_distance_squared> 
     f( point_cloud ,eu ,  number_of_nearest_neighbors );

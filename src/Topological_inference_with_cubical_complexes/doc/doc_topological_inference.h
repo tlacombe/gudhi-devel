@@ -67,7 +67,11 @@ namespace Topological_inference_with_cubical_complexes {
  * 
  * (b) Sum_of_distances_from_points - for any given point x, f(x) is a sum of distances of x to the points of the point cloud.
  * 
- * (c) Distance_to_k_th_closest_point - for any x, f(x) is a distance of x to the k-th nearest neighbor in the point cloud given a the input. 
+ * (c) Distance_to_k_th_closest_point - for any x, f(x) is a distance of x to the k-th nearest neighbor in the point cloud given a the input. This class uses a brute force quadratic
+ * time algorithm, but at the same time allow to use any kernel both on periodic and non periodic domains. 
+ * 
+ * (d) Distance_to_k_th_closest_point_k_d_tree - for any x, f(x) is a distance of x to the k-th nearest neighbor in the point cloud given a the input. This class require CGAL
+ * in version at least 4.8.1 and uses efficient implementation based on k-d-trees. It is hovewer restricted to Euclidean distance in non-periodic domains. 
  * 
  * As an example please consult a periodic function (on a domain [-1.5,1.5]^2) obtained using class Sum_of_distances_from_points
  * where for every point x of a grid f(x) is the sum of Euclidean distances to the point cloud sampled from unit circle.
