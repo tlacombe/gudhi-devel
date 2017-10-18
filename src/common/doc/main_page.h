@@ -226,9 +226,9 @@
       <b>Copyright:</b> GPL v3<br>
     </td>
     <td width="75%">
-    This toolbox allows to approximate persistent homology of sublevelsets of scalar value functions in a cubical grid.
-    It implements vaious functions that can be used in data analysis. Some of them are based on point cloud encapsulated in a cubical grid.
-    Others are based on distance from a collection of cubes the values of which satisfy gien predicate.<br>
+    This toolbox construct partially constant approximations of scalar value functions using filtered cubical grids. Given such a filtered grid one 
+    can compute persistent homology of it. The package implements vaious functions that can be used in data analysis. Some of them are based on 
+    point clouds encapsulated in a cubical grid. Others on distance from a collection of cubes the values of which satisfy given predicate.<br>
     <b>User manual:</b> \ref Topological_inference_with_cubical_complexes - <b>Reference manual:</b>
     Gudhi::Topological_inference_with_cubical_complexes::Topological_inference
     </td>
