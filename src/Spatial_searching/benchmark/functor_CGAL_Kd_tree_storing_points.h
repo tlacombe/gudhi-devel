@@ -43,9 +43,11 @@ class CGAL_Kd_tree_storing_points
   typedef CGAL::Median_of_max_spread<STraits>             Splitter; // best choice for medium dimension
   //typedef CGAL::Midpoint_of_max_spread<STraits>           Splitter;
 
+  typedef CGAL::Kd_tree<
+    STraits, Splitter, CGAL::Tag_true>                    Tree;
+
   typedef CGAL::Orthogonal_k_neighbor_search<STraits,
-    CGAL::Euclidean_distance<STraits>, Splitter>          Neighbor_search;
-  typedef typename Neighbor_search::Tree                  Tree;
+    CGAL::Euclidean_distance<STraits>, Splitter, Tree>    Neighbor_search;
 
 public:
   CGAL_Kd_tree_storing_points(Points const& points, double /*epsilon*/ = 0.)
