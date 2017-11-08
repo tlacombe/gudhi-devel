@@ -4,8 +4,23 @@
 #include <CGAL/Random.h>
 
 #include <vector>
+#include <string>
+#include <sstream>
 
 namespace gss = Gudhi::spatial_searching;
+
+const int DIM = 2;
+
+template <typename Point>
+std::string print_point(Point const& p)
+{
+  std::stringstream sstr;
+  sstr << "(";
+  for (int i = 0; i < DIM - 1; ++i)
+    sstr << p[i] << ", ";
+  sstr << p[DIM - 1] << ")";
+  return sstr.str();
+}
 
 int main(void) {
   typedef CGAL::Epick_d<CGAL::Dimension_tag<2> > K;
@@ -26,19 +41,27 @@ int main(void) {
 
   for (auto const& q : queries)
   {
-    std::cout << "Query: " << q[0] << "; " << q[1] << "\n";
+    std::cout << "Query: " << print_point(q) << "\n";
 
     // 10-nearest neighbors
     std::cout << "10 nearest neighbors:\n";
     auto knn_range = points_ds.query_k_nearest_neighbors(q, 10, true);
     for (auto const& nghb : knn_range)
-      std::cout << "  " << nghb.first << " (sq. dist. = " << nghb.second << ")\n";
+    {
+      std::cout << "  " << nghb.first
+        << " - " << print_point(points[nghb.first])
+        << " - sq. dist. = " << nghb.second << "\n";
+    }
 
     // 10-farthest neighbor query
     std::cout << "10 farthest neighbors:\n";
     auto kfn_range = points_ds.query_k_farthest_neighbors(q, 10, true);
     for (auto const& nghb : kfn_range)
-      std::cout << "  " << nghb.first << " (sq. dist. = " << nghb.second << ")\n";
+    {
+      std::cout << "  " << nghb.first
+        << " - " << print_point(points[nghb.first])
+        << " - sq. dist. = " << nghb.second << "\n";
+    }
 
     // All-near-neighbors
     // TODO: see Periodic_kd_tree_search.h
