@@ -282,7 +282,8 @@ public:
   /// @param[out] it The points that lie inside the sphere of center `p` and radius `radius`.
   ///                Note: `it` is used this way: `*it++ = each_point`.
   /// @param[in] eps Approximation factor.
-  template <typename OutputIterator>
+  // TODO: needs a Periodic_fuzzy_sphere
+  /*template <typename OutputIterator>
   void near_search(
     Point const& p,
     FT radius,
@@ -290,7 +291,7 @@ public:
     FT eps = FT(0)) const {
     
     m_tree.search(it, Fuzzy_sphere(p, radius, eps, m_tree.traits()));
-  }
+  }*/
 
   /// \brief Search for any neighbor in a ball.
   /// @param[in] p The query point.
@@ -298,14 +299,15 @@ public:
   /// @param[in] eps Approximation factor.
   /// @return The index of a point approximately contained by the sphere of center `p`
   ///         and radius `radius`, or -1 if no point could be found.
-  std::ptrdiff_t any_near_neighbor(
+  // TODO: needs a Periodic_fuzzy_sphere
+  /*std::ptrdiff_t any_near_neighbor(
     Point const& p,
     FT radius,
     FT eps = FT(0)) const {
 
     auto ret = m_tree.search_any_point(Fuzzy_sphere(p, radius, eps, m_tree.traits()));
     return (ret ? *ret : -1);
-  }
+  }*/
 
   int tree_depth() const
   {
