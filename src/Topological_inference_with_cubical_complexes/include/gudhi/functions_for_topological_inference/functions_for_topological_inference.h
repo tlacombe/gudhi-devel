@@ -29,7 +29,8 @@
 #include <iterator>
 #include <gudhi/Bitmap_cubical_complex/counter.h>
 #ifdef GUDHI_USE_CGAL
-	#include <gudhi/Kd_tree_search.h>
+	#include <gudhi/Kd_tree_search.h>	
+	#include <gudhi/Periodic_kd_tree_search.h>
 	#include <CGAL/Epick_d.h>
 #endif
 
@@ -399,9 +400,9 @@ public:
     {				
 		auto pt = CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d( point.begin() , point.end() );				
 		//I have tried to use kere std::advance, but it got too messy with the constant interators of unknown type. So I did it by a bruteforce. 
-		auto knn_range = this->points_ds.query_k_nearest_neighbors(	pt, this->k+1, true);		
-		size_t counter = 0;
-		double dist_ = std::numeric_limits< double >::infinity();
+		double dist_ = std::numeric_limits< double >::infinity();		
+		auto knn_range = this->points_ds.query_k_nearest_neighbors(	pt, this->k+1, true);					
+		size_t counter = 0;			
 		for (auto const& nghb : knn_range)
 		{						
 			++counter;
@@ -410,7 +411,7 @@ public:
 				dist_ = nghb.second;
 				break;
 			}				
-		}			
+		}					
 		return dist_;	
     }
 private:
@@ -435,6 +436,109 @@ private:
 	unsigned k;		
 };
 #endif
+
+
+
+
+#ifdef GUDHI_USE_CGAL
+/**
+ * A class that implements distace in periodic domain using periodic
+ * kd-trees from spatial seraching procedure.
+**/
+class Distance_to_k_th_closest_point_periodic_k_d_tree
+{
+public:
+	/**
+	 * This is a constructor of a Distance_to_k_th_closest_point_periodic_k_d_tree class. 
+	 * It take as a parameter the  std::vector< std::pair< double , double > >& coordinates_of_grid 
+	 * describing coodinates of the periodic cuboid. See coordinates_of_grid in the 
+	 * Topological_inference_with_cubical_complexes class for details. 
+	 * The second parameter is the point cloud in which k-th nearest neighbor will be searched for.
+	 * The last parameter is the number k, such that the distance to the k-th nearest neighbor is
+	 * found by the procedure.
+	**/ 
+	Distance_to_k_th_closest_point_periodic_k_d_tree( 
+							const std::vector< std::vector<double> >& point_cloud_,
+							const std::vector< std::pair< double , double > >& coordinates_of_grid,							
+							unsigned k_
+	                        ):
+	lower_left(compute_coordinates_of_ISO_box(coordinates_of_grid,true)),
+	top_right(compute_coordinates_of_ISO_box(coordinates_of_grid,false)),
+	points(this->convert_points(point_cloud_)),
+	points_ds( this->points,K::Iso_box_d( this->lower_left,
+	                                      this->top_right ) ),
+	                                      k(k_){}
+	    
+	
+	/**
+	* Computations of distance between point1 and point2 on the predefined periodic domain.
+	* The code keep point1 fixed, and copy point 2 in a covering space in all possible directions.
+	* For each of them, standard distance in the covering space is computed, and the minimal one
+	* is returned. 
+	**/ 
+	double operator()( const std::vector<double>& point )
+	{		
+		auto pt = CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d( point.begin() , point.end() );							
+		//I have tried to use kere std::advance, but it got too messy with the constant interators of unknown type. So I did it by a bruteforce. 
+		double dist_ = std::numeric_limits< double >::infinity();		
+		auto knn_range = this->points_ds.query_k_nearest_neighbors(	pt, this->k+1, true);		
+		size_t counter = 0;		
+		for (auto const& nghb : knn_range)
+		{						
+			++counter;
+			if ( counter == k )
+			{
+				dist_ = nghb.second;
+				break;
+			}				
+		}
+		return dist_;	
+	}
+	
+    typedef CGAL::Epick_d< CGAL::Dynamic_dimension_tag > K;
+    typedef typename K::Point_d Point;
+    typedef Gudhi::spatial_searching::Periodic_kd_tree_search<K, std::vector<Point> > Points_ds;    
+  
+protected:
+	
+	std::vector< Point >	
+	convert_points( const std::vector< std::vector<double> >& point_cloud_ )
+	{		
+		std::vector< CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d > points_;
+		points_.reserve( point_cloud_.size() );
+		for (size_t i = 0; i != point_cloud_.size() ; ++i)
+		{							
+			points_.push_back( Point( point_cloud_[i].begin() , point_cloud_[i].end() ) );											
+		}
+		return points_;		    
+	}//convert_points
+	
+	Point compute_coordinates_of_ISO_box( const std::vector< std::pair< double , double > >& coordinates_of_grid , double shall_I_take_first_component )
+	{		
+		std::vector<double> vect( coordinates_of_grid.size() , 0 );	
+		for ( size_t i = 0 ; i != coordinates_of_grid.size() ; ++i )
+		{
+			if ( shall_I_take_first_component )
+			{
+				vect[i] = coordinates_of_grid[i].first;
+			}
+			else
+			{
+				vect[i] = coordinates_of_grid[i].second;
+			}
+		}
+		Point p( vect.begin() , vect.end() );
+		return p;
+	}//compute_coordinates_of_ISO_box
+		
+	Point lower_left;		
+	Point top_right;
+	std::vector< Point > points;		
+	Points_ds points_ds;
+	unsigned k;			
+};
+#endif
+
 
 
 

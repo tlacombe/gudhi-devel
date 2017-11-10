@@ -13,6 +13,7 @@ target_link_libraries(morphological_operation_on_cubical_complex ${Boost_SYSTEM_
 add_executable ( morphological_operation_distance_from_point_cloud morphological_operation_distance_from_point_cloud.cpp )
 target_link_libraries(morphological_operation_distance_from_point_cloud ${Boost_SYSTEM_LIBRARY})
 
+
 if (CGAL_FOUND)
 	target_link_libraries(topological_inference ${CGAL_LIBRARY})
 	target_link_libraries(morphological_operation_distance_from_point_cloud ${CGAL_LIBRARY})
