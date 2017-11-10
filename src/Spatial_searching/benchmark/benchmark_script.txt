@@ -135,7 +135,7 @@
 #---------------------------------------- 09/2017 AllNN benchmarking -------------------------------
 
 #data/SO3_50000.off  											-		-		-		0		9 			N			0.		0.   	10000  		0.2		1
-data/sift_base.fvecs     										-		-		-		0		128			N			0.		0.  	3000   		200.	1 # 1M points
+#data/sift_base.fvecs     										-		-		-		0		128			N			0.		0.  	3000   		200.	1 # 1M points
 #data/Alvarez_surface_deg5_k2_D8_112K.off    					-       -       -       0       8       	N			0.		0.  	50000  		0.2   	1
 #generate_sphere_d												49 		-1.		1.		100000	50			N			0.		0.   	2000 		0.97	1
 #generate_sphere_d												74 		-1.		1.		100000	75			N			0.		0.   	2000 		0.98	1
@@ -145,3 +145,20 @@ data/sift_base.fvecs     										-		-		-		0		128			N			0.		0.  	3000   		200.	
 #generate_sphere_d												10		-1.		1.		100000	100			Y			0.		0.   	2000 		0.99	1
 #generate_sphere_d												5		-1.		1.		100000	150			Y			0.		0.   	2000 		0.99	1
 #generate_sphere_d												10		-1.		1.		100000	150			Y			0.		0.   	2000 		0.99	1
+
+#---------------------------------------- 10/2017 CGAL:Kd-tree KNN search before/after optim -------------------------------
+
+generate_sphere_d												9		0.5 	-		100000	10			N			0.		0.   	20000 		10		5
+generate_sphere_d												19		0.5 	-		100000	20			N			0.		0.   	5000 		10		5
+generate_sphere_d												29		0.5 	-		100000	30			N			0.		0.   	2000 		10		5
+generate_sphere_d												39		0.5 	-		100000	40			N			0.		0.   	1000 		10		5
+generate_sphere_d												49		0.5 	-		100000	50			N			0.		0.   	500 		10		5
+data/SO3_50000.off  											-		-		-		0		9 			N			0.		0.   	5000  		10		5
+data/sift_base.fvecs     										-		-		-		0		128			N			0.		0.  	500   		10		5 # 1M points
+data/Alvarez_surface_deg5_k2_D8_112K.off    					-       -       -       0       8       	N			0.		0.  	50000  		10   	5
+data/buddha_100kv.off 											-		-		-		0		3 			N			0.		0.   	300000 		10		5
+data/farman_crotales.off 										-		-		-		0		3 			N			0.		0.   	50000 		10		5
+
+#---------------------------------------- 11/2017 Peridodic kd-tree -------------------------------
+
+#data/2D_small_file_for_periodic.off								-		-   	-		0		2			N			0.		0.   	10 			10		1

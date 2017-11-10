@@ -20,8 +20,8 @@ can be processed in Excel, for example.
 
 #else // RELEASE
 //# define PRINT_FOUND_NEIGHBORS
-# define KNN_CHECK_ACTUAL_EPSILON
-# define ALLNN_CHECK_ACTUAL_SUCCESS_RATE
+//# define KNN_CHECK_ACTUAL_EPSILON
+//# define ALLNN_CHECK_ACTUAL_SUCCESS_RATE
 # define LOOP_ON_VARIOUS_PRECISIONS
 #endif
 
@@ -34,12 +34,14 @@ can be processed in Excel, for example.
 #define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_MEDIAN_OF_MAX_SPREAD
 #define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_MIDPOINT_OF_MAX_SPREAD
 #define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_INCREMENTAL_SLIDING_MIDPOINT
+#define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_INCREMENTAL_MEDIAN_OF_MAX_SPREAD
+#define GUDHI_DO_NOT_TEST_PERIODIC_KD_TREE_SEARCH_MEDIAN_OF_MAX_SPREAD
 #define GUDHI_DO_NOT_TEST_CGAL_KD_TREE_STORING_POINTS
 #define GUDHI_DO_NOT_TEST_CGAL_KD_TREE_STORING_POINTS_AND_INDICES
 #undef GUDHI_DOLPHINN_IS_AVAILABLE
 #undef GUDHI_SBL_IS_AVAILABLE
 #undef GUDHI_NMSLIB_IS_AVAILABLE
-#undef GUDHI_NANOFLANN_IS_AVAILABLE
+//#undef GUDHI_NANOFLANN_IS_AVAILABLE
 #undef GUDHI_ANN_IS_AVAILABLE
 #undef GUDHI_FLANN_IS_AVAILABLE
   //#define GUDHI_FLANN_TEST_BRUTEFORCE
@@ -47,7 +49,7 @@ can be processed in Excel, for example.
   //#define GUDHI_FLANN_TEST_OTHER_VARIANTS
 #undef GUDHI_COVERTREE_DNCRANE_IS_AVAILABLE  // DNCrane and Manzil cannot be used at the same time
 #undef GUDHI_COVERTREE_MANZIL_IS_AVAILABLE
-//#undef GUDHI_FALCONN_IS_AVAILABLE
+#undef GUDHI_FALCONN_IS_AVAILABLE
 #undef GUDHI_RORKD_FOREST_IS_AVAILABLE
 
 const int ONLY_THE_FIRST_N_POINTS = 100000; // 0 = no limit
@@ -61,6 +63,7 @@ const bool FLANN_KDTREE_REORDER = true;
 
 #include "functor_GUDHI_Kd_tree_search.h"
 #include "functor_GUDHI_Kd_tree_search_incremental.h"
+#include "functor_GUDHI_Periodic_kd_tree_search.h"
 
 #ifndef GUDHI_DO_NOT_TEST_CGAL_KD_TREE_STORING_POINTS
 # include "functor_CGAL_Kd_tree_storing_points.h"
@@ -553,7 +556,7 @@ void run_KNN_test(
 # ifdef LOOP_ON_VARIOUS_PRECISIONS
   for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
 # endif
-  perfs.push_back(test__KNN_queries<GUDHI_Kd_tree_search<Kernel, gss::SLIDING_MIDPOINT>>(
+  perfs.push_back(test__KNN_queries<GUDHI_Kd_tree_search<Kernel, gss::Splitter_enum::SLIDING_MIDPOINT>>(
     points, queries, k, epsilon, "GUDHI Kd_tree_search SLIDING_MIDPOINT", "", p_ground_truth));
 #endif
 
@@ -561,7 +564,7 @@ void run_KNN_test(
 # ifdef LOOP_ON_VARIOUS_PRECISIONS
   for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
 # endif
-    perfs.push_back(test__KNN_queries<GUDHI_Kd_tree_search<Kernel, gss::MEDIAN_OF_MAX_SPREAD>>(
+    perfs.push_back(test__KNN_queries<GUDHI_Kd_tree_search<Kernel, gss::Splitter_enum::MEDIAN_OF_MAX_SPREAD>>(
       points, queries, k, epsilon, "GUDHI Kd_tree_search MEDIAN_OF_MAX_SPREAD", "", p_ground_truth));
 #endif
 
@@ -569,7 +572,7 @@ void run_KNN_test(
 # ifdef LOOP_ON_VARIOUS_PRECISIONS
   for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
 # endif
-    perfs.push_back(test__KNN_queries<GUDHI_Kd_tree_search<Kernel, gss::MIDPOINT_OF_MAX_SPREAD>>(
+    perfs.push_back(test__KNN_queries<GUDHI_Kd_tree_search<Kernel, gss::Splitter_enum::MIDPOINT_OF_MAX_SPREAD>>(
       points, queries, k, epsilon, "GUDHI Kd_tree_search MIDPOINT_OF_MAX_SPREAD", "", p_ground_truth));
 #endif
 
@@ -577,8 +580,27 @@ void run_KNN_test(
 # ifdef LOOP_ON_VARIOUS_PRECISIONS
   for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
 # endif
-    perfs.push_back(test__KNN_queries<GUDHI_Kd_tree_search_incremental<Kernel, gss::SLIDING_MIDPOINT>>(
+    perfs.push_back(test__KNN_queries<GUDHI_Kd_tree_search_incremental<Kernel, gss::Splitter_enum::SLIDING_MIDPOINT>>(
       points, queries, k, epsilon, "GUDHI Kd_tree_search_incremental SLIDING_MIDPOINT", "", p_ground_truth));
+#endif
+
+
+#ifndef GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_INCREMENTAL_MEDIAN_OF_MAX_SPREAD
+# ifdef LOOP_ON_VARIOUS_PRECISIONS
+  for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
+# endif
+    perfs.push_back(test__KNN_queries<GUDHI_Kd_tree_search_incremental<Kernel, gss::Splitter_enum::MEDIAN_OF_MAX_SPREAD>>(
+      points, queries, k, epsilon, "GUDHI Kd_tree_search_incremental MEDIAN_OF_MAX_SPREAD", "", p_ground_truth));
+#endif
+
+#ifndef GUDHI_DO_NOT_TEST_PERIODIC_KD_TREE_SEARCH_MEDIAN_OF_MAX_SPREAD
+# ifdef LOOP_ON_VARIOUS_PRECISIONS
+  for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
+# endif
+    // Note: only works when kernel's dimension is CGAL::Dimension_tag<2>
+    perfs.push_back(test__KNN_queries<GUDHI_Periodic_kd_tree_search<Kernel, gss::Periodic_splitter_enum::MEDIAN_OF_MAX_SPREAD>>(
+      points, queries, k, epsilon, "GUDHI GUDHI_Periodic_kd_tree_search MEDIAN_OF_MAX_SPREAD", "", p_ground_truth,
+      typename Kernel::Iso_box_d(Point(0., 0.), Point(1., 1.) )));
 #endif
 
   //---------------------------------------------------------------------------
@@ -637,8 +659,8 @@ void run_KNN_test(
 # ifdef LOOP_ON_VARIOUS_PRECISIONS
   for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
 # endif
-  perfs.push_back(test__KNN_queries<Nanoflann>(
-    points, queries, k, epsilon, "Nanoflann", "", p_ground_tth));
+  perfs.push_back(test__KNN_queries<Nanoflann<Kernel>>(
+    points, queries, k, epsilon, "Nanoflann", "", p_ground_truth));
 #endif
 
   //---------------------------------------------------------------------------
@@ -884,23 +906,27 @@ void run_AllNN_test(
 /*# ifdef LOOP_ON_VARIOUS_PRECISIONS
   for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
 # endif*/
-  perfs.push_back(test__all_near_neighbors<GUDHI_Kd_tree_search<Kernel, gss::SLIDING_MIDPOINT>>(
+  perfs.push_back(test__all_near_neighbors<GUDHI_Kd_tree_search<Kernel, gss::Splitter_enum::SLIDING_MIDPOINT>>(
     points, queries, radius, epsilon, "GUDHI Kd_tree_search SLIDING_MIDPOINT", "", p_ground_truth));
+  //perfs.push_back(test__any_near_neighbor<GUDHI_Kd_tree_search<Kernel, gss::Splitter_enum::SLIDING_MIDPOINT>>(
+  //  points, queries, radius, epsilon, "GUDHI Kd_tree_search SLIDING_MIDPOINT", ""));
 #endif
 
 #ifndef GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_MEDIAN_OF_MAX_SPREAD
 /*# ifdef LOOP_ON_VARIOUS_PRECISIONS
   for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
 # endif*/
-    perfs.push_back(test__all_near_neighbors<GUDHI_Kd_tree_search<Kernel, gss::MEDIAN_OF_MAX_SPREAD>>( // CJTODO TEMP
+    perfs.push_back(test__all_near_neighbors<GUDHI_Kd_tree_search<Kernel, gss::Splitter_enum::MEDIAN_OF_MAX_SPREAD>>(
       points, queries, radius, epsilon, "GUDHI Kd_tree_search MEDIAN_OF_MAX_SPREAD", "", p_ground_truth));
+    //perfs.push_back(test__any_near_neighbor<GUDHI_Kd_tree_search<Kernel, gss::Splitter_enum::MEDIAN_OF_MAX_SPREAD>>(
+    //  points, queries, radius, epsilon, "GUDHI Kd_tree_search MEDIAN_OF_MAX_SPREAD", ""));
 #endif
 
 #ifndef GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_MIDPOINT_OF_MAX_SPREAD
 /*# ifdef LOOP_ON_VARIOUS_PRECISIONS
   for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
 # endif*/
-    perfs.push_back(test__all_near_neighbors<GUDHI_Kd_tree_search<Kernel, gss::MIDPOINT_OF_MAX_SPREAD>>(
+    perfs.push_back(test__all_near_neighbors<GUDHI_Kd_tree_search<Kernel, gss::Splitter_enum::MIDPOINT_OF_MAX_SPREAD>>(
       points, queries, radius, epsilon, "GUDHI Kd_tree_search MIDPOINT_OF_MAX_SPREAD", "", p_ground_truth));
 #endif
 
@@ -908,8 +934,16 @@ void run_AllNN_test(
 # ifdef LOOP_ON_VARIOUS_PRECISIONS
   for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
 # endif
-    perfs.push_back(test__all_near_neighbors<GUDHI_Kd_tree_search_incremental<Kernel, gss::SLIDING_MIDPOINT>>(
+    perfs.push_back(test__all_near_neighbors<GUDHI_Kd_tree_search_incremental<Kernel, gss::Splitter_enum::SLIDING_MIDPOINT>>(
       points, queries, radius, epsilon, "GUDHI Kd_tree_search_incremental SLIDING_MIDPOINT", "", p_ground_truth));
+#endif
+
+#ifndef GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_INCREMENTAL_MEDIAN_OF_MAX_SPREAD
+# ifdef LOOP_ON_VARIOUS_PRECISIONS
+  for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
+# endif
+    perfs.push_back(test__all_near_neighbors<GUDHI_Kd_tree_search_incremental<Kernel, gss::Splitter_enum::MEDIAN_OF_MAX_SPREAD>>(
+      points, queries, radius, epsilon, "GUDHI Kd_tree_search_incremental MEDIAN_OF_MAX_SPREAD", "", p_ground_truth));
 #endif
 
   //---------------------------------------------------------------------------
@@ -1012,7 +1046,7 @@ decode_interval(std::string const& interval)
 }
 
 int main() {
-  unsigned int seed = 0; // static_cast<unsigned int> (time(NULL));
+  unsigned int seed = 0; //static_cast<unsigned int> (time(NULL));
   CGAL::default_random = CGAL::Random(seed);  // TODO(CJ): use set_default_random
   std::cerr << "Random seed = " << seed << "\n";
 
@@ -1262,8 +1296,8 @@ int main() {
               queries.push_back(p);
             }
 
-            //run_KNN_test(ambient_dim, points, queries, k_or_radius, epsilon, input.c_str());
-            run_AllNN_test(ambient_dim, points, queries, k_or_radius, epsilon, bbox_diagonal, input.c_str());
+            run_KNN_test(ambient_dim, points, queries, k_or_radius, epsilon, input.c_str());
+            //run_AllNN_test(ambient_dim, points, queries, k_or_radius, epsilon, bbox_diagonal, input.c_str());
 
             std::cerr << "Run #" << run_number++ << " done.\n";
             std::cerr << "\n---------------------------------\n";

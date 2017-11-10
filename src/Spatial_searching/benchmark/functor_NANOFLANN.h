@@ -24,7 +24,6 @@
 #define FUNCTOR_NANOFLANN_
 
 #include <nanoflann.hpp>
-#include <CGAL/Epick_d.h>
 
 #include <vector>
 #include <utility>
@@ -100,9 +99,10 @@ protected:
 
 //////////////////////////////////////////////////////////////////////
 
+template <typename Kernel>
 class Nanoflann
 {
-  typedef CGAL::Epick_d<CGAL::Dynamic_dimension_tag>  K;
+  typedef Kernel                                      K;
   typedef typename K::Point_d                         Point;
   typedef std::vector<Point>                          Points;
 
