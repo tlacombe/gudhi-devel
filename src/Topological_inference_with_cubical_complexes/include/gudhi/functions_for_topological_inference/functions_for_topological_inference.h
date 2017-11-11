@@ -200,7 +200,7 @@ public:
 	}
 protected:
 	//in this very simple case, when all the boxes are squares, translation vectors are zero
-	//in all the coordinates except from the i-th one for i-th translation vector. 
+	//in all the c oordinates except from the i-th one for i-th translation vector. 
 	std::vector< double > translation_vector;
 	standard_distance dist;
 };
@@ -276,6 +276,23 @@ private:
 };
 
 
+
+
+
+
+
+//just to test Clements code
+bool compare_pairs( const std::pair<double,int>& first , const std::pair<double,int>& second )
+{
+	return first.first < second.first;
+}
+
+
+
+
+
+
+
 /**
  * A class that take a point cloud P, and compute distance from any
  * given point to the k-th nearest neighbour in P. 
@@ -303,6 +320,7 @@ public:
 		}						
 		this->point_cloud = point_cloud_;				
 	}
+	/*
     double operator()( const std::vector<double>& point )const
     {		
 		//this is brutal, version, in case we do not have a k-d tree from CGAL. 
@@ -359,9 +377,56 @@ public:
 		{
 			if ( heap[i] > result )result = heap[i];
 		}  
-		return result;	
-	
+		return result;		
     }
+    */
+    
+    
+    
+    
+    
+    //for the time of testing Clement's code we will use less optimal version of the procedure:
+    double operator()( const std::vector<double>& point )const
+    {				
+		std::vector< std::pair<double,int> > vect( k , std::pair<double,int>(std::numeric_limits<double>::infinity(),-1) );		
+		//now compute the distances between point and any other point, and put it into heap:			 
+		for ( size_t i = 0 ; i != this->point_cloud.size() ; ++i )
+		{
+			//compute distance
+			double distance_ = this->dist( this->point_cloud[i] , point );
+			//check if it is smaller than the largest element in the heap:
+			
+	        std::sort( vect.begin() ,vect.end(),compare_pairs);
+				
+			if ( distance_ < vect[ vect.size()-1 ].first )
+			{				
+				vect[ vect.size()-1 ] = std::pair< double,int >( distance_,i );
+			}			
+		}			
+		//and now we have a heap of smallest distances from point to the point in the point cloud. 
+		//we will now find the minimal one:
+		double result = -std::numeric_limits<double>::infinity();
+		std::cout << "This is a brute force code to test Clement's kdtrees\n";
+		for ( size_t i = 0 ; i != vect.size() ; ++i )
+		{
+			if ( vect[i].first > result )result = vect[i].first;
+			std::cout << "( " << vect[i].second << "," << vect[i]	.first	 << ") ";			
+		}  
+		std::cout << std::endl;
+		std::cout << "And here are the corresponding points \n";
+		for ( size_t i = 0 ; i != vect.size() ; ++i )
+		{
+			std::cout << this->point_cloud[vect[i].second][0] << " " << this->point_cloud[vect[i].second][1] << " " << this->point_cloud[vect[i].second][2] << std::endl;
+		} 
+		return result;		
+    }
+   
+    
+    
+    
+    
+    
+    
 private:
 	std::vector< std::vector<double> > point_cloud;
 	distance& dist;
@@ -483,15 +548,31 @@ public:
 		double dist_ = std::numeric_limits< double >::infinity();		
 		auto knn_range = this->points_ds.query_k_nearest_neighbors(	pt, this->k+1, true);		
 		size_t counter = 0;		
+		std::cout << "This is a result of Clement's kd trees\n";
 		for (auto const& nghb : knn_range)
-		{						
+		{		
 			++counter;
+			std::cout << "(" << nghb.first << "," << nghb.second << ") ";							
 			if ( counter == k )
 			{
 				dist_ = nghb.second;
 				break;
-			}				
+			}							
 		}
+		
+		std::cout << "Here are the closest points : \n";
+		counter = 0;	
+		for (auto const& nghb : knn_range)
+		{		
+			++counter;
+			std::cout << this->points[ nghb.first ] << std::endl;
+			if ( counter == k )
+			{				
+				break;
+			}							
+		}
+		
+		std::cout << std::endl;
 		return dist_;	
 	}
 	
