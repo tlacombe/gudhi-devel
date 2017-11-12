@@ -280,12 +280,12 @@ private:
 
 
 
-
+/*
 //just to test Clements code
 bool compare_pairs( const std::pair<double,int>& first , const std::pair<double,int>& second )
 {
 	return first.first < second.first;
-}
+}*/
 
 
 
@@ -320,7 +320,7 @@ public:
 		}						
 		this->point_cloud = point_cloud_;				
 	}
-	/*
+	
     double operator()( const std::vector<double>& point )const
     {		
 		//this is brutal, version, in case we do not have a k-d tree from CGAL. 
@@ -379,12 +379,12 @@ public:
 		}  
 		return result;		
     }
-    */
     
     
     
     
     
+    /*
     //for the time of testing Clement's code we will use less optimal version of the procedure:
     double operator()( const std::vector<double>& point )const
     {				
@@ -420,6 +420,7 @@ public:
 		} 
 		return result;		
     }
+    */
    
     
     
@@ -548,11 +549,11 @@ public:
 		double dist_ = std::numeric_limits< double >::infinity();		
 		auto knn_range = this->points_ds.query_k_nearest_neighbors(	pt, this->k+1, true);		
 		size_t counter = 0;		
-		std::cout << "This is a result of Clement's kd trees\n";
+		//std::cout << "This is a result of Clement's kd trees\n";
 		for (auto const& nghb : knn_range)
 		{		
 			++counter;
-			std::cout << "(" << nghb.first << "," << nghb.second << ") ";							
+			//std::cout << "(" << nghb.first << "," << nghb.second << ") ";							
 			if ( counter == k )
 			{
 				dist_ = nghb.second;
@@ -560,19 +561,19 @@ public:
 			}							
 		}
 		
-		std::cout << "Here are the closest points : \n";
-		counter = 0;	
-		for (auto const& nghb : knn_range)
-		{		
-			++counter;
-			std::cout << this->points[ nghb.first ] << std::endl;
-			if ( counter == k )
-			{				
-				break;
-			}							
-		}
+		//std::cout << "Here are the closest points : \n";
+		//counter = 0;	
+		//for (auto const& nghb : knn_range)
+		//{		
+		//	++counter;
+		//	std::cout << this->points[ nghb.first ] << std::endl;
+		//	if ( counter == k )
+		//	{				
+		//		break;
+		//	}							
+		//}		
+		//std::cout << std::endl;
 		
-		std::cout << std::endl;
 		return dist_;	
 	}
 	
