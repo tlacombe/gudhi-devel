@@ -171,9 +171,7 @@ namespace spatial_searching {
       Cartesian_const_iterator_d qit = m_construct_it(q),
         qe = m_construct_it(q, 1);
       for (unsigned int i = 0; qit != qe; i++, qit++) {
-        FT sqdist_to_min = CGAL::square(periodic_one_coord_distance(i, *qit, r.min_coord(i)));
-        FT sqdist_to_max = CGAL::square(periodic_one_coord_distance(i, r.max_coord(i), *qit));
-        distance += (std::min)(sqdist_to_min, sqdist_to_max);
+        distance += CGAL::square(min_distance_to_periodic_interval(i, *qit, r.min_coord(i), r.max_coord(i)));
       }
       return distance;
     }
@@ -184,59 +182,23 @@ namespace spatial_searching {
       Cartesian_const_iterator_d qit = m_construct_it(q),
         qe = m_construct_it(q, 1);
       for (unsigned int i = 0; qit != qe; i++, qit++) {
-        FT dist_to_min = periodic_one_coord_distance(i, *qit, r.min_coord(i));
-        FT dist_to_max = periodic_one_coord_distance(i, r.max_coord(i), *qit);
-        FT sqdist_to_min = CGAL::square(dist_to_min);
-        FT sqdist_to_max = CGAL::square(dist_to_max);
-        if (sqdist_to_min < sqdist_to_max)
-        {
-          dists[i] = dist_to_min;
-          distance += sqdist_to_min;
-        }
-        else 
-        {
-          dists[i] = dist_to_max;
-          distance += sqdist_to_max;
-        }
+        FT dx = min_distance_to_periodic_interval(i, *qit, r.min_coord(i), r.max_coord(i));
+        dists[i] = dx;
+        distance += CGAL::square(dx);
       }
       return distance;
     }
 
+    // Does not make sense for periodic spaces
     inline FT max_distance_to_rectangle(const Query_item& q,
       const CGAL::Kd_tree_rectangle<FT, D>& r) const {
-      FT distance = FT(0);
-      Cartesian_const_iterator_d qit = m_construct_it(q),
-        qe = m_construct_it(q, 1);
-      for (unsigned int i = 0; qit != qe; i++, qit++) {
-        FT sqdist_to_min = CGAL::square(periodic_one_coord_distance(i, *qit, r.min_coord(i)));
-        FT sqdist_to_max = CGAL::square(periodic_one_coord_distance(i, r.max_coord(i), *qit));
-        distance += (std::max)(sqdist_to_min, sqdist_to_max);
-      };
-      return distance;
+      return 0.;
     }
 
+    // Does not make sense for periodic spaces
     inline FT max_distance_to_rectangle(const Query_item& q,
       const CGAL::Kd_tree_rectangle<FT, D>& r, std::vector<FT>& dists) const {
-      FT distance = FT(0);
-      Cartesian_const_iterator_d qit = m_construct_it(q),
-        qe = m_construct_it(q, 1);
-      for (unsigned int i = 0; qit != qe; i++, qit++) {
-        FT dist_to_min = periodic_one_coord_distance(i, *qit, r.min_coord(i));
-        FT dist_to_max = periodic_one_coord_distance(i, r.max_coord(i), *qit);
-        FT sqdist_to_min = CGAL::square(dist_to_min);
-        FT sqdist_to_max = CGAL::square(dist_to_max);
-        if (sqdist_to_min < sqdist_to_max)
-        {
-          dists[i] = dist_to_max;
-          distance += sqdist_to_max;
-        }
-        else
-        {
-          dists[i] = dist_to_min;
-          distance += sqdist_to_min;
-        }
-      }
-      return distance;
+      return 0.;
     }
 
     inline FT transformed_distance(FT d) const {
@@ -260,6 +222,28 @@ private:
       dx += size_x;
 
     return dx;
+  }
+
+  inline FT min_distance_to_periodic_interval(int dim, FT c, FT low, FT hi) const
+  {
+    FT min_x = *(m_min_begin + dim);
+    FT max_x = *(m_max_begin + dim);
+    FT size_x = max_x - min_x;
+
+    FT min_distance;
+    if (c < low)
+      min_distance = low - c;
+    else if (c > hi)
+      min_distance = c - hi;
+    else
+      return 0.; // c is inside the interval
+
+    // Check if the interval on the left is not closer
+    min_distance = (std::min)(min_distance, c - (hi - size_x));
+    // Check if the interval on the right is not closer
+    min_distance = (std::min)(min_distance, low + size_x - c);
+
+    return min_distance;
   }
 
   SearchTraits                          m_traits;

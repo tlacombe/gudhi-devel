@@ -45,19 +45,19 @@ namespace spatial_searching {
 
   /**
   * \class Periodic_kd_tree_search Periodic_kd_tree_search.h gudhi/Periodic_kd_tree_search.h
-  * \brief Spatial tree data structure to perform (approximate) nearest and farthest neighbor search.
+  * \brief Spatial tree data structure to perform (approximate) nearest neighbor search.
   *
   * \ingroup spatial_searching
   *
   * \details
   * The class Periodic_kd_tree_search is a tree-based data structure, based on
   * <a target="_blank" href="http://doc.cgal.org/latest/Spatial_searching/index.html">CGAL dD spatial searching data structures</a>.
-  * It provides a simplified API to perform (approximate) nearest and farthest neighbor searches. Contrary to CGAL default behavior, the tree
+  * It provides a simplified API to perform (approximate) nearest neighbor searches. Contrary to CGAL default behavior, the tree
   * does not store the points themselves, but stores indices.
   *
-  * There are two types of queries: the <i>k-nearest or k-farthest neighbor query</i>, where <i>k</i> is fixed and the <i>k</i> nearest 
-  * or farthest points are computed right away,
-  * and the <i>incremental nearest or farthest neighbor query</i>, where no number of neighbors is provided during the call, as the
+  * There are two types of queries: the <i>k-nearest neighbor query</i>, where <i>k</i> is fixed and the <i>k</i> nearest 
+  * points are computed right away,
+  * and the <i>incremental nearest neighbor query</i>, where no number of neighbors is provided during the call, as the
   * neighbors will be computed incrementally when the iterator on the range is incremented.
   *
   * \tparam Search_traits must be a model of the <a target="_blank"
@@ -108,18 +108,18 @@ public:
   >::type                                                   Splitter;
 
   typedef CGAL::Kd_tree<
-    STraits, Splitter, CGAL::Tag_true, CGAL::Tag_true>      Tree;
+    STraits, Splitter, CGAL::Tag_true>      Tree;
 
   typedef CGAL::K_neighbor_search<
     STraits, Periodic_distance, Splitter, Tree>           K_neighbor_search;
-  /// \brief The range returned by a k-nearest or k-farthest neighbor search.
+  /// \brief The range returned by a k-nearest neighbor search.
   /// Its value type is `std::pair<std::size_t, FT>` where `first` is the index
   /// of a point P and `second` is the squared distance between P and the query point.
   typedef K_neighbor_search                                 KNS_range;
 
   typedef CGAL::Incremental_neighbor_search<
     STraits, Periodic_distance, Splitter, Tree>           Incremental_neighbor_search;
-  /// \brief The range returned by an incremental nearest or farthest neighbor search.
+  /// \brief The range returned by an incremental nearest neighbor search.
   /// Its value type is `std::pair<std::size_t, FT>` where `first` is the index
   /// of a point P and `second` is the squared distance between P and the query point.
   typedef Incremental_neighbor_search                       INS_range;
@@ -224,53 +224,6 @@ public:
       p,
       eps,
       true,
-      Periodic_distance(std::begin(m_points), Base_distance(m_domain, m_tree.traits())) );
-
-    return search;
-  }
-
-  /// \brief Search for the k-farthest points from a query point.
-  /// @param[in] p The query point.
-  /// @param[in] k Number of farthest points to search.
-  /// @param[in] sorted Indicates if the computed sequence of k-farthest neighbors needs to be sorted.
-  /// @param[in] eps Approximation factor.
-  /// @return A range (whose `value_type` is `std::size_t`) containing the k-farthest neighbors.
-  KNS_range query_k_farthest_neighbors(
-    Point const& p,
-    unsigned int k,
-    bool sorted = true,
-    FT eps = FT(0)) const {
-    // Initialize the search structure, and search all N points
-    // Note that we need to pass the Distance explicitly since it needs to
-    // know the property map
-    K_neighbor_search search(
-      m_tree,
-      p,
-      k,
-      eps,
-      false,
-      Periodic_distance(std::begin(m_points), Base_distance(m_domain, m_tree.traits())),
-      sorted);
-
-    return search;
-  }
-
-  /// \brief Search incrementally for the farthest neighbors from a query point.
-  /// @param[in] p The query point.
-  /// @param[in] eps Approximation factor.
-  /// @return A range (whose `value_type` is `std::size_t`) 
-  /// containing the neighbors sorted by their distance to p.
-  /// All the neighbors are not computed by this function, but they will be
-  /// computed incrementally when the iterator on the range is incremented.
-  INS_range query_incremental_farthest_neighbors(Point const& p, FT eps = FT(0)) const {
-    // Initialize the search structure, and search all N points
-    // Note that we need to pass the Distance explicitly since it needs to
-    // know the property map
-    Incremental_neighbor_search search(
-      m_tree,
-      p,
-      eps,
-      false,
       Periodic_distance(std::begin(m_points), Base_distance(m_domain, m_tree.traits())) );
 
     return search;
