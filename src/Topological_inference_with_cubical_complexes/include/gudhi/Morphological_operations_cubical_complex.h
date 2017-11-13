@@ -156,6 +156,7 @@ enum Operation_type { dylation_ , erosion_ , both_ };
  * it will be modified by that class Morphological_operations_cubical_complex.
  * Omce an object of Morphological_operations_cubical_complex class is constructd, one can call three possible
  * operations on it: erosion, dilation or both of them. 
+ * \ingroup Topological_inference_with_cubical_complexes
  **/ 
 template <typename Cubical_complex ,typename Predicator = Always_true>
 class Morphological_operations_cubical_complex	

@@ -29,7 +29,6 @@ namespace Gudhi {
 namespace Topological_inference_with_cubical_complexes {
 
 /**  \defgroup Topological_inference_with_cubical_complexes Topological_inference_with_cubical_complexes
- *   \ingroup Topological_inference_with_cubical_complexes
  * 
  * \author    Pawel Dlotko
  * @{
