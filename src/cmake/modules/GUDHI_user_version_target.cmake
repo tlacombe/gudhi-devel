@@ -3,7 +3,6 @@ if (NOT CMAKE_VERSION VERSION_LESS 2.8.11)
 
   # Definition of the custom target user_version
   add_custom_target(user_version)
-  
   if(DEFINED USER_VERSION_DIR)
     # set the GUDHI_USER_VERSION_DIR with USER_VERSION_DIR defined by the user
     set(GUDHI_USER_VERSION_DIR ${CMAKE_CURRENT_BINARY_DIR}/${USER_VERSION_DIR})
@@ -18,11 +17,13 @@ if (NOT CMAKE_VERSION VERSION_LESS 2.8.11)
   add_custom_command(TARGET user_version PRE_BUILD COMMAND ${CMAKE_COMMAND} -E
                      make_directory ${GUDHI_USER_VERSION_DIR}
                      COMMENT "user_version creation in ${GUDHI_USER_VERSION_DIR}")
-  
+
   add_custom_command(TARGET user_version PRE_BUILD COMMAND ${CMAKE_COMMAND} -E
                      copy ${CMAKE_SOURCE_DIR}/Conventions.txt ${GUDHI_USER_VERSION_DIR}/Conventions.txt)
+
   add_custom_command(TARGET user_version PRE_BUILD COMMAND ${CMAKE_COMMAND} -E
                      copy ${CMAKE_SOURCE_DIR}/README ${GUDHI_USER_VERSION_DIR}/README)
+
   add_custom_command(TARGET user_version PRE_BUILD COMMAND ${CMAKE_COMMAND} -E
                      copy ${CMAKE_SOURCE_DIR}/COPYING ${GUDHI_USER_VERSION_DIR}/COPYING)
   add_custom_command(TARGET user_version PRE_BUILD COMMAND ${CMAKE_COMMAND} -E

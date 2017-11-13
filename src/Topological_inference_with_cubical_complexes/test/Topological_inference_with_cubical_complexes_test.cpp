@@ -40,7 +40,7 @@
 #include <vector>
 
 
-/*
+
 
 //first a few tests for functions_for_topological_inference
 
@@ -1975,7 +1975,7 @@ BOOST_AUTO_TEST_CASE(Distance_to_k_th_nearest_neighbor_periodic_domain_2d_kd_tre
 		BOOST_CHECK( periodic_6_n_n_kd_tree( test1 ) == std::numeric_limits<double>::infinity() );	
 	}
 }	
-*/
+
 
 
 
