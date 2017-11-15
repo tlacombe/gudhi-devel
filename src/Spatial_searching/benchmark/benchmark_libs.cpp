@@ -22,7 +22,7 @@ can be processed in Excel, for example.
 //# define PRINT_FOUND_NEIGHBORS
 //# define KNN_CHECK_ACTUAL_EPSILON
 //# define ALLNN_CHECK_ACTUAL_SUCCESS_RATE
-# define LOOP_ON_VARIOUS_PRECISIONS
+//# define LOOP_ON_VARIOUS_PRECISIONS
 #endif
 
 //#define EXPORT_POINTCLOUD
@@ -30,20 +30,21 @@ can be processed in Excel, for example.
 #define GENERATE_QUERIES_CLOSE_TO_EXISTING_POINTS
 //#define PICK_QUERIES_OUT_OF_EXISTING_POINTS // default
 
-#define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_SLIDING_MIDPOINT
-#define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_MEDIAN_OF_MAX_SPREAD
+//#define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_SLIDING_MIDPOINT
+//#define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_MEDIAN_OF_MAX_SPREAD
 #define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_MIDPOINT_OF_MAX_SPREAD
 #define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_INCREMENTAL_SLIDING_MIDPOINT
 #define GUDHI_DO_NOT_TEST_KD_TREE_SEARCH_INCREMENTAL_MEDIAN_OF_MAX_SPREAD
 #define GUDHI_DO_NOT_TEST_PERIODIC_KD_TREE_SEARCH_MEDIAN_OF_MAX_SPREAD
-#define GUDHI_DO_NOT_TEST_CGAL_KD_TREE_STORING_POINTS
+//#define GUDHI_DO_NOT_TEST_CGAL_KD_TREE_STORING_POINTS_SLIDING_MIDPOINT
+//#define GUDHI_DO_NOT_TEST_CGAL_KD_TREE_STORING_POINTS_MEDIAN_OF_MAX_SPREAD
 #define GUDHI_DO_NOT_TEST_CGAL_KD_TREE_STORING_POINTS_AND_INDICES
 #undef GUDHI_DOLPHINN_IS_AVAILABLE
 #undef GUDHI_SBL_IS_AVAILABLE
 #undef GUDHI_NMSLIB_IS_AVAILABLE
-//#undef GUDHI_NANOFLANN_IS_AVAILABLE
+#undef GUDHI_NANOFLANN_IS_AVAILABLE
 #undef GUDHI_ANN_IS_AVAILABLE
-#undef GUDHI_FLANN_IS_AVAILABLE
+//#undef GUDHI_FLANN_IS_AVAILABLE
   //#define GUDHI_FLANN_TEST_BRUTEFORCE
   #define GUDHI_FLANN_TEST_SINGLE_KDTREE
   //#define GUDHI_FLANN_TEST_OTHER_VARIANTS
@@ -52,7 +53,7 @@ can be processed in Excel, for example.
 #undef GUDHI_FALCONN_IS_AVAILABLE
 #undef GUDHI_RORKD_FOREST_IS_AVAILABLE
 
-const int ONLY_THE_FIRST_N_POINTS = 100000; // 0 = no limit
+const int ONLY_THE_FIRST_N_POINTS = 500000; // 0 = no limit
 const bool FLANN_KDTREE_REORDER = true;
 
 #include <cstddef>
@@ -65,13 +66,8 @@ const bool FLANN_KDTREE_REORDER = true;
 #include "functor_GUDHI_Kd_tree_search_incremental.h"
 #include "functor_GUDHI_Periodic_kd_tree_search.h"
 
-#ifndef GUDHI_DO_NOT_TEST_CGAL_KD_TREE_STORING_POINTS
-# include "functor_CGAL_Kd_tree_storing_points.h"
-#endif
-
-#ifndef GUDHI_DO_NOT_TEST_CGAL_KD_TREE_STORING_POINTS_AND_INDICES
-# include "functor_CGAL_Kd_tree_storing_points_and_indices.h"
-#endif
+#include "functor_CGAL_Kd_tree_storing_points.h"
+#include "functor_CGAL_Kd_tree_storing_points_and_indices.h"
 
 #ifdef GUDHI_DOLPHINN_IS_AVAILABLE
 #include "functor_Dolphinn_for_GUDHI.h"
@@ -607,12 +603,20 @@ void run_KNN_test(
   // CGAL (with points stored in the tree)
   //---------------------------------------------------------------------------
 
-#ifndef GUDHI_DO_NOT_TEST_CGAL_KD_TREE_STORING_POINTS
+#ifndef GUDHI_DO_NOT_TEST_CGAL_KD_TREE_STORING_POINTS_SLIDING_MIDPOINT
 # ifdef LOOP_ON_VARIOUS_PRECISIONS
   for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
 # endif
-    perfs.push_back(test__KNN_queries<CGAL_Kd_tree_storing_points<Kernel>>(
-      points, queries, k, epsilon, "CGAL_Kd_tree_storing_points", "", p_ground_truth));
+    perfs.push_back(test__KNN_queries<CGAL_Kd_tree_storing_points<Kernel, CGAL::Sliding_midpoint<Kernel>>>(
+      points, queries, k, epsilon, "CGAL_Kd_tree_storing_points SLIDING_MIDPOINT", "", p_ground_truth));
+#endif
+
+#ifndef GUDHI_DO_NOT_TEST_CGAL_KD_TREE_STORING_POINTS_MEDIAN_OF_MAX_SPREAD
+# ifdef LOOP_ON_VARIOUS_PRECISIONS
+  for (double epsilon = 0.; epsilon <= 1.0; epsilon += 0.1)
+# endif
+    perfs.push_back(test__KNN_queries<CGAL_Kd_tree_storing_points<Kernel, CGAL::Median_of_max_spread<Kernel>>>(
+      points, queries, k, epsilon, "CGAL_Kd_tree_storing_points MEDIAN_OF_MAX_SPREAD", "", p_ground_truth));
 #endif
 
   //---------------------------------------------------------------------------

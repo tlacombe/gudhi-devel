@@ -29,7 +29,13 @@
 #include <vector>
 #include <utility>
 
-template <typename Kernel>
+
+// Recommended splitters:
+// * CGAL::Sliding_midpoint: default in CGAL -- best choice for low dimension
+// * CGAL::Median_of_max_spread: best choice for medium dimension
+// * See CGAL doc for more...
+
+template <typename Kernel, typename Splitter_ = CGAL::Median_of_max_spread<K> >
 class CGAL_Kd_tree_storing_points
 {
   typedef Kernel                                          K;
@@ -39,10 +45,7 @@ class CGAL_Kd_tree_storing_points
 
   typedef K                                               STraits;
 
-  //typedef CGAL::Sliding_midpoint<STraits>                 Splitter; // default in CGAL -- best choice for low dimension
-  typedef CGAL::Median_of_max_spread<STraits>             Splitter; // best choice for medium dimension
-  //typedef CGAL::Midpoint_of_max_spread<STraits>           Splitter;
-
+  typedef Splitter_                                       Splitter;
   typedef CGAL::Kd_tree<
     STraits, Splitter, CGAL::Tag_true>                    Tree;
 
