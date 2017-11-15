@@ -54,7 +54,7 @@ Point convert_point(const std::vector<double> point_)
   return Point(point_.begin(), point_.end());
 }
 
-double find_nearest_neighbor(const std::vector<double>& point, const Points_ds& points_ds, unsigned k)
+double find_kth_nearest_neighbor(const std::vector<double>& point, const Points_ds& points_ds, unsigned k)
 {
   Point pt = Point(point.begin(), point.end());
   auto knn_range = points_ds.query_k_nearest_neighbors(pt, k, true);
@@ -88,39 +88,39 @@ BOOST_AUTO_TEST_CASE(Distance_to_k_th_nearest_neighbor_periodic_domain_2d_kd_tre
 
   {
     std::vector<double> test1 = { 1,1 };
-    BOOST_CHECK(fabs(find_nearest_neighbor(test1, points_ds, 1) - 2e-06) <= 2e-07);
-    BOOST_CHECK(fabs(find_nearest_neighbor(test1, points_ds, 2) - 2e-06) <= 2e-07);
-    BOOST_CHECK(fabs(find_nearest_neighbor(test1, points_ds, 3) - 2e-06) <= 2e-07);
-    BOOST_CHECK(fabs(find_nearest_neighbor(test1, points_ds, 4) - 1) <= 2e-05);
-    BOOST_CHECK(fabs(find_nearest_neighbor(test1, points_ds, 5) - 1) <= 2e-05);
+    BOOST_CHECK(fabs(find_kth_nearest_neighbor(test1, points_ds, 1) - 2e-06) <= 2e-07);
+    BOOST_CHECK(fabs(find_kth_nearest_neighbor(test1, points_ds, 2) - 2e-06) <= 2e-07);
+    BOOST_CHECK(fabs(find_kth_nearest_neighbor(test1, points_ds, 3) - 2e-06) <= 2e-07);
+    BOOST_CHECK(fabs(find_kth_nearest_neighbor(test1, points_ds, 4) - 1) <= 2e-05);
+    BOOST_CHECK(fabs(find_kth_nearest_neighbor(test1, points_ds, 5) - 1) <= 2e-05);
   }
 
 
   {
     std::vector<double> test1 = { 0,0 };
-    BOOST_CHECK(fabs(find_nearest_neighbor(test1, points_ds, 1) - 0.998001) <= 5e-06);
-    BOOST_CHECK(fabs(find_nearest_neighbor(test1, points_ds, 2) - 0.998001) <= 5e-06);
-    BOOST_CHECK(fabs(find_nearest_neighbor(test1, points_ds, 3) - 1.996) <= 5e-06);
-    BOOST_CHECK(fabs(find_nearest_neighbor(test1, points_ds, 4) - 1.996) <= 5e-06);
-    BOOST_CHECK(fabs(find_nearest_neighbor(test1, points_ds, 5) - 1.996) <= 5e-06);
+    BOOST_CHECK(fabs(find_kth_nearest_neighbor(test1, points_ds, 1) - 0.998001) <= 5e-06);
+    BOOST_CHECK(fabs(find_kth_nearest_neighbor(test1, points_ds, 2) - 0.998001) <= 5e-06);
+    BOOST_CHECK(fabs(find_kth_nearest_neighbor(test1, points_ds, 3) - 1.996) <= 5e-06);
+    BOOST_CHECK(fabs(find_kth_nearest_neighbor(test1, points_ds, 4) - 1.996) <= 5e-06);
+    BOOST_CHECK(fabs(find_kth_nearest_neighbor(test1, points_ds, 5) - 1.996) <= 5e-06);
   }
 
   {
     std::vector<double> test1 = { 1,0 };
-    BOOST_CHECK(fabs(find_nearest_neighbor(test1, points_ds, 1) - 1e-06) <= 5e-06);
-    BOOST_CHECK(fabs(find_nearest_neighbor(test1, points_ds, 2) - 0.998002) <= 5e-06);
-    BOOST_CHECK(fabs(find_nearest_neighbor(test1, points_ds, 3) - 0.998002) <= 5e-06);
-    BOOST_CHECK(fabs(find_nearest_neighbor(test1, points_ds, 4) - 0.998002) <= 5e-06);
-    BOOST_CHECK(fabs(find_nearest_neighbor(test1, points_ds, 5) - 1.998) <= 5e-06);
+    BOOST_CHECK(fabs(find_kth_nearest_neighbor(test1, points_ds, 1) - 1e-06) <= 5e-06);
+    BOOST_CHECK(fabs(find_kth_nearest_neighbor(test1, points_ds, 2) - 0.998002) <= 5e-06);
+    BOOST_CHECK(fabs(find_kth_nearest_neighbor(test1, points_ds, 3) - 0.998002) <= 5e-06);
+    BOOST_CHECK(fabs(find_kth_nearest_neighbor(test1, points_ds, 4) - 0.998002) <= 5e-06);
+    BOOST_CHECK(fabs(find_kth_nearest_neighbor(test1, points_ds, 5) - 1.998) <= 5e-06);
   }
 
   {
     std::vector<double> test1 = { 0,-1 };
-    BOOST_CHECK(fabs(find_nearest_neighbor(test1, points_ds, 1) - 1e-06) <= 5e-06);
-    BOOST_CHECK(fabs(find_nearest_neighbor(test1, points_ds, 2) - 0.998002) <= 5e-06);
-    BOOST_CHECK(fabs(find_nearest_neighbor(test1, points_ds, 3) - 0.998002) <= 5e-06);
-    BOOST_CHECK(fabs(find_nearest_neighbor(test1, points_ds, 4) - 0.998002) <= 5e-06);
-    BOOST_CHECK(fabs(find_nearest_neighbor(test1, points_ds, 5) - 1.998) <= 5e-06);
+    BOOST_CHECK(fabs(find_kth_nearest_neighbor(test1, points_ds, 1) - 1e-06) <= 5e-06);
+    BOOST_CHECK(fabs(find_kth_nearest_neighbor(test1, points_ds, 2) - 0.998002) <= 5e-06);
+    BOOST_CHECK(fabs(find_kth_nearest_neighbor(test1, points_ds, 3) - 0.998002) <= 5e-06);
+    BOOST_CHECK(fabs(find_kth_nearest_neighbor(test1, points_ds, 4) - 0.998002) <= 5e-06);
+    BOOST_CHECK(fabs(find_kth_nearest_neighbor(test1, points_ds, 5) - 1.998) <= 5e-06);
   }
 }
 
@@ -612,7 +612,7 @@ BOOST_AUTO_TEST_CASE(Distance_to_k_th_nearest_neighbor_periodic_domain_3d__kd_tr
     //for every distance class:
     for (size_t i = 5; i != 90; i = i + 5)
     {
-      BOOST_CHECK(fabs(find_nearest_neighbor(cgal_test_poits[pts], points_ds, i) - result[counter]) <= 5e-05);
+      BOOST_CHECK(fabs(find_kth_nearest_neighbor(cgal_test_poits[pts], points_ds, i) - result[counter]) <= 5e-05);
       ++counter;
     }
   }
@@ -1014,7 +1014,7 @@ BOOST_AUTO_TEST_CASE(Distance_to_k_th_nearest_neighbor_periodic_domain_4d_kd_tre
     //for every distance class:
     for (size_t i = 5; i != 90; i = i + 5)
     {
-      BOOST_CHECK(fabs(find_nearest_neighbor(cgal_test_poits[pts], points_ds, i) - result[counter]) <= 5e-05);
+      BOOST_CHECK(fabs(find_kth_nearest_neighbor(cgal_test_poits[pts], points_ds, i) - result[counter]) <= 5e-05);
       ++counter;
     }
   }
@@ -1415,7 +1415,7 @@ BOOST_AUTO_TEST_CASE(Distance_to_k_th_nearest_neighbor_periodic_domain_5d_kd_tre
   {
     for (size_t i = 5; i != 90; i = i + 5)
     {
-      BOOST_CHECK(fabs(find_nearest_neighbor(cgal_test_poits[pts], points_ds, i) - result[counter]) <= 5e-05);
+      BOOST_CHECK(fabs(find_kth_nearest_neighbor(cgal_test_poits[pts], points_ds, i) - result[counter]) <= 5e-05);
       ++counter;
     }
   }
