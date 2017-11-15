@@ -4,7 +4,7 @@
  *
  *    Author(s):       Clement Jamin
  *
- *    Copyright (C) 2016 INRIA
+ *    Copyright (C) 2017 INRIA
  *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -45,14 +45,14 @@ namespace spatial_searching {
 
   /**
   * \class Periodic_kd_tree_search Periodic_kd_tree_search.h gudhi/Periodic_kd_tree_search.h
-  * \brief Spatial tree data structure to perform (approximate) nearest neighbor search.
+  * \brief Spatial tree data structure to perform periodic (approximate) nearest neighbor search.
   *
   * \ingroup spatial_searching
   *
   * \details
   * The class Periodic_kd_tree_search is a tree-based data structure, based on
   * <a target="_blank" href="http://doc.cgal.org/latest/Spatial_searching/index.html">CGAL dD spatial searching data structures</a>.
-  * It provides a simplified API to perform (approximate) nearest neighbor searches. Contrary to CGAL default behavior, the tree
+  * It provides a simplified API to perform periodic (approximate) nearest neighbor searches. Contrary to CGAL default behavior, the tree
   * does not store the points themselves, but stores indices.
   *
   * There are two types of queries: the <i>k-nearest neighbor query</i>, where <i>k</i> is fixed and the <i>k</i> nearest 
@@ -68,7 +68,8 @@ namespace spatial_searching {
   * \tparam Point_range is the type of the range that provides the points.
   *   It must be a range whose iterator type is a `RandomAccessIterator`.
   * \tparam Split_strategy allows to choose between different splitting strategies: 
-  * `SLIDING_MIDPOINT` (default), `MEDIAN_OF_MAX_SPREAD`, `MIDPOINT_OF_MAX_SPREAD`.
+  * `Periodic_splitter_enum::SLIDING_MIDPOINT` (default), `Periodic_splitter_enum::MEDIAN_OF_MAX_SPREAD`, 
+  * `Periodic_splitter_enum::MIDPOINT_OF_MAX_SPREAD`.
   */
 
 enum class Periodic_splitter_enum { SLIDING_MIDPOINT, MEDIAN_OF_MAX_SPREAD, MIDPOINT_OF_MAX_SPREAD };
@@ -129,6 +130,7 @@ public:
   /// \brief Constructor
   /// @param[in] points Const reference to the point range. This range
   /// is not copied, so it should not be destroyed or modified afterwards.
+  /// @param[in] domain The periodic domain.
   Periodic_kd_tree_search(Point_range const& points, typename Base_distance::Iso_box_d const& domain)
   : m_points(points),
     m_tree(boost::counting_iterator<std::ptrdiff_t>(0),
@@ -143,17 +145,20 @@ public:
   /// \brief Constructor
   /// @param[in] points Const reference to the point range. This range
   /// is not copied, so it should not be destroyed or modified afterwards.
+  /// @param[in] domain The periodic domain.
   /// @param[in] only_these_points Specifies the indices of the points that
   /// should be actually inserted into the tree. The other points are ignored.
   template <typename Point_indices_range>
   Periodic_kd_tree_search(
     Point_range const& points,
-    Point_indices_range const& only_these_points)
+    Point_indices_range const& only_these_points,
+    typename Base_distance::Iso_box_d const& domain)
     : m_points(points),
       m_tree(
         only_these_points.begin(), only_these_points.end(),
         Splitter(),
-        STraits(std::begin(points))) {
+        STraits(std::begin(points))),
+      m_domain(domain) {
     // Build the tree now (we don't want to wait for the first query)
     m_tree.build();
   }
@@ -165,13 +170,15 @@ public:
   /// should be actually inserted into the tree. The other points are ignored.
   Periodic_kd_tree_search(
     Point_range const& points,
-    std::size_t begin_idx, std::size_t past_the_end_idx)
+    std::size_t begin_idx, std::size_t past_the_end_idx,
+    typename Base_distance::Iso_box_d const& domain)
   : m_points(points),
     m_tree(
       boost::counting_iterator<std::ptrdiff_t>(begin_idx),
       boost::counting_iterator<std::ptrdiff_t>(past_the_end_idx),
       Splitter(),
-      STraits(std::begin(points))) {
+      STraits(std::begin(points))),
+    m_domain(domain) {
     // Build the tree now (we don't want to wait for the first query)
     m_tree.build();
   }
