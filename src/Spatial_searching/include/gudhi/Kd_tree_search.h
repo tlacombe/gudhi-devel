@@ -28,6 +28,7 @@
 #include <CGAL/Search_traits.h>
 #include <CGAL/Search_traits_adapter.h>
 #include <CGAL/Fuzzy_sphere.h>
+#include <CGAL/Euclidean_distance.h>
 #include <CGAL/property_map.h>
 
 #include <boost/property_map/property_map.hpp>
@@ -69,9 +70,9 @@ namespace spatial_searching {
   * `SLIDING_MIDPOINT` (default), `MEDIAN_OF_MAX_SPREAD`, `MIDPOINT_OF_MAX_SPREAD`.
   */
 
-enum Splitter_enum { SLIDING_MIDPOINT = 0, MEDIAN_OF_MAX_SPREAD, MIDPOINT_OF_MAX_SPREAD };
+enum class Splitter_enum { SLIDING_MIDPOINT, MEDIAN_OF_MAX_SPREAD, MIDPOINT_OF_MAX_SPREAD };
 
-template <typename Search_traits, typename Point_range, Splitter_enum Split_strategy = SLIDING_MIDPOINT>
+template <typename Search_traits, typename Point_range, Splitter_enum Split_strategy = Splitter_enum::SLIDING_MIDPOINT>
 class Kd_tree_search {
   typedef boost::iterator_property_map<
     typename Point_range::const_iterator,
@@ -85,26 +86,20 @@ public:
   /// The point type.
   typedef typename Point_range::value_type                  Point;
 
-  typedef CGAL::Search_traits<
-    FT, Point,
-    typename Traits::Cartesian_const_iterator_d,
-    typename Traits::Construct_cartesian_const_iterator_d,
-    typename Search_traits::Dimension>                      Traits_base;
-
   typedef CGAL::Search_traits_adapter<
     std::ptrdiff_t,
     Point_property_map,
-    Traits_base>                                            STraits;
+    Search_traits>                                          STraits;
   typedef CGAL::Distance_adapter<
     std::ptrdiff_t,
     Point_property_map,
-    CGAL::Euclidean_distance<Traits_base> >                 Orthogonal_distance;
+    CGAL::Euclidean_distance<Search_traits>>                Orthogonal_distance;
   
   typedef typename boost::mpl::if_c <
-    Split_strategy == MEDIAN_OF_MAX_SPREAD,
+    Split_strategy == Splitter_enum::MEDIAN_OF_MAX_SPREAD,
     CGAL::Median_of_max_spread<STraits>,
     typename boost::mpl::if_c <
-      Split_strategy == MIDPOINT_OF_MAX_SPREAD,
+      Split_strategy == Splitter_enum::MIDPOINT_OF_MAX_SPREAD,
       CGAL::Midpoint_of_max_spread<STraits>,
       CGAL::Sliding_midpoint<STraits> // default in CGAL -- best choice in average
     >::type
