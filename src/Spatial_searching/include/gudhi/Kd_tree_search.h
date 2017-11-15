@@ -67,7 +67,8 @@ namespace spatial_searching {
   * \tparam Point_range is the type of the range that provides the points.
   *   It must be a range whose iterator type is a `RandomAccessIterator`.
   * \tparam Split_strategy allows to choose between different splitting strategies: 
-  * `SLIDING_MIDPOINT` (default), `MEDIAN_OF_MAX_SPREAD`, `MIDPOINT_OF_MAX_SPREAD`.
+  * `Splitter_enum::SLIDING_MIDPOINT` (default), `Splitter_enum::MEDIAN_OF_MAX_SPREAD`, 
+  * `Splitter_enum::MIDPOINT_OF_MAX_SPREAD`.
   */
 
 enum class Splitter_enum { SLIDING_MIDPOINT, MEDIAN_OF_MAX_SPREAD, MIDPOINT_OF_MAX_SPREAD };
