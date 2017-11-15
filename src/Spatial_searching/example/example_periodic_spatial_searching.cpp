@@ -53,16 +53,6 @@ int main(void) {
         << " - sq. dist. = " << nghb.second << "\n";
     }
 
-    // 10-farthest neighbor query
-    std::cout << "10 farthest neighbors:\n";
-    auto kfn_range = points_ds.query_k_farthest_neighbors(q, 10, true);
-    for (auto const& nghb : kfn_range)
-    {
-      std::cout << "  " << nghb.first
-        << " - " << print_point(points[nghb.first])
-        << " - sq. dist. = " << nghb.second << "\n";
-    }
-
     // All-near-neighbors
     // TODO: see Periodic_kd_tree_search.h
     /*std::cout << "All-near-neighbors (radius = 0.2):\n";
