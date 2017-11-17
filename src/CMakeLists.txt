@@ -24,6 +24,7 @@ add_gudhi_module(Spatial_searching)
 add_gudhi_module(Subsampling)
 add_gudhi_module(Tangential_complex)
 add_gudhi_module(Witness_complex)
+add_gudhi_module(Hasse_diagram)
 
 message("++ GUDHI_MODULES list is:\"${GUDHI_MODULES}\"")
 
