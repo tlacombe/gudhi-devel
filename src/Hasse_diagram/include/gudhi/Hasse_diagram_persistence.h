@@ -27,6 +27,7 @@
 #include <sstream>
 
 #include <gudhi/Hasse_diagram_cell.h>
+#include <gudhi/Hasse_diagram.h>
 
 #ifndef HASSE_DIAGRAM_H
 #define HASSE_DIAGRAM_H
@@ -40,10 +41,9 @@ namespace Hasse_diagram {
  * This variable indicate if a warning should be given anytime a cell is 
  * deleted that have nondeleted cell in the coboundary.
 **/ 
-bool enable_checking_validity_of_complex = true;
-	
+
 template < typename Cell_type >
-class Hasse_diagram
+class Hasse_diagram_persistence : public Hasse_diagram<Cell_type>
 {
 public:
 	/**
@@ -72,119 +72,9 @@ public:
 	};		
 
     
-	/**
-	 * After many operation of deleting cells, this->cells vector may became
-	 * very fragmented. Also, the complexity of operation using all the iterators
-	 * depends on the actual size of a structure (where the deleted elements are still
-	 * stored. This procedure remove permanently all the deleted elements. Ideally, 
-	 * it should be initialized when the percentage of deleted elements is larger than a 
-	 * predefined constant. 
-	**/     
-    void clean_up_the_structure()
-    {
-		//count the number of not deleted cells:
-		unsigned number_of_non_deleted_cells = 0;
-		for ( size_t i = 0 ; i != this->cells.size() ; ++i )
-		{
-			if ( !this->cells[i]->deleted() )++number_of_non_deleted_cells;
-		}
-		//create a new vector to store the undeleted cells:
-		std::vector< Cell_type* > new_cells;
-		new_cells.reserve( number_of_non_deleted_cells );
-		//fill the new vector in and adjust the new positions.
-		//In the same time make sure that the boundary and coboundary vectors 
-		//in every cell are valid.
-		size_t counter = 0;
-		for ( size_t i = 0 ; i != this->cells.size() ; ++i )
-		{
-			if ( !this->cells[i]->deleted() )
-			{
-				new_cells.push_back( this->cells[i] );
-				this->cells[i]->position = counter;
-				this->cells[i]->remove_deleted_elements_from_boundary_and_coboundary();
-				++counter;
-			}
-			else
-			{
-				delete this->cells[i];
-			}
-		}
-		this->cells.swap(new_cells);
-	} 
-	
-	/**
-	 * Procedure that allow to add a cell into the structure.
-	**/ 
-	void add_cell( Cell_type* cell )
-	{
-		cell->position = this->cells.size();
-		this->cells.push_back( cell );		
-	}
-	
-	/**
-	 * Procedure that allow to remove a cell into the structure.
-	**/ 
-	void remove_cell( Cell_type* cell )
-	{
-		//if the flag enable_checking_validity_of_complex is set to true,
-		//we will check if the cell that is to be deleted do not have 
-		//a non deleted cell in the coboundary and if this is the case, we 
-		//will print out the warning, since this can potentially be an error. 
-		if ( enable_checking_validity_of_complex )
-		{
-			for ( size_t cbd = 0 ; cbd != cell->coBoundary.size() ; ++cbd )
-			{
-				if ( !cell->coBoundary[cbd].deleted_ )
-				{
-					std::cout << "Warning, you are deleting cell which have non-deleted cells in the coboundary. This may lead inconsistencies in the data structure.\n";
-					break;
-				}
-			}
-		}
-		
-		cell->delete_cell();
-		this->number_of_deleted_cells++;
-		
-		//in case the structure gets too fragmented, we are calling the 
-		//to clean it up.
-		if ( this->number_of_deleted_cells/(double)(this->cells.size) > 
-			this->percentate_of_removed_cells_that_triggers_reorganization_of_structure )
-		{
-			this->clean_up_the_structure();
-		}
-	}
-	
-	/**
-	 * A procedure writng Hasse diagram to file. The Hasse diagram can be later
-	 * reconstructed using Hasse_diagram( const char* filename ) constructor.
-	**/ 
-	void write_to_file( const char* filename );
-	
-	/**
-	 * Writing to a stream operator.
-	**/ 	
-	friend  std::ostream operator<<( std::ostream& out, const Hasse_diagram< Cell_type >& c )
-	{
-		for ( size_t i = 0 ; i != c.cells.size() ; ++i )
-		{
-			//if the cell is deleted, ignore it.
-			if ( c.cells[i]->deleted() )continue;
-			out << c.cells[i];
-		}
-		return out;
-	}
-	
-	/**
-	 * A basic iterator that iterate through all the cells in the structure. It is the 
-	 * user's responsibility to check if the cell is deleted or not. 
-	**/ 
-	typedef typename std::vector<Cell_type*>::iterator Simple_all_cells_iterator;
-	typedef typename std::vector<Cell_type*> Simple_all_cells_iterator_range;
-	Simple_all_cells_iterator_range simple_all_cells_iterator_range(){return this->cells;}
-	
 	//From here on we have implementation of methods that are required to use
 	//this class with persistent homology engine.
-		/*
+	
 	typedef typename Cell_type::Filtration_type Filtration_value;
     typedef unsigned Simplex_key;
     typedef Simplex_key Simplex_handle;
@@ -265,8 +155,7 @@ public:
 		//TODO
 		//return Boundary_simplex_range(complex_[sh].boundary_.begin(), complex_[sh].boundary_.end());
 	//}	
-	
-	*/
+		
 private:	
 	std::vector< Cell_type* > cells;
 	
