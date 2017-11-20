@@ -38,6 +38,7 @@ namespace Hasse_diagram {
 
 
 template < typename Cell_type > class Hasse_diagram;
+template <typename Cell_type> class is_before_in_filtration;
 
 template <typename Incidence_type_, typename Filtration_type_ , typename Additional_information_ = void>
 class Hasse_diagram_cell
@@ -116,6 +117,11 @@ public:
 	 * positions.
 	**/
 	inline size_t& get_position(){return this->position;}
+	
+	/**
+	 * Accessing the filtration of the cell.
+	**/
+	inline Filtration_type& get_filtration(){return this->filtration;}
 
 	/**
 	 * A procedure used to check if the cell is deleted. It is used by the
@@ -126,6 +132,9 @@ public:
 
 	template < typename Cell_type >
 	friend class Hasse_diagram;
+	
+	template < typename Cell_type >
+	friend class is_before_in_filtration;
 
 	/**
 	 * Procedure to remove deleted boundary and coboundary elements from the
@@ -171,6 +180,39 @@ public:
 		 out << std::endl;
 		return out;
 	}
+	
+		
+	/**
+	 * Procedure that return vector of pointers to boundary elements of a given cell.
+	**/  	
+	inline std::vector< Hasse_diagram_cell* > get_list_of_boundary_elements()
+	{
+		std::vector< Hasse_diagram_cell* > result;	
+		size_t size_of_boundary = this->boundary.size();
+		result.reserve( size_of_boundary );	
+		for ( size_t bd = 0 ; bd != size_of_boundary ; ++bd )
+		{
+			result.push_back( this->boundary[bd].first );
+		}		
+		return result;
+	}
+	
+	/**
+	 * Procedure that return vector of positios of boundary elements of a given cell.
+	**/  	
+	inline std::vector< unsigned > get_list_of_positions_of_boundary_elements()
+	{
+		std::vector< unsigned > result;	
+		size_t size_of_boundary = this->boundary.size();
+		result.reserve( size_of_boundary );	
+		for ( size_t bd = 0 ; bd != size_of_boundary ; ++bd )
+		{
+			result.push_back( this->boundary[bd].first->position );
+		}		
+		return result;
+	}
+		
+	
 private:
 	std::vector< std::pair<Hasse_diagram_cell*,int> > boundary;
 	std::vector< std::pair<Hasse_diagram_cell*,int> > coBoundary;

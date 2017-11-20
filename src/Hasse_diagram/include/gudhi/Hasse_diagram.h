@@ -182,92 +182,26 @@ public:
 	typedef typename std::vector<Cell_type*> Simple_all_cells_iterator_range;
 	Simple_all_cells_iterator_range simple_all_cells_iterator_range(){return this->cells;}
 	
-	//From here on we have implementation of methods that are required to use
-	//this class with persistent homology engine.
-		/*
-	typedef typename Cell_type::Filtration_type Filtration_value;
-    typedef unsigned Simplex_key;
-    typedef Simplex_key Simplex_handle;
-    
-    size_t num_simplices() 
-    {
-		return this->cells.size();
-    }
-    
+	/**
+	 * Procedure that retuns a cell in the position pos in the vector of cells.
+	 * Note that this cell will change after calling clean_up_the_structure()
+	 * procedure.
+	**/ 
+	inline Cell_type* give_me_cell_at_position( size_t pos )
+	{
+		if ( pos < this->cells.size() )
+		{
+			return this->cells[pos];
+		}
+		else
+		{
+			std::cerr << "Wrong position of a cell in the give_me_cell_at_position function.\n";
+			throw "Wrong position of a cell in the give_me_cell_at_position function.\n";
+		}		
+	}
 	
-	Simplex_key key(Simplex_handle sh) 
-	{
-		return sh;
-	}
-
-	Simplex_key null_key() 
-	{
-		return std::numeric_limits<unsigned>::infinity();
-	}
-
-	Simplex_handle simplex(Simplex_key key) 
-	{
-		return key;
-	}
-
-	Simplex_handle null_simplex() 
-	{
-		return std::numeric_limits<unsigned>::infinity();
-	}
-
-	Filtration_value filtration(Simplex_handle sh) 
-	{
-		if (sh == null_simplex()) 
-		{
-		  return std::numeric_limits<Filtration_value>::infinity();
-		}
-		return this->cells[ sh ]->filtration;
-	}
-
-	int dimension(Simplex_handle sh) 
-	{
-		if (sh == null_simplex()) 
-		{
-		  return std::numeric_limits<Filtration_value>::infinity();
-		}
-		return this->cells[ sh ]->dimension;
-	}
-
-	int dimension() 
-	{
-		int top_dimension = 0;
-		for ( size_t i = 0 ; i != this->cells.size() ; ++i )
-		{
-			if ( top_dimension < this->cells[i]->dimension )
-			{
-				top_dimension = this->cells[i]->dimension;
-			}
-		}
-		return top_dimension;
-	}
-
-	std::pair<Simplex_handle, Simplex_handle> endpoints(Simplex_handle sh) 
-	{
-		return std::pair<Simplex_handle, Simplex_handle>(
-							this->cells[sh].boundary[0].first->position, 
-							this->cells[sh].boundary[1].first->position
-														);
-	}
-
-	void assign_key(Simplex_handle sh, Simplex_key key) 
-	{
-		//TODO
-		//complex_[sh].key_ = key;
-	}
-
-	//Boundary_simplex_range boundary_simplex_range(Simplex_handle sh) 
-	//{
-		//TODO
-		//return Boundary_simplex_range(complex_[sh].boundary_.begin(), complex_[sh].boundary_.end());
-	//}	
 	
-	*/
-private:	
+protected:	
 	std::vector< Cell_type* > cells;
 	
 	//to check how fragmented the data structure is (as a result of removing cells).
