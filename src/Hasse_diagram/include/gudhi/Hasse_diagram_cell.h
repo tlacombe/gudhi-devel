@@ -54,9 +54,14 @@ public:
 	Hasse_diagram_cell():dimension(0),position(0),deleted_(false){}
 
 	/**
-     * Constructor of a cell of dimension dim.s
+     * Constructor of a cell of dimension dim.
     **/
 	Hasse_diagram_cell( unsigned dim ):dimension(dim),position(0),deleted_(false){}
+	
+	/**
+     * Constructor of a cell of dimension dim.
+    **/
+	Hasse_diagram_cell( unsigned dim , Filtration_type filt_ ):dimension(dim),position(0),deleted_(false),filtration(filt_){}
 
 	/**
      * Constructor of a cell of dimension dim with a given boundary.
@@ -135,6 +140,10 @@ public:
 	
 	template < typename Cell_type >
 	friend class is_before_in_filtration;
+	
+	
+	template <typename Complex_type , typename Cell_type >  
+	friend std::vector<Cell_type*> convert_to_vector_of_Cell_type( Complex_type& cmplx );
 
 	/**
 	 * Procedure to remove deleted boundary and coboundary elements from the
@@ -168,15 +177,16 @@ public:
 	/**
 	 * Writing to a stream operator.
 	**/
-	friend std::ostream operator<<( std::ostream& out, Hasse_diagram_cell<Incidence_type,Filtration_type,Additional_information> const& c )
+	friend std::ostream& operator<<( std::ostream& out, const Hasse_diagram_cell<Incidence_type,Filtration_type,Additional_information>& c )
 	{
+		 //cout << "position : " << c.position << ", dimension : " << c.dimension << ", filtration: " << c.filtration << ", size of boudary : " <<  c.boundary.size() << "\n";
 		 out << c.position << " " << c.dimension << " " << c.filtration << std::endl;
 		 for ( size_t bd = 0 ; bd != c.boundary.size() ; ++bd )
 	     {
 			 //do not write out the cells that has been deleted
 			 if ( c.boundary[bd].first->deleted() )continue;
-			 out << c.boundary[bd].first->position << " " << c.boundary[bd].second << " ";
-		 }
+			 out << "(" <<  c.boundary[bd].first->position << " " << c.boundary[bd].second << ") ";
+		 }		
 		 out << std::endl;
 		return out;
 	}

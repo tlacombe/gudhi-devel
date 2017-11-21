@@ -66,7 +66,9 @@ public:
 	**/ 	
     Hasse_diagram_persistence( const char* filename ):Hasse_diagram<Cell_type>(filename)
     {		
+		std::cerr << "Before stting up the arrays \n";
 		this->set_up_the_arrays();
+		std::cerr << "After stting up the arrays \n";
 	}
     
     /**
@@ -77,7 +79,7 @@ public:
 	**/ 
     Hasse_diagram_persistence( const std::vector< Cell_type* >& cells_ ):
     Hasse_diagram<Cell_type>(cells_)
-    {
+    {		
 		this->set_up_the_arrays();
 	};		
 		
@@ -172,7 +174,8 @@ public:
 
 	void assign_key(Simplex_handle sh, Simplex_key key) 
 	{
-		std::cout << "\n\n\n Calling assign_key method \n\n\n";
+		//std::cout << "Calling assign_key method \n";
+		//std::cout << "sh : " << sh << " , key : " << key << std::endl;
 		if (key == null_key()) return;
 		this->key_associated_to_cell[sh] = key;
 		this->cell_associated_to_key[key] = sh;
@@ -430,24 +433,36 @@ class is_before_in_filtration {
 
 template < typename Cell_type >
 void Hasse_diagram_persistence<Cell_type>::set_up_the_arrays()
-{
-	std::cout << "set_up_the_arrays() procedure \n";
-	
+{	
 	this->cell_associated_to_key = std::vector<size_t>( this->cells.size() );
-	std::iota (std::begin(this->cell_associated_to_key), std::end(this->cell_associated_to_key), 0); 
+	std::iota (std::begin(this->cell_associated_to_key), std::end(this->cell_associated_to_key), 0); 	
 	#ifdef GUDHI_USE_TBB
 	  tbb::parallel_sort(this->cell_associated_to_key.begin(), this->cell_associated_to_key.end(),
 						 is_before_in_filtration<Cell_type>(this));
 	#else
 	  std::sort(this->cell_associated_to_key.begin(), this->cell_associated_to_key.end(), is_before_in_filtration<Cell_type>(this));
-	#endif
-	
-	this->cell_associated_to_key = std::vector<size_t>( this->cells.size() );
+	#endif	
+	this->key_associated_to_cell = std::vector<size_t>( this->cell_associated_to_key.size() );	
 	for (size_t i = 0; i != this->cell_associated_to_key.size(); ++i) 
-	{
-		this->key_associated_to_cell[cell_associated_to_key[i]] = i;
-    }
+	{		
+		this->key_associated_to_cell[this->cell_associated_to_key[i]] = i;
+    }    
 }//Cell_type
+
+
+
+/**
+ * This is a function to convert any representation that implements Hasse_complex interface
+ * into Hasse_diagram_persistence
+**/ 
+template <typename Complex_type , typename Cell_type>
+Hasse_diagram_persistence<Cell_type>* convert_to_Hasse_diagram_persistence( Complex_type& cmplx )
+{	
+	return new Hasse_diagram_persistence<Cell_type>
+	( 
+	convert_to_vector_of_Cell_type< Complex_type , Cell_type >(cmplx) 
+	);	
+}//convert_to_Hasse_diagram
 
 
 }//namespace Hasse_diagram_persistence

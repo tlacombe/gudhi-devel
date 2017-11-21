@@ -68,6 +68,7 @@ public:
 	**/ 
     Hasse_diagram( const std::vector< Cell_type* >& cells_ ):cells(cells_),number_of_deleted_cells(0)
     {
+		this->set_up_positions();
 		this->set_up_coboundaries();
 	};		
 
@@ -163,13 +164,13 @@ public:
 	/**
 	 * Writing to a stream operator.
 	**/ 	
-	friend  std::ostream operator<<( std::ostream& out, const Hasse_diagram< Cell_type >& c )
+	friend std::ostream& operator<<( std::ostream& out, const Hasse_diagram< Cell_type >& c )
 	{
 		for ( size_t i = 0 ; i != c.cells.size() ; ++i )
 		{
 			//if the cell is deleted, ignore it.
 			if ( c.cells[i]->deleted() )continue;
-			out << c.cells[i];
+			out << *(c.cells[i]);
 		}
 		return out;
 	}
@@ -212,6 +213,13 @@ protected:
 	 * the cells, and set up the coboundaries based on them.
 	**/  
 	void set_up_coboundaries();
+	
+	
+	/**
+	 * When cells are not constructed by the class, but given from elsewhere,
+	 * they may not have the positions being set up. This procedure sets them up. 
+	**/ 
+	void set_up_positions();
 	
 	static double percentate_of_removed_cells_that_triggers_reorganization_of_structure;
 };//Hasse_diagram
@@ -384,6 +392,16 @@ void Hasse_diagram<Cell_type>::set_up_coboundaries()
 	}
 }
 
+
+template < typename Cell_type >
+void Hasse_diagram<Cell_type>::set_up_positions()
+{
+	for ( size_t i = 0 ; i != this->cells.size() ; ++i )
+	{
+		this->cells[i]->get_position() = i;
+	}	
+}//set_up_positions
+
 template < typename Cell_type >
 void Hasse_diagram<Cell_type>::write_to_file( const char* filename )
 {
@@ -403,6 +421,113 @@ void Hasse_diagram<Cell_type>::write_to_file( const char* filename )
 	out << *this;		
 	out.close();
 }//template < typename Cell_type >
+
+
+/**
+ * This is a function that take any representation that implements Hasse_complex 
+ * interface and return vector of Cell_type* based on it. It is used to construct 
+ * objects of class Hasse_diagram and Hasse_diagram_persistence
+**/ 
+
+template <typename Complex_type , typename Cell_type>
+std::vector<Cell_type*> convert_to_vector_of_Cell_type( Complex_type& cmplx )
+{
+	bool dbg = false;
+	
+	if ( dbg )
+	{
+		std::cout << "cmplx.num_simplices() : " << cmplx.num_simplices() << std::endl;
+	}
+	
+	//create vector of cells of suitable length:
+	std::vector< Cell_type* > cells_of_Hasse_diag( cmplx.num_simplices() );
+	for ( size_t i = 0 ; i != cmplx.num_simplices() ; ++i ) 
+	{
+		cells_of_Hasse_diag[i] = new Cell_type();
+	}
+	
+	//First we need to assign keys. It is not neccessary for cubical complexes,
+	//but in simplex tree this is not done by default.
+	std::vector< typename Complex_type::Simplex_key > boundary;
+	typename Complex_type::Filtration_simplex_range range = cmplx.filtration_simplex_range();
+	size_t pos = 0;
+	for ( typename Complex_type::Filtration_simplex_iterator it = range.begin() ; it != range.end() ; ++it )
+	{
+		cmplx.assign_key( *it,pos );
+		++pos;
+	}
+	
+	
+	size_t counter = 0;
+	for ( typename Complex_type::Filtration_simplex_iterator it = range.begin() ; it != range.end() ; ++it )
+	{
+		if ( dbg )
+		{
+			std::cout << "This is cell number : " << counter << std::endl;
+		}		
+		Cell_type* this_cell = cells_of_Hasse_diag[counter];
+		
+		this_cell->get_dimension() = cmplx.dimension(*it);		
+		this_cell->get_filtration() = cmplx.filtration(*it);
+		
+		if ( dbg )
+		{
+			std::cout << "this_cell->get_dimension() : " << this_cell->get_dimension() << std::endl;
+			std::cout << "this_cell->get_filtration() : " << this_cell->get_filtration() << std::endl;
+		}
+	
+		//get the boundary:
+		boundary.clear();
+		boundary.reserve(10);
+		typename Complex_type::Boundary_simplex_range bd_range = cmplx.boundary_simplex_range( *it );
+		for ( typename Complex_type::Boundary_simplex_iterator bd = bd_range.begin() ; bd != bd_range.end() ; ++bd )
+		{
+			//std::cerr << "cmplx.key(*bd) : " << cmplx.key(*bd) << std::endl;
+			boundary.push_back( cmplx.key(*bd) );
+		}
+		
+		if ( dbg )
+		{
+			std::cerr << "boundary.size() : " << boundary.size() << std::endl << "And here are the boundary elements : " << std::endl;
+			for ( size_t bd = 0 ; bd != boundary.size() ; ++bd )
+			{	
+				std::cout << boundary[bd] << " ";
+			}
+			std::cout << std::endl;
+		}
+		
+		//get the boundary in the Hasse diagram format:
+		this_cell->boundary.reserve( boundary.size() );
+		int incidence = 1;
+		for ( size_t bd = 0 ; bd != boundary.size() ; ++bd )
+		{						
+			this_cell->boundary.push_back
+			( std::make_pair( cells_of_Hasse_diag[ boundary[bd]  ] , incidence ) );
+			incidence *= -1;
+		}
+		
+		if ( dbg )
+		{
+			std::cout << "this_cell->boundary.size() : " << this_cell->boundary.size() << std::endl;
+			std::cerr << "Set up for this cell \n";
+			getchar();
+		}
+		++counter;		
+	}	
+	return cells_of_Hasse_diag;	
+}//convert_to_vector_of_Cell_type
+
+
+
+/**
+ * This is a function to convert any representation that implements Hasse_complex interface
+ * into Hasse diagram
+**/ 
+template <typename Complex_type , typename Cell_type>
+Hasse_diagram<Cell_type>* convert_to_Hasse_diagram( Complex_type& cmplx )
+{	
+	return new Hasse_diagram<Cell_type>( convert_to_vector_of_Cell_type(cmplx) );	
+}//convert_to_Hasse_diagram
 
 
 }//namespace Hasse_diagram

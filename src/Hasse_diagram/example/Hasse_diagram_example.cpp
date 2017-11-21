@@ -23,6 +23,7 @@
 
 #include <gudhi/reader_utils.h>
 #include <gudhi/Hasse_diagram.h>
+#include <gudhi/Hasse_diagram_persistence.h>
 #include <gudhi/Persistent_cohomology.h>
 
 // standard stuff
@@ -33,7 +34,7 @@
 
 int main(int argc, char** argv) 
 { 
-	typedef Gudhi::Hasse_diagram::Cell<int,double,double> Cell;
+	typedef Gudhi::Hasse_diagram::Hasse_diagram_cell<int,double,double> Cell;
 	//in this example we will construct a CW decomposition of two dimensional 
 	//torus:
 	//  ______________________
@@ -160,7 +161,26 @@ int main(int argc, char** argv)
   
   std::vector< Cell* > vect_of_cells = {A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P};
   
-  Gudhi::Hasse_diagram::Hasse_diagram<Cell> hd( vect_of_cells );
+  //Here is a construction of a standard Hasse diagram:
+  Gudhi::Hasse_diagram::Hasse_diagram<Cell> hd( vect_of_cells );  
+  std::cout << "Here is the Hasse diagam : " << std::endl << hd << std::endl;
+  
+  //Here is a construction of a Hasse_diagram_persistence and computations of 
+  //persistent homology of the complex above. You should see both the fundamental
+  //classes of torus and the generators of the three squares. 
+  Gudhi::Hasse_diagram::Hasse_diagram_persistence<Cell> hdp( vect_of_cells );  
+  typedef Gudhi::persistent_cohomology::Field_Zp Field_Zp;
+  typedef Gudhi::persistent_cohomology::Persistent_cohomology
+  <Gudhi::Hasse_diagram::Hasse_diagram_persistence<Cell>, Field_Zp> Persistent_cohomology;
+
+  Persistent_cohomology pcoh(hdp,true);  
+  unsigned field_characteristic = 11;
+  double min_persistence = 0;
+	
+  pcoh.init_coefficients(field_characteristic);    
+  pcoh.compute_persistent_cohomology(min_persistence);
+  pcoh.output_diagram();
+  
   
   return 0;
 }
