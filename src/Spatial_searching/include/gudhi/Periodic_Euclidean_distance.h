@@ -210,15 +210,16 @@ namespace spatial_searching {
     }
 
 private:
+  // Warning: the returned "distance" might be negative
   inline FT periodic_one_coord_distance(int dim, FT x_i, FT x_j) const
   {
     FT dx = x_j - x_i;
-    FT min_x = *(m_min_begin + dim);
-    FT max_x = *(m_max_begin + dim);
+    FT min_x = m_min_begin[dim];
+    FT max_x = m_max_begin[dim];
     FT size_x = max_x - min_x;
     if (dx > 0.5 * size_x)
       dx -= size_x;
-    if (dx <= -0.5 * size_x)
+    else if (dx <= -0.5 * size_x)
       dx += size_x;
 
     return dx;
@@ -226,24 +227,33 @@ private:
 
   inline FT min_distance_to_periodic_interval(int dim, FT c, FT low, FT hi) const
   {
-    FT min_x = *(m_min_begin + dim);
-    FT max_x = *(m_max_begin + dim);
+    FT min_x = m_min_begin[dim];
+    FT max_x = m_max_begin[dim];
     FT size_x = max_x - min_x;
 
-    FT min_distance;
     if (c < low)
-      min_distance = low - c;
-    else if (c > hi)
-      min_distance = c - hi;
+      // Check if the interval on the left is not closer
+      return (std::min)(low - c, c - (hi - size_x));
+    else if (c > high)
+      // Check if the interval on the right is not closer
+      return (std::min)(c - hi, low + size_x - c);
     else
-      return 0.; // c is inside the interval
+      // c is inside the interval
+      return 0.;
+  }
 
-    // Check if the interval on the left is not closer
-    min_distance = (std::min)(min_distance, c - (hi - size_x));
-    // Check if the interval on the right is not closer
-    min_distance = (std::min)(min_distance, low + size_x - c);
+  inline FT max_distance_to_periodic_interval(int dim, FT c, FT low, FT hi) const
+  {
+    FT min_x = m_min_begin[dim];
+    FT max_x = m_max_begin[dim];
+    FT size_x = max_x - min_x;
+    FT dist_to_low = periodic_one_coord_distance(dim, c, low);
+    FT dist_to_hi = periodic_one_coord_distance(dim, c, hi);
 
-    return min_distance;
+    if (dist_to_low < 0 && dist_to_hi > 0)
+      return size_x/2;
+
+    return (std::max)(std::abs(dist_to_low), std::abs(dist_to_hi));
   }
 
   SearchTraits                          m_traits;
