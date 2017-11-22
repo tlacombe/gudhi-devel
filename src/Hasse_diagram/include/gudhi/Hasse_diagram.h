@@ -83,12 +83,13 @@ public:
 	**/     
     void clean_up_the_structure()
     {
+		bool dbg = true;
+		if ( this->number_of_deleted_cells == 0 )return;
+		
+		if ( dbg )std::cout << "Calling clean_up_the_structure() procedure. \n";	
 		//count the number of not deleted cells:
-		unsigned number_of_non_deleted_cells = 0;
-		for ( size_t i = 0 ; i != this->cells.size() ; ++i )
-		{
-			if ( !this->cells[i]->deleted() )++number_of_non_deleted_cells;
-		}
+		unsigned number_of_non_deleted_cells = this->cells.size() - this->number_of_deleted_cells;
+		
 		//create a new vector to store the undeleted cells:
 		std::vector< Cell_type* > new_cells;
 		new_cells.reserve( number_of_non_deleted_cells );
@@ -99,11 +100,11 @@ public:
 		for ( size_t i = 0 ; i != this->cells.size() ; ++i )
 		{
 			if ( !this->cells[i]->deleted() )
-			{
+			{							
 				new_cells.push_back( this->cells[i] );
 				this->cells[i]->position = counter;
 				this->cells[i]->remove_deleted_elements_from_boundary_and_coboundary();
-				++counter;
+				++counter;							
 			}
 			else
 			{
@@ -111,15 +112,25 @@ public:
 			}
 		}
 		this->cells.swap(new_cells);
+		this->number_of_deleted_cells = 0;
+		if ( dbg )std::cout << "Done with the clean_up_the_structure() procedure. \n";	
 	} 
 	
 	/**
-	 * Procedure that allow to add a cell into the structure.
+	 * Procedure that allow to add a cell into the structure. This procedure 
+	 * automatically fill in coboundaries of boundary elements, so do not 
+	 * duplicate it.
 	**/ 
 	void add_cell( Cell_type* cell )
 	{
 		cell->position = this->cells.size();
 		this->cells.push_back( cell );		
+		//we still need to check if cobounadies of boundary elements of this 
+		//cell are set up in the correct way:
+		for ( size_t bd = 0 ; bd != cell->boundary.size() ; ++bd ) 
+		{
+			cell->boundary[bd].first->coBoundary.push_back( std::make_pair( cell,cell->boundary[bd].second ) );
+		}
 	}
 	
 	/**
@@ -135,7 +146,7 @@ public:
 		{
 			for ( size_t cbd = 0 ; cbd != cell->coBoundary.size() ; ++cbd )
 			{
-				if ( !cell->coBoundary[cbd].deleted_ )
+				if ( !cell->coBoundary[cbd].first->deleted() )
 				{
 					std::cout << "Warning, you are deleting cell which have non-deleted cells in the coboundary. This may lead inconsistencies in the data structure.\n";
 					break;
@@ -148,7 +159,7 @@ public:
 		
 		//in case the structure gets too fragmented, we are calling the 
 		//to clean it up.
-		if ( this->number_of_deleted_cells/(double)(this->cells.size) > 
+		if ( this->number_of_deleted_cells/(double)(this->cells.size() ) > 
 			this->percentate_of_removed_cells_that_triggers_reorganization_of_structure )
 		{
 			this->clean_up_the_structure();
@@ -201,7 +212,6 @@ public:
 		}		
 	}
 	
-	
 protected:	
 	std::vector< Cell_type* > cells;
 	
@@ -225,7 +235,7 @@ protected:
 };//Hasse_diagram
 
 template <typename Cell_type>
-double Hasse_diagram<Cell_type>::percentate_of_removed_cells_that_triggers_reorganization_of_structure = 0.8;
+double Hasse_diagram<Cell_type>::percentate_of_removed_cells_that_triggers_reorganization_of_structure = 0.5;
 
 
 template < typename Cell_type >

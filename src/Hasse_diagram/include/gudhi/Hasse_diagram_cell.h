@@ -133,7 +133,7 @@ public:
 	 * subsequent implementation of Hasse diagram that is absed on lazy
 	 * delete.
 	**/
-	bool deleted(){return this->deleted_;}
+	inline bool deleted(){return this->deleted_;}
 
 	template < typename Cell_type >
 	friend class Hasse_diagram;
@@ -155,7 +155,7 @@ public:
 		new_boundary.reserve( this->boundary.size() );
 		for ( size_t bd = 0 ; bd != this->boundary.size() ; ++bd )
 		{
-			if ( !this->boundary[bd]->deleted() )
+			if ( !this->boundary[bd].first->deleted() )
 			{
 				new_boundary.push_back( this->boundary[bd] );
 			}
@@ -166,7 +166,7 @@ public:
 		new_coBoundary.reserve( this->coBoundary.size() );
 		for ( size_t cbd = 0 ; cbd != this->coBoundary.size() ; ++cbd )
 		{
-			if ( !this->coBoundary[cbd]->deleted() )
+			if ( !this->coBoundary[cbd].first->deleted() )
 			{
 				new_coBoundary.push_back( this->coBoundary[cbd] );
 			}
@@ -223,7 +223,7 @@ public:
 	}
 		
 	
-private:
+protected:
 	std::vector< std::pair<Hasse_diagram_cell*,int> > boundary;
 	std::vector< std::pair<Hasse_diagram_cell*,int> > coBoundary;
 	unsigned dimension;

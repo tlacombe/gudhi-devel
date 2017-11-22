@@ -16,4 +16,9 @@ if (TBB_FOUND)
   target_link_libraries(Hasse_diagram_from_simplex_tree ${TBB_LIBRARIES})
 endif()
 
+add_executable ( Insertion_and_removal_operations_on_Hasse_diagrams Insertion_and_removal_operations_on_Hasse_diagrams.cpp )
+if (TBB_FOUND)
+  target_link_libraries(Insertion_and_removal_operations_on_Hasse_diagrams ${TBB_LIBRARIES})
+endif()
+
 install(TARGETS Hasse_diagram_example DESTINATION bin)

@@ -88,13 +88,21 @@ public:
 	/**
 	 * A version of clean up structure for the Hasse_diagram_persistence
 	 * class. Note that before computations of the persistence the structure
-	 * should be cleaned up. 
+	 * should be cleaned up. This procedure have to be invoked before computations
+	 * of persistent homology if some removal operations has been performed on
+	 * the structure of Hasse diagram.
 	**/ 
 	void clean_up_the_structure()
 	{
 		Hasse_diagram<Cell_type>::clean_up_the_structure();
 		this->set_up_the_arrays();
 	}
+	
+	/**
+	 * A procedure that need to be called before computations of persistence after some
+	 * addition (but not removal) operations has been performed on the structure.
+	**/ 
+	void set_up_the_arrays();
 
     
 	//From here on we have implementation of methods that are required to use
@@ -394,9 +402,7 @@ public:
 	
 protected:	
 	  std::vector<size_t> key_associated_to_cell;
-      std::vector<size_t> cell_associated_to_key;
-      
-      void set_up_the_arrays();
+      std::vector<size_t> cell_associated_to_key;   
 };//Hasse_diagram
 
 
