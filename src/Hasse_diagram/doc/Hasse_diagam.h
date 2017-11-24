@@ -28,7 +28,7 @@ namespace Gudhi {
 
 namespace Hasse_diagram {
 
-/**  \defgroup Hasse_diagram Hasse diagram
+/**  \defgroup hasse_diagram Hasse diagram
  *
  * \author   Pawel Dlotko
  *
@@ -92,7 +92,7 @@ namespace Hasse_diagram {
  */
 /** @} */  // end defgroup Hasse_diagram
 
-}  // namespace Hasse_diagram
+}  // namespace hasse_diagram
 }  // namespace Gudhi
 
 #endif  // DOC_HASSE_DIAGRAM_H_

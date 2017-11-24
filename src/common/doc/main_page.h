@@ -57,7 +57,7 @@
     <b>User manual:</b> \ref cubical_complex - <b>Reference manual:</b> Gudhi::cubical_complex::Bitmap_cubical_complex
     </td>
  </tr>
- \subsection Hasse_diagram Hasse diagram
+ \subsection HasseDiagramDataStructure Hasse diagram
  \image html "Hasse_diag.png" "Hasse diagram."
 <table border="0">
   <tr>
@@ -69,7 +69,7 @@
     <td width="75%">
     Hasse diagram is a general data structure to store cell complexes and chain complexes. It allows constant time 
     access to boundary and coboundary elements of a cell.
-    <b>User manual:</b> \ref Hasse_diagram - <b>Reference manual:</b> Gudhi::Hasse_diagram::Hasse_diagram, Gudhi::Hasse_diagram::Hasse_diagram_persistence
+    <b>User manual:</b> \ref hasse_diagram - <b>Reference manual:</b> Gudhi::Hasse_diagram::Hasse_diagram, Gudhi::Hasse_diagram::Hasse_diagram_persistence
     </td>
  </tr>
  \subsection RipsComplexDataStructure Rips complex
