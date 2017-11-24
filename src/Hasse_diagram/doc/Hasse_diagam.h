@@ -44,7 +44,7 @@ namespace Hasse_diagram {
  * information can also be stored when the template parameter Additional_information_ 
  * is set to a class to store the additional information. Please consult the picture
  * below for an intuitive illustration of the Hasse diagram data structure.
- * \image html "Hasse_diag.pdf" A simple example of a Hasse diagram representing two vertices
+ * \image html "Hasse_diag.png" A simple example of a Hasse diagram representing two vertices
  * and two edges forming a loop.
  * 
  * Hasse diagram is a dynamic data structure. Addition and removal of cells 
