@@ -69,6 +69,8 @@ int main(int argc, char** argv)
     typedef Gudhi::Hasse_diagram::Hasse_diagram_persistence<Cell> Hasse_diag;
     Hasse_diag* hd = Gudhi::Hasse_diagram::convert_to_Hasse_diagram_persistence<Bitmap_cubical_complex,Cell>( b );
     
+    std::cout << "Here is the Hasse diagram obtained from the cunical complex : " << *hd << std::endl;
+    
    
 	typedef Gudhi::persistent_cohomology::Field_Zp Field_Zp;
 	typedef Gudhi::persistent_cohomology::Persistent_cohomology<Hasse_diag, Field_Zp> Persistent_cohomology;
@@ -79,6 +81,8 @@ int main(int argc, char** argv)
 	
 	pcoh.init_coefficients(field_characteristic);    
 	pcoh.compute_persistent_cohomology(min_persistence);
+	
+	std::cout << "And here is the persistent homology of the Hasse diagram : " << std::endl;
 	pcoh.output_diagram();
   
     return 0;

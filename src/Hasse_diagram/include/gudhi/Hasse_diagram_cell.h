@@ -25,6 +25,10 @@
 #include <algorithm>
 #include <string>
 #include <sstream>
+#include <type_traits>
+#include <cstdlib>
+#include <cstdio>
+
 
 
 
@@ -185,7 +189,7 @@ public:
 	     {
 			 //do not write out the cells that has been deleted
 			 if ( c.boundary[bd].first->deleted() )continue;
-			 out << "(" <<  c.boundary[bd].first->position << " " << c.boundary[bd].second << ") ";
+			 out <<  c.boundary[bd].first->position << " " << c.boundary[bd].second << " ";
 		 }		
 		 out << std::endl;
 		return out;
@@ -219,6 +223,48 @@ public:
 		{
 			result.push_back( this->boundary[bd].first->position );
 		}		
+		return result;
+	}
+	
+	/**
+	 * Function that display a string being a signature of a structure. 
+	 * Used mainly for debugging purposes. 
+	**/ 
+	std::string full_signature_of_the_structure()
+	{
+		std::string result;
+		result += "dimension: ";
+		result += std::to_string(this->dimension);
+		result += " filtration: ";
+		result += std::to_string(this->filtration);
+		result += " position: ";
+		result += std::to_string(this->position);
+		result += " deleted_: ";
+		result += std::to_string(this->deleted_);
+		
+		//if the Additional_information is not void, add them to
+		//the signature as well.
+		if ( std::is_same<Additional_information, void>::value )
+		{			
+			result += " Additional_information: ";
+			result += std::to_string(this->additional_info);
+		}
+		result += " boundary ";
+		for ( size_t bd = 0 ; bd != this->boundary.size() ; ++bd )
+		{
+			result += "( " + std::to_string(this->boundary[bd].first->position);
+			result += " " + std::to_string(this->boundary[bd].second);
+			result += ") ";			
+		}
+		
+		result += " coBoundary ";
+		for ( size_t cbd = 0 ; cbd != this->coBoundary.size() ; ++cbd )
+		{
+			result += "( " + std::to_string(this->coBoundary[cbd].first->position);
+			result += " " + std::to_string(this->coBoundary[cbd].second);
+			result += ") ";			
+		}
+		
 		return result;
 	}
 		

@@ -86,8 +86,6 @@ int main(int argc, char** argv)
 	Simplex_tree simplex_tree;
 
 	rips_complex_from_file.create_complex(simplex_tree, dim_max);
-	std::cout << "The complex contains " << simplex_tree.num_simplices() << " simplices \n";
-	std::cout << "   and has dimension " << simplex_tree.dimension() << " \n";
 
 	// Sort the simplices in the order of the filtration
 	simplex_tree.initialize_filtration();

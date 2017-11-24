@@ -66,9 +66,7 @@ public:
 	**/ 	
     Hasse_diagram_persistence( const char* filename ):Hasse_diagram<Cell_type>(filename)
     {		
-		std::cerr << "Before stting up the arrays \n";
 		this->set_up_the_arrays();
-		std::cerr << "After stting up the arrays \n";
 	}
     
     /**

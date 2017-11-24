@@ -179,6 +179,8 @@ int main(int argc, char** argv)
 	
   pcoh.init_coefficients(field_characteristic);    
   pcoh.compute_persistent_cohomology(min_persistence);
+  
+  std::cout << "Here is the persistent homology of the diagram." << std::endl;
   pcoh.output_diagram();
   
   

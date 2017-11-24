@@ -41,6 +41,7 @@ namespace Hasse_diagram {
  * deleted that have nondeleted cell in the coboundary.
 **/ 
 bool enable_checking_validity_of_complex = true;
+template <typename Cell_type> class is_before_in_dimension;
 	
 template < typename Cell_type >
 class Hasse_diagram
@@ -83,7 +84,7 @@ public:
 	**/     
     void clean_up_the_structure()
     {
-		bool dbg = true;
+		bool dbg = false	;
 		if ( this->number_of_deleted_cells == 0 )return;
 		
 		if ( dbg )std::cout << "Calling clean_up_the_structure() procedure. \n";	
@@ -186,6 +187,8 @@ public:
 		return out;
 	}
 	
+	friend class is_before_in_dimension<Cell_type>;
+	
 	/**
 	 * A basic iterator that iterate through all the cells in the structure. It is the 
 	 * user's responsibility to check if the cell is deleted or not. 
@@ -210,6 +213,20 @@ public:
 			std::cerr << "Wrong position of a cell in the give_me_cell_at_position function.\n";
 			throw "Wrong position of a cell in the give_me_cell_at_position function.\n";
 		}		
+	}
+	
+	/**
+	 * Function that display a string being a signature of a structure. 
+	 * Used mainly for debugging purposes. 
+	**/ 
+	std::string full_signature_of_the_structure()
+	{
+		std::string result;
+		for ( size_t i = 0 ; i != this->cells.size() ; ++i )
+		{
+			result += this->cells[i]->full_signature_of_the_structure();
+		}		
+		return result;
 	}
 	
 protected:	
@@ -241,6 +258,7 @@ double Hasse_diagram<Cell_type>::percentate_of_removed_cells_that_triggers_reorg
 template < typename Cell_type >
 Hasse_diagram<Cell_type>::Hasse_diagram( const char* filename )
 {
+	
 	//We assume that the cells in the file are enumerated in increasing order. 
 	//The idea of the i-th cell in the file is by default i (starting from zero). 
 	//Moreover, the cells are provided from low dimensional to high dimensiona.
@@ -275,6 +293,13 @@ Hasse_diagram<Cell_type>::Hasse_diagram( const char* filename )
 	iss >> number_of_cells;
 	this->cells.reserve( number_of_cells );	
 	
+	//create all the cells:
+	for ( size_t i = 0 ; i != number_of_cells ; ++i )
+	{		
+		this->cells.push_back( new Cell_type() );		
+	}
+	
+	
 	std::getline(in, line);
 	
 	if ( dbg )
@@ -285,7 +310,7 @@ Hasse_diagram<Cell_type>::Hasse_diagram( const char* filename )
 	size_t size_of_last_boundary = 10;//to initially reserve a vector for bounary elements.
 	for ( size_t i = 0 ; i != number_of_cells ; ++i )
 	{
-		Cell_type* new_cell = new Cell_type();		
+		Cell_type* new_cell = this->cells[i];		
 		while ( line[0] == '#' )
 		{
 			std::getline(in, line);	
@@ -328,6 +353,7 @@ Hasse_diagram<Cell_type>::Hasse_diagram( const char* filename )
 		int incidence_coef;
 		std::vector< std::pair< unsigned,int > > bdry;
 		bdry.reserve( size_of_last_boundary );
+		if ( dbg )std::cout << "Here are the boundary elements of the cell.\n";
 		while ( iss.good() )
 		{			
 			iss >> cell_id;
@@ -341,15 +367,16 @@ Hasse_diagram<Cell_type>::Hasse_diagram( const char* filename )
 			if ( dbg )std::cout << "( " <<  cell_id << " , " << incidence_coef << " ), ";
 			bdry.push_back( std::pair< unsigned,int >(cell_id,incidence_coef) );
 		}
-		size_of_last_boundary = bdry.size();
+				
+		size_of_last_boundary = bdry.size();						
 		new_cell->boundary.reserve( size_of_last_boundary );
 		for ( size_t bd = 0 ; bd != size_of_last_boundary ; ++bd )
-		{
+		{			
 			new_cell->boundary.push_back( std::make_pair(this->cells[ bdry[bd].first ] , bdry[bd].second) );
-		}		
-		this->cells.push_back( new_cell );
+		}				
 		if ( dbg )
 		{
+			std::cout << "new_cell->boundary.size() : " << new_cell->boundary.size() << std::endl;		
 			std::cout << "Done with this cell. \n";
 			getchar();
 		}
@@ -361,7 +388,7 @@ Hasse_diagram<Cell_type>::Hasse_diagram( const char* filename )
 		}		
 	}
 	//now once the boundaries are set, we are to set up the coboundaries.	
-	this->set_up_coboundaries();
+	this->set_up_coboundaries();	
 }
 
 
@@ -414,7 +441,7 @@ void Hasse_diagram<Cell_type>::set_up_positions()
 
 template < typename Cell_type >
 void Hasse_diagram<Cell_type>::write_to_file( const char* filename )
-{
+{		
 	std::ofstream out( filename );
 	//If there are any deleted cells, then we need to clean up the structure 
 	//first before writing it to a file. The reason for that is because the 
@@ -431,6 +458,13 @@ void Hasse_diagram<Cell_type>::write_to_file( const char* filename )
 	out << *this;		
 	out.close();
 }//template < typename Cell_type >
+
+
+
+
+
+
+
 
 
 /**
@@ -538,6 +572,7 @@ Hasse_diagram<Cell_type>* convert_to_Hasse_diagram( Complex_type& cmplx )
 {	
 	return new Hasse_diagram<Cell_type>( convert_to_vector_of_Cell_type(cmplx) );	
 }//convert_to_Hasse_diagram
+
 
 
 }//namespace Hasse_diagram
