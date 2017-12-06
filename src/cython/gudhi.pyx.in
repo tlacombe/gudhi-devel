@@ -36,6 +36,9 @@ include '@CMAKE_CURRENT_SOURCE_DIR@/cython/persistence_graphical_tools.py'
 include '@CMAKE_CURRENT_SOURCE_DIR@/cython/reader_utils.pyx'
 include '@CMAKE_CURRENT_SOURCE_DIR@/cython/witness_complex.pyx'
 include '@CMAKE_CURRENT_SOURCE_DIR@/cython/strong_witness_complex.pyx'
+include "cython/persistence_representations_intervals.pyx"
+include "cython/persistence_representations_landscapes.pyx"
+#include "cython/persistence_representations_landscapes_on_grid.pyx"
 @GUDHI_CYTHON_ALPHA_COMPLEX@
 @GUDHI_CYTHON_EUCLIDEAN_WITNESS_COMPLEX@
 @GUDHI_CYTHON_SUBSAMPLING@
