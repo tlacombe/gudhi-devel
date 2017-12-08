@@ -1,5 +1,6 @@
 #include <gudhi/MsMatrix.h>
 
+
 #include <gudhi/Rips_complex.h>
 #include <gudhi/distance_functions.h>
 
@@ -13,7 +14,7 @@
 #include <vector>
 #include <limits>  // for std::numeric_limits
 
-using Point = CGAL::Epick_d< CGAL::Dimension_tag<3> >::Point_d;
+using Point = CGAL::Epick_d< CGAL::Dimension_tag<10> >::Point_d;
 using Filtration_value = Simplex_tree::Filtration_value;
 using Rips_complex = Gudhi::rips_complex::Rips_complex<Filtration_value>;
 
@@ -25,18 +26,26 @@ void generate_points_sphere(Vector_of_points& W, int nbP, int dim)
 	for (int i = 0; i < nbP; i++)
 		W.push_back(*rp++);
 }
+void generate_points_ball(Vector_of_points& W, int nbP, int dim)
+{
+	CGAL::Random_points_in_ball_d<Point> rp(dim, 1);
+	for (int i = 0; i < nbP; i++)
+		W.push_back(*rp++);
+}
+
+
 
 int main()
 {
 	Vector_of_points points;
-	int num_pts = 3000;
-	generate_points_sphere(points,num_pts,2);
+	int num_pts = 15;
+	generate_points_ball(points,num_pts,4);
 
-	double threshold = 0.003;
+	double threshold = 0.8;
 	std::cout << "Number of points : " << num_pts << " and " << "Threshold value : " << threshold << std::endl;
 	Rips_complex rips_complex_from_points(points, threshold, Gudhi::Euclidean_distance());
 
-	for(int dime = 1 ; dime <= 20 ; ++dime)
+	for(int dime = 3 ; dime <= 6 ; ++dime)
 	{
 		Simplex_tree stree;
 		rips_complex_from_points.create_complex(stree, dime);

@@ -1,4 +1,4 @@
-﻿/*    This file is part of the Gudhi Library. The Gudhi library
+/*    This file is part of the Gudhi Library. The Gudhi library
  *    (Geometric Understanding in Higher Dimensions) is a generic C++
  *    library for computational topology.
  *
@@ -33,19 +33,19 @@
 #include <fstream>
 
 using Simplex_tree = Gudhi::Simplex_tree<>;
-using Vertex_handle = Simplex_tree::Vertex_handle;
+using Vertex = Simplex_tree::Vertex;
 using Filtration_value = Simplex_tree::Filtration_value;
 
-using typeVectorVertex = std::vector< Vertex_handle >;
+using vertexVector = std::vector< Vertex >;
 using boolVector = std::vector<bool>;
-using MapVertexToIndex = std::unordered_map<Vertex_handle,int>;
+using MapVertexToIndex = std::unordered_map<Vertex,int>;
 
 using Tuple = std::tuple<int,int,bool>;
 using List = std::list<Tuple>;
 
-using Map = std::unordered_map<Vertex_handle,Vertex_handle>;
+using Map = std::unordered_map<Vertex,Vertex>;
 using Vector = std::vector<int>;
-using typePairSimplexBool = std::pair< Simplex_tree::Simplex_handle, bool >;
+using typePairSimplexBool = std::pair< Simplex_tree::Simplex, bool >;
 
 bool tuplecompare(const Tuple &lhs, const Tuple &rhs) // this is kept like this because we want to sort in decreasing order always
 {
@@ -62,7 +62,7 @@ private:
 	//! Stores the vertices of the original Simplicial Complex.
     /*!
       \code
-      typeVectorVertex = std::vector< Vertex_handle >
+      vertexVector = std::vector< Vertex >
       \endcode
       So basically this is a vector that stores all the vertices of the Original Simplicial Complex. <br>
       So, if the original simplex tree had vertices 0,1,4,5 <br>
@@ -72,12 +72,12 @@ private:
       Indices =   0   1   2   3
       \endverbatim
     */
-	typeVectorVertex vertex_list;
+	vertexVector vertex_list;
 
 	//! Stores the Reverse Map between indices and values of the vector <B>vertex_list</B>.
     /*!
       \code
-      MapVertexToIndex = std::unordered_map<Vertex_handle,int>
+      MapVertexToIndex = std::unordered_map<Vertex,int>
       \endcode
       So, if the original simplex tree had vertices 0,1,4,5 <br>
       <B>vertex_list</B> would store : <br>
@@ -161,7 +161,7 @@ private:
 	//! Map that stores the Reduction / Collapse of vertices.
     /*!
       \code
-      Map = std::unordered_map<Vertex_handle,Vertex_handle>
+      Map = std::unordered_map<Vertex,Vertex>
       \endcode
       This is empty to begin with. As and when collapses are done (let's say from dominated vertex <I>v</I> to dominating vertex <I>v'</I>) : <br>
       <B>ReductionMap</B>[<I>v</I>] = <I>v'</I> is entered into the map. <br>
@@ -296,8 +296,8 @@ private:
 						remove_iter = true;
 						if(which)
 						{
-							Vertex_handle vert_dominating = vertex_list[ store_before_index ];
-							Vertex_handle vert_dominated = vertex_list[ store_iter_index ];
+							Vertex vert_dominating = vertex_list[ store_before_index ];
+							Vertex vert_dominated = vertex_list[ store_iter_index ];
 							ReductionMap[vert_dominated] = vert_dominating;
 						}
 						break;
@@ -638,7 +638,7 @@ public:
 		{
 			if(active_cols[co])
 			{
-				typeVectorVertex mx_simplex_to_insert;
+				vertexVector mx_simplex_to_insert;
 				for(int iter = 0 ; iter < rows ; ++iter)
 				{
 					if(active_rows[iter] and MxSimplices[iter][co])

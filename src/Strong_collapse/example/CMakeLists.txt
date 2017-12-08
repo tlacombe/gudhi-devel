@@ -37,6 +37,25 @@ if (NOT CGAL_WITH_EIGEN3_VERSION VERSION_LESS 4.6.0)
   if (TBB_FOUND)
    target_link_libraries(rips2 ${TBB_LIBRARIES})
   endif()
+  
+  add_executable (sparseCollapseRips sparseCollapseRips.cpp )
+  target_link_libraries(sparseCollapseRips ${Boost_SYSTEM_LIBRARY})
+  if (TBB_FOUND)
+   target_link_libraries(sparseCollapseRips ${TBB_LIBRARIES})
+  endif()
+  
+  add_executable (manualSimplicialComplexColl manualSimplicialComplexColl.cpp )
+  target_link_libraries(manualSimplicialComplexColl ${Boost_SYSTEM_LIBRARY})
+  if (TBB_FOUND)
+   target_link_libraries(manualSimplicialComplexColl ${TBB_LIBRARIES})
+  endif()
 
+  add_executable (alphaSparseCollapse alphaSparseCollapse.cpp )
+  target_link_libraries(alphaSparseCollapse ${Boost_SYSTEM_LIBRARY})
+  if (TBB_FOUND)
+   target_link_libraries(alphaSparseCollapse ${TBB_LIBRARIES})
+  endif()	
+
+	
 endif (NOT CGAL_WITH_EIGEN3_VERSION VERSION_LESS 4.6.0)
 
