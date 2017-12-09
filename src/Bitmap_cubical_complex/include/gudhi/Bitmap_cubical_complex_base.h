@@ -119,6 +119,33 @@ class Bitmap_cubical_complex_base {
    *
    **/
   virtual inline std::vector<size_t> get_coboundary_of_a_cell(size_t cell) const;
+  
+   /**
+   * Given a bitmap cubical complex one can use a counter to enumerate all the cells. For a bitmap having n maximal cells in each direction such a sull bitmap have 2n+1 cells in each direction/
+   * One can also enumerate all the maximal cells disregarding the others. The procedure below is used to give a reference to filtration value of a maximal cell given a counter that enumerate only the maxumal cells
+   * (and therefore for a bitmap having n maximal cells in each direction assign the values between 0 and n-1 in each position.
+  **/
+  inline size_t give_position_of_top_dimensional_cell( const std::vector<unsigned>& counter )
+  {
+	  //first check if the counter is correct:
+	  if ( this->sizes.size() != counter.size() )
+	  {
+		  std::cerr << "Wrong size of a counter \n";
+		  throw "Wrong size of a counter \n";
+	  }
+	  size_t position_of_this_cell = 0;
+	  for ( size_t i = 0 ; i != counter.size() ; ++i )
+	  {
+		  if ( counter[i] >= this->sizes[i] )
+		  {
+			  std::cerr << "Wrong index of a counter in the give_filtration_value_of_top_dimensional_cell procedure";
+			  throw "Wrong index of a counter in the give_filtration_value_of_top_dimensional_cell procedure";
+		  }
+		  position_of_this_cell += (2*counter[i] + 1)*this->multipliers[i];
+	  }
+	  //now we know that the counter is correct. 	  	  
+	  return position_of_this_cell;	  
+  }//give_filtration_value_of_top_dimensional_cell
 
   /**
   * This procedure compute incidence numbers between cubes. For a cube \f$A\f$ of
@@ -243,6 +270,41 @@ class Bitmap_cubical_complex_base {
    * Functions to find min and max values of filtration.
    **/
   std::pair<T, T> min_max_filtration();
+  
+   /**
+   * This function takes a position of a top dimensional cell R, and returns the position in a bitmap of all top dimensional cells sharing a codimension 1 face with R.
+  **/ 
+  inline std::vector< size_t > give_neighbouring_top_dimensional_cells( const size_t cell )
+  {	
+	  std::vector< unsigned > counter = this->compute_counter_for_top_dimensional_cell (cell);
+	  std::vector<size_t> result;
+	  if ( this->sizes.size() != counter.size() )
+	  {
+		  std::cerr << "Wrong size of a counter \n";
+		  throw "Wrong size of a counter \n";
+	  }
+	  for ( size_t i = 0 ; i != counter.size() ; ++i )
+	  {
+		  if ( counter[i] > this->sizes[i] )
+		  {
+			  std::cerr << "Wrong index of a counter in the give_filtration_value_of_top_dimensional_cell proceure";
+			  throw "Wrong index of a counter in the give_filtration_value_of_top_dimensional_cell proceure";
+		  }
+		  if ( counter[i]+1 < this->sizes[i] )
+		  {
+			  counter[i]++;
+			  result.push_back( this->give_position_of_top_dimensional_cell(counter) );
+			  counter[i]--;
+		  }
+		  if ( counter[i] > 0 )
+		  {
+			  counter[i]--;
+			  result.push_back( give_position_of_top_dimensional_cell(counter) );
+			  counter[i]++;
+		  }
+	  }
+	  return result;
+  }
 
   // ITERATORS
 
@@ -477,8 +539,33 @@ class Bitmap_cubical_complex_base {
   //****************************************************************************************************************//
   //****************************************************************************************************************//
   //****************************************************************************************************************//
+  
+  /**
+  * Given a counter, compute position in a bitmap.
+  **/ 
+  size_t compute_position_in_bitmap(const std::vector<unsigned>& counter) {
+    size_t position = 0;
+    for (size_t i = 0; i != this->multipliers.size(); ++i) {
+      position += this->multipliers[i] * counter[i];
+    }
+    return position;
+  }
 
- protected:
+  /**
+  * Given position in a bitmap, compute its counter.
+  **/ 
+  std::vector<unsigned> compute_counter_for_given_cell(size_t cell) const {
+    std::vector<unsigned> counter;
+    counter.reserve(this->sizes.size());
+    for (size_t dim = this->sizes.size(); dim != 0; --dim) {
+      counter.push_back(cell / this->multipliers[dim - 1]);
+      cell = cell % this->multipliers[dim - 1];
+    }
+    std::reverse(counter.begin(), counter.end());
+    return counter;
+  }
+
+protected:
   std::vector<unsigned> sizes;
   std::vector<unsigned> multipliers;
   std::vector<T> data;
@@ -495,24 +582,6 @@ class Bitmap_cubical_complex_base {
     this->total_number_of_cells = multiplier;
   }
 
-  size_t compute_position_in_bitmap(const std::vector<unsigned>& counter) {
-    size_t position = 0;
-    for (size_t i = 0; i != this->multipliers.size(); ++i) {
-      position += this->multipliers[i] * counter[i];
-    }
-    return position;
-  }
-
-  std::vector<unsigned> compute_counter_for_given_cell(size_t cell) const {
-    std::vector<unsigned> counter;
-    counter.reserve(this->sizes.size());
-    for (size_t dim = this->sizes.size(); dim != 0; --dim) {
-      counter.push_back(cell / this->multipliers[dim - 1]);
-      cell = cell % this->multipliers[dim - 1];
-    }
-    std::reverse(counter.begin(), counter.end());
-    return counter;
-  }
   void read_perseus_style_file(const char* perseus_style_file);
   void setup_bitmap_based_on_top_dimensional_cells_list(const std::vector<unsigned>& sizes_in_following_directions,
                                                         const std::vector<T>& top_dimensional_cells);
@@ -622,7 +691,7 @@ Bitmap_cubical_complex_base<T>::Bitmap_cubical_complex_base(const std::vector<un
 
 template <typename T>
 void Bitmap_cubical_complex_base<T>::read_perseus_style_file(const char* perseus_style_file) {
-  bool dbg = false;
+  bool dbg = true;
   std::ifstream inFiltration;
   inFiltration.open(perseus_style_file);
   unsigned dimensionOfData;
@@ -656,6 +725,9 @@ void Bitmap_cubical_complex_base<T>::read_perseus_style_file(const char* perseus
                 << " and dimension: " << this->get_dimension_of_a_cell(it.compute_index_in_bitmap())
                 << " get the value : " << filtrationLevel << std::endl;
     }
+    
+    if ( inFiltration.eof() )break;
+    
     this->get_cell_data(*it) = filtrationLevel;
     ++it;
   }

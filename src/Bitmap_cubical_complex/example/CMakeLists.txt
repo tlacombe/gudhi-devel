@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 2.6)
 project(Bitmap_cubical_complex_examples)
 
+add_executable ( gudhi_bug gudhi_bug.cpp )
+if (TBB_FOUND)
+  target_link_libraries(gudhi_bug ${TBB_LIBRARIES})
+endif()
+
 add_executable ( Bitmap_cubical_complex Bitmap_cubical_complex.cpp )
 if (TBB_FOUND)
   target_link_libraries(Bitmap_cubical_complex ${TBB_LIBRARIES})
@@ -22,6 +27,11 @@ add_test(NAME Bitmap_cubical_complex_example_random COMMAND $<TARGET_FILE:Random
 add_executable ( Bitmap_cubical_complex_periodic_boundary_conditions Bitmap_cubical_complex_periodic_boundary_conditions.cpp )
 if (TBB_FOUND)
   target_link_libraries(Bitmap_cubical_complex_periodic_boundary_conditions ${TBB_LIBRARIES})
+endif()
+
+add_executable ( setting_up_filtration_of_individual_cells_example setting_up_filtration_of_individual_cells_example.cpp )
+if (TBB_FOUND)
+  target_link_libraries(setting_up_filtration_of_individual_cells_example ${TBB_LIBRARIES})
 endif()
 
 add_test(NAME Bitmap_cubical_complex_example_periodic_boundary_conditions_2d_torus
