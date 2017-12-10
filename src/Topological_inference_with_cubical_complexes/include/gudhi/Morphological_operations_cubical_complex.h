@@ -148,7 +148,7 @@ public:
 enum Operation_type { dylation_ , erosion_ , both_ };
 
 /**
- * The class Dylate_collection_of_cubes_in_cubical_complex. It either construct or proces 
+ * The class Morphological_operations_cubical_complex. It either construct or proces 
  * an object of a type Cubical_complex by using Predicator function. By doing so, the whole
  * complex is treshold into the cubes that belongs to a 'set', and those that do now (in which
  * case we will say that they are in the 'complement'). The tresholding process happens when calling 
@@ -207,7 +207,7 @@ public:
 	/**
 	 * Return this complex. Can be used for persistent homology computations.
 	**/ 
-	Cubical_complex* give_me_the_complex()
+	Cubical_complex* get_complex()
 	{
 		return this->cmplx;
 	}

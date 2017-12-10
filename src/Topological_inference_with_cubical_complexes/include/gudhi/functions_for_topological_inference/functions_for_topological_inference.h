@@ -68,7 +68,7 @@ public:
 };
 
 /**
- * A class that compute square of Manhattan distance between points.
+ * A class that compute square of Manhattan (a.k.a. L^1) distance between points.
 **/ 
 class Manhattan_distance
 {
@@ -92,7 +92,7 @@ public:
 
 
 /**
- * A class that compute square of Max norm distance between points.
+ * A class that compute square of Max norm distance (a.k.a L^infty distance) between points.
 **/ 
 class Max_norm_distance
 {
@@ -276,20 +276,62 @@ private:
 };
 
 
-
-
-
-
-/*
-//just to test Clements code
-bool compare_pairs( const std::pair<double,int>& first , const std::pair<double,int>& second )
+/**
+* This is a general function to compute an (unsorted) vector of distances
+* of points to to their k-th nearest neighbors in point_cloud, using 
+* arbitrary distance (being template parameter of this procedure)
+**/ 
+template <typename Distance>
+std::vector< double > compute_vector_of_distances_to_closest_point_general_case
+( const std::vector< std::vector<double> >& point_cloud , Distance& dist  ,const std::vector<double>& point, unsigned k )
 {
-	return first.first < second.first;
-}*/
-
-
-
-
+	bool dbg = false;
+	
+	std::vector< double > heap( k , std::numeric_limits<double>::infinity() );
+	std::make_heap (heap.begin(),heap.end());
+	//now compute the distances between point and any other point, and put it into heap:			
+	for ( size_t i = 0 ; i != point_cloud.size() ; ++i )
+	{
+		//compute distance
+		double distance_ = dist( point_cloud[i] , point );
+		//check if it is smaller than the largest element in the heap:
+		
+		if ( dbg )
+		{
+			std::cout << "distance_ : " << distance_ << std::endl;
+			std::cout << "heap.front() : " << heap.front() << std::endl;
+			std::cout << "Here is the whole heap: \n";
+			for ( size_t i = 0 ; i != heap.size() ; ++i )
+			{
+				std::cout << heap[i] << " ";
+			}
+			getchar();
+		}
+		
+		if ( distance_ < heap.front() )
+		{				
+			if ( dbg ){std::cerr << "Adding new element to the heap \n";}
+				
+			//remove the largest element from the heap.
+			std::pop_heap (heap.begin(),heap.end()); 
+			heap.pop_back();
+			//put distance to the heap.
+			heap.push_back( distance_ );				   
+			//update the heap.
+			std::push_heap (heap.begin(),heap.end());
+		}			
+	}
+	
+	if ( dbg )
+	{
+		for ( size_t i = 0 ; i != heap.size() ; ++i )
+		{
+			std::cout << heap[i] << " ";
+		}
+		getchar();
+	}
+	return heap;
+}
 
 
 
@@ -324,51 +366,7 @@ public:
     double operator()( const std::vector<double>& point )const
     {		
 		//this is brutal, version, in case we do not have a k-d tree from CGAL. 
-		bool dbg = false;
-		
-		std::vector< double > heap( k , std::numeric_limits<double>::infinity() );
-		std::make_heap (heap.begin(),heap.end());
-		//now compute the distances between point and any other point, and put it into heap:			
-		for ( size_t i = 0 ; i != this->point_cloud.size() ; ++i )
-		{
-			//compute distance
-			double distance_ = this->dist( this->point_cloud[i] , point );
-			//check if it is smaller than the largest element in the heap:
-			
-			if ( dbg )
-			{
-				std::cout << "distance_ : " << distance_ << std::endl;
-				std::cout << "heap.front() : " << heap.front() << std::endl;
-				std::cout << "Here is the whole heap: \n";
-				for ( size_t i = 0 ; i != heap.size() ; ++i )
-				{
-					std::cout << heap[i] << " ";
-				}
-				getchar();
-			}
-			
-			if ( distance_ < heap.front() )
-			{				
-				if ( dbg ){std::cerr << "Adding new element to the heap \n";}
-					
-				//remove the largest element from the heap.
-				std::pop_heap (heap.begin(),heap.end()); 
-				heap.pop_back();
-				//put distance to the heap.
-				heap.push_back( distance_ );				   
-				//update the heap.
-				std::push_heap (heap.begin(),heap.end());
-			}			
-		}
-		
-		if ( dbg )
-		{
-			for ( size_t i = 0 ; i != heap.size() ; ++i )
-			{
-				std::cout << heap[i] << " ";
-			}
-			getchar();
-		}
+		std::vector< double > heap =  compute_vector_of_distances_to_closest_point_general_case( this->point_cloud , this->dist  , point, this->k );
 			
 		//and now we have a heap of smallest distances from point to the point in the point cloud. 
 		//we will now find the minimal one:
@@ -383,8 +381,12 @@ public:
     
     
     
-    
-    /*
+/*
+//just to test Clements code
+bool compare_pairs( const std::pair<double,int>& first , const std::pair<double,int>& second )
+{
+	return first.first < second.first;
+}
     //for the time of testing Clement's code we will use less optimal version of the procedure:
     double operator()( const std::vector<double>& point )const
     {				
@@ -421,18 +423,129 @@ public:
 		return result;		
     }
     */
-   
-    
-    
-    
-    
-    
-    
+       
 private:
 	std::vector< std::vector<double> > point_cloud;
 	distance& dist;
 	unsigned k;	
 };
+
+
+
+/**
+ * A class that take a point cloud P, and compute distance to measure, i.e.
+ * an average of squared distances to k-th nearest points. 
+ * It is assumed that the distance returned the squared distance.
+ * This is a general class that can be used for any distance, and both periodic 
+ * and non-periodic domains. For more efficeint version (usng gudhi spatial searchig
+ * requiering CGAL) designed only for Euclidean distance in non-periodic domain, 
+ * please use Euclidean_distance_to_measure.
+**/ 
+template < typename distance >
+class General_distance_to_measure
+{
+public:	
+	General_distance_to_measure( const std::vector< std::vector<double> >& point_cloud_ , distance& dist_ , unsigned k_ ):
+	dist(dist_),k(k_)	
+	{
+		//check if all the points have the same dimension:
+		if ( point_cloud_.empty() )return;		
+		for ( size_t i = 0 ; i != point_cloud_.size() ; ++i )
+		{
+			if ( point_cloud_[i].size() != point_cloud_[0].size() )
+			{
+				std::cerr << "Point cloud containing points of different dimension in Distance_to_closest_point constructor.\n";
+				throw "Point cloud containing points of different dimension in Distance_to_closest_point constructor.\n";
+			}
+		}						
+		this->point_cloud = point_cloud_;				
+	}
+	
+    double operator()( const std::vector<double>& point )const
+    {		
+		//this is brutal, version, in case we do not have a k-d tree from CGAL. 		
+		std::vector< double > heap =  compute_vector_of_distances_to_closest_point_general_case( this->point_cloud , this->dist, point  , this->k );
+			
+		//and now we have a heap of smallest squared distances from point to the point in the point cloud. 
+		//we will compute averaged (squared) distance. Note that since we assume that distance already 
+		//give us the squared distance, we will not square it again.
+		double result = 0;
+		for ( size_t i = 0 ; i != heap.size() ; ++i )
+		{
+			result += heap[i];
+		}  
+		result /= heap.size();
+		return result;		
+    }     
+private:
+	std::vector< std::vector<double> > point_cloud;
+	distance& dist;
+	unsigned k;	
+};
+
+
+#ifdef GUDHI_USE_CGAL
+/**
+ * A class that take a point cloud P, and compute distance to measure, i.e.
+ * an average of squared distances to k-th nearest points. This class is using
+ * CGAL k-d trees for that purpose. 
+**/
+class Euclidean_distance_to_measure
+{
+public:	
+	Euclidean_distance_to_measure( const std::vector< std::vector<double> >& point_cloud_ , unsigned k_ ):
+	points(convert_points(point_cloud_)),points_ds(this->points),k(k_)
+	{
+		//check if all the points have the same dimension:
+		if ( point_cloud_.empty() )return;		
+		for ( size_t i = 0 ; i != point_cloud_.size() ; ++i )
+		{
+			if ( point_cloud_[i].size() != point_cloud_[0].size() )
+			{
+				std::cerr << "Point cloud containing points of different dimension in Distance_to_closest_point constructor.\n";
+				throw "Point cloud containing points of different dimension in Distance_to_closest_point constructor.\n";
+			}
+		}						
+		this->point_cloud = point_cloud_;				
+	}
+	
+	
+    double operator()( const std::vector<double>& point )const
+    {				
+		auto pt = CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d( point.begin() , point.end() );				
+		//I have tried to use kere std::advance, but it got too messy with the constant interators of unknown type. So I did it by a bruteforce. 		
+		auto knn_range = this->points_ds.query_k_nearest_neighbors(	pt, this->k, true);					
+		double sum = 0;			
+		for (auto const& nghb : knn_range)
+		{									
+			sum += nghb.second;			
+		}			
+		sum = sum/(this->k);		
+		return sum;	
+    }
+private:
+	std::vector< CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d >	
+	convert_points( const std::vector< std::vector<double> >& point_cloud_ )
+	{		
+		std::vector< CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d > points_;
+		points_.reserve( point_cloud_.size() );
+		for (size_t i = 0; i != point_cloud_.size() ; ++i)
+		{							
+			points_.push_back( CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d( point_cloud_[i].begin() , point_cloud_[i].end() ) );											
+		}
+		return points_;		    
+	}
+
+	std::vector< std::vector<double> > point_cloud;
+	std::vector< CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d > points;
+	
+	Gudhi::spatial_searching::Kd_tree_search< CGAL::Epick_d< CGAL::Dynamic_dimension_tag > , 
+	std::vector< CGAL::Epick_d< CGAL::Dynamic_dimension_tag >::Point_d > > points_ds;			
+	
+	unsigned k;		
+};
+
+#endif
 
 
 

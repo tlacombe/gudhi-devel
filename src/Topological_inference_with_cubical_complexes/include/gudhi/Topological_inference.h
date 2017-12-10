@@ -54,29 +54,25 @@ namespace Topological_inference_with_cubical_complexes {
  * it compute persistence of a function obtained in this way.
  * The file gudhi/functions_for_topological_inference/functions_for_topological_inference.h contains
  * a wide range of functions that can be used here. Those include functions define on point clouds.
- * As for the template parameters, T is a class of cubical complex that implements the following operations:
- * impose_lower_star_filtration();
- * initialize_simplex_associated_to_key();
- * set_the_value_of_top_dimensional_cell( std::vector<unsigned> , value );		
- * store_in_perseus_format( const char* ); 
- * For instance, the Bitmap_cubical_complex<whatever> satisy all the requirements. 
- * K is valye stored in the grid (typically double). 
- * F is a function that computes value on a grid points. It acts from K^n -> K. Please consult 
+ * As for the template parameters, Cubical_complex_type is a class of cubical complex that implements the
+ * operations specified in concept\Cubical_complex_type.h.
+ * Value_type is valye stored in the grid (typically double). 
+ * Function_type is a function that computes value on a grid points. It acts from K^n -> K. Please consult 
  * gudhi/functions_for_topological_inference/functions_for_topological_inference.h
  * for examples. 
 **/
-template <typename T , typename K , typename F>
-class Topological_inference : public T
+template <typename Cubical_complex_type , typename Value_type , typename Function_type>
+class Topological_inference : public Cubical_complex_type
 {
 public:
 	/**
 	 * Default constructor. 
 	**/ 
-	Topological_inference():T(){};
+	Topological_inference():Cubical_complex_type(){};
 	
 	/**
 	 * Constructor taking as parameters:
-	 * std::vector< std::pair<K , K> >& coordinates_of_grid_ - a vector of pairs of points
+	 * std::vector< std::pair< Value_type, Value_type> >& coordinates_of_grid_ - a vector of pairs of points
 	 * such that the pair of points in the position i of the vector is a projection
 	 * of the cubical complex on the i-th direction. For example, for a cubical complex
 	 * meshing the box [-1,1]x[-2,2] the vector contain two pairs: (-1,1) and (-2,2).
@@ -84,14 +80,14 @@ public:
 	 * The vector need to have the same size as the first parameter of the function. It determines
 	 * the number of maximal cubes in each direction. The last parmeteris a function that is to be computed
 	 * on top dimensional cubes. 
-	 * Please use this consructor together with T being non-periodic cubical complexes.  
+	 * Please use this consructor together with Cubical_complex_type being non-periodic cubical complexes.  
 	**/
-	Topological_inference( const std::vector< std::pair<K , K> >& coordinates_of_grid_ , const std::vector< unsigned >& resolution_of_a_grid_ , F& f );
+	Topological_inference( const std::vector< std::pair<Value_type , Value_type> >& coordinates_of_grid_ , const std::vector< unsigned >& resolution_of_a_grid_ , Function_type& f );
 	
 	
 	/**
 	 * Constructor taking as parameters:
-	 * std::vector< std::pair<K , K> >& coordinates_of_grid_ - a vector of pairs of points
+	 * std::vector< std::pair<Value_type , Value_type> >& coordinates_of_grid_ - a vector of pairs of points
 	 * such that the pair of points in the position i of the vector is a projection
 	 * of the cubical complex on the i-th direction. For example, for a cubical complex
 	 * meshing the box [-1,1]x[-2,2] the vector contain two pairs: (-1,1) and (-2,2).
@@ -100,9 +96,9 @@ public:
 	 * the number of maximal cubes in each direction. The last but one parmeteris a function that 
 	 * is to be computed on top dimensional cubes. The last parameter is determines the vector of
 	 * directions in which periodic boundary conditions are to be imposed. 
-	 * Please use this consructor together with T being a periodic cubical complexes.  
+	 * Please use this consructor together with Cubical_complex_type being a periodic cubical complexes.  
 	**/ 
-	Topological_inference( const std::vector< std::pair<K , K> >& coordinates_of_grid_ , const std::vector< unsigned >& resolution_of_a_grid_ , F& f , 
+	Topological_inference( const std::vector< std::pair<Value_type , Value_type> >& coordinates_of_grid_ , const std::vector< unsigned >& resolution_of_a_grid_ , Function_type& f , 
 						   const std::vector<bool>& directions_in_which_periodic_b_cond_are_to_be_imposed );
 	
 	
@@ -139,7 +135,7 @@ protected:
 	 * procedure find a center of this top dimensional cube. This information is later
 	 * used to compute the valu of the function on that top dimensional cube.
 	**/ 
-	inline std::vector< K > compute_center_of_cube_for_given_counter( const std::vector< unsigned >& counter )
+	inline std::vector< Value_type > compute_center_of_cube_for_given_counter( const std::vector< unsigned >& counter )
 	{
 		bool dbg = false;
 		if ( dbg )
@@ -149,7 +145,7 @@ protected:
 			std::cout << "this->coordinates_of_grid.size() : " << this->coordinates_of_grid.size() << std::endl;
 		}
 		if ( counter.size() != this->coordinates_of_grid.size() )throw "Wrong dimensionality of a counter in the procedure compute_center_of_cube_for_given_counter \n";
-		std::vector< K > result( counter.size() , 0 );
+		std::vector< Value_type > result( counter.size() , 0 );
 			
 		for ( size_t dim = 0 ; dim != counter.size() ; ++dim )
 		{
@@ -166,17 +162,17 @@ protected:
 	void construct_topological_inference_object();
 	
 	//data:
-	std::vector< std::pair< K , K > > coordinates_of_grid;
+	std::vector< std::pair< Value_type , Value_type > > coordinates_of_grid;
 	std::vector< unsigned > resolution_of_a_grid;
-	std::vector< K > dx_vector;
-	F& f;
+	std::vector< Value_type > dx_vector;
+	Function_type& f;
 };
 
 
 
-template <typename T , typename K , typename F>
-Topological_inference<T,K,F>::Topological_inference( const std::vector< std::pair<K , K> >& coordinates_of_grid_ , const std::vector< unsigned >& resolution_of_a_grid_ , F& f )
-												 :T(resolution_of_a_grid_), f(f)
+template <typename Cubical_complex_type , typename Value_type , typename Function_type>
+Topological_inference<Cubical_complex_type,Value_type,Function_type>::Topological_inference( const std::vector< std::pair<Value_type , Value_type> >& coordinates_of_grid_ , const std::vector< unsigned >& resolution_of_a_grid_ , Function_type& f )
+												 :Cubical_complex_type(resolution_of_a_grid_), f(f)
 {	
 	this->coordinates_of_grid = coordinates_of_grid_;
 	this->resolution_of_a_grid = resolution_of_a_grid_;	
@@ -184,21 +180,21 @@ Topological_inference<T,K,F>::Topological_inference( const std::vector< std::pai
 }//Topological_inference
 
 
-template <typename T , typename K , typename F>
-Topological_inference<T,K,F>::Topological_inference( const std::vector< std::pair<K , K> >& coordinates_of_grid_ , 
-												     const std::vector< unsigned >& resolution_of_a_grid_ , F& f , 
+template <typename Cubical_complex_type , typename Value_type , typename Function_type>
+Topological_inference<Cubical_complex_type,Value_type,Function_type>::Topological_inference( const std::vector< std::pair<Value_type , Value_type> >& coordinates_of_grid_ , 
+												     const std::vector< unsigned >& resolution_of_a_grid_ , Function_type& f , 
 													 const std::vector<bool>& directions_in_which_periodic_b_cond_are_to_be_imposed ):
-													  T(resolution_of_a_grid_,directions_in_which_periodic_b_cond_are_to_be_imposed), 
+													  Cubical_complex_type(resolution_of_a_grid_,directions_in_which_periodic_b_cond_are_to_be_imposed), 
 													  f(f)
 {
 	this->coordinates_of_grid = coordinates_of_grid_;
 	this->resolution_of_a_grid = resolution_of_a_grid_;	
 	this->construct_topological_inference_object();
-}//Topological_inference
+}//Topological_inferenc
 
 
-template <typename T , typename K , typename F>
-void Topological_inference<T,K,F>::construct_topological_inference_object( )
+template <typename Cubical_complex_type , typename Value_type , typename Function_type>
+void Topological_inference<Cubical_complex_type,Value_type,Function_type>::construct_topological_inference_object()
 {
 	bool dbg = false;
 	if ( dbg )
@@ -212,7 +208,7 @@ void Topological_inference<T,K,F>::construct_topological_inference_object( )
 	size_t number_of_maximal_cubes = 1;
 	for ( size_t i = 0 ; i != this->resolution_of_a_grid.size() ; ++i ) number_of_maximal_cubes *= this->resolution_of_a_grid[i];
 	
-	this->dx_vector = std::vector< K >(this->coordinates_of_grid.size());
+	this->dx_vector = std::vector< Value_type >(this->coordinates_of_grid.size());
 	for ( size_t dim = 0 ; dim != this->coordinates_of_grid.size() ; ++dim )
 	{				
 		this->dx_vector[dim] = (this->coordinates_of_grid[dim].second - this->coordinates_of_grid[dim].first)/this->resolution_of_a_grid[dim];
@@ -226,30 +222,30 @@ void Topological_inference<T,K,F>::construct_topological_inference_object( )
 #endif		
 	{
 		std::vector< unsigned > counter = this->compute_counter_for_maximal_cube( i );		
-		std::vector< K > point = this->compute_center_of_cube_for_given_counter( counter );				
-		K value = this->f( point );
+		std::vector< Value_type > point = this->compute_center_of_cube_for_given_counter( counter );				
+		Value_type value = this->f( point );
 		//values_on_maximal_cells[i] = value;		
-		this->set_the_value_of_top_dimensional_cell( counter , value );			
+		this->set_the_value_of_top_dimensional_cell( counter , value );	
 	}	
 #ifdef GUDHI_USE_TBB    
 	);
 #endif
 	
-	std::vector<size_t> counter_v( this->coordinates_of_grid.size() , 0 );	
+	std::vector<size_t> counter_v( this->coordinates_of_grid.size() , 0 );
 	this->impose_lower_star_filtration();
 	this->initialize_arrays_for_persistence_computation();	
 }
 
 
 
-template <typename T , typename K , typename F>
-void Topological_inference<T,K,F>::write_to_file_Perseus_format( const char* filename )
+template <typename Cubical_complex_type , typename Value_type , typename Function_type>
+void Topological_inference<Cubical_complex_type,Value_type,Function_type>::write_to_file_Perseus_format( const char* filename )
 {
 	this->store_in_perseus_format( filename );
 }
 
-template <typename T , typename K , typename F>
-void Topological_inference<T,K,F>::write_to_file_with_newlines_at_the_ends_of_structure( const char* filename )
+template <typename Cubical_complex_type , typename Value_type , typename Function_type>
+void Topological_inference<Cubical_complex_type,Value_type,Function_type>::write_to_file_with_newlines_at_the_ends_of_structure( const char* filename )
 {
 	std::ofstream out(filename);
 	unsigned counter = 0;

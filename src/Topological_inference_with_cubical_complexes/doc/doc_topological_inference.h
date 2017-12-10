@@ -35,23 +35,23 @@ namespace Topological_inference_with_cubical_complexes {
  * 
  * \section Topological_inference_with_cubical_complexes_introduction Introduction.
  * 
- * There are various objects that introduce intersting topology, and in particular homology and persistent homology. 
+ * There are various objects that introduce interesting topology, and in particular homology and persistent homology. 
  * Typical ones are: sublevelsets of continuous functions, filtered complexes created based 
  * on point clouds, distance functions from sets, distributions and similar. The class Topological_inference_with_cubical_complexes
  * create a cubical complexes with filtration that gives partially constant approximation of such a functions. 
- * In case of very large point clouds in low dimensiona spaces computing persistent homology of a distance from a point cloud 
+ * In case of very large point clouds in low dimensions spaces computing persistent homology of a distance from a point cloud 
  * may be superior to use Rips, Cech or Alpha complexes. 
  * 
  * \section Topological_inference_with_cubical_complexes_idea Idea
  * The class Topological_inference_with_cubical_complexes create a filtered cubical complex which provides a partially constant
  * approximation of a function defined on rectangular domain in Euclidean space. To acheive this, first the domain is 
- * covered with a cubical complex. Any implementation of cubical complex that provides certain methods (listed in the refeence 
+ * covered with a cubical complex. Any implementation of cubical complex that provides certain methods (listed in the reference 
  * manual) can be used here. Later the approximation of a given function is obtained by computing the value of the function 
  * on the center of every top dimensional cube. 
  * 
- * Here is the list of functions operating on datasets that are implemented as a part of this package:
+ * Here is the list of functions operating on data sets that are implemented as a part of this package:
  * 
- * (1) Function can be given as an algorithm that given a point x, compute f(x). The algorithm can implement a formula, numerical mentod or any other way of assigning f(x) to x.
+ * (1) Function can be given as an algorithm that given a point x, compute f(x). The algorithm can implement a formula, numerical method or any other way of assigning f(x) to x.
  * As an example, the figure below illustrates four partially constant approximations of a function assigning to x its distance from a unit circle in the plane. 
  * From left to right, the resolutions of the grid are: 5 by 5, 10 by 10, 50 by 50 and 80 by 80.
  * \image html top_inference.png
@@ -71,16 +71,16 @@ namespace Topological_inference_with_cubical_complexes {
  * time algorithm, but at the same time allow to use any kernel both on periodic and non periodic domains. 
  * 
  * (d) Distance_to_k_th_closest_point_k_d_tree - for any x, f(x) is a distance of x to the k-th nearest neighbor in the point cloud given a the input. This class require CGAL
- * in version at least 4.8.1 and uses efficient implementation based on k-d-trees. It is hovewer restricted to Euclidean distance in non-periodic domains. 
+ * in version at least 4.8.1 and uses efficient implementation based on k-d-trees. It is however restricted to Euclidean distance in non-periodic domains. 
  * 
  * As an example please consult a periodic function (on a domain [-1.5,1.5]^2) obtained using class Sum_of_distances_from_points
  * where for every point x of a grid f(x) is the sum of Euclidean distances to the point cloud sampled from unit circle.
  * \image html periodic_distance_from_cicrle_nonperiodic_domain.png
  * 
  * (3) Distance function from a collection of cubes that satisfy certain predicate. It can be computed using Morphological_operations_cubical_complex class.
- * This class allows to re-define the filtration of a cubical complex taking into accound the original filtration in the following way. 
+ * This class allows to re-define the filtration of a cubical complex taking into account the original filtration in the following way. 
  * Initially, once a cubical complex is given or constructed, Morphological_operations_cubical_complex class iterate through all its top dimensional cubes.
- * The ones that satisfy choosen predicate are considered to belong to the 'set'. All other top dimensional cubes became elements of 'set complement'.
+ * The ones that satisfy chosen predicate are considered to belong to the 'set'. All other top dimensional cubes became elements of 'set complement'.
  * Given a set and its complement, three basic morphological operations can be performed:
  * (a) Erosion - the elements of the set that are direct neighbors of elements from the set complement are given a new filtration value equal to predefined step_size.
  * The element of the set that did not have already assigned value, and are neighbors of the elements which get the value step_size, will get the value 2*step_size. And so on.
@@ -98,7 +98,7 @@ namespace Topological_inference_with_cubical_complexes {
  * (b) Filtration_below_certain_value - predicate will return true iff given filtration is below certain value. 
  * (c) Filtration_in_range - predicate will return true iff given filtration is in a given range. 
  * (d) Filtration_equal - predicate will return true iff given filtration is equal certain value. 
- * (e) Always_true  - predicate that will always return true. This is a default tempate parameter of a class Morphological_operations_cubical_complex 
+ * (e) Always_true  - predicate that will always return true. This is a default template parameter of a class Morphological_operations_cubical_complex 
  * Consult Morphological_operations_cubical_complex.h for further details.
  * 
  * An example of the the construction described above is given at the following illustration. On the left, the initial filtration of a two dimensional
@@ -113,7 +113,7 @@ namespace Topological_inference_with_cubical_complexes {
  * [-1,0]x[-1,0], [0,1]x[-1,0],[1,2]x[-1,0]
  * and put a 100 by 100 cubical grid to cover the whole [-1,2]x[-1,2] domain. The function giving filtration of this grid is a distance to
  * 5 nearest neighbors in the point cloud. Later we apply Filtration_below_certain_value predicate with parameters (from left to right:
- * 0.1, 0.05, 0.02, 0.015 and 0.01 and dilation starting from those sets. The obtained filtrations are presented in the picture below. 
+ * 0.1, 0.05, 0.02, 0.015 and 0.01 and dilation starting from those sets. The obtained filtration are presented in the picture below. 
  * \image html morphological_operation.png
  * 
  * There is another way of constructing objects of Morphological_operations_cubical_complex. One can start with the number of maximal cubes in 
@@ -123,8 +123,7 @@ namespace Topological_inference_with_cubical_complexes {
  * Given such a input, the class Morphological_operations_cubical_complex define elements of sets and its complement. Later the morphological operations
  * can be used for the obtained cubical complexes. 
  * 
- * All the cubical complexes used here may, or may not have periodic boundary conditions imposed. Please consult examples and utilities for further details. 
- * 
+ * All the cubical complexes used here may, or may not have periodic boundary conditions imposed. Please consult examples and utilities for further details.  * 
  *
  *
  */

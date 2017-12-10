@@ -16,6 +16,14 @@ if (TBB_FOUND)
   target_link_libraries(Topological_inference_with_cubical_complexesCCUT ${TBB_LIBRARIES})
 endif()
 
+#just to test Clement's kd trees code: periodic_kd_tree_test.cpp. Remove when it is confirmed that this work well
+#add_executable ( periodic_kd_tree_testCCUT periodic_kd_tree_test.cpp )
+#target_link_libraries(periodic_kd_tree_testCCUT ${Boost_SYSTEM_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+#if (TBB_FOUND)
+#  target_link_libraries(periodic_kd_tree_testCCUT ${TBB_LIBRARIES})
+#endif()
+
+
 # Unitary tests
 add_test(NAME Topological_inference_with_cubical_complexesCCUT
   COMMAND ${CMAKE_CURRENT_BINARY_DIR}/Topological_inference_with_cubical_complexesCCUT 
