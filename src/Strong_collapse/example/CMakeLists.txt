@@ -55,7 +55,13 @@ if (NOT CGAL_WITH_EIGEN3_VERSION VERSION_LESS 4.6.0)
   if (TBB_FOUND)
    target_link_libraries(alphaSparseCollapse ${TBB_LIBRARIES})
   endif()	
-
+  
+  add_executable (rips_for_sophia rips_for_sophia.cpp )
+  target_link_libraries(rips_for_sophia ${Boost_SYSTEM_LIBRARY})
+  if (TBB_FOUND)
+   target_link_libraries(rips_for_sophia ${TBB_LIBRARIES})
+  endif()
+	
 	
 endif (NOT CGAL_WITH_EIGEN3_VERSION VERSION_LESS 4.6.0)
 
