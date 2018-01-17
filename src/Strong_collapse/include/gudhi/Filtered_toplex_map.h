@@ -1,4 +1,4 @@
-    #ifndef FILTERED_TOPLEX_MAP_H
+#ifndef FILTERED_TOPLEX_MAP_H
 #define FILTERED_TOPLEX_MAP_H
 
 #include <gudhi/Toplex_map.h>
@@ -49,6 +49,8 @@ public:
     template <typename Input_vertex_range>
     bool membership(const Input_vertex_range &vertex_range) const;
 
+    void contraction(Vertex d, Vertex k);
+
 protected:
     std::map<Filtration_value, Toplex_map> toplex_maps;
 };
@@ -78,6 +80,28 @@ bool Filtered_toplex_map::membership(const Input_vertex_range &vertex_range) con
             return true;
     return false;
 }
+
+void Filtered_toplex_map::contraction(Vertex d, Vertex k){  // If the vertex k is not present in the complex then it will simply rename d with k. 
+    for(auto tm : toplex_maps){
+        for(const Toplex_map::Simplex_ptr& sptr : Simplex_ptr_set(tm.second.t0.at(d))){ //Iterating over all the maximal simplices containing the vertex d
+            Simplex sigma(*sptr);               // Temporarily storing the current maximal simplex as the simplex sigma
+            tm.second.erase_maximal(sptr);      // Erasing the current maximal simplex from the complex
+            sigma.erase(d);                     // Erasing the vertex d from the temporarily stored maximal simplex sigma
+            sigma.insert(k);                    // Adding k in place of the vertex d to sigma 
+            tm.second.insert_simplex(sigma);    // Replacing the deleted maximal simplex with the modified sigma. 
+        }
+        
+        // std::unordered_set<Filtered_toplex_map::Vertex> tempVert;
+        // tempVert.insert(d);
+        // if(!tm.second.membership(tempVert))
+        // {
+        //     std::cout << "The vertex " << d << " doesn't exist! >>>>>>>>><<<<<<<<<<<<Boom" << std::endl;
+        //     tm.second.t0.erase(d);
+        // }
+        // tempVert.clear();
+    }    
+}
+
 
 } //namespace Gudhi
 

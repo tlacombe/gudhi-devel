@@ -16,7 +16,7 @@
 #include <vector>
 #include <limits>  // for std::numeric_limits
 
-using Point = CGAL::Epick_d< CGAL::Dimension_tag<20> >::Point_d;
+using Point = CGAL::Epick_d< CGAL::Dynamic_dimension_tag>::Point_d;
 using Filtration_value = Fake_simplex_tree::Filtration_value;
 using Rips_complex = Gudhi::rips_complex::Rips_complex<Filtration_value>;
 
@@ -44,12 +44,16 @@ void generate_points_cube(Vector_of_points& W, int nbP, int dim)
 		W.push_back(*rp++);
 }
 
-// void add_point_vectors(Vector_of_points& V, Vector_of_points& U, int nbP, int dim) // Adds two point vectors of the same size (nbP), by Modifying the first one, V = V+W.
-// {
-// 	for (int i = 0; i < nbP; i++)
-// 		for(int j =0; j< dim; j++)
-// 			V[i][](j) = V[i][](j)+U[i][](j); 
-// }
+void add_point_vectors(Vector_of_points& V, Vector_of_points& U, int nbP, int dim) // Adds two point vectors of the same size (nbP), by Modifying the first one, V = V+W.
+{
+	for (int i = 0; i < nbP; i++)
+	{
+		std::vector<double> coords;
+		for(int j =0; j< dim; j++)
+			coords.push_back(V[i][j]+U[i][j]); 
+		V[i] = Point(coords);
+	}
+}
 
 
 int main()
@@ -61,10 +65,11 @@ int main()
 
 	int originalDim, collDim;
 	long originalNumSimp, colNumSimp;
+	long originalMaxNumSimp, colMaxNumSimp;
 	int originalNumVert, colNumVert;
 	long originalNumMxSimp, colNumMxSimp;
 	
-	int num_pts = 1000;
+	int num_pts = 200;
 	int dimBall	= 2;
 	int radius  = 1;
 	double threshold =  0.02;
@@ -106,8 +111,8 @@ int main()
 		// std::cout << "Time for formation of Matrix : " << (matrix_formed - stree_formed)/CLOCKS_PER_SEC << " seconds" << std::endl;
 		std::cout << "Time for Collapse : " << collapseTime << " ms\n" << std::endl;
 		
-		originalDim = stree.dimension();
-		collDim 	= coll_tree.dimension();
+		originalDim = mat.initial_dimension();
+		collDim 	= mat.collapsed_dimension();
 		
 		originalNumVert = stree.num_vertices();
 		colNumVert		= coll_tree.num_vertices();
@@ -115,12 +120,15 @@ int main()
 		originalNumMxSimp 	= stree.num_simplices();
 		colNumMxSimp 		= coll_tree.num_simplices();
 
-		originalNumSimp = stree.filtration_simplex_range().size();
-		colNumSimp		= coll_tree.filtration_simplex_range().size();
+		originalMaxNumSimp = mat.max_num_inital_simplices();
+		colMaxNumSimp	   = mat.max_num_collapsed_simplices();
+
+		originalNumSimp = stree.filtration_simplex_range().size() - 1;
+		colNumSimp		= coll_tree.filtration_simplex_range().size() - 1;
 		
 
-		std::cout << "Rips complex is of dimension " << originalDim << " with " << originalNumMxSimp << " maximal simplices, " << originalNumSimp << " simplices and " << originalNumVert << " vertices." << std::endl;
-		std::cout << "Collapsed Rips complex is of dimension " << collDim << " with " <<  colNumMxSimp << " maximal simplices, " <<  colNumSimp << " simplices and " << colNumVert << " vertices." << std::endl;
+		std::cout << "Rips complex is of dimension " << originalDim << " with " << originalNumMxSimp << " maximal simplices, " << originalNumSimp << "/" << originalMaxNumSimp << " simplices and " << originalNumVert << " vertices." << std::endl;
+		std::cout << "Collapsed Rips complex is of dimension " << collDim << " with " <<  colNumMxSimp << " maximal simplices, " <<  colNumSimp << "/" << colMaxNumSimp << " simplices and " << colNumVert << " vertices." << std::endl;
 
 		std::cout << "** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** " << std::endl;
 

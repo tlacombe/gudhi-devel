@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <memory>
 #include <limits>
+#include <math.h>
 
 #define vertex_upper_bound std::numeric_limits<Toplex_map::Vertex>::max()
 
@@ -89,15 +90,17 @@ public:
       * \ingroup toplex_map   */
     std::size_t num_simplices() const;
 
+        /** \internal The map from vertices to toplices
+     * \ingroup toplex_map   */
+    std::unordered_map<Toplex_map::Vertex, Toplex_map::Simplex_ptr_set> t0;
+
 protected:
     /** \internal Gives an index in order to look for a simplex quickly.
      * \ingroup toplex_map   */
     template <typename Input_vertex_range>
     Toplex_map::Vertex best_index(const Input_vertex_range &vertex_range) const;
     
-    /** \internal The map from vertices to toplices
-     * \ingroup toplex_map   */
-    std::unordered_map<Toplex_map::Vertex, Toplex_map::Simplex_ptr_set> t0;
+
 };
 
 // Pointers are also used as key in the hash sets.
@@ -295,6 +298,7 @@ std::vector<Toplex_map::Simplex> facets(const Input_vertex_range &vertex_range){
         facets.emplace_back(f);
         f.insert(v);
     }
+
     return facets;
 }
 
