@@ -44,15 +44,15 @@ public:
                                                                                                                 //and simplices in closedStar are independent of the ones in Complex
     virtual bool remove_simplex(simplex_base *numVertices) = 0;
     virtual index get_boundary(simplex_base *simplex, std::vector<index> *boundary) = 0;
+    virtual double get_size() const = 0;
 
     virtual index contract_vertices(vertex v, vertex u, double timestamp, std::vector<std::vector<index>*> *boundaries, std::vector<index> *&inactiveInsertionNumbers) = 0;
 	virtual bool exists(simplex_base *simplex) = 0;
 	virtual void print(std::string outputFileName) = 0;
-    virtual double get_size() const = 0;
-    //virtual double get_max_size() const = 0;
+    virtual double get_max_size() const = 0;
     //virtual double get_tower_width() const = 0;
     //virtual double get_filtration_size() const = 0;
-    virtual vertex get_vertex_number(double num) const = 0;
+    //virtual vertex get_vertex_number(double num) const = 0;
 };
 
 }
