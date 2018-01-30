@@ -10,10 +10,10 @@ namespace Gudhi {
 namespace tmp_package_name {
 
 template<class ComplexStructure>
-Tower_converter<ComplexStructure>::type read_operation(std::string *line, std::vector<double> *vertices, double *timestamp)
+Tower_converter<ComplexStructure>::operationType read_operation(std::string *line, std::vector<double> *vertices, double *timestamp)
 {
     using TC = Tower_converter<ComplexStructure>;
-    TC::type type;
+    TC::operationType type;
     vertices->clear();
     double num;
 
@@ -65,7 +65,7 @@ std::istream& operator>>(std::istream& file, Tower_converter<ComplexStructure>& 
         double timestamp = -1;
         double defaultTimestamp = 0;
         while (getline(file, line, '\n')){
-            TC::type type = read_operation(&line, &vertices, &timestamp);
+            TC::operationType type = read_operation(&line, &vertices, &timestamp);
             if (timestamp != -1) defaultTimestamp = timestamp;
 
             if (type == TC::INCLUSION){

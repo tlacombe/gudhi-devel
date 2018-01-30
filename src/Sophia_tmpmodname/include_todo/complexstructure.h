@@ -39,11 +39,13 @@ public:
 	using index = double;
 	using simplex_base = std::vector<vertex>;
 
-    virtual bool insert_simplex(simplex_base *numVertices, double timestamp) = 0;
-    virtual index contract_vertices(vertex v, vertex u, double timestamp, std::vector<std::vector<index>*> *boundaries, std::vector<index> *&inactiveInsertionNumbers) = 0;
+    virtual bool insert_simplex(simplex_base *numVertices) = 0;
+    virtual vertex get_smallest_closed_star(vertex s1, vertex s2, std::vector<simplex_base*> *closedStar) = 0;  //returns vertex with smallest closed star; closedStar is ordered
+                                                                                                                //and simplices in closedStar are independent of the ones in Complex
     virtual bool remove_simplex(simplex_base *numVertices) = 0;
     virtual index get_boundary(simplex_base *simplex, std::vector<index> *boundary) = 0;
-    virtual void get_closed_star(simplex_base *simplex, std::vector<simplex_base*> *closedStar) = 0;
+
+    virtual index contract_vertices(vertex v, vertex u, double timestamp, std::vector<std::vector<index>*> *boundaries, std::vector<index> *&inactiveInsertionNumbers) = 0;
 	virtual bool exists(simplex_base *simplex) = 0;
 	virtual void print(std::string outputFileName) = 0;
     virtual double get_size() const = 0;
