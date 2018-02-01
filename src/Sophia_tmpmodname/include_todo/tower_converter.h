@@ -3,9 +3,10 @@
 
 #include <string>
 #include <iostream>
+#include <fstream>
+#include <iomanip>
 #include <vector>
 #include <unordered_map>
-#include <iomanip>
 #include <algorithm>
 
 namespace Gudhi {
@@ -22,17 +23,17 @@ public:
     enum operationType : int {INCLUSION, CONTRACTION, COMMENT};
     enum streamingType : int {FACES, VERTICES};
 
-    Tower_converter(std::string outputFileName);
+    Tower_converter(ComplexStructure *complex, std::string outputFileName);
     ~Tower_converter();
 
-    void add_insertion(std::vector<double> *simplex, double timestamp);
+    bool add_insertion(std::vector<double> *simplex, double timestamp);
     void add_contraction(double v, double u, double timestamp);
 
     double get_filtration_size() const;
     double get_tower_width() const;
 
 private:
-    ComplexStructure complex_;
+    ComplexStructure *complex_;
     std::unordered_map<double, vertex> *vertices_;
     std::ofstream *outputStream_;
     streamingType streamingType_;
@@ -44,36 +45,51 @@ private:
 };
 
 template<class ComplexStructure>
-Tower_converter::Tower_converter(std::string outputFileName) : streamingType_(VERTICES), filtrationSize_(0), towerWidth_(0)
+Tower_converter<ComplexStructure>::Tower_converter(ComplexStructure *complex, std::string outputFileName)
+    : complex_(complex), streamingType_(VERTICES), filtrationSize_(0), towerWidth_(0)
 {
     outputStream_ = new std::ofstream(outputFileName);
+    vertices_ = new std::unordered_map<double, vertex>();
+    //streamingType_ = FACES;
 }
 
 template<class ComplexStructure>
-Tower_converter::~Tower_converter()
+Tower_converter<ComplexStructure>::~Tower_converter()
 {
     delete outputStream_;
+    delete vertices_;
 }
 
 template<class ComplexStructure>
-void Tower_converter::add_insertion(std::vector<double> *simplex, double timestamp)
+bool Tower_converter<ComplexStructure>::add_insertion(std::vector<double> *simplex, double timestamp)
 {
     simplex_base transSimplex;
-    for (simplex_base::size_type i = 0; i < simplex->size(); i++){
-        transSimplex.push_back(vertices_->at(simplex->at(i)));
+
+    if (simplex->size() == 1){
+        vertices_->emplace(simplex->at(0), simplex->at(0));
+        transSimplex.push_back(simplex->at(0));
+    } else {
+        for (simplex_base::size_type i = 0; i < simplex->size(); i++){
+            transSimplex.push_back(vertices_->at(simplex->at(i)));
+        }
+        std::sort(transSimplex.begin(), transSimplex.end());
     }
+
     if (complex_->insert_simplex(&transSimplex)) {
         stream_simplex(&transSimplex, timestamp);
         if (complex_->get_size() > towerWidth_) towerWidth_ = complex_->get_size();
+        return true;
     }
+    return false;
 }
 
 template<class ComplexStructure>
-void Tower_converter::add_contraction(double v, double u, double timestamp)
+void Tower_converter<ComplexStructure>::add_contraction(double v, double u, double timestamp)
 {
     std::vector<simplex_base*> closedStar;
     vertex tv = vertices_->at(v), tu = vertices_->at(u);
     vertex dis = complex_->get_smallest_closed_star(tv, tu, &closedStar);
+    simplex_base vdis(1, dis);
 
     vertices_->erase(v);
     if (dis == tu){
@@ -87,25 +103,25 @@ void Tower_converter::add_contraction(double v, double u, double timestamp)
         if (complex_->insert_simplex(*it)) stream_simplex(*it, timestamp);
         delete *it;
     }
-    complex_->remove_simplex(&(simplex_base(1, dis)));
+    complex_->remove_simplex(&vdis);
 
     if (complex_->get_size() > towerWidth_) towerWidth_ = complex_->get_size();
 }
 
 template<class ComplexStructure>
-double Tower_converter::get_filtration_size() const
+double Tower_converter<ComplexStructure>::get_filtration_size() const
 {
     return filtrationSize_;
 }
 
 template<class ComplexStructure>
-double Tower_converter::get_tower_width() const
+double Tower_converter<ComplexStructure>::get_tower_width() const
 {
     return towerWidth_;
 }
 
 template<class ComplexStructure>
-void Tower_converter::get_union(vertex v, std::vector<simplex_base*> *simplices)
+void Tower_converter<ComplexStructure>::get_union(vertex v, std::vector<simplex_base*> *simplices)
 {
     for (auto itSimplices = simplices->begin(); itSimplices != simplices->end(); itSimplices++){
         auto itVertices = (*itSimplices)->begin();
@@ -117,7 +133,7 @@ void Tower_converter::get_union(vertex v, std::vector<simplex_base*> *simplices)
 }
 
 template<class ComplexStructure>
-void Tower_converter::stream_simplex(simplex_base *simplex, double timestamp)
+void Tower_converter<ComplexStructure>::stream_simplex(simplex_base *simplex, double timestamp)
 {
     filtrationSize_++;
     simplex_base::size_type size = simplex->size();
@@ -126,12 +142,12 @@ void Tower_converter::stream_simplex(simplex_base *simplex, double timestamp)
         if (size > 1){
             std::vector<index> boundary;
             complex_->get_boundary(simplex, &boundary);
-            for (int i = 0; i < size; i++){
+            for (std::vector<index>::size_type i = 0; i < size; i++){
                 *outputStream_ << boundary.at(i) << " ";
             }
         }
     } else {
-        for (int i = 0; i < size; i++){
+        for (simplex_base::size_type i = 0; i < size; i++){
             *outputStream_ << simplex->at(i) << " ";
         }
     }

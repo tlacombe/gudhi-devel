@@ -30,9 +30,9 @@
 #include <iostream>
 #include <fstream>
 
-#include "hash_complex.h"
-#include "list_column.h"
-#include "heap_column.h"
+//#include "hash_complex.h"
+#include <list_column.h>
+#include <heap_column.h>
 
 #define GUDHI_LIST
 
@@ -91,7 +91,7 @@ public:
     void print_complex_data();
 
 private:
-    ComplexStructure *complex_;
+    //ComplexStructure *complex_;
     Boundary_matrix *matrix_;
     double reductionInterval_;
     double lastReduction_;
