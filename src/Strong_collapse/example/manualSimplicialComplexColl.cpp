@@ -27,42 +27,20 @@ using Vertex             = Fake_simplex_tree::Vertex;
 
 using Vector_of_points = std::vector<Point>;
 
-// template<typename Set> std::set<Set> powerset(const Set& s, size_t n)
-// {
-//     typedef typename Set::const_iterator SetCIt;
-//     typedef typename std::set<Set>::const_iterator PowerSetCIt;
-//     std::set<Set> res;
-//     if(n > 0) {
-//         std::set<Set> ps = powerset(s, n-1);
-//         for(PowerSetCIt ss = ps.begin(); ss != ps.end(); ss++)
-//             for(SetCIt el = s.begin(); el != s.end(); el++) {
-//                 Set subset(*ss);
-//                 subset.insert(*el);
-//                 res.insert(subset);
-//             }
-//         res.insert(ps.begin(), ps.end());
-//     } else
-//         res.insert(Set());
-//     return res;
-// }
-// template<typename Set> std::set<Set> powerset(const Set& s)
-// {
-//     return powerset(s, s.size());
-// }
- 
-
 int main()
 {
 	
 	Vector_of_points points;
 	//Vector_of_points noisePoints;
 	Fake_simplex_tree stree;
-	std::vector<std::vector<int>> contents;
+	std::vector<std::vector<std::size_t>> contents;
+    std::vector<std::vector<std::size_t>> simplices;
     std::cout << "Please enter the #vertices and then the vertices of the maximal simplices in the following format" <<std::endl;
     std::cout << "3" << std::endl;
     std::cout << "1 2 3" << std::endl;
     std::cout << "Enter s to stop" << std::endl;
     int number;
+    std::vector<std::vector<std::size_t>> random = { {1,4},{3,4},{4,8}, {1,8},{3,8},{89}, {6}, {2},{4},{5} }; //{{89,77,29},{2,4,6}, {2,4,5},{3,4},{2,3},{6},{2,7},{7,5}, {2,3,4,5}};
     while (std::cin >> number)
     {
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // skip eol
@@ -86,21 +64,12 @@ int main()
     for (auto& row : contents)
     {
         stree.insert_simplex_and_subfaces(row);
+        simplices.emplace_back(row);
         //std::copy(row.begin(), row.end(), std::ostream_iterator<double>(std::cout," "));
         //std::cout << "\n";
     }
-    // auto result = powerset(contents[0]);
-
-    // for (auto&& subset: result) 
-    // {
-    //     std::cout << "{ ";
-    //     char const* prefix = "";
-    //     for (auto&& e: subset) {
-    //         std::cout << prefix << e;
-    //         prefix = ", ";
-    //     }
-    //     std::cout << " }\n";
-    // }
+    for (auto& row : random)
+        simplices.emplace_back(row);
 	
 	std::cout << "Input complex is of dimension " << stree.dimension() << " with " << stree.num_simplices() << " maximal simplices, " << stree.filtration_simplex_range().size() << " simplices and " << stree.num_vertices() << " vertices." << std::endl;
 
@@ -110,10 +79,49 @@ int main()
 	SparseMsMatrix mat(stree);
 	clock_t matrix_formed = clock();
 	std::cout << "Matrix formed ... Now going for collapse" << std::endl;
+ 
+    // for (auto& row : simplices)
+    // {
+        
+    //     std::cout << " checking membership for the simplex " << ": " ;
+    //     for(auto & v: row)
+    //             std::cout << v << ", " ;
+    //     std::cout << std::endl;   
+        
+    //     if(mat.membership(row))
+  
+    //         std::cout << " It exists..." <<std::endl;
+    //     else
+    //         std::cout << " It doesn't  exist..." <<std::endl;
+    //     //std::copy(row.begin(), row.end(), std::ostream_iterator<double>(std::cout," "));
+    //     //std::cout << "\n";
+    // }  
+    // std::cout << "****************************************************" << std::endl;
+	// mat.contraction(2,6);
+ //    mat.contraction(6,4);
+ //    mat.contraction(5,8);
+    mat.strong_collapse();
+    Fake_simplex_tree coll_tree = mat.collapsed_tree();
+    clock_t collapse_done = clock();
+  
 
-	Fake_simplex_tree coll_tree = mat.collapsed_tree();
-	clock_t collapse_done = clock();
-
+    for (auto& row : simplices)
+    {
+        
+        std::cout << " checking membership for the simplex " << ": " ;
+        for(auto & v: row)
+                std::cout << v << ", " ;
+        std::cout << std::endl;   
+        
+        if(mat.membership(row))
+  
+            std::cout << " It exists..." <<std::endl;
+        else
+            std::cout << " It doesn't  exist..." <<std::endl;
+        //std::copy(row.begin(), row.end(), std::ostream_iterator<double>(std::cout," "));
+        //std::cout << "\n";
+    } 
+    
 	std::cout << "Collapse done !" << std::endl;
 
 	std::cout << "Time for formation of Matrix : " << (matrix_formed - stree_formed)/CLOCKS_PER_SEC << " seconds" << std::endl;
@@ -121,7 +129,7 @@ int main()
 
 	std::cout << "Collapsed Rips complex is of dimension " << coll_tree.dimension() << " with " << coll_tree.num_simplices() << " maximal simplices " << coll_tree.filtration_simplex_range().size() << " simplices and "  << coll_tree.num_vertices() << " vertices." << std::endl;
 
-
+    // mat.contraction(8,19);
 	return 0;
 }
 

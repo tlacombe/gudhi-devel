@@ -6,7 +6,6 @@
 #include <unordered_map>
 #include <memory>
 #include <limits>
-#include <math.h>
 
 #define vertex_upper_bound std::numeric_limits<Toplex_map::Vertex>::max()
 
@@ -70,7 +69,7 @@ public:
      * The edge has to verify the link condition if you want to preserve topology.
      * Returns the remaining vertex.
      * \ingroup toplex_map   */
-    Toplex_map::Vertex contraction(const Toplex_map::Vertex x, const Toplex_map::Vertex y);
+    Toplex_map::Vertex contraction(const Toplex_map::Vertex x, const Toplex_map::Vertex y, bool force=false);
 
     /** Adds the given simplex to the complex.
      * The simplex must not have neither maximal face nor coface in the complex.
@@ -90,17 +89,15 @@ public:
       * \ingroup toplex_map   */
     std::size_t num_simplices() const;
 
-        /** \internal The map from vertices to toplices
-     * \ingroup toplex_map   */
-    std::unordered_map<Toplex_map::Vertex, Toplex_map::Simplex_ptr_set> t0;
-
 protected:
     /** \internal Gives an index in order to look for a simplex quickly.
      * \ingroup toplex_map   */
     template <typename Input_vertex_range>
     Toplex_map::Vertex best_index(const Input_vertex_range &vertex_range) const;
     
-
+    /** \internal The map from vertices to toplices
+     * \ingroup toplex_map   */
+    std::unordered_map<Toplex_map::Vertex, Toplex_map::Simplex_ptr_set> t0;
 };
 
 // Pointers are also used as key in the hash sets.
@@ -199,17 +196,18 @@ Toplex_map::Simplex_ptr_set Toplex_map::maximal_cofaces(const Input_vertex_range
     return cofaces;
 }
 
-Toplex_map::Vertex Toplex_map::contraction(const Toplex_map::Vertex x, const Toplex_map::Vertex y){
+Toplex_map::Vertex Toplex_map::contraction(const Toplex_map::Vertex x, const Toplex_map::Vertex y, bool force){
     if(!t0.count(x)) return y;
     if(!t0.count(y)) return x;
     int k, d;
-    if(t0.at(x).size() > t0.at(y).size())
+    if(force || (t0.at(x).size() > t0.at(y).size()))
         k=x, d=y;
     else
         k=y, d=x;
     for(const Toplex_map::Simplex_ptr& sptr : Simplex_ptr_set(t0.at(d))){
         //Copy constructor needed because the set is modified
         Simplex sigma(*sptr);
+        Simplex s; s.insert(2);
         erase_maximal(sptr);
         sigma.erase(d);
         sigma.insert(k);
@@ -298,7 +296,6 @@ std::vector<Toplex_map::Simplex> facets(const Input_vertex_range &vertex_range){
         facets.emplace_back(f);
         f.insert(v);
     }
-
     return facets;
 }
 

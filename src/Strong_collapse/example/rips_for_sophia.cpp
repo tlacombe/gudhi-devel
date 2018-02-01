@@ -65,6 +65,7 @@ int main() {
         }
         
         SparseMsMatrix mat(subComplex);
+        mat.strong_collapse();
 	 	Fake_simplex_tree* subCpx_coll = new Fake_simplex_tree(mat.collapsed_tree());
         std::cout << "Subcomplex #" << (i+1) << " Collapsed" << std::endl;
 	 	Map redmap = mat.reduction_map();

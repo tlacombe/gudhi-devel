@@ -102,7 +102,10 @@ public:
             for (Vert_Set::iterator iter=diff.begin(); iter!=diff.end(); iter++)
             {
                 auto collapsed_to = collmap[*iter];
-
+                Simplex s_iter;
+                s_iter.insert(*iter);
+                Simplex s_ct;
+                s_ct.insert(collapsed_to);
                 if(set1.count(collapsed_to)!=0)
                 {
                     tempSt.contraction(*iter, collapsed_to);  // If the vertex collapsed_to is not a vertex of tempSt, the contraction function will simply add               
@@ -112,14 +115,14 @@ public:
                     contractedEdges.emplace_back(contracted_edge);
                     contracted_edge.clear();
                     std::cout<< "Entered in to the IF control block! Motive: contraction from "<<*iter << " to " << collapsed_to << std::endl;
-                    if(tempSt.membership(Simplex(*iter)))
+                    if(tempSt.membership(s_iter))
                         std::cout << "Error: the vertex "<< *iter << " has been contracted and it's still a member!! :(" << std::endl; 
-                    if(!tempSt.membership(Simplex(*iter)))
+                    if(!tempSt.membership(s_iter))
                         std::cout << "The vertex "<< *iter << " has been contracted and it's not a member anymore :) " << std::endl; 
 
-                    if(!tempSt.membership(Simplex(collapsed_to)))
+                    if(!tempSt.membership(s_ct))
                         std::cout << "Error: the vertex : " <<collapsed_to<< " is not a member! :(" <<std::endl;
-                    if(tempSt.membership(Simplex(collapsed_to)))
+                    if(tempSt.membership(s_ct))
                         std::cout << "The vertex : " <<collapsed_to<< " is still a member :)" <<std::endl;
 
                     myfile  << "c " << *iter << " " << collapsed_to << std::endl; 
@@ -131,9 +134,10 @@ public:
                 else 
                 {
                     std::cout<< "Else block Motive: contraction from "<<*iter << " to " << collapsed_to << std::endl;
-                    tempSt.insert_simplex_and_subfaces(Simplex(collapsed_to));
+
+                    tempSt.insert_simplex_and_subfaces(s_ct);
                     
-                    if(!tempSt.membership(Simplex(collapsed_to)))
+                    if(!tempSt.membership(s_ct))
                         std::cout << "Error in Else: In insertion, the vertex " << collapsed_to << " should be a member!! :( " <<std::endl;
 
                     myfile  << "i " << collapsed_to << std::endl;  // This is a non-dominated vertex so it will never be collapsed in this iteration.
@@ -147,14 +151,14 @@ public:
                     contractedEdges.emplace_back(contracted_edge);
                     contracted_edge.clear();
                     
-                    if(tempSt.membership(Simplex(*iter)))
+                    if(tempSt.membership(s_iter))
                         std::cout << "Error in Else: the vertex "<< *iter << " has been contracted and it's still a member!! :( " << std::endl; 
-                    if(!tempSt.membership(Simplex(*iter)))
+                    if(!tempSt.membership(s_iter))
                         std::cout << "In Else: The vertex "<< *iter << " has been contracted and it's not a member anymore :) " << std::endl; 
 
-                    if(!tempSt.membership(Simplex(collapsed_to)))
+                    if(!tempSt.membership(s_ct))
                         std::cout << "Error in Else: the vertex : " <<collapsed_to<< " is not a member :(" <<std::endl;
-                    if(tempSt.membership(Simplex(collapsed_to)))
+                    if(tempSt.membership(s_ct))
                         std::cout << "In Else, the vertex : " <<collapsed_to<< " is still a member :)" <<std::endl;
 
 
