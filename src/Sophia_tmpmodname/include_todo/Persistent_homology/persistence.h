@@ -30,15 +30,16 @@
 #include <iostream>
 #include <fstream>
 
-//#include "hash_complex.h"
-#include <list_column.h>
-#include <heap_column.h>
+#include <tower_converter.h>
+#include <Persistent_homology/list_column.h>
+#include <Persistent_homology/heap_column.h>
 
 #define GUDHI_LIST
 
 namespace Gudhi {
 namespace tmp_package_name {
 
+template<class ComplexStructure>
 class Persistence
 {
 public:
@@ -51,15 +52,15 @@ public:
         Boundary_matrix(std::string persistencePairsFileName);
         ~Boundary_matrix();
 
-        void insert_column(double insertionNumber, std::vector<double> *boundary, double timestamp);
-		void reduce(double start);
-        void clear_out();
-        void mark_inactive(std::vector<double> *insertionNumbers);
-        void mark_inactive(double insertionNumber);
-        void insert_vertex(double insertionNumber, double timestamp);
+        //void insert_column(double insertionNumber, std::vector<double> *boundary, double timestamp);
+        //void reduce(double start);
+        //void clear_out();
+        //void mark_inactive(std::vector<double> *insertionNumbers);
+        //void mark_inactive(double insertionNumber);
+        //void insert_vertex(double insertionNumber, double timestamp);
 
-        double get_last_insert_number() const;
-        int get_max_dim() const;
+        //double get_last_insert_number() const;
+        //int get_max_dim() const;
 
 	private:
 #ifdef GUDHI_LIST
@@ -78,25 +79,25 @@ public:
         int maxDim_;
         std::ofstream *persistencePairsFile_;
 
-        void clear_column(double columnIndex);
-        void print_persistence_pair(int dim, double birth, double death);
+        //void clear_column(double columnIndex);
+        //void print_persistence_pair(int dim, double birth, double death);
 	};
 
-    bool conv_insert_simplex(std::vector<double> *simplex, double timestamp);
-    void conv_contract_vertices(double u, double v, double timestamp);
-    void insert_simplex(double insertionNum, std::vector<double> *boundary, double timestamp);
-    void finalize_reduction();
-    void mark_inactive(double insertionNumber);
+    //bool conv_insert_simplex(std::vector<double> *simplex, double timestamp);
+    //void conv_contract_vertices(double u, double v, double timestamp);
+    //void insert_simplex(double insertionNum, std::vector<double> *boundary, double timestamp);
+    //void finalize_reduction();
+    //void mark_inactive(double insertionNumber);
 
-    void print_complex_data();
+    //void print_complex_data();
 
 private:
-    //ComplexStructure *complex_;
+    Tower_converter<ComplexStructure> converter_;
     Boundary_matrix *matrix_;
     double reductionInterval_;
     double lastReduction_;
 
-    void compute_partial_persistence();
+    //void compute_partial_persistence();
 };
 
 }

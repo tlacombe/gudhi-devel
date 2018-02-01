@@ -109,10 +109,12 @@ public:
 
     bool insert_simplex(simplex_base *numVertices);
     bool remove_simplex(simplex_base *simplex);
-    vertex get_smallest_closed_star(vertex v, vertex u, std::vector<simplex_base*> *closedStar);    //returns vertex with smallest closed star; closedStar is ordered
+    bool remove_simplex(simplex_base *simplex, std::vector<index> *removedIndices);
+    vertex get_smallest_closed_star(vertex v, vertex u, std::vector<simplex_base *> *closedStar);    //returns vertex with smallest closed star; closedStar is ordered
                                                                                                     //and simplices in closedStar are independent of the ones in Complex
     index get_boundary(simplex_base *simplex, std::vector<index> *boundary);
     double get_size() const;
+    double get_max_index() const;
 
     /* Other */
 
@@ -120,7 +122,7 @@ public:
     double get_max_size() const;
     int get_max_dimension() const;
     void get_cofaces(simplex_base *simplex, std::vector<simplex_base*> *cofaces);
-    void get_cofacets(simplex_base *simplex, std::vector<simplex_base*> *cofacets);
+    void get_cofacets(simplex_base *simplex, std::vector<simplex_base *> *cofacets);
     bool contains(simplex_base *simplex);
 
 private:
@@ -192,6 +194,11 @@ bool Hash_complex::insert_simplex(simplex_base *numVertices)
 
 bool Hash_complex::remove_simplex(simplex_base *simplex)
 {
+    return remove_simplex(simplex, NULL);
+}
+
+bool Hash_complex::remove_simplex(Hash_complex::simplex_base *simplex, std::vector<index> *removedIndices)
+{
     std::pair<simplex_base*,int> p(simplex, -1);
     if (simplices_->find(&p) == simplices_->end()) return false;
     Simplex *splx = simplices_->at(&p);
@@ -205,16 +212,17 @@ bool Hash_complex::remove_simplex(simplex_base *simplex)
     }
     p.second = -1;
 
-    while (!cofacets->empty()) remove_simplex(cofacets->begin()->second->get_vertices());
+    while (!cofacets->empty()) remove_simplex(cofacets->begin()->second->get_vertices(), removedIndices);
 
     std::pair<simplex_base*,int> *tmp = simplices_->find(&p)->first;
+    if (removedIndices != NULL) removedIndices->push_back(splx->get_insertion_num());
     simplices_->erase(&p);
     delete tmp;
     delete splx;
     return true;
 }
 
-Hash_complex::vertex Hash_complex::get_smallest_closed_star(vertex v, vertex u, std::vector<simplex_base*> *closedStar)
+Hash_complex::vertex Hash_complex::get_smallest_closed_star(vertex v, vertex u, std::vector<simplex_base *> *closedStar)
 {
     std::queue<simplex_base*> qv;
     std::queue<simplex_base*> qu;
@@ -271,6 +279,11 @@ Hash_complex::index Hash_complex::get_boundary(simplex_base *simplex, std::vecto
 double Hash_complex::get_size() const
 {
     return simplices_->size();
+}
+
+double Hash_complex::get_max_index() const
+{
+    return maxIndex_;
 }
 
 double Hash_complex::get_max_size() const
@@ -339,7 +352,7 @@ bool Hash_complex::contains(Hash_complex::simplex_base *simplex)
     return (simplices_->find(&p) != simplices_->end());
 }
 
-Hash_complex::vertex Hash_complex::get_smallest_star(vertex v, vertex u, std::queue<simplex_base*> *qv, std::queue<simplex_base*> *qu)
+Hash_complex::vertex Hash_complex::get_smallest_star(vertex v, vertex u, std::queue<simplex_base *> *qv, std::queue<simplex_base *> *qu)
 {
     auto hash = [](simplex_base* const& k) {
         std::size_t seed = k->size();
