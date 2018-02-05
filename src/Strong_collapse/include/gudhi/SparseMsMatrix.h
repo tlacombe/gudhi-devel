@@ -68,23 +68,13 @@ using matixTuple	   = std::tuple<sparseMatrix, sparseRowMatrix>;
 class SparseMsMatrix
 {
 	private:
-	//! Stores the vertices of the original Simplicial Complex in unordered fashion.
-    /*!
-      \code
-      vertexVector = std::vector< Vertex >
-      \endcode
-      This is a vector that stores all the vertices of the Original Simplicial Complex. <br>
-      So, if the original simplex tree had vertices 0,1,4,5 <br>
-      This would store : <br>
-      \verbatim
-      Values =  | 0 | 1 | 4 | 5 | 
-      Indices =   0   1   2   3
-      \endverbatim
-    */
+
   	std::unordered_map<int,Vertex> rowToVertex;
-  	std::unordered_set<Vertex> vertices; // Vertices strored as an unordered_set.
-  	// std::unordered_set<Simplex> initSimplices; // set of Initial simplices
-  	// std::unordered_set<double> collSimplices;	// set of simplices after collapse.
+
+  	// Vertices strored as an unordered_set
+  	std::unordered_set<Vertex> vertices; 
+
+  
   //! Stores the maximal simplices of the original Simplicial Complex.
     /*!
       \code
@@ -225,7 +215,7 @@ class SparseMsMatrix
 
 		simpDomnIndicator.clear();
 		colInsertIndicator.clear();
-    	columnIterator.push(0);  //  A naive way to initialize, might be reduntant.
+    	columnIterator.push(0);  				//  A naive way to initialize, might be reduntant.
  		columnIterator.pop(); 
 
 		rows = 0;
@@ -234,8 +224,12 @@ class SparseMsMatrix
 		numMaxSimplices = 0;
 		expansion_limit = 3;
 	
-	  	maxNumInitSimplices = 0;
+	  	maxNumInitSimplices  = 0;
+	  	maxNumCollSiplices   = 0;
   		initComplexDimension = 0;
+  		collComplexDimension = 0;
+
+  		already_collapsed = false;
 	}
 	
 	//!	Function for computing the Fake Simplex_tree corresponding to the core of the complex.
@@ -248,20 +242,20 @@ class SparseMsMatrix
     */
  	void after_collapse()
 	{
-		maxNumCollSiplices = 0;
-		collComplexDimension = 0;
 		int simpDim;
-     	sparseColpsdMxSimplices     =  sparseMatrix(rows,cols); // Just for debugging purpose.
-    	int j = 0;
-		for(int co = 0 ; co < simpDomnIndicator.size() ; ++co)
+		int j = 0;
+     	sparseColpsdMxSimplices   =  sparseMatrix(rows,cols); // Just for debugging purpose.
+    	
+		for(int co = 0 ; co < cols ; ++co)
 		{
 			if(not simpDomnIndicator[co]) 				//If the current column is not dominated
 			{
 				vertexVector mx_simplex_to_insert = readColumn(co); 
-				collapsed_fake_simplex_tree.insert_maximal_simplex_and_subfaces(mx_simplex_to_insert); 
+				collapsed_fake_simplex_tree.insert_simplex_and_subfaces(mx_simplex_to_insert); 
        		
-        		for(auto v:mx_simplex_to_insert)
+        		for(auto & v:mx_simplex_to_insert)
           			sparseColpsdMxSimplices.insert(vertexToRow[v],j) = 1;
+			  	
 			  	j++;
 			  	simpDim = mx_simplex_to_insert.size() -1;
 			  	if(collComplexDimension < simpDim)
@@ -270,7 +264,7 @@ class SparseMsMatrix
 			  	// std::cout << "Dimension of the current maximal simplex and current simplex count: " << mx_simplex_to_insert.size() << ", "<< maxNumCollSiplices << std::endl; 
       		}			
 		}
-    	std::cout << sparseColpsdMxSimplices << std::endl;
+    	// std::cout << sparseColpsdMxSimplices << std::endl;
 		return ;
 	}
 	//! Function to fully compact a particular vertex of the ReductionMap.
@@ -332,10 +326,6 @@ class SparseMsMatrix
 	    return facets;
 	}
 
-	// void contraction(const Vertex del, const Vertex keep, bool force){
-	    
-
-	// }
 	void sparse_strong_collapse()
 	{
  		complete_domination_check(rowIterator, rowInsertIndicator, vertDomnIndicator, true); 		// Complete check for rows, by setting last argument "true" 
@@ -358,8 +348,8 @@ class SparseMsMatrix
 	      	insertIndicator[k] = false;
 	    	if( not domnIndicator[k]) 				// Check only if not already dominated
 	    	{ 
-		        nonZeroInnerIdcs  = read(k, which); 					          // If which == "true", returns the non-zero columns of row k, otherwise if which == "false" returns the non-zero rows of column k.
-		        nonZeroOuterIdcs  = read(nonZeroInnerIdcs[0], !which); 	// If which == 'true', returns the non-zero rows of the first non-zero column from previous columns and vice versa... 
+		        nonZeroInnerIdcs  = read(k, true, which); 					          // If which == "true", returns the non-zero columns of row k, otherwise if which == "false" returns the non-zero rows of column k.
+		        nonZeroOuterIdcs  = read(nonZeroInnerIdcs[0], false, !which); 	// If which == 'true', returns the non-zero rows of the first non-zero column from previous columns and vice versa... 
 		        for (doubleVector::iterator it = nonZeroOuterIdcs.begin(); it!=nonZeroOuterIdcs.end(); it++) 
 		        {
 		       		int checkDom = pair_domination_check(k, *it, which);   	// "true" for row domination comparison
@@ -379,8 +369,8 @@ class SparseMsMatrix
 	{
 		if(i != j)
 		{
-			doubleVector Listi = read(i, which);
-			doubleVector Listj = read(j, which);
+			doubleVector Listi = read(i, false, which);
+			doubleVector Listj = read(j, false, which);
 			if(Listj.size() <= Listi.size())
 			{
       			if(std::includes(Listi.begin(), Listi.end(), Listj.begin(), Listj.end())) // Listj is a subset of Listi
@@ -394,13 +384,13 @@ class SparseMsMatrix
 		return 0;	
 	}
 
-	doubleVector read(double indx, bool which) // Returns list of non-zero rows(which = true)/columns(which = false) of the particular indx. 
+	doubleVector read(double indx, bool firstEntrOnly, bool which) // Returns list of non-zero rows(which = true)/columns(which = false) of the particular indx. 
 	{											// Caution : Check for domination before calling the method.
 	  	doubleVector nonZeroIndices;     
 	  	if(which)
-	  		nonZeroIndices = read<rowInnerIterator, sparseRowMatrix>(sparseRowMxSimplices, simpDomnIndicator,indx);
+	  		nonZeroIndices = read<rowInnerIterator, sparseRowMatrix>(sparseRowMxSimplices, simpDomnIndicator, firstEntrOnly, indx);
 	  	else
-	  		nonZeroIndices = read<columnInnerIterator, sparseMatrix>(sparseMxSimplices, vertDomnIndicator,indx);
+	  		nonZeroIndices = read<columnInnerIterator, sparseMatrix>(sparseMxSimplices, vertDomnIndicator,firstEntrOnly, indx);
 	  	return nonZeroIndices;
 	}
 
@@ -428,8 +418,8 @@ class SparseMsMatrix
 	{
 		vertexVector rows ; 
   		for (sparseMatrix::InnerIterator itRow(sparseMxSimplices,colIndx); itRow; ++itRow)  // Iterate over the non-zero columns
-     		if(not vertDomnIndicator[itRow.index()])  // Check if the row corresponds to a dominated vertex
-      			rows.push_back(rowToVertex[itRow.index()]); // inner index, here it is equal to it.row()
+     		if(not vertDomnIndicator[itRow.index()])  					// Check if the row corresponds to a dominated vertex
+      			rows.push_back(rowToVertex[itRow.index()]); 			// inner index, here it is equal to it.row()
 
   		return rows;
 	}
@@ -445,12 +435,16 @@ class SparseMsMatrix
 	      }
 	} 
 	template <typename type, typename matrix>
-	doubleVector read(const matrix& m, const boolVector& domnIndicator, double indx)
+	doubleVector read(const matrix& m, const boolVector& domnIndicator, bool firstEntrOnly, double indx)
 	{
 		doubleVector nonZeroIndices; 
       	for (type it(m, indx); it; ++it)             // Iterate over the non-zero rows/columns
         	if(not domnIndicator[it.index()])
+        	{
             	nonZeroIndices.push_back(it.index());  // inner index, here it is equal to it.row()/it.columns()
+        		if(firstEntrOnly)
+        			break;
+        	}
     
       return nonZeroIndices;
 	}
@@ -482,6 +476,7 @@ public:
 	{
 		init();
 	}
+
 	SparseMsMatrix(std::size_t expRows, std::size_t expMaxSimp)
 	{
 		init();
@@ -519,7 +514,7 @@ public:
 		
 		sparseMxSimplices     = sparseMatrix(2*vertices.size(),2*numMaxSimplices); 			// Initializing sparseMxSimplices, This is a column-major sparse matrix.  
 		sparseRowMxSimplices  = sparseRowMatrix(2*vertices.size(),2*numMaxSimplices);    	// Initializing sparseRowMxSimplices, This is a row-major sparse matrix.  
-		// There are two sparse matrices to have flexibility of iteratating through non-zero rows and columns efficiently.
+		// There are two sparse matrices, it gives the flexibility of iteratating through non-zero rows and columns efficiently.
 
    	
 		for(auto &simplex: maximal_simplices) 						// Adding each maximal simplices iteratively.
@@ -530,10 +525,11 @@ public:
 		std::cout << "Formation time : " <<  std::chrono::duration<double, std::milli>(end- begin).count()
 	              << " ms\n" << std::endl;
 		std::cout << "Total number of Initial maximal simplices are: " << cols << std::endl;		
+		
 		sparseMxSimplices.makeCompressed(); 	             //Optional for memory saving
 	  	sparseRowMxSimplices.makeCompressed(); 
        	
- 	  	std::cout << sparseMxSimplices << std::endl;
+ 	  	// std::cout << sparseMxSimplices << std::endl;
 	}
 
 	//!	Destructor.
@@ -551,7 +547,6 @@ public:
     */
 	void strong_collapse()
 	{
-			// init_lists();
 			auto begin_collapse  = std::chrono::high_resolution_clock::now();
 			sparse_strong_collapse();
 			already_collapsed = true;
@@ -562,6 +557,7 @@ public:
 			
 			// Now we complete the Reduction Map
 			fully_compact();
+			//Post processing...
 			after_collapse();
 	}
 
@@ -573,6 +569,7 @@ public:
 		else
 			return false;
 	}
+
 	template <typename Input_vertex_range>
 	bool membership(const Input_vertex_range & vertex_range) 
 	{  
@@ -583,12 +580,12 @@ public:
 	    	doubleVector::iterator it;
 		    if(membership(simp[0]))	
 		    {
-		    	current = read(vertexToRow[simp[0]], true);   			//Reads row for non-zero column indices
+		    	current = read(vertexToRow[simp[0]], false, true);   			//Reads row for non-zero column indices
 				for(int counter = 1; counter < simp.size(); counter++)
 			    {
 		    		if(membership(simp[counter]))	
 			    	{
-			    		next   = read(vertexToRow[simp[counter]], true);		// Reads row for non-zero column indices
+			    		next   = read(vertexToRow[simp[counter]], false, true);		// Reads row for non-zero column indices
 			    		it 	   = std::set_intersection(current.begin(), current.end(), next.begin(), next.end(), current.begin());
 			    		current.resize(it-current.begin());  
 			    		if(current.size() == 0)
@@ -604,10 +601,11 @@ public:
 		}
 		else
 		{
-			std::cerr << "Please enter valid simplex for membership check" <<std::endl;	
+			std::cerr << "Please enter a valid simplex for membership check" <<std::endl;	
 			exit(-1); 	
 		}	
 	}
+
 	void contraction(const Vertex & del, const Vertex & keep)
 	{
 		bool del_mem  = membership (del);
@@ -617,8 +615,8 @@ public:
 			doubleVector  del_indcs, keep_indcs, diff;
 			auto row_del = vertexToRow.find(del);
 			auto row_keep = vertexToRow.find(keep);
-			del_indcs = read(row_del->second, true);
-			keep_indcs = read(row_keep->second, true);
+			del_indcs = read(row_del->second, false, true);
+			keep_indcs = read(row_keep->second, false, true);
 			std::set_difference(del_indcs.begin(), del_indcs.end(), keep_indcs.begin(), keep_indcs.end(), std::inserter(diff, diff.begin()));
 			for (auto columns : diff) 
 			{
@@ -649,7 +647,8 @@ public:
 	{
 		if( not membership(vertex_range))
 		{
-			for(auto vertex : vertex_range)  // Transformes the current maximal simplex to row-index representation and adds it as a column in the sparse matrices.
+			std::vector<size_t>  simp(vertex_range.begin(), vertex_range.end());
+			for(auto vertex : simp) 
 			{
 	    		auto rw = vertexToRow.find(vertex);
 	    		if(rw != vertexToRow.end())
@@ -672,21 +671,20 @@ public:
 	    		}
 	    			
 			}
+
 			simpDomnIndicator.push_back(false);
 			colInsertIndicator.push_back(false);
 			cols++;
-			int simpDimension = (vertex_range.size()) -1;
+
+			int simpDimension = (simp.size()) -1;
 			if(initComplexDimension < simpDimension)
 				initComplexDimension = simpDimension;
 			maxNumInitSimplices += (pow(2, (simpDimension+1))) - 1;	
 		}
 		else
-			std::cout << "already a member simplex  skipping..." << std::endl;
+			std::cout << "Already a member simplex,  skipping..." << std::endl;
        		
 	}
-
-
-
 	//!	Function for returning the ReductionMap.
     /*!
       This is the (stl's unordered) map that stores all the collapses of vertices. <br>
@@ -725,7 +723,5 @@ public:
     {
     	return sparseColpsdMxSimplices;
     }
-
-
 
 };

@@ -3,12 +3,14 @@
 #include <set>
 #include <fstream>
 #include <string>
+#include <algorithm>
+
 
 using Fake_simplex_tree     = Gudhi::Fake_simplex_tree;
 using Vertex                = Fake_simplex_tree::Vertex;
 using Simplex               = Fake_simplex_tree::Simplex;
 
-using Vert_Set              = std::set<Vertex>;
+using vectorVertex          = std::vector<Vertex>;
 using vert_unSet            = std::unordered_set<Vertex>;
 using simplexVector         = std::vector<Simplex>;
 
@@ -25,17 +27,12 @@ class FormatTower
 private:
 // Map renamedVertices; 
 // std::size_t renameCounter;
-
-Vert_Set complex_vertex_range(const simplexVector& maxSimplices)
-{
-    Vert_Set set;
-    set.clear();
-    for(const Simplex& s : maxSimplices)
-        for (Vertex v : s)
-            set.emplace(v);
-    return set;  
-}
-bool vertex_compare (std::size_t  i, std::size_t  j) { return (i<j); }
+struct {
+        bool operator()(std::size_t a, std::size_t b) const
+        {   
+            return a < b;
+        }   
+    } vertex_compare;
 
 template <typename Input_vertex_range>
 std::vector<Simplex> all_faces(const Input_vertex_range &vertex_range){
@@ -79,8 +76,8 @@ public:
     {
 
         simplexVector maxSimplices1, maxSimplices2, contractedEdges;
-        Vert_Set set1; 
-        Vert_Set set2;
+        vectorVertex set1; 
+        vectorVertex set2;
         vert_unSet contracted_edge;
         int ifcount     = 0;
         int elsecount   = 0 ;
@@ -89,30 +86,28 @@ public:
         {
 
             for(auto &v : st1.vertex_set())
-                set1.emplace(v); 
+                set1.push_back(v); 
             for(auto &v : st2.vertex_set())
-                set2.emplace(v);
+                set2.push_back(v);
             // std::size_t set1_size = set1.size();
             // std::size_t set1_size = set2.size();
-            set1.sort(vertex_compare);
+            std::sort(set1.begin(), set1.end(), vertex_compare); 
+            std::sort(set2.begin(), set2.end(), vertex_compare);
 
-            // std::sort (set1.begin(), set1.end(),this->vertex_compare());
-            // std::sort (set2.begin(), set2.end(),this->vertex_compare());
-
-            Vert_Set diff;
+            vectorVertex diff;
             diff.clear();
             std::set_difference(set1.begin(), set1.end(), set2.begin(), set2.end(), std::inserter(diff, diff.end())); // It computes the set (V1c - V2c) // These vertices are the ones which go through collapse. 
             
             																										  // We write them one by one and transform the st1 (simplicial complex K1) accordingly, which will finally be a subcomplex of K2c.			
             
-            for (Vert_Set::iterator iter=diff.begin(); iter!=diff.end(); iter++)
+            for (vectorVertex::iterator iter=diff.begin(); iter!=diff.end(); iter++)
             {
                 auto collapsed_to = collmap[*iter];
                 Simplex s_iter;
                 s_iter.insert(*iter);
                 Simplex s_ct;
                 s_ct.insert(collapsed_to);
-                if(set1.count(collapsed_to)!=0)
+                if(st1.vertex_set().count(collapsed_to)!=0)
                 {
                     st1.contraction(*iter, collapsed_to);  // If the vertex collapsed_to is not a vertex of st1, the contraction function will simply add               
                     contracted_edge.insert(*iter);
@@ -180,8 +175,8 @@ public:
 
             //The core K1c (st1) has gone through the transformation(re-labeling)/collapse and it is now a subcomplex of K2c, the remaining simplices need to be included
             // Writing the inclusion of all remaining simplices...
-            Vert_Set invertedV;
-            Vert_Set::iterator iter;
+            vectorVertex invertedV;
+            vectorVertex::iterator iter;
 
             for (const Simplex& m : contractedEdges)
             {   std::cout << "Current dimension of the maximal simplex is :" <<(m.size()-1)<<std::endl;
@@ -198,7 +193,7 @@ public:
                         myfile  << "i";
                         for (Vertex v : s)
                         {
-                            invertedV.insert(v);
+                            invertedV.push_back(v);
                         }
                         for(iter = invertedV.begin(); iter != invertedV.end(); iter++)
                         {
