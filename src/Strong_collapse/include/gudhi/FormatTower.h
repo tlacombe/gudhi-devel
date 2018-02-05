@@ -141,7 +141,7 @@ public:
                 {
                     std::cout<< "Else block Motive: contraction from "<<*iter << " to " << collapsed_to << std::endl;
 
-                    st1.insert_simplex_and_subfaces(s_ct);
+                    st1.insert_maximal_simplex_and_subfaces(s_ct);
                     
                     if(!st1.membership(s_ct))
                         std::cout << "Error in Else: In insertion, the vertex " << collapsed_to << " should be a member!! :( " <<std::endl;
@@ -208,7 +208,7 @@ public:
                         invertedV.clear();
                     }
                 }
-                st1.insert_simplex_and_subfaces(m);        
+                st1.insert_maximal_simplex_and_subfaces(m);        
             }   
 
             myfile << "# This is one step tower.\n";
