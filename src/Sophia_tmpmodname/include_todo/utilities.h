@@ -5,6 +5,7 @@
 #include <string>
 
 #include "tower_converter.h"
+#include "Persistent_homology/persistence.h"
 
 namespace Gudhi {
 namespace tmp_package_name {
@@ -77,6 +78,39 @@ std::ifstream& operator>>(std::ifstream& file, Tower_converter<ComplexStructure>
 
             timestamp = -1;
         }
+        file.close();
+    } else {
+        std::cout << "Unable to open input file.\n";
+        file.setstate(std::ios::failbit);
+    }
+
+    return file;
+}
+
+template<class ComplexStructure>
+std::ifstream& operator>>(std::ifstream& file, Persistence<ComplexStructure>& pers)
+{
+    using TC = Tower_converter<ComplexStructure>;
+    std::string line;
+
+    if (file.is_open()){
+        std::vector<double> vertices;
+        double timestamp = -1;
+        double defaultTimestamp = 0;
+        while (getline(file, line, '\n')){
+            typename TC::operationType type = read_operation<ComplexStructure>(&line, &vertices, &timestamp);
+            if (timestamp != -1) defaultTimestamp = timestamp;
+
+            if (type == TC::INCLUSION){
+                if (pers.add_insertion(&vertices, defaultTimestamp)) defaultTimestamp++;
+            } else if (type == TC::CONTRACTION) {
+                pers.add_contraction(vertices.at(0), vertices.at(1), defaultTimestamp);
+                defaultTimestamp++;
+            }
+
+            timestamp = -1;
+        }
+        pers.finalize_reduction();
         file.close();
     } else {
         std::cout << "Unable to open input file.\n";

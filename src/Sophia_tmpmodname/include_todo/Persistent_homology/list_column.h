@@ -35,21 +35,53 @@ public:
     List_column(std::list<double> *column, int dim);
     ~List_column();
 
-public:
     void add(List_column *columnToAdd);
-    int get_dim() const;
-    std::list<double>::iterator get_begin_iterator();
-    std::list<double>::reverse_iterator get_reverse_begin_iterator();
-    std::list<double>::iterator get_end_iterator();
-    std::list<double>::reverse_iterator get_reverse_end_iterator();
-	void erase(std::list<double>::iterator *pos);
+    void erase(std::list<double>::iterator *pos){ column_->erase(*pos); }
+    std::list<double>::iterator get_begin_iterator(){ return column_->begin(); }
+    std::list<double>::reverse_iterator get_reverse_begin_iterator(){ return column_->rbegin(); }
+    std::list<double>::iterator get_end_iterator(){ return column_->end(); }
+    std::list<double>::reverse_iterator get_reverse_end_iterator(){ return column_->rend(); }
+    double get_size(){ return column_->size(); }
+    int get_dim() const{ return dim_; }
     double get_pivot();
-    double get_size();
 
 private:
     int dim_;
     std::list<double> *column_;
 };
+
+List_column::List_column(std::list<double> *column, int dim) : dim_(dim), column_(column)
+{}
+
+List_column::~List_column()
+{
+    delete column_;
+}
+
+void List_column::add(List_column *columnToAdd)
+{
+    std::list<double>::iterator itToAdd = columnToAdd->get_begin_iterator(), itTarget = column_->begin();
+    while (itToAdd != columnToAdd->get_end_iterator() && itTarget != column_->end()){
+        if (*itToAdd == *itTarget){
+            column_->erase(itTarget++);
+            itToAdd++;
+        } else if (*itToAdd < *itTarget){
+            column_->insert(itTarget, *itToAdd);
+            itToAdd++;
+        } else {
+            itTarget++;
+        }
+    }
+    while (itToAdd != columnToAdd->get_end_iterator()){
+        column_->push_back(*itToAdd);
+        itToAdd++;
+    }
+}
+
+inline double List_column::get_pivot(){
+    if (column_->empty()) return -1;
+    return column_->back();
+}
 
 }
 }

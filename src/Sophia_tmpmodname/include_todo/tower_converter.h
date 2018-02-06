@@ -23,16 +23,18 @@ public:
     enum operationType : int {INCLUSION, CONTRACTION, COMMENT};
     enum streamingType : int {FACES, VERTICES};
 
-    Tower_converter(ComplexStructure *complex);
-    Tower_converter(ComplexStructure *complex, std::string outputFileName);
+    Tower_converter();
+    Tower_converter(std::string outputFileName);
     ~Tower_converter();
 
     bool add_insertion(std::vector<double> *simplex, double timestamp);
+    bool add_insertion(std::vector<double> *simplex, double timestamp, std::vector<index> *simplexBoundary, index *simplexInsertionNumber);
     index add_contraction(double v, double u, double timestamp);
     index add_contraction(double v, double u, double timestamp, std::vector<std::vector<index>*> *addedBoundaries, std::vector<index> *removedIndices);
 
     double get_filtration_size() const;
     double get_tower_width() const;
+    void print_filtration_data();
 
 private:
     ComplexStructure *complex_;
@@ -47,18 +49,19 @@ private:
 };
 
 template<class ComplexStructure>
-Tower_converter::Tower_converter(ComplexStructure *complex) : complex_(complex), streamingType_(VERTICES), filtrationSize_(0), towerWidth_(0)
+Tower_converter<ComplexStructure>::Tower_converter() : streamingType_(VERTICES), filtrationSize_(0), towerWidth_(0)
 {
     outputStream_ = NULL;
     vertices_ = new std::unordered_map<double, vertex>();
+    complex_ = new ComplexStructure();
 }
 
 template<class ComplexStructure>
-Tower_converter<ComplexStructure>::Tower_converter(ComplexStructure *complex, std::string outputFileName)
-    : complex_(complex), streamingType_(VERTICES), filtrationSize_(0), towerWidth_(0)
+Tower_converter<ComplexStructure>::Tower_converter(std::string outputFileName) : streamingType_(VERTICES), filtrationSize_(0), towerWidth_(0)
 {
     outputStream_ = new std::ofstream(outputFileName);
     vertices_ = new std::unordered_map<double, vertex>();
+    complex_ = new ComplexStructure();
     //streamingType_ = FACES;
 }
 
@@ -67,10 +70,17 @@ Tower_converter<ComplexStructure>::~Tower_converter()
 {
     if (outputStream_ != NULL) delete outputStream_;
     delete vertices_;
+    delete complex_;
 }
 
 template<class ComplexStructure>
-bool Tower_converter<ComplexStructure>::add_insertion(std::vector<double> *simplex, double timestamp)
+inline bool Tower_converter<ComplexStructure>::add_insertion(std::vector<double> *simplex, double timestamp)
+{
+    return add_insertion(simplex, timestamp, NULL, NULL);
+}
+
+template<class ComplexStructure>
+bool Tower_converter<ComplexStructure>::add_insertion(std::vector<double> *simplex, double timestamp, std::vector<index> *simplexBoundary, index *simplexInsertionNumber)
 {
     simplex_base transSimplex;
 
@@ -87,19 +97,20 @@ bool Tower_converter<ComplexStructure>::add_insertion(std::vector<double> *simpl
     if (complex_->insert_simplex(&transSimplex)) {
         stream_simplex(&transSimplex, timestamp);
         if (complex_->get_size() > towerWidth_) towerWidth_ = complex_->get_size();
+        if (simplexBoundary != NULL) *simplexInsertionNumber = complex_->get_boundary(&transSimplex, simplexBoundary);
         return true;
     }
     return false;
 }
 
 template<class ComplexStructure>
-Tower_converter::index Tower_converter::add_contraction(double v, double u, double timestamp)
+inline typename Tower_converter<ComplexStructure>::index Tower_converter<ComplexStructure>::add_contraction(double v, double u, double timestamp)
 {
     return add_contraction(v, u, timestamp, NULL, NULL);
 }
 
 template<class ComplexStructure>
-Tower_converter::index Tower_converter<ComplexStructure>::add_contraction(double v, double u, double timestamp,
+typename Tower_converter<ComplexStructure>::index Tower_converter<ComplexStructure>::add_contraction(double v, double u, double timestamp,
                                                                           std::vector<std::vector<index>*> *addedBoundaries, std::vector<index> *removedIndices)
 {
     std::vector<simplex_base*> closedStar;
@@ -136,15 +147,24 @@ Tower_converter::index Tower_converter<ComplexStructure>::add_contraction(double
 }
 
 template<class ComplexStructure>
-double Tower_converter<ComplexStructure>::get_filtration_size() const
+inline double Tower_converter<ComplexStructure>::get_filtration_size() const
 {
     return filtrationSize_;
 }
 
 template<class ComplexStructure>
-double Tower_converter<ComplexStructure>::get_tower_width() const
+inline double Tower_converter<ComplexStructure>::get_tower_width() const
 {
     return towerWidth_;
+}
+
+template<class ComplexStructure>
+inline void Tower_converter<ComplexStructure>::print_filtration_data()
+{
+    std::cout << std::setprecision(std::numeric_limits<double>::digits10 + 1) << "Filtration Size: " << filtrationSize_ << "\n";
+    std::cout << "Max Size: " << complex_->get_max_size() << "\n";
+    std::cout << "Max Dimension: " << complex_->get_max_dimension() << "\n";
+    std::cout << "Tower Width: " << towerWidth_ << "\n";
 }
 
 template<class ComplexStructure>

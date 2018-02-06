@@ -192,7 +192,7 @@ bool Hash_complex::insert_simplex(simplex_base *numVertices)
     return true;
 }
 
-bool Hash_complex::remove_simplex(simplex_base *simplex)
+inline bool Hash_complex::remove_simplex(simplex_base *simplex)
 {
     return remove_simplex(simplex, NULL);
 }
@@ -276,22 +276,22 @@ Hash_complex::index Hash_complex::get_boundary(simplex_base *simplex, std::vecto
     return simplices_->at(&p)->get_insertion_num();
 }
 
-double Hash_complex::get_size() const
+inline double Hash_complex::get_size() const
 {
     return simplices_->size();
 }
 
-double Hash_complex::get_max_index() const
+inline double Hash_complex::get_max_index() const
 {
     return maxIndex_;
 }
 
-double Hash_complex::get_max_size() const
+inline double Hash_complex::get_max_size() const
 {
     return maxSize_;
 }
 
-int Hash_complex::get_max_dimension() const
+inline int Hash_complex::get_max_dimension() const
 {
     return maxDim_;
 }
@@ -346,7 +346,7 @@ void Hash_complex::get_cofacets(Hash_complex::simplex_base *simplex, std::vector
     }
 }
 
-bool Hash_complex::contains(Hash_complex::simplex_base *simplex)
+inline bool Hash_complex::contains(Hash_complex::simplex_base *simplex)
 {
     std::pair<simplex_base*,int> p(simplex, -1);
     return (simplices_->find(&p) != simplices_->end());
@@ -455,27 +455,27 @@ Hash_complex::Simplex::~Simplex()
     delete vertices_;
 }
 
-Hash_complex::index Hash_complex::Simplex::get_insertion_num() const
+inline Hash_complex::index Hash_complex::Simplex::get_insertion_num() const
 {
     return insertionNum_;
 }
 
-void Hash_complex::Simplex::set_insertion_num(const index &insertionNum)
+inline void Hash_complex::Simplex::set_insertion_num(const index &insertionNum)
 {
     insertionNum_ = insertionNum;
 }
 
-void Hash_complex::Simplex::add_cofacet(Simplex *coface, vertex v)
+inline void Hash_complex::Simplex::add_cofacet(Simplex *coface, vertex v)
 {
     cofacets_->emplace(v, coface);
 }
 
-std::unordered_map<Hash_complex::vertex, Hash_complex::Simplex*>* Hash_complex::Simplex::get_cofacets() const
+inline std::unordered_map<Hash_complex::vertex, Hash_complex::Simplex*>* Hash_complex::Simplex::get_cofacets() const
 {
     return cofacets_;
 }
 
-Hash_complex::simplex_base *Hash_complex::Simplex::get_vertices() const
+inline Hash_complex::simplex_base *Hash_complex::Simplex::get_vertices() const
 {
     return vertices_;
 }
