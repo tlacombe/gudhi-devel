@@ -1,5 +1,5 @@
 #include <gudhi/SparseMsMatrix.h>
-#include <gudhi/Fake_simplex_tree.h>
+// #include <gudhi/Fake_simplex_tree.h>
 #include <set>
 #include <fstream>
 #include <string>
@@ -25,185 +25,109 @@ using simplexVector         = std::vector<Simplex>;
 class FormatTower
 {
 private:
-// Map renamedVertices; 
-// std::size_t renameCounter;
-struct {
-        bool operator()(std::size_t a, std::size_t b) const
-        {   
-            return a < b;
-        }   
-    } vertex_compare;
+	Map renamedVertices; 
+	std::size_t renameCounter;
+	struct {
+	        bool operator()(std::size_t a, std::size_t b) const
+	        {   
+	            return a < b;
+	        }   
+	    } vertex_compare;
 
-template <typename Input_vertex_range>
-std::vector<Simplex> all_faces(const Input_vertex_range &vertex_range){
-    int set_size = vertex_range.size();
-    unsigned int pow_set_size = pow(2, set_size);
-    unsigned int counter, j;
-    std::vector<Simplex> facets;
-    std::vector<Vertex> maxSimplex(vertex_range.begin(), vertex_range.end());
+	template <typename Input_vertex_range>
+	std::vector<Simplex> all_faces(const Input_vertex_range &vertex_range){
+	    int set_size = vertex_range.size();
+	    unsigned int pow_set_size = pow(2, set_size);
+	    unsigned int counter, j;
+	    std::vector<Simplex> facets;
+	    std::vector<Vertex> maxSimplex(vertex_range.begin(), vertex_range.end());
 
-    /*Run from counter 000..0 to 111..1*/
-    for(counter = 1; counter < pow_set_size; counter++)
-    {
-      Simplex f;
-      for(j = 0; j < set_size; j++)
-       {          
-          if(counter & (1<<j))                    /* Check if jth bit in the counter is set/true If set then inserts jth element from vertex_range */
-            f.insert(maxSimplex[j]);
-       }
-       facets.emplace_back(f);
-       f.clear();
-    }
-    return facets;
-}
+	    /*Run from counter 000..0 to 111..1*/
+	    for(counter = 1; counter < pow_set_size; counter++)
+	    {
+	      Simplex f;
+	      for(j = 0; j < set_size; j++)
+	       {          
+	          if(counter & (1<<j))                    /* Check if jth bit in the counter is set/true If set then inserts jth element from vertex_range */
+	            f.insert(maxSimplex[j]);
+	       }
+	       facets.emplace_back(f);
+	       f.clear();
+	    }
+	    return facets;
+	}
 
 
 public:
     
-    FormatTower() //std::size_t numVert)
+    FormatTower(std::size_t numVert)
     {
-    	// for (std::size_t i = 0; i < numVert; ++i)
-    	// {
-    	// 	renamedVertices[i] = i;
-    	// }
+    	for (std::size_t i = 0; i < numVert; ++i)
+    	{
+    		renamedVertices[i] = i;
+    	}
 
-    	// renameCounter = numVert;
+    	renameCounter = numVert;
     };
     
     ~FormatTower(){};
 
     void one_step_tower(SparseMsMatrix st1, const SparseMsMatrix &st2,  Map collmap, std::string outFile) // st1 and st2 are simplex_trees of K1c and K2c (the collapsed ones), collmap is the map of K2 -> K2c
     {
-
-        simplexVector maxSimplices1, maxSimplices2, contractedEdges;
-        vectorVertex set1; 
-        vectorVertex set2;
-        vert_unSet contracted_edge;
-        int ifcount     = 0;
-        int elsecount   = 0 ;
         std::ofstream myfile (outFile, std::ios::app);
         if (myfile.is_open())
-        {
-
-            for(auto &v : st1.vertex_set())
-                set1.push_back(v); 
-            for(auto &v : st2.vertex_set())
-                set2.push_back(v);
-            // std::size_t set1_size = set1.size();
-            // std::size_t set1_size = set2.size();
-            std::sort(set1.begin(), set1.end(), vertex_compare); 
-            std::sort(set2.begin(), set2.end(), vertex_compare);
-
-            vectorVertex diff;
-            diff.clear();
-            std::set_difference(set1.begin(), set1.end(), set2.begin(), set2.end(), std::inserter(diff, diff.end())); // It computes the set (V1c - V2c) // These vertices are the ones which go through collapse. 
-            
-            																										  // We write them one by one and transform the st1 (simplicial complex K1) accordingly, which will finally be a subcomplex of K2c.			
-            
-            for (vectorVertex::iterator iter=diff.begin(); iter!=diff.end(); iter++)
+        {   
+            for (auto & v : st1.vertex_set())
             {
-                auto collapsed_to = collmap[*iter];
-                Simplex s_iter;
-                s_iter.insert(*iter);
-                Simplex s_ct;
-                s_ct.insert(collapsed_to);
-                if(st1.vertex_set().count(collapsed_to)!=0)
+                auto collapsed_to = collmap.find(v); 
+                if(collapsed_to != collmap.end())
                 {
-                    st1.contraction(*iter, collapsed_to);  // If the vertex collapsed_to is not a vertex of st1, the contraction function will simply add               
-                    contracted_edge.insert(*iter);
-                    contracted_edge.insert(collapsed_to);
-                    ifcount++;
-                    contractedEdges.emplace_back(contracted_edge);
-                    contracted_edge.clear();
-                    std::cout<< "Entered in to the IF control block! Motive: contraction from "<<*iter << " to " << collapsed_to << std::endl;
-                    if(st1.membership(s_iter))
-                        std::cout << "Error: the vertex "<< *iter << " has been contracted and it's still a member!! :(" << std::endl; 
-                    if(!st1.membership(s_iter))
-                        std::cout << "The vertex "<< *iter << " has been contracted and it's not a member anymore :) " << std::endl; 
+                    if(st1.membership(collapsed_to->second))
+                    {
+                    	myfile  << "c " << renamedVertices[v] << " " << renamedVertices[collapsed_to->second] << std::endl; 
+                    	renamedVertices[v] = renameCounter;
+                    	renameCounter++;
+                    }               
 
-                    if(!st1.membership(s_ct))
-                        std::cout << "Error: the vertex : " <<collapsed_to<< " is not a member! :(" <<std::endl;
-                    if(st1.membership(s_ct))
-                        std::cout << "The vertex : " <<collapsed_to<< " is still a member :)" <<std::endl;
-
-                    myfile  << "c " << *iter << " " << collapsed_to << std::endl; 
-
-                    // myfile  << "c " << renamedVertices[*iter] << " " << renamedVertices[collapsed_to] << std::endl; 
-                    // renamedVertices[*iter] = renameCounter;
-                    // renameCounter++;
-                }
-                else 
-                {
-                    std::cout<< "Else block Motive: contraction from "<<*iter << " to " << collapsed_to << std::endl;
-
-                    st1.insert_maximal_simplex_and_subfaces(s_ct);
-                    
-                    if(!st1.membership(s_ct))
-                        std::cout << "Error in Else: In insertion, the vertex " << collapsed_to << " should be a member!! :( " <<std::endl;
-
-                    myfile  << "i " << collapsed_to << std::endl;  // This is a non-dominated vertex so it will never be collapsed in this iteration.
-
-                    // myfile  << "i " << renamedVertices[collapsed_to] << std::endl;  // This is a non-dominated vertex so it will never collapse in this iteration.
-                    
-                    st1.contraction(*iter, collapsed_to);
-                    contracted_edge.insert(*iter);
-                    contracted_edge.insert(collapsed_to);
-                    elsecount++;
-                    contractedEdges.emplace_back(contracted_edge);
-                    contracted_edge.clear();
-                    
-                    if(st1.membership(s_iter))
-                        std::cout << "Error in Else: the vertex "<< *iter << " has been contracted and it's still a member!! :( " << std::endl; 
-                    if(!st1.membership(s_iter))
-                        std::cout << "In Else: The vertex "<< *iter << " has been contracted and it's not a member anymore :) " << std::endl; 
-
-                    if(!st1.membership(s_ct))
-                        std::cout << "Error in Else: the vertex : " <<collapsed_to<< " is not a member :(" <<std::endl;
-                    if(st1.membership(s_ct))
-                        std::cout << "In Else, the vertex : " <<collapsed_to<< " is still a member :)" <<std::endl;
-
-
-                    myfile  << "c " << *iter << " " << collapsed_to << std::endl; 
-      
-                    // myfile  << "c " << renamedVertices[*iter] << " " << renamedVertices[collapsed_to] << std::endl; 
-                    // renamedVertices[*iter] = renameCounter;
-                    // renameCounter++;
-
-                }
-                
+                    else
+                    {
+                    	// myfile  << "i " << collapsed_to->second << std::endl;
+                    	// myfile  << "c " << v << " " << collapsed_to->second << std::endl; 
+                    myfile << "i " << renamedVertices[collapsed_to->second] << std::endl;
+                    myfile  << "c " << renamedVertices[v] << " " << renamedVertices[collapsed_to->second] << std::endl; 
+                    renamedVertices[v] = renameCounter;
+                    renameCounter++;
+                    }
+                    st1.contraction(v, collapsed_to->second);  // If the vertex collapsed_to->second is not a vertex of st1, the contraction function will simply add 
+                }             
             }                                            
 
             //The core K1c (st1) has gone through the transformation(re-labeling)/collapse and it is now a subcomplex of K2c, the remaining simplices need to be included
             // Writing the inclusion of all remaining simplices...
             vectorVertex invertedV;
             vectorVertex::iterator iter;
-
-            for (const Simplex& m : contractedEdges)
-            {   std::cout << "Current dimension of the maximal simplex is :" <<(m.size()-1)<<std::endl;
-                if(st1.membership(m))
-                    std::cout << "Bug big bug!!! :( " <<std::endl;
-            }
-            std::cout << "If count is: " << ifcount << " Else count is: " << elsecount << std::endl;
-            for( const Simplex& m  : maxSimplices2 )
+            for( const Simplex & m  : st2.max_simplices() )
             {
-                for(const Simplex& s: all_faces(m))
+                for(const Simplex & s: all_faces(m))
                 {
                     if(!st1.membership(s))
                     {
                         myfile  << "i";
+                        
                         for (Vertex v : s)
                         {
                             invertedV.push_back(v);
                         }
+                        sort(invertedV.begin(), invertedV.end(), vertex_compare);
                         for(iter = invertedV.begin(); iter != invertedV.end(); iter++)
                         {
-                            myfile  << " " << *iter;
+                            myfile  << " " << renamedVertices[*iter];
                         }
                         myfile  << std::endl;
                         invertedV.clear();
                     }
                 }
-                st1.insert_maximal_simplex_and_subfaces(m);        
+                st1.insert_maximal_simplex_and_subfaces(m);    
             }   
 
             myfile << "# This is one step tower.\n";
@@ -212,8 +136,8 @@ public:
         }
         else
         {
-            std::cout << "Unable to open file";
-            return ;
+            std::cerr << "Unable to open file";
+            exit(-1) ;
         }
         return;
     }

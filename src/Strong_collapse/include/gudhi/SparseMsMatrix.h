@@ -244,6 +244,7 @@ class SparseMsMatrix
 	{
 		int simpDim;
 		int j = 0;
+		maximal_simplices.clear();
      	sparseColpsdMxSimplices   =  sparseMatrix(rows,cols); // Just for debugging purpose.
     	
 		for(int co = 0 ; co < cols ; ++co)
@@ -252,6 +253,7 @@ class SparseMsMatrix
 			{
 				vertexVector mx_simplex_to_insert = readColumn(co); 
 				collapsed_fake_simplex_tree.insert_simplex_and_subfaces(mx_simplex_to_insert); 
+				maximal_simplices.push_back(Simplex(mx_simplex_to_insert.begin(), mx_simplex_to_insert.end()));
        		
         		for(auto & v:mx_simplex_to_insert)
           			sparseColpsdMxSimplices.insert(vertexToRow[v],j) = 1;
@@ -410,6 +412,7 @@ class SparseMsMatrix
 	  	else
 	  	{
 	   		simpDomnIndicator[dominated] = true;
+	   		numMaxSimplices--;
 	   		setZero<columnInnerIterator, sparseMatrix>(sparseMxSimplices, vertDomnIndicator, rowInsertIndicator, rowIterator, dominated);
 	  	}
 	}
@@ -512,10 +515,10 @@ public:
 	        vertices.emplace(v);
  	  	numMaxSimplices   	  = maximal_simplices.size();
 		
-		sparseMxSimplices     = sparseMatrix(2*vertices.size(),2*numMaxSimplices); 			// Initializing sparseMxSimplices, This is a column-major sparse matrix.  
-		sparseRowMxSimplices  = sparseRowMatrix(2*vertices.size(),2*numMaxSimplices);    	// Initializing sparseRowMxSimplices, This is a row-major sparse matrix.  
+		sparseMxSimplices     = sparseMatrix(expansion_limit*vertices.size(),expansion_limit*numMaxSimplices); 			// Initializing sparseMxSimplices, This is a column-major sparse matrix.  
+		sparseRowMxSimplices  = sparseRowMatrix(expansion_limit*vertices.size(),expansion_limit*numMaxSimplices);    	// Initializing sparseRowMxSimplices, This is a row-major sparse matrix.  
 		// There are two sparse matrices, it gives the flexibility of iteratating through non-zero rows and columns efficiently.
-
+		numMaxSimplices = 0; // reset to zero, and then increment or decremented accordingly.
    	
 		for(auto &simplex: maximal_simplices) 						// Adding each maximal simplices iteratively.
 			insert_maximal_simplex_and_subfaces(simplex);
@@ -675,6 +678,7 @@ public:
 			simpDomnIndicator.push_back(false);
 			colInsertIndicator.push_back(false);
 			cols++;
+			numMaxSimplices++;
 
 			int simpDimension = (simp.size()) -1;
 			if(initComplexDimension < simpDimension)
@@ -691,23 +695,23 @@ public:
       It is simply returned.
     */
 	
-	Map reduction_map()
+	Map reduction_map() const
 	{
 		return ReductionMap;
 	}
-    long max_num_collapsed_simplices()
+    long max_num_collapsed_simplices() const
     {
     	return maxNumCollSiplices;
     }
-    long max_num_inital_simplices()
+    long max_num_inital_simplices() const
     {
     	return maxNumInitSimplices;
     }
-    int initial_dimension()
+    int initial_dimension() const
     {
     	return initComplexDimension;
     }
-    int collapsed_dimension()
+    int collapsed_dimension() const
     {
     	return collComplexDimension;
     }
@@ -715,13 +719,22 @@ public:
     {
     	return vertices;
     }
-    Fake_simplex_tree collapsed_tree()
+    Fake_simplex_tree collapsed_tree() const
     {
     	return collapsed_fake_simplex_tree;
     }
-    sparseMatrix collapsed_matrix()
+    sparseMatrix collapsed_matrix() const
     {
     	return sparseColpsdMxSimplices;
     }
+    std::size_t number_max_simplices()
+    {
+    	return numMaxSimplices;
+    }
+    simplexVector max_simplices() const
+    {
+    	return maximal_simplices;
+    }
+
 
 };

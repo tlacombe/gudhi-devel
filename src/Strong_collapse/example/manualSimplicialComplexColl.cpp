@@ -77,6 +77,11 @@ int main()
 	std::cout << "Now going for matrix formation" << std::endl;
 
 	SparseMsMatrix mat(stree);
+    mat.contraction(2,6);
+    mat.contraction(6,4);
+    mat.contraction(5,8);
+    
+    // SparseMsMatrix mat2(10,20);
 	clock_t matrix_formed = clock();
 	std::cout << "Matrix formed ... Now going for collapse" << std::endl;
  
@@ -97,9 +102,7 @@ int main()
     //     //std::cout << "\n";
     // }  
     // std::cout << "****************************************************" << std::endl;
-	// mat.contraction(2,6);
- //    mat.contraction(6,4);
- //    mat.contraction(5,8);
+	
     mat.strong_collapse();
     Fake_simplex_tree coll_tree = mat.collapsed_tree();
     clock_t collapse_done = clock();
@@ -127,7 +130,7 @@ int main()
 	std::cout << "Time for formation of Matrix : " << (matrix_formed - stree_formed)/CLOCKS_PER_SEC << " seconds" << std::endl;
 	std::cout << "Time for Collapse : " << (collapse_done - matrix_formed)/CLOCKS_PER_SEC  << " seconds" << std::endl;
 
-	std::cout << "Collapsed Rips complex is of dimension " << coll_tree.dimension() << " with " << coll_tree.num_simplices() << " maximal simplices " << coll_tree.filtration_simplex_range().size() << " simplices and "  << coll_tree.num_vertices() << " vertices." << std::endl;
+	// std::cout << "Collapsed Rips complex is of dimension " << coll_tree.dimension() << " with " << coll_tree.num_simplices() << " maximal simplices " << coll_tree.filtration_simplex_range().size() << " simplices and "  << coll_tree.num_vertices() << " vertices." << std::endl;
 
     // mat.contraction(8,19);
 	return 0;
