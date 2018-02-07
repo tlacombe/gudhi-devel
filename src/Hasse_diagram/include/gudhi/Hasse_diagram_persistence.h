@@ -46,6 +46,24 @@ namespace Hasse_diagram {
 	
 template <typename Cell_type> class is_before_in_filtration;
 
+
+/**
+ * \class Hasse_diagram_persistence
+ * \brief Data structure to store Hasse diagrams and compute its persistence diagrams. 
+ *
+ * \ingroup Hasse_diagram
+ *
+ * \details 
+ * This is a data structure derived from Hasse_diagram. The additional functionalities
+ * are the ones required by Gudhi for persistent homology computations. Please
+ * refer to Hasse_diagram class for further details
+ *
+ * Please refer to \ref Hasse_diagram for examples.
+ *
+ * The complex is a template class requiring the following parameters:
+ * Cell_type - a parameter describing a cell of Hasse diagram. Please refer to Hasse_diagram_cell.h for further details.
+ *
+ */	
 template < typename Cell_type >
 class Hasse_diagram_persistence : public Hasse_diagram<Cell_type>
 {
@@ -170,7 +188,7 @@ public:
 
 	std::pair<Simplex_handle, Simplex_handle> endpoints(Simplex_handle sh) 
 	{
-		std::vector< std::pair<Cell_type*,int> > boundary = 
+		std::vector< std::pair<Cell_type*,typename Cell_type::Incidence_type> > boundary = 
 		this->cells[sh]->get_boundary();
 		return std::pair<Simplex_handle, Simplex_handle>(
 							boundary[0].first->get_position(), 

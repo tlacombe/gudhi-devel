@@ -53,6 +53,23 @@ namespace Gudhi {
  Such files can be generated with `Gudhi::persistent_cohomology::Persistent_cohomology::output_diagram()` and read with
  `Gudhi::read_persistence_intervals_and_dimension()`, `Gudhi::read_persistence_intervals_grouped_by_dimension()` or
  `Gudhi::read_persistence_intervals_in_dimension()`.
+  
+  
+ \section FileFormatHasseDiagram Format of file based on which Hasse diagram can be created.
+  Lines starting with `#` are ignored (comments).
+  We assume that the file do not contain empty lines.
+  
+  The cells stored in that file are assumed to be enumerated with integers starting from zero.
+  
+  The first line contains a non negative integer N determining a number of cells in the chain complex.  
+  Next the file contains N blocks. Each block represent a cell in the chain complex. Below a description 
+  of a block is given.
+   
+  First line of a block consist of two or three numbers: number of a cell (between zero and N-1), dimension of cell (nonnegative integer). 
+  The third (optional) number is a filtration of a cell.
+  The next line contains sequence of ids of boundary elements of a given cell alternated by the incidence coefficient between the given cell and the boundary element.
+ 
+  For an exampe of a file, please consult Hasse_diagram/test/cw_decomposition_of_torus.hasse
 */
 }  // namespace Gudhi
 

@@ -43,6 +43,30 @@ namespace Hasse_diagram {
 bool enable_checking_validity_of_complex = true;
 template <typename Cell_type> class is_before_in_dimension;
 	
+	
+	
+
+/**
+ * \class Hasse_diagram
+ * \brief Data structure to store Hasse diagrams.
+ *
+ * \ingroup Hasse_diagram
+ *
+ * \details 
+ * This is a data structure to store a Hasse diagrams. It allows to store a general 
+ * chain complexes in a form of Hasse diagrams. It implements insertion and 
+ * removal of cells. It allows to store and read Hasse diagrams from files. 
+ * 
+ * Please note that this class is not suitable to use with Gudhi engine to compute
+ * persistent homology. For that purpose, please use the derived class provided in 
+ * Hasse_diagram_persistence.h
+ *
+ * Please refer to \ref Hasse_diagram for examples.
+ *
+ * The complex is a template class requiring the following parameters:
+ * Cell_type - a parameter describing a cell of Hasse diagram. Please refer to Hasse_diagram_cell.h for further details.
+ *
+ */	
 template < typename Cell_type >
 class Hasse_diagram
 {
@@ -283,7 +307,7 @@ Hasse_diagram<Cell_type>::Hasse_diagram( const char* filename )
 	
 	std::getline(in, line);
 	while ( line[0] == '#' )
-	{
+	{\
 		std::getline(in, line);
 	}
 	std::stringstream iss(line);
@@ -350,8 +374,8 @@ Hasse_diagram<Cell_type>::Hasse_diagram( const char* filename )
 		iss.clear();
 		iss << line;
 		unsigned cell_id;
-		int incidence_coef;
-		std::vector< std::pair< unsigned,int > > bdry;
+		typename Cell_type::Incidence_type incidence_coef;
+		std::vector< std::pair< unsigned,typename Cell_type::Incidence_type > > bdry;
 		bdry.reserve( size_of_last_boundary );
 		if ( dbg )std::cout << "Here are the boundary elements of the cell.\n";
 		while ( iss.good() )
@@ -365,7 +389,7 @@ Hasse_diagram<Cell_type>::Hasse_diagram( const char* filename )
 			}
 			iss >> incidence_coef;			
 			if ( dbg )std::cout << "( " <<  cell_id << " , " << incidence_coef << " ), ";
-			bdry.push_back( std::pair< unsigned,int >(cell_id,incidence_coef) );
+			bdry.push_back( std::pair< unsigned,typename Cell_type::Incidence_type >(cell_id,incidence_coef) );
 		}
 				
 		size_of_last_boundary = bdry.size();						
@@ -400,7 +424,7 @@ void Hasse_diagram<Cell_type>::set_up_coboundaries()
 	std::vector< unsigned > sizes_of_coboundary( number_of_cells , 0 );
 	for ( size_t i = 0 ; i != number_of_cells ; ++i )
 	{
-		std::vector< std::pair<Cell_type*,int> > bdry = this->cells[i]->get_boundary();
+		std::vector< std::pair<Cell_type*,typename Cell_type::Incidence_type> > bdry = this->cells[i]->get_boundary();
 		for ( size_t bd = 0 ; bd != bdry.size() ; ++bd )
 		{
 			sizes_of_coboundary[ bdry[bd].first->get_position() ]++;
@@ -542,7 +566,7 @@ std::vector<Cell_type*> convert_to_vector_of_Cell_type( Complex_type& cmplx )
 		
 		//get the boundary in the Hasse diagram format:
 		this_cell->boundary.reserve( boundary.size() );
-		int incidence = 1;
+		typename Cell_type::Incidence_type incidence = 1;
 		for ( size_t bd = 0 ; bd != boundary.size() ; ++bd )
 		{						
 			this_cell->boundary.push_back

@@ -701,3 +701,4 @@ BOOST_AUTO_TEST_CASE( computations_of_persistence_test_simplex_tree_conversion )
 	
 	BOOST_CHECK( current_output.compare( reference_output ) == 0 );
 }
+

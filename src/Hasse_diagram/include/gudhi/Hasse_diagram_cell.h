@@ -44,6 +44,27 @@ namespace Hasse_diagram {
 template < typename Cell_type > class Hasse_diagram;
 template <typename Cell_type> class is_before_in_filtration;
 
+
+/**
+ * \class Hasse_diagram_cell
+ * \brief Data structure to store a cell in a Hasse diagram.
+ *
+ * \ingroup Hasse_diagram
+ *
+ * \details
+ * This is a data structure to store a cell in a general Hasse diagram data structure. 	It store the following information about the cell:
+ * References to boundary and coBoundary elements, dimension of a cell and its filtration. It also allow to store any additional
+ * information of a type Additional_information which is a template parameter of the class (set by default to void). 
+ *
+ * Please refer to \ref Hasse_diagram for examples.
+ *
+ * The complex is a template class requiring the following parameters:
+ * Incidence_type_ - determine the type of incidence coefficients. Use integers in most general case. 
+ * Filtration_type_ - type of filtration of cells.
+ * Additional_information_ (set by default to void) - allows to store any 
+ * additional information in the cells of Hasse diagrams.
+ *
+ */
 template <typename Incidence_type_, typename Filtration_type_ , typename Additional_information_ = void>
 class Hasse_diagram_cell
 {
@@ -70,13 +91,13 @@ public:
 	/**
      * Constructor of a cell of dimension dim with a given boundary.
     **/
-	Hasse_diagram_cell( const std::vector< std::pair<Hasse_diagram_cell*,int> >& boundary_ , unsigned dim ):
+	Hasse_diagram_cell( const std::vector< std::pair<Hasse_diagram_cell*,Incidence_type> >& boundary_ , unsigned dim ):
 	dimension(dim),boundary(boundary_),position(0),deleted_(false){}
 
 	/**
      * Constructor of a cell of dimension dim with a given boundary and coboundary.
     **/
-	Hasse_diagram_cell( const std::vector< std::pair<Hasse_diagram_cell*,int> >& boundary_ , const std::vector< std::pair<Hasse_diagram_cell*,int> >& coboundary_,
+	Hasse_diagram_cell( const std::vector< std::pair<Hasse_diagram_cell*,Incidence_type> >& boundary_ , const std::vector< std::pair<Hasse_diagram_cell*,Incidence_type> >& coboundary_,
 		 unsigned dim ):dimension(dim),boundary(boundary_),coBoundary(coboundary_),
 		 position(0),deleted_(false){}
 
@@ -84,7 +105,7 @@ public:
      * Constructor of a cell of dimension dim with a given boundary, coboundary and
      * additional information.
     **/
-	Hasse_diagram_cell( const std::vector< std::pair<Hasse_diagram_cell*,int> >& boundary_ , const std::vector< std::pair<Hasse_diagram_cell*,int> >& coboundary_,
+	Hasse_diagram_cell( const std::vector< std::pair<Hasse_diagram_cell*,Incidence_type> >& boundary_ , const std::vector< std::pair<Hasse_diagram_cell*,Incidence_type> >& coboundary_,
 	Additional_information ai, unsigned dim ):
 	dimension(dim),boundary(boundary_),coBoundary(coboundary_),additional_info(ai),
 	position(0),deleted_(false){}
@@ -100,14 +121,14 @@ public:
      * is a vector of pairs of pointers to boundary elements and incidence
      * coefficients.
     **/
-	inline std::vector< std::pair<Hasse_diagram_cell*,int> >& get_boundary(){return this->boundary;}
+	inline std::vector< std::pair<Hasse_diagram_cell*,Incidence_type> >& get_boundary(){return this->boundary;}
 
 	/**
      * Procedure to get the coboundary of a fiven cell. The output format
      * is a vector of pairs of pointers to coboundary elements and incidence
      * coefficients.
     **/
-	inline std::vector< std::pair<Hasse_diagram_cell*,int> >& get_coBoundary(){return this->coBoundary;}
+	inline std::vector< std::pair<Hasse_diagram_cell*,Incidence_type> >& get_coBoundary(){return this->coBoundary;}
 
 	/**
      * Procedure to get the dimension of a cell.
@@ -155,7 +176,7 @@ public:
 	**/
 	void remove_deleted_elements_from_boundary_and_coboundary()
 	{
-		std::vector< std::pair<Hasse_diagram_cell*,int> > new_boundary;
+		std::vector< std::pair<Hasse_diagram_cell*,Incidence_type> > new_boundary;
 		new_boundary.reserve( this->boundary.size() );
 		for ( size_t bd = 0 ; bd != this->boundary.size() ; ++bd )
 		{
@@ -166,7 +187,7 @@ public:
 		}
 		this->boundary.swap( new_boundary );
 
-		std::vector< std::pair<Hasse_diagram_cell*,int> > new_coBoundary;
+		std::vector< std::pair<Hasse_diagram_cell*, Incidence_type> > new_coBoundary;
 		new_coBoundary.reserve( this->coBoundary.size() );
 		for ( size_t cbd = 0 ; cbd != this->coBoundary.size() ; ++cbd )
 		{
@@ -270,8 +291,8 @@ public:
 		
 	
 protected:
-	std::vector< std::pair<Hasse_diagram_cell*,int> > boundary;
-	std::vector< std::pair<Hasse_diagram_cell*,int> > coBoundary;
+	std::vector< std::pair<Hasse_diagram_cell*,Incidence_type> > boundary;
+	std::vector< std::pair<Hasse_diagram_cell*,Incidence_type> > coBoundary;
 	unsigned dimension;
 	Additional_information additional_info;
 	size_t position;
