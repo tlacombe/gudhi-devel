@@ -22,7 +22,7 @@
 
 
 #define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE "cubical_complex"
+#define BOOST_TEST_MODULE "topological_inference_with_cubical_complexes"
 #include <boost/test/unit_test.hpp>
 
 #include <gudhi/reader_utils.h>

@@ -19,10 +19,6 @@
  *    You should have received a copy of the GNU General Public License
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-#include <gudhi/reader_utils.h>
-#include <gudhi/Off_reader.h>
-
 #include <gudhi/Topological_inference.h>
 #include <gudhi/Bitmap_cubical_complex.h>
 #include <gudhi/Persistent_cohomology.h>
@@ -62,7 +58,7 @@ int main()
 
 {	
 	//CASE A:
-	//We start by defining a function on a cubical complex by hand. In this case, this is a distnace from a cicle in a plane,
+	//We start by defining a function on a cubical complex by hand. In this case, this is a distance from a cicle in a plane,
 	//in a 9 by 9 grid:
 	//4	3	3	3	3	3	3	3	4
 	//3	2	1	1	1	1	1	2	3
@@ -110,7 +106,7 @@ int main()
     
     //now we construct an object of Morphological_operations_cubical_complex type:
 		
-    //This is the preictor, which define set elements as those below certain value (given as a parameter).
+    //This is the preictor, which defines set elements as those below certain value (given as a parameter).
     //Experiment with changing the 0.5 cutoff value. 
     typedef Gudhi::Topological_inference_with_cubical_complexes::Filtration_below_certain_value<double> Predictor_type;
     Predictor_type pred(0.5);        
@@ -222,7 +218,7 @@ int main()
 	MOCC mor1( maximal_cubes_we_select , sizes1 , directions_in_which_periodic_boundary_conditions_are_to_be_imposed1 );			
 	
 	//Let us print out the complex:
-	Bitmap_cubical_complex* cmplx = mor1.give_me_the_complex();
+	Bitmap_cubical_complex* cmplx = mor1.get_complex();
 	size_t index = 0;
 	std::cout << "Here are the values on top dimensional cubes: \n";
 	for ( auto it = cmplx->top_dimensional_cells_iterator_begin() ; it != cmplx->top_dimensional_cells_iterator_end() ; ++it )
@@ -239,7 +235,7 @@ int main()
 	
 	//display the values on top dimensional cubes of the complex. Note that I am adding newlines just for display
 	//pusposes:
-	cmplx = mor1.give_me_the_complex();
+	cmplx = mor1.get_complex();
 	index = 0;
 	std::cout << "Here are the values after dilation: \n";
 	for ( auto it = cmplx->top_dimensional_cells_iterator_begin() ; it != cmplx->top_dimensional_cells_iterator_end() ; ++it )

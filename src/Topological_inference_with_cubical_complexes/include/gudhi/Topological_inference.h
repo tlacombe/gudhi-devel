@@ -109,7 +109,7 @@ public:
 	
 	/**
 	 * For debugging purposes, it write the filtration of top dimensional cell to a file in the way that
-	 * the newlines are in the same places, where the cibical complex terminates in x direction. 
+	 * the newlines are in the same places, where the cubical complex terminates in x direction. 
 	**/ 	
 	void write_to_file_with_newlines_at_the_ends_of_structure( const char* filename );
 	
@@ -236,13 +236,6 @@ void Topological_inference<Cubical_complex_type,Value_type,Function_type>::const
 	this->initialize_arrays_for_persistence_computation();	
 }
 
-
-
-template <typename Cubical_complex_type , typename Value_type , typename Function_type>
-void Topological_inference<Cubical_complex_type,Value_type,Function_type>::write_to_file_Perseus_format( const char* filename )
-{
-	this->store_in_perseus_format( filename );
-}
 
 template <typename Cubical_complex_type , typename Value_type , typename Function_type>
 void Topological_inference<Cubical_complex_type,Value_type,Function_type>::write_to_file_with_newlines_at_the_ends_of_structure( const char* filename )
