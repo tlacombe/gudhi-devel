@@ -110,9 +110,9 @@ public:
     bool insert_simplex(simplex_base *numVertices);
     bool remove_simplex(simplex_base *simplex);
     bool remove_simplex(simplex_base *simplex, std::vector<index> *removedIndices);
-    vertex get_smallest_closed_star(vertex v, vertex u, std::vector<simplex_base *> *closedStar);    //returns vertex with smallest closed star; closedStar is ordered
+    vertex get_smallest_closed_star(vertex v, vertex u, std::vector<simplex_base *> *closedStar);   //returns vertex with smallest closed star; closedStar is ordered
                                                                                                     //and simplices in closedStar are independent of the ones in Complex
-    index get_boundary(simplex_base *simplex, std::vector<index> *boundary);
+    index get_boundary(simplex_base *simplex, std::vector<index> *boundary);    //ordered by increasing insertion numbers
     double get_size() const;
     double get_max_index() const;
 
