@@ -21,6 +21,7 @@
  */
 
 #include <gudhi/Fake_simplex_tree.h>
+// #include "Simplex_tree.h"
 // #include <boost/graph/adjacency_list.hpp>
 // #include <boost/graph/bron_kerbosch_all_cliques.hpp>
 #include <iostream>

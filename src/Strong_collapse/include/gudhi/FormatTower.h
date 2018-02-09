@@ -41,7 +41,7 @@ private:
 	    unsigned int counter, j;
 	    std::vector<Simplex> facets;
 	    std::vector<Vertex> maxSimplex(vertex_range.begin(), vertex_range.end());
-
+	    std::sort(maxSimplex.begin(), maxSimplex.end(), vertex_compare);
 	    /*Run from counter 000..0 to 111..1*/
 	    for(counter = 1; counter < pow_set_size; counter++)
 	    {
@@ -72,17 +72,17 @@ public:
     
     ~FormatTower(){};
 
-    void one_step_tower(SparseMsMatrix st1, const SparseMsMatrix &st2,  Map collmap, std::string outFile) // st1 and st2 are simplex_trees of K1c and K2c (the collapsed ones), collmap is the map of K2 -> K2c
+    void one_step_tower(SparseMsMatrix mat_1, const SparseMsMatrix &mat_2,  Map collmap, std::string outFile) // mat_1 and mat_2 are simplex_trees of K1c and K2c (the collapsed ones), collmap is the map of K2 -> K2c
     {
         std::ofstream myfile (outFile, std::ios::app);
         if (myfile.is_open())
         {   
-            for (auto & v : st1.vertex_set())
+            for (auto & v : mat_1.vertex_set())
             {
                 auto collapsed_to = collmap.find(v); 
                 if(collapsed_to != collmap.end())
                 {
-                    if(st1.membership(collapsed_to->second))
+                    if(mat_1.membership(collapsed_to->second))
                     {
                     	myfile  << "c " << renamedVertices[v] << " " << renamedVertices[collapsed_to->second] << std::endl; 
                     	renamedVertices[v] = renameCounter;
@@ -91,43 +91,47 @@ public:
 
                     else
                     {
-                    	// myfile  << "i " << collapsed_to->second << std::endl;
-                    	// myfile  << "c " << v << " " << collapsed_to->second << std::endl; 
-                    myfile << "i " << renamedVertices[collapsed_to->second] << std::endl;
-                    myfile  << "c " << renamedVertices[v] << " " << renamedVertices[collapsed_to->second] << std::endl; 
-                    renamedVertices[v] = renameCounter;
-                    renameCounter++;
+	                    myfile << "i " << renamedVertices[collapsed_to->second] << std::endl;
+	                    myfile  << "c " << renamedVertices[v] << " " << renamedVertices[collapsed_to->second] << std::endl; 
+	                    renamedVertices[v] = renameCounter;
+	                    renameCounter++;
                     }
-                    st1.contraction(v, collapsed_to->second);  // If the vertex collapsed_to->second is not a vertex of st1, the contraction function will simply add 
+                    mat_1.contraction(v, collapsed_to->second);  // If the vertex collapsed_to->second is not a vertex of mat_1, the contraction function will simply add 
                 }             
             }                                            
 
-            //The core K1c (st1) has gone through the transformation(re-labeling)/collapse and it is now a subcomplex of K2c, the remaining simplices need to be included
+            //The core K1c (mat_1) has gone through the transformation(re-labeling)/collapse and it is now a subcomplex of K2c, the remaining simplices need to be included
             // Writing the inclusion of all remaining simplices...
-            vectorVertex invertedV;
+            vectorVertex invertedV, renamed_maxSimp;
             vectorVertex::iterator iter;
-            for( const Simplex & m  : st2.max_simplices() )
+            for( const Simplex & m  : mat_2.max_simplices() )
             {
-                for(const Simplex & s: all_faces(m))
+                for(auto & v_m : m )
                 {
-                    if(!st1.membership(s))
+                	renamed_maxSimp.push_back(renamedVertices[v_m]);
+                }
+                for(const Simplex & s: all_faces(renamed_maxSimp))
+                {
+                    if(!mat_1.membership(s))
                     {
-                        myfile  << "i";
+                        // for (Vertex v : s)
+                        // {
+                        //     invertedV.push_back(renamedVertices[v]);
+                        // }
+                        // sort(invertedV.begin(), invertedV.end(), vertex_compare);
                         
+                        myfile  << "i";
+                        // for(iter = s.begin(); iter != s.end(); iter++)
                         for (Vertex v : s)
                         {
-                            invertedV.push_back(v);
-                        }
-                        sort(invertedV.begin(), invertedV.end(), vertex_compare);
-                        for(iter = invertedV.begin(); iter != invertedV.end(); iter++)
-                        {
-                            myfile  << " " << renamedVertices[*iter];
+                            myfile  << " " << v;
                         }
                         myfile  << std::endl;
-                        invertedV.clear();
+                        // invertedV.clear();
                     }
-                }
-                st1.insert_maximal_simplex_and_subfaces(m);    
+     			}
+     			renamed_maxSimp.clear();
+                mat_1.insert_maximal_simplex_and_subfaces(m);    
             }   
 
             myfile << "# This is one step tower.\n";
