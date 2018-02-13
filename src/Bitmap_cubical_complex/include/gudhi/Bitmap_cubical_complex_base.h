@@ -105,6 +105,7 @@ class Bitmap_cubical_complex_base {
    * incidence coefficients of boundary elements are alternating.
    */
   virtual inline std::vector<std::size_t> get_boundary_of_a_cell(std::size_t cell) const;
+  
   /**
    * The functions get_coboundary_of_a_cell, get_coboundary_of_a_cell,
    * get_dimension_of_a_cell and get_cell_data are the basic
@@ -119,7 +120,34 @@ class Bitmap_cubical_complex_base {
    * not guaranteed to be returned with alternating incidence numbers.
    *
    **/
-  virtual inline std::vector<std::size_t> get_coboundary_of_a_cell(std::size_t cell) const;
+  virtual inline std::vector<size_t> get_coboundary_of_a_cell(size_t cell) const;
+  
+   /**
+   * Given a bitmap cubical complex one can use a counter to enumerate all the cells. For a bitmap having n maximal cells in each direction such a sull bitmap have 2n+1 cells in each direction/
+   * One can also enumerate all the maximal cells disregarding the others. The procedure below is used to give a reference to filtration value of a maximal cell given a counter that enumerate only the maxumal cells
+   * (and therefore for a bitmap having n maximal cells in each direction assign the values between 0 and n-1 in each position).
+  **/
+  inline size_t give_position_of_top_dimensional_cell( const std::vector<unsigned>& counter )
+  {
+	  //first check if the counter is correct:
+	  if ( this->sizes.size() != counter.size() )
+	  {
+		  std::cerr << "Wrong size of a counter \n";
+		  throw "Wrong size of a counter \n";
+	  }
+	  size_t position_of_this_cell = 0;
+	  for ( size_t i = 0 ; i != counter.size() ; ++i )
+	  {
+		  if ( counter[i] >= this->sizes[i] )
+		  {
+			  std::cerr << "Wrong index of a counter in the give_filtration_value_of_top_dimensional_cell procedure";
+			  throw "Wrong index of a counter in the give_filtration_value_of_top_dimensional_cell procedure";
+		  }
+		  position_of_this_cell += (2*counter[i] + 1)*this->multipliers[i];
+	  }
+	  //now we know that the counter is correct. 	  	  
+	  return position_of_this_cell;	  
+  }//give_position_of_top_dimensional_cell
 
   /**
   * This procedure compute incidence numbers between cubes. For a cube \f$A\f$ of
@@ -176,10 +204,6 @@ class Bitmap_cubical_complex_base {
   /**
 * In the case of get_dimension_of_a_cell function, the output is a non-negative integer
 * indicating the dimension of a cell.
-* Note that unlike in the case of boundary, over here the elements are
-* not guaranteed to be returned with alternating incidence numbers.
-* To compute incidence between cells use compute_incidence_between_cells
-* procedure
 **/
   inline unsigned get_dimension_of_a_cell(std::size_t cell) const;
 
@@ -478,6 +502,18 @@ class Bitmap_cubical_complex_base {
   //****************************************************************************************************************//
   //****************************************************************************************************************//
   //****************************************************************************************************************//
+  
+  /**
+  * Given a counter of a cube C of arbitrary dimension this procedure compute 
+  * the position of C in the bitmap.
+  **/ 
+  size_t compute_position_in_bitmap(const std::vector<unsigned>& counter) {
+    size_t position = 0;
+    for (size_t i = 0; i != this->multipliers.size(); ++i) {
+      position += this->multipliers[i] * counter[i];
+    }
+    return position;
+  }
 
  protected:
   std::vector<unsigned> sizes;
@@ -496,13 +532,6 @@ class Bitmap_cubical_complex_base {
     this->total_number_of_cells = multiplier;
   }
 
-  std::size_t compute_position_in_bitmap(const std::vector<unsigned>& counter) {
-    std::size_t position = 0;
-    for (std::size_t i = 0; i != this->multipliers.size(); ++i) {
-      position += this->multipliers[i] * counter[i];
-    }
-    return position;
-  }
 
   std::vector<unsigned> compute_counter_for_given_cell(std::size_t cell) const {
     std::vector<unsigned> counter;
