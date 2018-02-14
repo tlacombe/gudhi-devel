@@ -126,7 +126,7 @@ class Bitmap_cubical_complex_periodic_boundary_conditions_base : public Bitmap_c
   * @exception std::logic_error In case when the cube \f$B\f$ is not n-1
   * dimensional face of a cube \f$A\f$.
   **/
-  virtual int compute_incidence_between_cells(std::size_t coface, std::size_t face) {
+  virtual int compute_incidence_between_cells(std::size_t coface, std::size_t face)const {
     // first get the counters for coface and face:
     std::vector<unsigned> coface_counter = this->compute_counter_for_given_cell(coface);
     std::vector<unsigned> face_counter = this->compute_counter_for_given_cell(face);
