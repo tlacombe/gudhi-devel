@@ -1,4 +1,5 @@
 #include <gudhi/SparseMsMatrix.h>
+#include <gudhi/VertexMaximalMaps.h>
 #include <gudhi/Fake_simplex_tree.h>
 
 #include <gudhi/Rips_complex.h>
@@ -61,7 +62,7 @@ int main()
     // if (!std::cin.eof())
     //     std::cout << "Warning: end of file not reached\n";
     
-    for (auto& row : contents)
+    for (auto & row : contents)
     {
         stree.insert_simplex_and_subfaces(row);
         simplices.emplace_back(row);
@@ -77,6 +78,7 @@ int main()
 	std::cout << "Now going for matrix formation" << std::endl;
 
 	SparseMsMatrix mat(stree);
+    VertexMaximalMaps vertMxMaps(stree);
     mat.contraction(2,6);
     mat.contraction(6,4);
     mat.contraction(5,8);
@@ -104,7 +106,7 @@ int main()
     // std::cout << "****************************************************" << std::endl;
 	
     mat.strong_collapse();
-    Fake_simplex_tree coll_tree = mat.collapsed_tree();
+    // Fake_simplex_tree coll_tree = mat.collapsed_tree();
     clock_t collapse_done = clock();
   
 

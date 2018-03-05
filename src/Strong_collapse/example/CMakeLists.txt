@@ -36,8 +36,23 @@ if (NOT CGAL_WITH_EIGEN3_VERSION VERSION_LESS 4.6.0)
   target_link_libraries(generate_sphere_product ${Boost_PROGRAM_OPTIONS_LIBRARY})
   if (TBB_FOUND)
    target_link_libraries(generate_sphere_product ${TBB_LIBRARIES})
-  endif()		
- 		
+  endif()
+
+  add_executable (manualTowerExample manualTowerExample.cpp )
+  target_link_libraries(manualTowerExample ${Boost_SYSTEM_LIBRARY})
+  target_link_libraries(manualTowerExample ${Boost_PROGRAM_OPTIONS_LIBRARY})
+  if (TBB_FOUND)
+   target_link_libraries(manualTowerExample ${TBB_LIBRARIES})
+  endif()
+  
+  add_executable (compute_bottelneck compute_bottelneck.cpp )
+  target_link_libraries(compute_bottelneck ${Boost_SYSTEM_LIBRARY})
+  target_link_libraries(compute_bottelneck ${Boost_PROGRAM_OPTIONS_LIBRARY})
+  if (TBB_FOUND)
+   target_link_libraries(compute_bottelneck ${TBB_LIBRARIES})
+  endif()
+  
+  
 	
 endif (NOT CGAL_WITH_EIGEN3_VERSION VERSION_LESS 4.6.0)
 
