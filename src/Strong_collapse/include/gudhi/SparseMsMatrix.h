@@ -18,10 +18,12 @@
  *
  *    You should have received a copy of the GNU General Public License
  *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
 
-#include <gudhi/Fake_simplex_tree.h>
-// #include "Simplex_tree.h"
+*/
+#pragma once
+
+#include "gudhi/Fake_simplex_tree.h"
+#include "gudhi/Simplex_tree.h"
 // #include <boost/graph/adjacency_list.hpp>
 // #include <boost/graph/bron_kerbosch_all_cliques.hpp>
 #include <iostream>
@@ -40,6 +42,7 @@
 #include <Eigen/Sparse>
 
 using Fake_simplex_tree 	= Gudhi::Fake_simplex_tree ;
+using Simplex_tree   		= Gudhi::Simplex_tree<>;
 using Vertex 	            = Fake_simplex_tree::Vertex;
 using Simplex             	= Fake_simplex_tree::Simplex;
 
@@ -140,6 +143,8 @@ class SparseMsMatrix
 	sparseRowMatrix sparseRowMxSimplices; 		// This is row-major version of the same sparse-matrix, to facilitate easy access to elements when traversing the matrix row-wise.
 
 	Fake_simplex_tree collapsed_fake_simplex_tree;
+	Simplex_tree collapsed_simplex_tree;
+
 	//! Stores <I>true</I> for dominated rows and  <I>false</I> for undominated rows. 
     /*!
       Initialised to a vector of length equal to the value of the variable <B>rows</B> with all <I>false</I> values.
@@ -254,6 +259,8 @@ class SparseMsMatrix
 			{
 				vertexVector mx_simplex_to_insert = readColumn(co); 
 				collapsed_fake_simplex_tree.insert_simplex_and_subfaces(mx_simplex_to_insert); 
+				collapsed_simplex_tree.insert_simplex_and_subfaces(mx_simplex_to_insert);
+				
 				maximal_simplices.push_back(Simplex(mx_simplex_to_insert.begin(), mx_simplex_to_insert.end()));
        		
         		for(auto & v:mx_simplex_to_insert)
@@ -455,21 +462,6 @@ class SparseMsMatrix
 
 public:
 
-	/**  Inserts the flag complex of a given range `Gudhi::rips_complex::Rips_complex::OneSkeletonGraph`
-     * in the simplicial complex.
-     * \ingroup toplex_map   */
- 	//    template<class OneSkeletonGraph>
-	// 	 void sparseMatrix::insert_graph(const OneSkeletonGraph& skel_graph){
-	//     toplex_maps.emplace(nan(""), new Toplex_map());
-	//     using vertex_iterator = typename boost::graph_traits<OneSkeletonGraph>::vertex_iterator;
-	//     vertex_iterator vi, vi_end;
-	//     for (std::tie(vi, vi_end) = boost::vertices(skel_graph); vi != vi_end; ++vi) {
-	//         Simplex s; s.insert(*vi);
-	//         insert_maximal_simplex_and_subfaces(s);
-	//     }
-	//     bron_kerbosch_all_cliques(skel_graph, Visitor(this->toplex_maps.at(nan(""))));
-	// }
-
 	//! Default Constructor
     /*!
       Only initialises all Data Members of the class to empty/Null values as appropriate.
@@ -549,7 +541,7 @@ public:
       calls sparse_strong_collapse(), and
       Then, it compacts the ReductionMap by calling the function fully_compact().
     */
-	void strong_collapse()
+	double strong_collapse()
 	{
 			auto begin_collapse  = std::chrono::high_resolution_clock::now();
 			sparse_strong_collapse();
@@ -563,6 +555,7 @@ public:
 			fully_compact();
 			//Post processing...
 			after_collapse();
+			return collapseTime;
 	}
 
 	bool membership(const Vertex & v)
@@ -686,8 +679,8 @@ public:
 				initComplexDimension = simpDimension;
 			maxNumInitSimplices += (pow(2, (simpDimension+1))) - 1;	
 		}
-		else
-			std::cout << "Already a member simplex,  skipping..." << std::endl;
+		// else
+		// 	std::cout << "Already a member simplex,  skipping..." << std::endl;
        		
 	}
 	//!	Function for returning the ReductionMap.
@@ -700,6 +693,7 @@ public:
 	{
 		return ReductionMap;
 	}
+
     long max_num_collapsed_simplices() const
     {
     	return maxNumCollSiplices;
@@ -720,9 +714,13 @@ public:
     {
     	return vertices;
     }
-    Fake_simplex_tree collapsed_tree() const
+    Fake_simplex_tree fake_simplex_tree_collapsed() const
     {
     	return collapsed_fake_simplex_tree;
+    }
+    Simplex_tree simplex_tree_collapsed() const
+    {
+    	return collapsed_simplex_tree;
     }
     sparseMatrix collapsed_matrix() const
     {
