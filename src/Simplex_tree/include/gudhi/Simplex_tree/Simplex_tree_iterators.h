@@ -196,6 +196,7 @@ class Simplex_tree_boundary_simplex_iterator : public boost::iterator_facade<
  *  simplex, with coefficients.
  *
  * value_type is std::pair<SimplexTree::Simplex_handle, int>.*/
+// This should really be a generator / coroutine.
 template<class SimplexTree>
 class Simplex_tree_oriented_boundary_range {
   typedef typename SimplexTree::Simplex_handle Simplex_handle;
@@ -254,7 +255,15 @@ class Simplex_tree_oriented_boundary_range {
     obj_.second=-obj_.second; // alternate signs
     return true;
   }
+#if BOOST_VERSION >= 105600
+  // 40 seems a conservative bound on the dimension of a Simplex_tree for now,
+  // as it would not fit on the biggest hard-drive.
+  mutable boost::container::static_vector<Vertex_handle, 40> suffix_;
+  // static_vector still has some overhead compared to a trivial hand-made
+  // version using std::aligned_storage, or compared to making suffix_ static.
+#else
   mutable std::vector<Vertex_handle> suffix_;
+#endif
   mutable value_type obj_;
   mutable Siblings * sib_; // should be const*...
   SimplexTree * st_; // should be const*...

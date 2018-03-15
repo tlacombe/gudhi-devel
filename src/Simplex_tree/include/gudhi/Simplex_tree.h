@@ -288,7 +288,7 @@ class Simplex_tree {
 
   /** \brief Returns a range over the simplices of the boundary of a simplex, with coefficients.
    *
-   * The boundary of a simplex is the sum of the codimension \f$1\f$ subsimplices of the simplex.
+   * The boundary of a simplex is the formal sum of the codimension \f$1\f$ subsimplices of the simplex.
    * If the simplex is \f$[v_0, \cdots ,v_d]\f$, with canonical orientation
    * induced by \f$ v_0 < \cdots < v_d \f$, the iterator enumerates the
    * simplices of the boundary in the order:
