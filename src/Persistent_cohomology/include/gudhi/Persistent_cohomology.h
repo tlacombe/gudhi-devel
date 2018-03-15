@@ -294,20 +294,19 @@ class Persistent_cohomology {
    * Compute the annotation of the boundary of a simplex.
    */
   void annotation_of_the_boundary(
-      std::map<Simplex_key, Arith_element> & map_a_ds, Simplex_handle sigma,
-      int dim_sigma) {
+      std::map<Simplex_key, Arith_element> & map_a_ds, Simplex_handle sigma) {
     // traverses the boundary of sigma, keeps track of the annotation vectors,
     // with multiplicity. We used to sum the coefficients directly in
     // annotations_in_boundary by using a map, we now do it later.
     typedef std::pair<Column *, int> annotation_t;
     thread_local std::vector<annotation_t> annotations_in_boundary;
     annotations_in_boundary.clear();
-    int sign = 1 - 2 * (dim_sigma % 2);  // \in {-1,1} provides the sign in the
-                                         // alternate sum in the boundary.
     Simplex_key key;
     Column * curr_col;
 
-    for (auto sh : cpx_->boundary_simplex_range(sigma)) {
+    for (auto osh : cpx_->boundary_oriented_simplex_range(sigma)) {
+      Simplex_handle sh = osh.first;
+      int sign = osh.second;
       key = cpx_->key(sh);
       if (key != cpx_->null_key()) {  // A simplex with null_key is a killer, and have null annotation
         // Find its annotation vector
@@ -357,7 +356,7 @@ class Persistent_cohomology {
   void update_cohomology_groups(Simplex_handle sigma, int dim_sigma) {
 // Compute the annotation of the boundary of sigma:
     std::map<Simplex_key, Arith_element> map_a_ds;
-    annotation_of_the_boundary(map_a_ds, sigma, dim_sigma);
+    annotation_of_the_boundary(map_a_ds, sigma);
 // Update the cohomology groups:
     if (map_a_ds.empty()) {  // sigma is a creator in all fields represented in coeff_field_
       if (dim_sigma < dim_max_) {

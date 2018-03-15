@@ -26,6 +26,7 @@
 #include <gudhi/Debug_utils.h>
 
 #include <boost/iterator/iterator_facade.hpp>
+#include <boost/range/adaptor/reversed.hpp>
 #include <boost/version.hpp>
 #if BOOST_VERSION >= 105600
 # include <boost/container/static_vector.hpp>
@@ -189,6 +190,77 @@ class Simplex_tree_boundary_simplex_iterator : public boost::iterator_facade<
   Simplex_handle sh_;  // current Simplex_handle in the boundary
   SimplexTree * st_;  // simplex containing the simplicial complex
 };
+
+/*---------------------------------------------------------------------------*/
+/* \brief Single-pass range of the simplices of the boundary of a
+ *  simplex, with coefficients.
+ *
+ * value_type is std::pair<SimplexTree::Simplex_handle, int>.*/
+template<class SimplexTree>
+class Simplex_tree_oriented_boundary_range {
+  typedef typename SimplexTree::Simplex_handle Simplex_handle;
+  typedef typename SimplexTree::Vertex_handle Vertex_handle;
+  typedef typename SimplexTree::Siblings Siblings;
+  public:
+  typedef std::pair<Simplex_handle, int> value_type;
+  struct iterator : boost::iterator_facade<iterator, const value_type, std::input_iterator_tag> {
+    iterator() : rng_(nullptr) {}
+    private:
+    friend class boost::iterator_core_access;
+    friend class Gudhi::Simplex_tree_oriented_boundary_range<SimplexTree>;
+    explicit iterator(Simplex_tree_oriented_boundary_range const&rng)
+      : rng_(rng.sib_ ? &rng : nullptr) {}
+    void increment(){
+      assert(rng_);
+      if (!rng_->next())
+       rng_=nullptr;
+    }
+    bool equal(iterator i)const{ return rng_ == i.rng_; }
+    value_type const& dereference()const{
+      assert(rng_);
+      return rng_->obj_;
+    }
+    Simplex_tree_oriented_boundary_range const* rng_;
+  };
+  friend class iterator;
+  typedef iterator const_iterator;
+  iterator begin() const { return iterator{*this}; }
+  iterator end() const   { return iterator{};     }
+
+  explicit Simplex_tree_oriented_boundary_range(SimplexTree *st, Simplex_handle sh)
+  : suffix_(), obj_(), sib_(st->self_siblings(sh)), st_(st), next_(sib_->parent()) {
+    sib_ = sib_->oncles();
+    if(sib_){
+      int dim = st_->dimension(sh) + 1;
+      suffix_.reserve(dim);
+      suffix_.push_back(sh->first);
+      obj_.second = dim%2*2-1;
+      obj_.first = sib_->find(next_);
+    }
+  }
+  private:
+  bool next()const{
+    if(!sib_) return false; // done
+    Simplex_handle h;
+    Siblings * for_sib = sib_;
+    for(Vertex_handle v:boost::adaptors::reverse(suffix_)){
+      h = for_sib->find(v);
+      for_sib = h->second.children();
+    }
+    obj_.first = h;
+    suffix_.push_back(next_);
+    next_ = sib_->parent();
+    sib_=sib_->oncles();
+    obj_.second=-obj_.second; // alternate signs
+    return true;
+  }
+  mutable std::vector<Vertex_handle> suffix_;
+  mutable value_type obj_;
+  mutable Siblings * sib_; // should be const*...
+  SimplexTree * st_; // should be const*...
+  mutable Vertex_handle next_;
+};
+
 /*---------------------------------------------------------------------------*/
 /* \brief Iterator over the simplices of a simplicial complex.
  *

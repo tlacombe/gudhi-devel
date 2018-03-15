@@ -173,6 +173,8 @@ class Simplex_tree {
   typedef Simplex_tree_boundary_simplex_iterator<Simplex_tree> Boundary_simplex_iterator;
   /** \brief Range over the simplices of the boundary of a simplex. */
   typedef boost::iterator_range<Boundary_simplex_iterator> Boundary_simplex_range;
+  /** \brief Range over the simplices of the boundary of a simplex, with coefficients. */
+  typedef Simplex_tree_oriented_boundary_range<Simplex_tree> Boundary_oriented_simplex_range;
   /** \brief Iterator over the simplices of the simplicial complex.
    *
    * 'value_type' is Simplex_handle. */
@@ -282,6 +284,21 @@ class Simplex_tree {
   Boundary_simplex_range boundary_simplex_range(SimplexHandle sh) {
     return Boundary_simplex_range(Boundary_simplex_iterator(this, sh),
                                   Boundary_simplex_iterator(this));
+  }
+
+  /** \brief Returns a range over the simplices of the boundary of a simplex, with coefficients.
+   *
+   * The boundary of a simplex is the sum of the codimension \f$1\f$ subsimplices of the simplex.
+   * If the simplex is \f$[v_0, \cdots ,v_d]\f$, with canonical orientation
+   * induced by \f$ v_0 < \cdots < v_d \f$, the iterator enumerates the
+   * simplices of the boundary in the order:
+   * \f$[v_0,\cdots,\widehat{v_i},\cdots,v_d]\f$ for \f$i\f$ from \f$0\f$ to \f$d\f$,
+   * where \f$\widehat{v_i}\f$ means that the vertex \f$v_i\f$ is omitted. The
+   * coefficients are alternating +1 and -1.
+   *
+   * @param[in] sh Simplex for which the boundary is computed. */
+  Boundary_oriented_simplex_range boundary_oriented_simplex_range(Simplex_handle sh) {
+    return Boundary_oriented_simplex_range(this, sh);
   }
 
   /** @} */  // end range and iterator methods
