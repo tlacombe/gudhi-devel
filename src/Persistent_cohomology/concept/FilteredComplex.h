@@ -72,31 +72,30 @@ struct FilteredComplex
 /** \brief Assign a key to a simplex. */
   void                     assign_key(Simplex_handle sh, Simplex_key key);
  
-/** \brief Iterator on the simplices belonging to the
-  * boundary of a simplex.
-  *
-  * <CODE>value_type</CODE> must be 'Simplex_handle'.
-  */
-typedef unspecified Boundary_simplex_iterator;
 /** \brief Range giving access to the simplices in the boundary of 
-  * a simplex.
-  *
-  * .begin() and .end() return type Boundary_simplex_iterator.
+  * a simplex, with their coefficients. See
+  * `boundary_oriented_simplex_range(Simplex_handle)` for details.
   */
-typedef unspecified Boundary_simplex_range;
+typedef unspecified Boundary_oriented_simplex_range;
 
 /** \brief Returns a range giving access to all simplices of the 
   * boundary of a simplex, i.e.
-  * the set of codimension 1 subsimplices of the Simplex.
+  * the set of codimension 1 subsimplices of the Simplex, together with their
+  * coefficient. The `value_type` is `std::pair<Simplex_handle, int>`.
   *
   * If the simplex is \f$[v_0, \cdots ,v_d]\f$, with canonical orientation
   * induced by \f$ v_0 < \cdots < v_d \f$, the iterator enumerates the 
   * simplices of the boundary in the order: 
-  * \f$[v_0,\cdots,\widehat{v_i},\cdots,v_d]\f$ for \f$i\f$ from 0 to d
+  * \f$[v_0,\cdots,\widehat{v_i},\cdots,v_d]\f$ for \f$i\f$ from 0 to d, with
+  * alternating signs +1, -1, +1, ...
   *
   * We note that the alternate sum of the simplices given by the iterator
-  * gives the chains corresponding to the boundary of the simplex.*/
-Boundary_simplex_range boundary_simplex_range(Simplex_handle sh);
+  * gives the chains corresponding to the boundary of the simplex.
+  *
+  * For complexes that are not simplicial, coefficients are not limited to ±1
+  * and can be arbitrary integers.
+  */
+Boundary_oriented_simplex_range boundary_oriented_simplex_range(Simplex_handle sh);
 
 /** \brief Iterator over all simplices of the complex 
   * in the order of the indexing scheme.
