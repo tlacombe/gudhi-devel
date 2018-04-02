@@ -97,6 +97,13 @@ typedef unspecified Boundary_oriented_simplex_range;
   */
 Boundary_oriented_simplex_range boundary_oriented_simplex_range(Simplex_handle sh);
 
+/** Returns the two Simplex_handle corresponding to the endpoints of an edge.
+ * sh must point to a 1-dimensional simplex. This is expected to be an
+ * optimized version of the boundary computation. It assumes that the boundary
+ * of an edge is always the difference of 2 vertices (possibly 0 if both
+ * vertices are the same).*/
+std::pair<Simplex_handle, Simplex_handle> endpoints(Simplex_handle sh);
+
 /** \brief Iterator over all simplices of the complex 
   * in the order of the indexing scheme.
   *

@@ -769,7 +769,7 @@ class Simplex_tree {
   }
 
   /** Returns the two Simplex_handle corresponding to the endpoints of
-   * and edge. sh must point to a 1-dimensional simplex. This is an
+   * an edge. sh must point to a 1-dimensional simplex. This is an
    * optimized version of the boundary computation. */
   std::pair<Simplex_handle, Simplex_handle> endpoints(Simplex_handle sh) {
     assert(dimension(sh) == 1);
