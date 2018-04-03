@@ -198,7 +198,7 @@ int main(int argc, char * const argv[]) {
   // end = clock();
   // std::cout << "Number of critical simplices: " << crit2_st1 << ". Time = " << static_cast<double>(end - start) / CLOCKS_PER_SEC << "s.\n";
 
-  write_2skeleton_tikz(witnesses, "test.tikz.tex");
+  write_2skeleton_tikz(witnesses, landmarks, *simplex_tree, "test.tikz.tex");
   
   int num_simplices = simplex_tree->num_simplices();
   std::cerr << "Number of simplices is: " << num_simplices << "\n";
@@ -254,40 +254,40 @@ int main(int argc, char * const argv[]) {
   // assert(simplex_tree == simplex_tree4);
 
   delete simplex_tree;
-  // Compute witness complex - SAL 1
-  start = clock();
-  // Witness_complex witness_complex(nearest_landmark_table);
+  // // Compute witness complex - SAL 1
+  // start = clock();
+  // // Witness_complex witness_complex(nearest_landmark_table);
 
-  witness_complex.create_complex(sal1, alpha2, lim_dim);
-  end = clock();
-  std::cout << "Witness complex SAL 1 (no cofaces, no witlists) took "
-      << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
-  std::cout << "Number of critical simplices is: " << sal1.num_simplices() << "\n";
-  // Compute the total number of simplices with ST
-  Gudhi::Simplex_tree<> st_temp1;
-  for (auto sh: sal1.critical_cofaces(Gudhi::Simplex()) ) {
-    st_temp1.insert_simplex_and_subfaces(*sh);
-  }
-  std::cout << "Number of simplices is: " << num_crit_simplices2(st_temp1) << "\n";  
+  // witness_complex.create_complex(sal1, alpha2, lim_dim);
+  // end = clock();
+  // std::cout << "Witness complex SAL 1 (no cofaces, no witlists) took "
+  //     << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
+  // std::cout << "Number of critical simplices is: " << sal1.num_simplices() << "\n";
+  // // Compute the total number of simplices with ST
+  // Gudhi::Simplex_tree<> st_temp1;
+  // for (auto sh: sal1.critical_cofaces(Gudhi::Simplex()) ) {
+  //   st_temp1.insert_simplex_and_subfaces(*sh);
+  // }
+  // std::cout << "Number of simplices is: " << num_crit_simplices2(st_temp1) << "\n";  
   
-  // Compute witness complex - SAL 4
-  start = clock();
-  Witness_complex_sal4 witness_complex_sal4(nearest_landmark_table);
+  // // Compute witness complex - SAL 4
+  // start = clock();
+  // Witness_complex_sal4 witness_complex_sal4(nearest_landmark_table);
 
-  witness_complex_sal4.create_complex(sal4, alpha2, lim_dim);
-  end = clock();
-  std::cout << "Witness complex SAL 4 (no cofaces, but witlists) took "
-      << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
-  std::cout << "Number of critical simplices is: " << sal4.num_simplices() << "\n";
+  // witness_complex_sal4.create_complex(sal4, alpha2, lim_dim);
+  // end = clock();
+  // std::cout << "Witness complex SAL 4 (no cofaces, but witlists) took "
+  //     << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
+  // std::cout << "Number of critical simplices is: " << sal4.num_simplices() << "\n";
 
-  Gudhi::Simplex_tree<> st_temp4;
-  for (auto sh: sal1.critical_cofaces(Gudhi::Simplex()) ) {
-    st_temp4.insert_simplex_and_subfaces(*sh);
-  }
-  std::cout << "Number of simplices is: " << num_crit_simplices2(st_temp4) << "\n";  
+  // Gudhi::Simplex_tree<> st_temp4;
+  // for (auto sh: sal1.critical_cofaces(Gudhi::Simplex()) ) {
+  //   st_temp4.insert_simplex_and_subfaces(*sh);
+  // }
+  // std::cout << "Number of simplices is: " << num_crit_simplices2(st_temp4) << "\n";  
 
 
+  // // std::cout << alpha2 << " " << nbL/(double)witnesses.size() << " " << time2/time1 << " " << num_simplices << "\n";
   // std::cout << alpha2 << " " << nbL/(double)witnesses.size() << " " << time2/time1 << " " << num_simplices << "\n";
-  std::cout << alpha2 << " " << nbL/(double)witnesses.size() << " " << time2/time1 << " " << num_simplices << "\n";
   
 }

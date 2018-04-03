@@ -33,3 +33,7 @@ target_link_libraries(generate_landmarks ${TBB_LIBRARIES})
 add_executable ( generate_sphere generate_sphere.cpp )
 target_link_libraries(generate_sphere ${Boost_SYSTEM_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
 target_link_libraries(generate_sphere ${TBB_LIBRARIES})
+
+add_executable ( generate_annulus generate_annulus.cpp )
+target_link_libraries(generate_annulus ${Boost_SYSTEM_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+target_link_libraries(generate_annulus ${TBB_LIBRARIES})

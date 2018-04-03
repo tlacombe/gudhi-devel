@@ -263,8 +263,9 @@ void write_persistence_diagram(std::string in_file, double alpha2, std::string o
   ofs.close();
 }
 
-template <typename Point_Vector>
-void write_2skeleton_tikz(Point_Vector& W, std::string filename = "witness.tikz.tex")
+template <typename Point_vector,
+          typename Simplicial_complex>
+void write_2skeleton_tikz(Point_vector& W, Point_vector& L, Simplicial_complex& st, std::string filename = "witness.tikz.tex")
 {
   std::ofstream ofs(filename, std::ofstream::out);
   double max_x=0, min_x=0, max_y=0, min_y=0;
@@ -288,9 +289,53 @@ void write_2skeleton_tikz(Point_Vector& W, std::string filename = "witness.tikz.
   std::cout << "min_y = " << min_y << "\n";
   std::cout << "max_y = " << max_y << "\n";
   std::cout << "height = " << height << "\n";
-  double img_height = 2, img_width = 2;
+  double img_height = 20, img_width = 20;
   double y_unit = img_height/height, x_unit = img_width/width;
   write_preamble(ofs);
+
+  ofs << "\\tikzset{wstyle/.style={fill=black, color=black}};\n";
+  ofs << "\\def \\wrad{0.02};\n";
+  ofs << "\\tikzset{lstyle/.style={fill=blue, color=black}};\n";
+  ofs << "\\def \\lrad{0.02};\n";
+  ofs << "\\tikzset{tstyle/.style={fill=red, opacity=0.2}};\n";
+  
+  ofs << "\n%Vertices\n";
+  int curr_i = 0;
+  for (auto p: L) {
+    ofs << "\\node (L" << curr_i << ") at ("
+        << (min_x + (*(p.cartesian_begin())))*x_unit << ","
+        << (max_y - (*(p.cartesian_begin()+1)))*y_unit << ") {};\n";
+    ofs << "\\fill[lstyle] (L" << curr_i++ << ".center)"
+        << " circle (\\lrad);\n";
+  }
+
+  for (auto p: W) {
+    ofs << "\\node (W" << curr_i << ") at ("
+        << (min_x + (*(p.cartesian_begin())))*x_unit << ","
+        << (max_y - (*(p.cartesian_begin()+1)))*y_unit << ") {};\n";
+    ofs << "\\fill[wstyle] (W" << curr_i++ << ".center)"
+        << " circle (\\lrad);\n";
+  }
+
+  
+  ofs << "\n%Edges\n";
+  for (auto sh: st.complex_simplex_range())
+    if (st.dimension(sh) == 1) {
+      auto sh_it = st.simplex_vertex_range(sh).begin();
+      ofs << "\\draw (L" << *(sh_it++) << ".center) -- "
+          << "(L" << *(sh_it) << ".center);\n";
+    }
+
+  ofs << "\n%Triangles\n";
+  for (auto sh: st.complex_simplex_range())
+    if (st.dimension(sh) == 2) {
+      auto sh_it = st.simplex_vertex_range(sh).begin();
+      ofs << "\\draw[tstyle] (L" << *(sh_it++) << ".center) -- "
+          << "(L" << *(sh_it++) << ".center) --"
+          << "(L" << *(sh_it) << ".center);\n";
+    }
+
+  
   write_end(ofs);
   ofs.close();
 }
