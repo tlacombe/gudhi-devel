@@ -230,13 +230,21 @@ class Simplex_tree_oriented_boundary_range {
 
   explicit Simplex_tree_oriented_boundary_range(SimplexTree *st, Simplex_handle sh)
   : suffix_(), obj_(), sib_(st->self_siblings(sh)), st_(st), next_(sib_->parent()) {
+    // Only check once at the beginning instead of for every increment, as this is expensive.
+    if (SimplexTree::Options::contiguous_vertices)
+      GUDHI_CHECK(st_->contiguous_vertices(), "The set of vertices is not { 0, ..., n } without holes");
     sib_ = sib_->oncles();
     if(sib_){
       int dim = st_->dimension(sh) + 1;
       suffix_.reserve(dim);
       suffix_.push_back(sh->first);
       obj_.second = dim%2*2-1;
-      obj_.first = sib_->find(next_);
+      if (SimplexTree::Options::contiguous_vertices && sib_->oncles() == nullptr)
+        // Only relevant for edges
+        obj_.first = sib_->members_.begin()+next_;
+      else
+        obj_.first = sib_->find(next_);
+
     }
   }
   private:
@@ -244,15 +252,23 @@ class Simplex_tree_oriented_boundary_range {
     if(!sib_) return false; // done
     Simplex_handle h;
     Siblings * for_sib = sib_;
-    for(Vertex_handle v:boost::adaptors::reverse(suffix_)){
-      h = for_sib->find(v);
+    Siblings * new_sib = sib_->oncles();
+    auto rit = suffix_.rbegin();
+    if (SimplexTree::Options::contiguous_vertices && new_sib == nullptr) {
+      // We reached the root, use a short-cut to find a vertex.
+      h = for_sib->members_.begin() + *rit;
+      for_sib = h->second.children();
+      ++rit;
+    }
+    for(; rit != suffix_.rend(); ++rit){
+      h = for_sib->find(*rit);
       for_sib = h->second.children();
     }
     obj_.first = h;
     suffix_.push_back(next_);
     next_ = sib_->parent();
-    sib_=sib_->oncles();
-    obj_.second=-obj_.second; // alternate signs
+    sib_ = new_sib;
+    obj_.second = -obj_.second; // alternate signs
     return true;
   }
 #if BOOST_VERSION >= 105600
