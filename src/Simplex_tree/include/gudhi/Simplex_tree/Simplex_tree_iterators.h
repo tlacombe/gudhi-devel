@@ -137,7 +137,7 @@ class Simplex_tree_boundary_simplex_iterator : public boost::iterator_facade<
   }
 
   Simplex_handle const& dereference() const {
-    assert(sh_ != st_->null_simplex());
+    GUDHI_CHECK(sh_ != st_->null_simplex(), "dereferencing past the end");
     return sh_;
   }
 
@@ -212,13 +212,13 @@ class Simplex_tree_oriented_boundary_range {
     explicit iterator(Simplex_tree_oriented_boundary_range const&rng)
       : rng_(rng.sib_ ? &rng : nullptr) {}
     void increment(){
-      assert(rng_);
+      GUDHI_CHECK(rng_, "incrementing past the end");
       if (!rng_->next())
        rng_=nullptr;
     }
     bool equal(iterator i)const{ return rng_ == i.rng_; }
     value_type const& dereference()const{
-      assert(rng_);
+      GUDHI_CHECK(rng_, "dereferencing past the end");
       return rng_->obj_;
     }
     Simplex_tree_oriented_boundary_range const* rng_;
