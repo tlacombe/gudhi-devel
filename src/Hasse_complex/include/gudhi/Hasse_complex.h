@@ -90,6 +90,25 @@ class Hasse_complex {
   typedef typename std::vector< Simplex_handle >::iterator Boundary_simplex_iterator;
   typedef boost::iterator_range<Boundary_simplex_iterator> Boundary_simplex_range;
 
+  struct Boundary_oriented_simplex_iterator
+    : boost::iterator_facade<Boundary_oriented_simplex_iterator,
+                             std::pair<Simplex_handle, int> /* value */,
+                             std::input_iterator_tag,
+                             std::pair<Simplex_handle, int> /* reference */ >
+  {
+    private:
+      friend class boost::iterator_core_access;
+      Boundary_simplex_iterator it;
+      // We assume that the coefficients are alternating +-1. Definitely not very generic.
+      int coef = 1;
+      void increment(){ ++it; coef = -coef; }
+      std::pair<Simplex_handle, int> dereference() const { return { *it, coef }; }
+      bool equal(Boundary_oriented_simplex_iterator const& other) const { return it == other.it; }
+    public:
+      Boundary_oriented_simplex_iterator(Boundary_simplex_iterator const& i) : it(i) {}
+  };
+  typedef boost::iterator_range<Boundary_oriented_simplex_iterator> Boundary_oriented_simplex_range;
+
   typedef typename std::vector< Simplex_handle >::iterator Skeleton_simplex_iterator;
   typedef boost::iterator_range< Skeleton_simplex_iterator > Skeleton_simplex_range;
 
@@ -182,6 +201,11 @@ class Hasse_complex {
   Boundary_simplex_range boundary_simplex_range(Simplex_handle sh) {
     return Boundary_simplex_range(complex_[sh].boundary_.begin()
                                   , complex_[sh].boundary_.end());
+  }
+
+  Boundary_oriented_simplex_range boundary_oriented_simplex_range(Simplex_handle sh) {
+    return Boundary_oriented_simplex_range(complex_[sh].boundary_.begin()
+                                           , complex_[sh].boundary_.end());
   }
 
   void display_simplex(Simplex_handle sh) {
