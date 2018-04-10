@@ -136,29 +136,37 @@ public:
 	
 	Simplex_key key(Simplex_handle sh) 
 	{
-		return sh;
+		if ( sh != null_simplex() )
+		{
+			return this->key_associated_to_cell[sh];
+		}
+		return this->null_key();
 	}
 
 	Simplex_key null_key() 
 	{
-		return std::numeric_limits<unsigned>::infinity();
+		return std::numeric_limits<unsigned>::max();
 	}
 
 	Simplex_handle simplex(Simplex_key key) 
 	{
-		return key;
+		if (key != null_key()) 
+		{
+			return this->cell_associated_to_key[key];
+		}
+		return null_simplex();
 	}
 
 	Simplex_handle null_simplex() 
 	{
-		return std::numeric_limits<unsigned>::infinity();
+		return this->null_key();
 	}
 
 	Filtration_value filtration(Simplex_handle sh) 
 	{
 		if (sh == null_simplex()) 
 		{
-		  return std::numeric_limits<Filtration_value>::infinity();
+		     return std::numeric_limits<Filtration_value>::infinity();
 		}
 		return this->cells[ sh ]->get_filtration();
 	}
@@ -167,7 +175,7 @@ public:
 	{
 		if (sh == null_simplex()) 
 		{
-		  return std::numeric_limits<int>::infinity();
+		  return -1;
 		}
 		return this->cells[sh]->get_dimension();
 	}
@@ -177,7 +185,7 @@ public:
 		int top_dimension = 0;
 		for ( size_t i = 0 ; i != this->cells.size() ; ++i )
 		{
-			int dim_of_cell = this->give_me_cell_at_position(i)->get_dimension();
+			int dim_of_cell = this->cells[i]->get_dimension();
 			if ( top_dimension < dim_of_cell )
 			{
 				top_dimension = dim_of_cell;
@@ -188,18 +196,20 @@ public:
 
 	std::pair<Simplex_handle, Simplex_handle> endpoints(Simplex_handle sh) 
 	{
+		if (sh == null_simplex())
+		{			
+			return std::pair<Simplex_handle, Simplex_handle>(null_simplex(),null_simplex());
+		}
 		std::vector< std::pair<Cell_type*,typename Cell_type::Incidence_type> > boundary = 
-		this->cells[sh]->get_boundary();
+		this->cells[sh]->get_boundary();		
 		return std::pair<Simplex_handle, Simplex_handle>(
 							boundary[0].first->get_position(), 
 							boundary[1].first->get_position()
-														);
+														);																											
 	}
 
 	void assign_key(Simplex_handle sh, Simplex_key key) 
-	{
-		//std::cout << "Calling assign_key method \n";
-		//std::cout << "sh : " << sh << " , key : " << key << std::endl;
+	{	
 		if (key == null_key()) return;
 		this->key_associated_to_cell[sh] = key;
 		this->cell_associated_to_key[key] = sh;
@@ -240,7 +250,7 @@ public:
 
 		  bool operator==(const Filtration_simplex_iterator& rhs) const 
 		  {	
-			return (this->position == rhs.position);
+			return ((this->position == rhs.position)&&(this->hd == rhs.hd));
 		  }
 
 		  bool operator!=(const Filtration_simplex_iterator& rhs) const 
@@ -249,8 +259,8 @@ public:
 		  }
 
 		  Simplex_handle operator*() 
-		  {
-			 return this->hd->cells[this->position]->get_position();
+		  {			
+			 return this->hd->cell_associated_to_key[this->position];
 		  }
 
 		  friend class Filtration_simplex_range;
@@ -455,7 +465,7 @@ class is_before_in_filtration {
 
 template < typename Cell_type >
 void Hasse_diagram_persistence<Cell_type>::set_up_the_arrays()
-{	
+{		
 	this->cell_associated_to_key = std::vector<size_t>( this->cells.size() );
 	std::iota (std::begin(this->cell_associated_to_key), std::end(this->cell_associated_to_key), 0); 	
 	#ifdef GUDHI_USE_TBB
@@ -468,7 +478,15 @@ void Hasse_diagram_persistence<Cell_type>::set_up_the_arrays()
 	for (size_t i = 0; i != this->cell_associated_to_key.size(); ++i) 
 	{		
 		this->key_associated_to_cell[this->cell_associated_to_key[i]] = i;
-    }    
+    } 
+    
+    //Just for debugging purposes, remove later. 
+    //std::cout << "cell_associated_to_key, just for degugging. : \n";
+    //for ( size_t i = 0 ; i != this->cell_associated_to_key.size() ; ++i )          
+    //{
+	//	std::cout << this->cell_associated_to_key[i] << " ";
+	//}
+	//std::cout << std::endl;
 }//Cell_type
 
 

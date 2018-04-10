@@ -151,7 +151,11 @@ public:
 	/**
 	 * Accessing the filtration of the cell.
 	**/
-	inline Filtration_type& get_filtration(){return this->filtration;}
+	inline Filtration_type& get_filtration()
+	{
+		//std::cout << "Accessing the filtration of a cell : " << *this << std::endl;
+		return this->filtration;
+	}		
 
 	/**
 	 * A procedure used to check if the cell is deleted. It is used by the
@@ -239,7 +243,7 @@ public:
 	{
 		std::vector< unsigned > result;	
 		size_t size_of_boundary = this->boundary.size();
-		result.reserve( size_of_boundary );	
+		result.reserve( size_of_boundary );			
 		for ( size_t bd = 0 ; bd != size_of_boundary ; ++bd )
 		{
 			result.push_back( this->boundary[bd].first->position );
