@@ -174,9 +174,26 @@ dimension: 1 filtration: 1.000000 position: 12 deleted_: 0 boundary ( 0 1) ( 8 1
 ( 13 1) ( 15 1) dimension: 2 filtration: 2.000000 position: 13 deleted_: 0 boundary ( 9 1) \
 ( 12 1) ( 14 1) ( 1 1)  coBoundary dimension: 1 filtration: 1.000000 position: 14 deleted_: 0 \
 boundary ( 10 1) ( 2 1)  coBoundary ( 13 1) ( 15 1) dimension: 2 filtration: 2.000000 position: \
-15 deleted_: 0 boundary ( 11 1) ( 14 1) ( 12 1) ( 3 1)  coBoundary ";  
-
+15 deleted_: 0 boundary ( 11 1) ( 14 1) ( 12 1) ( 3 1)  coBoundary ";
+	
 	BOOST_CHECK( reference_output.compare( hd.full_signature_of_the_structure() ) == 0 );
+	
+	delete A;
+	delete B;
+	delete C;
+	delete D;
+	delete E;
+	delete F;
+	delete G;
+	delete H;
+	delete I;
+	delete J;
+	delete K;
+	delete L;
+	delete M;
+	delete N;
+	delete O;
+	delete P;
 }
 
 
@@ -320,6 +337,16 @@ BOOST_AUTO_TEST_CASE(Hasse_diagram_insertion_and_removal_test)
 	std::string final_structure = hd.full_signature_of_the_structure();
 	
 	BOOST_CHECK( final_structure.compare( initial_structure ) == 0 );
+	
+	
+	delete A;
+	delete B;
+	delete C;
+	delete D;
+	delete E;
+	delete F;
+	delete G;
+	delete H;	
 }
 
 
@@ -436,6 +463,23 @@ BOOST_AUTO_TEST_CASE( write_to_file_test )
 
 	
 	BOOST_CHECK( first_structure.compare( second_structure ) == 0 );
+	
+	delete A;
+	delete B;
+	delete C;
+	delete D;
+	delete E;
+	delete F;
+	delete G;
+	delete H;
+	delete I;
+	delete J;
+	delete K;
+	delete L;
+	delete M;
+	delete N;
+	delete O;
+	delete P;
 }
 
 
@@ -558,6 +602,23 @@ BOOST_AUTO_TEST_CASE( computations_of_persistence_test )
 	std::string reference_output = "2  0 0 inf \n2  1 1 inf \n2  1 1 inf \n2  2 2 inf \n2  1 1 2 \n2  1 1 2 \n2  1 1 2 \n";
 		
 	BOOST_CHECK( obtained_output.compare( reference_output ) == 0 );
+	
+	delete A;
+	delete B;
+	delete C;
+	delete D;
+	delete E;
+	delete F;
+	delete G;
+	delete H;
+	delete I;
+	delete J;
+	delete K;
+	delete L;
+	delete M;
+	delete N;
+	delete O;
+	delete P;
 }
 
 

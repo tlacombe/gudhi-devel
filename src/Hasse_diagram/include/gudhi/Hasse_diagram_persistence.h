@@ -25,6 +25,7 @@
 #include <algorithm>
 #include <string>
 #include <sstream>
+#include <numeric>
 
 #ifdef GUDHI_USE_TBB
 #include <tbb/parallel_sort.h>
@@ -71,7 +72,7 @@ public:
 	/**
 	 * Default constructor.
 	**/ 
-	Hasse_diagram_persistence():Hasse_diagram<Cell_type>(){};
+	Hasse_diagram_persistence():Hasse_diagram<Cell_type>(){}
 	
 	/**
 	 * Creating Hasse diagram for persistence computations from a file. 
@@ -97,7 +98,7 @@ public:
     Hasse_diagram<Cell_type>(cells_)
     {		
 		this->set_up_the_arrays();
-	};		
+	}		
 		
 	friend class is_before_in_filtration<Cell_type>;
 	
@@ -226,12 +227,12 @@ public:
 		  // Iterator over all simplices of the complex in the order of the indexing scheme.
 		  // 'value_type' must be 'Simplex_handle'.
 		 public:
-		  Filtration_simplex_iterator(Hasse_diagram_persistence<Cell_type>* hd) : hd(hd), position(0) {}
-		  Filtration_simplex_iterator() : hd(NULL), position(0) {}
+		  Filtration_simplex_iterator(Hasse_diagram_persistence<Cell_type>* hd) : hasse_diagram_(hd), position_(0) {}
+		  Filtration_simplex_iterator() : hasse_diagram_(NULL), position_(0) {}
 
 		  Filtration_simplex_iterator operator++() 
 		  {		
-			++this->position;
+			++this->position_;
 		   return (*this);
 		  } 
 
@@ -243,14 +244,14 @@ public:
 		  }
 
 		  Filtration_simplex_iterator& operator=(const Filtration_simplex_iterator& rhs) {
-			this->hd = rhs.hd;
-			this->position = rhs.position;
+			this->hasse_diagram_ = rhs.hasse_diagram_;
+			this->position_ = rhs.position_;
 			return (*this);
 		  }
 
 		  bool operator==(const Filtration_simplex_iterator& rhs) const 
 		  {	
-			return ((this->position == rhs.position)&&(this->hd == rhs.hd));
+			return ((this->position_ == rhs.position_)&&(this->hasse_diagram_ == rhs.hasse_diagram_));
 		  }
 
 		  bool operator!=(const Filtration_simplex_iterator& rhs) const 
@@ -260,14 +261,14 @@ public:
 
 		  Simplex_handle operator*() 
 		  {			
-			 return this->hd->cell_associated_to_key[this->position];
+			 return this->hasse_diagram_->cell_associated_to_key[this->position_];
 		  }
 
 		  friend class Filtration_simplex_range;
 
 	private:
-		Hasse_diagram_persistence<Cell_type>* hd;
-		size_t position;
+		Hasse_diagram_persistence<Cell_type>* hasse_diagram_;
+		size_t position_;
 	};
 
 	/**
@@ -281,22 +282,22 @@ public:
 		typedef Filtration_simplex_iterator const_iterator;
 		typedef Filtration_simplex_iterator iterator;
 
-		Filtration_simplex_range(Hasse_diagram_persistence<Cell_type>* hd):hd(hd) {}
+		Filtration_simplex_range(Hasse_diagram_persistence<Cell_type>* hd):hasse_diagram_(hd) {}
 
 		Filtration_simplex_iterator begin() 
 		{		  
-			return Filtration_simplex_iterator(this->hd);
+			return Filtration_simplex_iterator(this->hasse_diagram_);
 		}
 
 		Filtration_simplex_iterator end() 
 		{		 
-			Filtration_simplex_iterator it(this->hd);
-			it.position = this->hd->cell_associated_to_key.size();
+			Filtration_simplex_iterator it(this->hasse_diagram_);
+			it.position_ = this->hasse_diagram_->cell_associated_to_key.size();
 			return it;
 		}
 
 	private:
-		Hasse_diagram_persistence<Cell_type>* hd;
+		Hasse_diagram_persistence<Cell_type>* hasse_diagram_;
 	};
    
     Filtration_simplex_range filtration_simplex_range() 
@@ -314,26 +315,26 @@ public:
 	class Skeleton_simplex_iterator : std::iterator<std::input_iterator_tag, Simplex_handle> 
 	{	
 	public:
-	Skeleton_simplex_iterator(Hasse_diagram_persistence<Cell_type>* hd, size_t d) : hd(hd), dimension(d) 
+	Skeleton_simplex_iterator(Hasse_diagram_persistence<Cell_type>* hd, size_t d) : hasse_diagram_(hd), dimension_(d) 
 	{	 
 	  //find the position of the first cell of a dimension d
-	  this->position = 0;
-	  while ((this->position != hd->cells.size()) && 
-			 (this->hd->cells[this->position]->get_dimension() != this->dimension)) 
+	  this->position_ = 0;
+	  while ((this->position_ != this->hasse_diagram_->cells.size()) && 
+			 (this->hasse_diagram_->cells[this->position_]->get_dimension() != this->dimension_)) 
 			 {
-				++this->position;
+				++this->position_;
 			  }
 	}
 
-	Skeleton_simplex_iterator() : hd(NULL), position(0), dimension(0) {}
+	Skeleton_simplex_iterator() : hasse_diagram_(NULL), position_(0), dimension_(0) {}
 
 	Skeleton_simplex_iterator operator++() 
 	{	  
-	  ++this->position;
-	  while ( ( this->position != this->hd->cells.size() ) &&
-			 (this->hd->cells[this->position]->get_dimension() != this->dimension)) 
+	  ++this->position_;
+	  while ( ( this->position_ != this->hasse_diagram_->cells.size() ) &&
+			 (this->hasse_diagram_->cells[this->position_]->get_dimension() != this->dimension_)) 
 	  {
-		  ++this->position;
+		  ++this->position_;
 	  }
 	  return (*this);
 	}
@@ -347,15 +348,15 @@ public:
 
 	Skeleton_simplex_iterator& operator=(const Skeleton_simplex_iterator& rhs) 
 	{
-	  this->hd = rhs.hd;
-	  this->position = rhs.position;
-	  this->dimension = rhs.dimension;
+	  this->hasse_diagram_ = rhs.hasse_diagram_;
+	  this->position_ = rhs.position_;
+	  this->dimension_ = rhs.dimension_;
 	  return (*this);
 	}
 
 	bool operator==(const Skeleton_simplex_iterator& rhs) const 
 	{
-	  return (this->position == rhs.position);
+	  return (this->position_ == rhs.position_);
 	}
 
 	bool operator!=(const Skeleton_simplex_iterator& rhs) const 
@@ -365,15 +366,15 @@ public:
 
 	Simplex_handle operator*() 
 	{	
-	  return this->position;
+	  return this->position_;
 	}
 
 	friend class Skeleton_simplex_range;
 
 	private:
-	Hasse_diagram_persistence<Cell_type>* hd;
-	size_t position;
-	unsigned dimension;
+	Hasse_diagram_persistence<Cell_type>* hasse_diagram_;
+	size_t position_;
+	unsigned dimension_;
 	};
 
 	/**
@@ -386,23 +387,23 @@ public:
 	typedef Skeleton_simplex_iterator const_iterator;
 	typedef Skeleton_simplex_iterator iterator;
 
-	Skeleton_simplex_range(Hasse_diagram_persistence<Cell_type>* hd, unsigned dimension) : hd(hd), dimension(dimension) {}
+	Skeleton_simplex_range(Hasse_diagram_persistence<Cell_type>* hd, unsigned dimension) : hasse_diagram_(hd), dimension_(dimension) {}
 
 	Skeleton_simplex_iterator begin() 
 	{	
-	  return Skeleton_simplex_iterator(this->hd, this->dimension);
+	  return Skeleton_simplex_iterator(this->hasse_diagram_, this->dimension_);
 	}
 
 	Skeleton_simplex_iterator end() 
 	{	
-	  Skeleton_simplex_iterator it(this->hd, this->dimension);
-	  it.position = this->hd->cells.size();
+	  Skeleton_simplex_iterator it(this->hasse_diagram_, this->dimension_);
+	  it.position_ = this->hasse_diagram_->cells.size();
 	  return it;
 	}
 
 	private:
-	Hasse_diagram_persistence<Cell_type>* hd;
-	unsigned dimension;
+	Hasse_diagram_persistence<Cell_type>* hasse_diagram_;
+	unsigned dimension_;
 	};
 
 	/**
@@ -436,19 +437,19 @@ protected:
 template <typename Cell_type>
 class is_before_in_filtration {
  public:
-  explicit is_before_in_filtration(Hasse_diagram_persistence<Cell_type>* hd) : HD_(hd) {}
+  explicit is_before_in_filtration(Hasse_diagram_persistence<Cell_type>* hd) : hasse_diagram_(hd) {}
 
   bool operator()(size_t first , size_t second) const 
   {    
     typedef typename Cell_type::Filtration_type Filtration_value;
-    Filtration_value fil1 = HD_->cells[first]->get_filtration();
-    Filtration_value fil2 = HD_->cells[second]->get_filtration();
+    Filtration_value fil1 = hasse_diagram_->cells[first]->get_filtration();
+    Filtration_value fil2 = hasse_diagram_->cells[second]->get_filtration();
     if (fil1 != fil2) {
       return fil1 < fil2;
     }
     // in this case they are on the same filtration level, so the dimension decide.
-    size_t dim1 = HD_->cells[first]->get_dimension();
-    size_t dim2 = HD_->cells[second]->get_dimension();
+    size_t dim1 = hasse_diagram_->cells[first]->get_dimension();
+    size_t dim2 = hasse_diagram_->cells[second]->get_dimension();
     if (dim1 != dim2) {
       return dim1 < dim2;
     }
@@ -458,7 +459,7 @@ class is_before_in_filtration {
   }
 
  protected:
-  Hasse_diagram_persistence<Cell_type>* HD_;
+  Hasse_diagram_persistence<Cell_type>* hasse_diagram_;
 };
 
 

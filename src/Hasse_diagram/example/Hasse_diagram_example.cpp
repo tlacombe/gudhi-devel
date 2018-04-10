@@ -189,6 +189,24 @@ int main(int argc, char** argv)
   std::string obtained_output = output_pers.str();	
 	
   std::cout << "Here is the obtained persistence diagram : " << obtained_output << std::endl;
+  
+  delete A;
+  delete B;
+  delete C;
+  delete D;
+  delete E;
+  delete F;
+  delete G;
+  delete H;
+  delete I;
+  delete J;
+  delete K;
+  delete L;
+  delete M;
+  delete N;
+  delete O;
+  delete P;
+  
   return 0;
 }
 
