@@ -36,11 +36,7 @@ namespace Gudhi {
 
 namespace Hasse_diagram {
 	
-/**
- * This variable indicate if a warning should be given anytime a cell is 
- * deleted that have nondeleted cell in the coboundary.
-**/ 
-bool enable_checking_validity_of_complex = true;
+
 template <typename Cell_type> class is_before_in_dimension;
 	
 	
@@ -115,7 +111,7 @@ public:
 		
 		if ( dbg )std::cout << "Calling clean_up_the_structure() procedure. \n";	
 		//count the number of not deleted cells:
-		unsigned number_of_non_deleted_cells = this->cells.size() - this->number_of_deleted_cells;
+		size_t number_of_non_deleted_cells = this->cells.size() - this->number_of_deleted_cells;
 		
 		//create a new vector to store the undeleted cells:
 		std::vector< Cell_type* > new_cells;
@@ -186,7 +182,7 @@ public:
 		
 		//in case the structure gets too fragmented, we are calling the 
 		//to clean it up.
-		if ( this->number_of_deleted_cells/(double)(this->cells.size() ) > 
+		if ( this->number_of_deleted_cells/(static_cast<double>( this->cells.size() )) > 
 			this->proportion_of_removed_cells_that_triggers_reorganization_of_structure )
 		{
 			this->clean_up_the_structure();
@@ -253,7 +249,7 @@ public:
 			result += this->cells[i]->full_signature_of_the_structure();
 		}		
 		return result;
-	}
+	}	
 	
 protected:	
 	Cell_range cells;
@@ -275,7 +271,17 @@ protected:
 	void set_up_positions();
 	
 	static double proportion_of_removed_cells_that_triggers_reorganization_of_structure;
+	
+	/**
+	* This variable indicate if a warning should be given anytime a cell is 
+	* deleted that have nondeleted cell in the coboundary.
+	**/ 
+	static bool enable_checking_validity_of_complex;
 };//Hasse_diagram
+
+template < typename Cell_type >
+bool Hasse_diagram<Cell_type>::enable_checking_validity_of_complex = true;
+
 
 template <typename Cell_type>
 double Hasse_diagram<Cell_type>::proportion_of_removed_cells_that_triggers_reorganization_of_structure = 0.5;

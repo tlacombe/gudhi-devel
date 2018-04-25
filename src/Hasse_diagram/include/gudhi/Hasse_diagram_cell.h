@@ -82,24 +82,24 @@ public:
 	/**
      * Constructor of a cell of dimension dim.
     **/
-	Hasse_diagram_cell( unsigned dim ):dimension(dim),position(0),deleted_(false){}
+	Hasse_diagram_cell( int dim ):dimension(dim),position(0),deleted_(false){}
 	
 	/**
      * Constructor of a cell of dimension dim.
     **/
-	Hasse_diagram_cell( unsigned dim , Filtration_type filt_ ):dimension(dim),position(0),deleted_(false),filtration(filt_){}
+	Hasse_diagram_cell( int dim , Filtration_type filt_ ):dimension(dim),position(0),deleted_(false),filtration(filt_){}
 
 	/**
      * Constructor of a cell of dimension dim with a given boundary.
     **/	
-	Hasse_diagram_cell( const Cell_range& boundary_ , unsigned dim ):
+	Hasse_diagram_cell( const Cell_range& boundary_ , int dim ):
 	dimension(dim),boundary(boundary_),position(0),deleted_(false){}
 
 	/**
      * Constructor of a cell of dimension dim with a given boundary and coboundary.
     **/
 	Hasse_diagram_cell( const Cell_range&  boundary_ , const Cell_range& coboundary_,
-		 unsigned dim ):dimension(dim),boundary(boundary_),coBoundary(coboundary_),
+		 int dim ):dimension(dim),boundary(boundary_),coBoundary(coboundary_),
 		 position(0),deleted_(false){}
 
 	/**
@@ -107,14 +107,14 @@ public:
      * additional information.
     **/
 	Hasse_diagram_cell( const Cell_range&  boundary_ , const Cell_range&  coboundary_,
-	const Additional_information& ai, unsigned dim ):
+	const Additional_information& ai, int dim ):
 	dimension(dim),boundary(boundary_),coBoundary(coboundary_),additional_info(ai),
 	position(0),deleted_(false){}
 
 	/**
      * Construcor of a cell of dimension dim having given additional information.
     **/
-	Hasse_diagram_cell(Additional_information ai, unsigned dim ):
+	Hasse_diagram_cell(Additional_information ai, int dim ):
 	dimension(dim),additional_info(ai),position(0),deleted_(false){}
 
 	/**
@@ -134,7 +134,7 @@ public:
 	/**
      * Procedure to get the dimension of a cell.
     **/
-	inline unsigned& get_dimension(){return this->dimension;}
+	inline int& get_dimension(){return this->dimension;}
 
 	/**
      * Procedure to get additional information about the cell.s
@@ -147,7 +147,7 @@ public:
 	 * cell and subsequent call of clean_up_the_structure will change those
 	 * positions.
 	**/
-	inline size_t& get_position(){return this->position;}
+	inline unsigned& get_position(){return this->position;}
 	
 	/**
 	 * Accessing the filtration of the cell.
@@ -298,9 +298,9 @@ public:
 protected:
 	Cell_range boundary;
 	Cell_range coBoundary;
-	unsigned dimension;
+	int dimension;
 	Additional_information additional_info;
-	size_t position;
+	unsigned position;
 	bool deleted_;
 	Filtration_type filtration;
 
