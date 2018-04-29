@@ -125,7 +125,7 @@ public:
 			if ( !this->cells[i]->deleted() )
 			{							
 				new_cells.push_back( this->cells[i] );
-				this->cells[i]->position = counter;
+				this->cells[i]->position = static_cast<unsigned>( counter );
 				this->cells[i]->remove_deleted_elements_from_boundary_and_coboundary();
 				++counter;							
 			}
@@ -146,7 +146,7 @@ public:
 	**/ 
 	void add_cell( Cell_type* cell )
 	{
-		cell->position = this->cells.size();
+		cell->position = static_cast<unsigned>( this->cells.size() );
 		this->cells.push_back( cell );		
 		//we still need to check if cobounadies of boundary elements of this 
 		//cell are set up in the correct way:
@@ -467,7 +467,7 @@ void Hasse_diagram<Cell_type>::set_up_positions()
 {
 	for ( size_t i = 0 ; i != this->cells.size() ; ++i )
 	{
-		this->cells[i]->get_position() = i;
+		this->cells[i]->get_position() = static_cast<unsigned>(i);
 	}	
 }//set_up_positions
 
@@ -529,7 +529,7 @@ std::vector<Cell_type*> convert_to_vector_of_Cell_type( Complex_type& cmplx )
 	size_t pos = 0;
 	for ( typename Complex_type::Filtration_simplex_iterator it = range.begin() ; it != range.end() ; ++it )
 	{
-		cmplx.assign_key( *it,pos );
+		cmplx.assign_key( *it, pos );
 		++pos;
 	}
 	
@@ -543,8 +543,8 @@ std::vector<Cell_type*> convert_to_vector_of_Cell_type( Complex_type& cmplx )
 		}		
 		Cell_type* this_cell = cells_of_Hasse_diag[counter];
 		
-		this_cell->get_dimension() = cmplx.dimension(*it);		
-		this_cell->get_filtration() = cmplx.filtration(*it);
+		this_cell->get_dimension() = static_cast<int>( cmplx.dimension(*it) );		
+		this_cell->get_filtration() = static_cast<typename Cell_type::Filtration_type>( cmplx.filtration(*it) );
 		
 		if ( dbg )
 		{

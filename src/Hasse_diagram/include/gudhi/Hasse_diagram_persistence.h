@@ -298,7 +298,7 @@ public:
 		Filtration_simplex_iterator end() 
 		{		 
 			Filtration_simplex_iterator it(this->hasse_diagram_);
-			it.position_ = this->hasse_diagram_->cell_associated_to_key.size();
+			it.position_ = static_cast<unsigned>( this->hasse_diagram_->cell_associated_to_key.size() );
 			return it;
 		}
 
@@ -410,7 +410,7 @@ public:
 	Skeleton_simplex_iterator end() 
 	{	
 	  Skeleton_simplex_iterator it(this->hasse_diagram_, this->dimension_);
-	  it.position_ = this->hasse_diagram_->cells.size();
+	  it.position_ = static_cast<unsigned>(this->hasse_diagram_->cells.size());
 	  return it;
 	}
 
@@ -457,12 +457,13 @@ class is_before_in_filtration {
     typedef typename Cell_type::Filtration_type Filtration_value;
     Filtration_value fil1 = hasse_diagram_->cells[first]->get_filtration();
     Filtration_value fil2 = hasse_diagram_->cells[second]->get_filtration();
-    if (fil1 != fil2) {
+    if (*(double*)&fil1 != *(double*)&fil2)//strange cast to make the compiler shut up about comparing of doubles.
+     {
       return fil1 < fil2;
     }
     // in this case they are on the same filtration level, so the dimension decide.
-    size_t dim1 = hasse_diagram_->cells[first]->get_dimension();
-    size_t dim2 = hasse_diagram_->cells[second]->get_dimension();
+    unsigned dim1 = hasse_diagram_->cells[first]->get_dimension();
+    unsigned dim2 = hasse_diagram_->cells[second]->get_dimension();
     if (dim1 != dim2) {
       return dim1 < dim2;
     }
@@ -491,7 +492,7 @@ void Hasse_diagram_persistence<Cell_type>::set_up_the_arrays()
 	this->key_associated_to_cell = std::vector<unsigned>( this->cell_associated_to_key.size() );	
 	for (size_t i = 0; i != this->cell_associated_to_key.size(); ++i) 
 	{		
-		this->key_associated_to_cell[this->cell_associated_to_key[i]] = i;
+		this->key_associated_to_cell[this->cell_associated_to_key[i]] = static_cast<unsigned>(i);
     } 
     
     //Just for debugging purposes, remove later. 
