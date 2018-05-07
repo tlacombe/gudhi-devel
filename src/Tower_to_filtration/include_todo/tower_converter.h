@@ -10,7 +10,7 @@
 #include <algorithm>
 
 namespace Gudhi {
-namespace tmp_package_name {
+namespace tower_to_filtration {
 
 template<class ComplexStructure>
 class Tower_converter
@@ -24,7 +24,7 @@ public:
     enum streamingType : int {FACES, VERTICES};
 
     Tower_converter();
-    Tower_converter(std::string outputFileName);
+    Tower_converter(std::string outputFileName, streamingType type = VERTICES);
     ~Tower_converter();
 
     bool add_insertion(std::vector<double> *simplex, double timestamp);
@@ -57,12 +57,11 @@ Tower_converter<ComplexStructure>::Tower_converter() : streamingType_(VERTICES),
 }
 
 template<class ComplexStructure>
-Tower_converter<ComplexStructure>::Tower_converter(std::string outputFileName) : streamingType_(VERTICES), filtrationSize_(0), towerWidth_(0)
+Tower_converter<ComplexStructure>::Tower_converter(std::string outputFileName, streamingType type) : streamingType_(type), filtrationSize_(0), towerWidth_(0)
 {
     outputStream_ = new std::ofstream(outputFileName);
     vertices_ = new std::unordered_map<double, vertex>();
     complex_ = new ComplexStructure();
-    //streamingType_ = FACES;
 }
 
 template<class ComplexStructure>

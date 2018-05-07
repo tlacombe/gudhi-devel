@@ -37,7 +37,7 @@
 #define GUDHI_LIST
 
 namespace Gudhi {
-namespace tmp_package_name {
+namespace tower_to_filtration {
 
 template<class ComplexStructure>
 class Persistence

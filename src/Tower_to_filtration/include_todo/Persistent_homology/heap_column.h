@@ -29,7 +29,7 @@
 #include <vector>
 
 namespace Gudhi {
-namespace tmp_package_name {
+namespace tower_to_filtration {
 
 class Heap_column
 {
