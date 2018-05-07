@@ -30,9 +30,9 @@
 #include <iostream>
 #include <fstream>
 
-#include <tower_converter.h>
-#include <Persistent_homology/list_column.h>
-#include <Persistent_homology/heap_column.h>
+#include <gudhi/tower_converter.h>
+#include <gudhi/Persistent_homology/list_column.h>
+#include <gudhi/Persistent_homology/heap_column.h>
 
 #define GUDHI_LIST
 
