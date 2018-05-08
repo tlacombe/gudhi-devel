@@ -23,6 +23,11 @@
 #ifndef PERSISTENCE_H
 #define PERSISTENCE_H
 
+/** @file persistence.h
+ * @brief Contains @ref Gudhi::tower_to_filtration::Persistence<ComplexStructure,ColumnType>
+ * and @ref Gudhi::tower_to_filtration::Persistence<ComplexStructure,ColumnType>::Boundary_matrix classes.
+ */
+
 #include <vector>
 #include <list>
 #include <unordered_map>
@@ -37,12 +42,18 @@ namespace Gudhi {
 namespace tower_to_filtration {
 
 template<class ComplexStructure, class ColumnType>
+/**
+ * @brief Takes the elementary operations of a tower in order and computes its persistence barcode.
+ */
 class Persistence
 {
 public:
     Persistence(double reductionInterval, std::string persistencePairsFileName);
 	~Persistence();
 
+    /**
+     * @brief Represents the boundary matrix from which the persistence barcode is computed.
+     */
     class Boundary_matrix
 	{
 	public:

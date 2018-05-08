@@ -23,6 +23,10 @@
 #ifndef UTILITIES_H
 #define UTILITIES_H
 
+/** @file utilities.h
+ * @brief Contains file reading utilities.
+ */
+
 #include <iostream>
 #include <string>
 

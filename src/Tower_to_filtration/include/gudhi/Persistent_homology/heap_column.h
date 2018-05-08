@@ -23,6 +23,10 @@
 #ifndef HEAPCOLUMN_H
 #define HEAPCOLUMN_H
 
+/** @file heap_column.h
+ * @brief Contains @ref Gudhi::tower_to_filtration::Heap_column class.
+ */
+
 #include <iostream>
 #include <algorithm>
 #include <cmath>
@@ -32,6 +36,9 @@
 namespace Gudhi {
 namespace tower_to_filtration {
 
+/**
+ * @brief Column type which is based on std::vector<double> and std::make_heap. Fulfills the requirements of the @ref Gudhi::tower_to_filtration::ColumnType concept.
+ */
 class Heap_column
 {
 public:

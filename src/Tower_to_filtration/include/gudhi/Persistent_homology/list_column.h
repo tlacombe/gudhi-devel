@@ -23,6 +23,10 @@
 #ifndef LISTCOLUMN_H
 #define LISTCOLUMN_H
 
+/** @file list_column.h
+ * @brief Contains @ref Gudhi::tower_to_filtration::List_column class.
+ */
+
 #include <iostream>
 #include <list>
 #include <unordered_map>
@@ -30,6 +34,9 @@
 namespace Gudhi {
 namespace tower_to_filtration {
 
+/**
+ * @brief Column type which is based on std::list<double>. Fulfills the requirements of the @ref Gudhi::tower_to_filtration::ColumnType concept.
+ */
 class List_column
 {
 public:
