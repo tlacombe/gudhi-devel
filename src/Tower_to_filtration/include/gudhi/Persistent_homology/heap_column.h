@@ -27,6 +27,7 @@
 #include <algorithm>
 #include <cmath>
 #include <vector>
+#include <unordered_map>
 
 namespace Gudhi {
 namespace tower_to_filtration {
@@ -34,18 +35,20 @@ namespace tower_to_filtration {
 class Heap_column
 {
 public:
-    Heap_column(std::vector<double> *column, int dim);
+    Heap_column(int dim);
     ~Heap_column();
 
 public:
     void add(Heap_column *columnToAdd);
     void set(std::vector<double> *newColumn);
-    void insert(double value);
     double get_pivot();
     double pop_pivot();
     double get_size();
     int get_dim() const { return dim_; }
     double at(double index) { return column_->at(index); }
+    void clean(std::unordered_map<double, double> *latest, std::unordered_map<double, std::pair<bool, bool> *> *isActivePositive,
+               std::unordered_map<double, Heap_column*> *columns);
+    void push_back(double value);
 
 private:
     int dim_;
@@ -56,8 +59,9 @@ private:
     void prune();
 };
 
-Heap_column::Heap_column(std::vector<double> *column, int dim) : dim_(dim), column_(column), insertsSinceLastPrune_(0)
+Heap_column::Heap_column(int dim) : dim_(dim), insertsSinceLastPrune_(0)
 {
+    column_ = new std::vector<double>();
     std::make_heap(this->column_->begin(), this->column_->end());
     temp_column_ = new std::vector<double>();
 }
@@ -87,7 +91,7 @@ inline void Heap_column::set(std::vector<double> *newColumn)
     std::make_heap(column_->begin(), column_->end());
 }
 
-inline void Heap_column::insert(double value)
+inline void Heap_column::push_back(double value)
 {
     column_->push_back(value);
     std::push_heap(column_->begin(), column_->end());
@@ -130,6 +134,27 @@ inline double Heap_column::get_size()
 {
     prune();
     return column_->size();
+}
+
+void Heap_column::clean(std::unordered_map<double, double> *latest, std::unordered_map<double, std::pair<bool, bool> *> *isActivePositive,
+                        std::unordered_map<double, Heap_column*> *columns)
+{
+    std::vector<double> *tmp = new std::vector<double>();
+    tmp->push_back(pop_pivot());
+    double max = pop_pivot();
+    while (max != -1){
+        if (latest->find(max) != latest->end() && !isActivePositive->at(max)->first){
+            push_back(max);
+            add(columns->at(latest->at(max)));
+        } else if (isActivePositive->at(max)->second || isActivePositive->at(max)->first) {
+            tmp->push_back(max);
+        }
+        max = pop_pivot();
+    }
+    std::reverse(tmp->begin(), tmp->end());
+    delete column_;
+    column_ = tmp;
+    std::make_heap(column_->begin(), column_->end());
 }
 
 void Heap_column::prune()

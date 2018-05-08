@@ -23,6 +23,8 @@
 #ifndef TOWER_CONVERTER_H
 #define TOWER_CONVERTER_H
 
+/** @file tower_converter.h */
+
 #include <string>
 #include <iostream>
 #include <fstream>

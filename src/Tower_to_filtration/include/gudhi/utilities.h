@@ -109,8 +109,8 @@ std::ifstream& operator>>(std::ifstream& file, Tower_converter<ComplexStructure>
     return file;
 }
 
-template<class ComplexStructure>
-std::ifstream& operator>>(std::ifstream& file, Persistence<ComplexStructure>& pers)
+template<class ComplexStructure, class ColumnType>
+std::ifstream& operator>>(std::ifstream& file, Persistence<ComplexStructure,ColumnType>& pers)
 {
     using TC = Tower_converter<ComplexStructure>;
     std::string line;

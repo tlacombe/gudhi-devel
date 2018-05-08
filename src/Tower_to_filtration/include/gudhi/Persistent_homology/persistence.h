@@ -29,24 +29,20 @@
 #include <iomanip>
 #include <iostream>
 #include <fstream>
+#include <cmath>
 
 #include <gudhi/tower_converter.h>
-#include <gudhi/Persistent_homology/list_column.h>
-#include <gudhi/Persistent_homology/heap_column.h>
-
-#define GUDHI_LIST
 
 namespace Gudhi {
 namespace tower_to_filtration {
 
-template<class ComplexStructure>
+template<class ComplexStructure, class ColumnType>
 class Persistence
 {
 public:
     Persistence(double reductionInterval, std::string persistencePairsFileName);
 	~Persistence();
 
-    template<class ColumnType, typename ContainerType>
     class Boundary_matrix
 	{
 	public:
@@ -84,38 +80,30 @@ public:
 
 private:
     Tower_converter<ComplexStructure> *converter_;
-#ifdef GUDHI_LIST
-    Boundary_matrix<List_column, std::list<double> > *matrix_;
-#else
-    Boundary_matrix<Heap_column, std::vector<double> > *matrix_;
-#endif
+    Boundary_matrix *matrix_;
     double reductionInterval_;
     double lastReduction_;
 
     void compute_partial_persistence();
 };
 
-template<class ComplexStructure>
-Persistence<ComplexStructure>::Persistence(double reductionInterval, std::string persistencePairsFileName) : reductionInterval_(reductionInterval), lastReduction_(-1)
+template<class ComplexStructure, class ColumnType>
+Persistence<ComplexStructure, ColumnType>::Persistence(double reductionInterval, std::string persistencePairsFileName) : reductionInterval_(reductionInterval), lastReduction_(-1)
 {
     converter_ = new Tower_converter<ComplexStructure>();
-#ifdef GUDHI_LIST
-    matrix_ = new Boundary_matrix<List_column, std::list<double> >(persistencePairsFileName);
-#else
-    matrix_ = new Boundary_matrix<Heap_column, std::vector<double> >(persistencePairsFileName);
-#endif
+    matrix_ = new Boundary_matrix(persistencePairsFileName);
     if (reductionInterval_ < 1) reductionInterval_ = 1;
 }
 
-template<class ComplexStructure>
-Persistence<ComplexStructure>::~Persistence()
+template<class ComplexStructure, class ColumnType>
+Persistence<ComplexStructure, ColumnType>::~Persistence()
 {
     delete converter_;
     delete matrix_;
 }
 
-template<class ComplexStructure>
-bool Persistence<ComplexStructure>::add_insertion(std::vector<double> *simplex, double timestamp)
+template<class ComplexStructure, class ColumnType>
+bool Persistence<ComplexStructure, ColumnType>::add_insertion(std::vector<double> *simplex, double timestamp)
 {
     std::vector<double> boundary;
     double insertionNum;
@@ -134,8 +122,8 @@ bool Persistence<ComplexStructure>::add_insertion(std::vector<double> *simplex, 
     return true;
 }
 
-template<class ComplexStructure>
-void Persistence<ComplexStructure>::add_contraction(double v, double u, double timestamp)
+template<class ComplexStructure, class ColumnType>
+void Persistence<ComplexStructure, ColumnType>::add_contraction(double v, double u, double timestamp)
 {
     std::vector<std::vector<double>*> boundaries;
     std::vector<double> insertionNumbers;
@@ -153,30 +141,29 @@ void Persistence<ComplexStructure>::add_contraction(double v, double u, double t
     if (reduce) compute_partial_persistence();
 }
 
-template<class ComplexStructure>
-inline void Persistence<ComplexStructure>::finalize_reduction()
+template<class ComplexStructure, class ColumnType>
+inline void Persistence<ComplexStructure, ColumnType>::finalize_reduction()
 {
     if (lastReduction_ != matrix_->get_last_insert_number()) matrix_->reduce(lastReduction_ + 1);
     lastReduction_ = matrix_->get_last_insert_number();
 }
 
-template<class ComplexStructure>
-inline void Persistence<ComplexStructure>::print_filtration_data()
+template<class ComplexStructure, class ColumnType>
+inline void Persistence<ComplexStructure, ColumnType>::print_filtration_data()
 {
     converter_->print_filtration_data();
 }
 
-template<class ComplexStructure>
-inline void Persistence<ComplexStructure>::compute_partial_persistence()
+template<class ComplexStructure, class ColumnType>
+inline void Persistence<ComplexStructure, ColumnType>::compute_partial_persistence()
 {
     matrix_->reduce(lastReduction_ + 1);
     matrix_->clear_out();
     lastReduction_ = matrix_->get_last_insert_number();
 }
 
-template<class ComplexStructure>
-template<class ColumnType, typename ContainerType>
-Persistence<ComplexStructure>::Boundary_matrix<ColumnType, ContainerType>::Boundary_matrix(std::string persistencePairsFileName) : lastInsertNumber_(-1), maxDim_(-1)
+template<class ComplexStructure, class ColumnType>
+Persistence<ComplexStructure, ColumnType>::Boundary_matrix::Boundary_matrix(std::string persistencePairsFileName) : lastInsertNumber_(-1), maxDim_(-1)
 {
     columns_ = new std::unordered_map<double, ColumnType*>();
     latest_ = new std::unordered_map<double, double>();
@@ -189,9 +176,8 @@ Persistence<ComplexStructure>::Boundary_matrix<ColumnType, ContainerType>::Bound
     }
 }
 
-template<class ComplexStructure>
-template<class ColumnType, typename ContainerType>
-Persistence<ComplexStructure>::Boundary_matrix<ColumnType, ContainerType>::~Boundary_matrix()
+template<class ComplexStructure, class ColumnType>
+Persistence<ComplexStructure, ColumnType>::Boundary_matrix::~Boundary_matrix()
 {
     for (auto it = columns_->begin(); it != columns_->end(); it++){
         delete it->second;
@@ -207,35 +193,32 @@ Persistence<ComplexStructure>::Boundary_matrix<ColumnType, ContainerType>::~Boun
     delete timestamps_;
 }
 
-template<class ComplexStructure>
-template<class ColumnType, typename ContainerType>
-void Persistence<ComplexStructure>::Boundary_matrix<ColumnType, ContainerType>::insert_column(double insertionNumber, std::vector<double> *boundary, double timestamp)
+template<class ComplexStructure, class ColumnType>
+void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::insert_column(double insertionNumber, std::vector<double> *boundary, double timestamp)
 {
-    ContainerType *boundaryCells = new ContainerType();
+    ColumnType *col = new ColumnType(boundary->size() - 1);
     isActivePositive_->emplace(insertionNumber, new std::pair<bool, bool>(true, true));
 
     for (int i = 0; i < (int)boundary->size(); i++){
-        boundaryCells->push_back(boundary->at(i));
+        col->push_back(boundary->at(i));
     }
 
-    columns_->emplace(insertionNumber, new ColumnType(boundaryCells, boundary->size() - 1));
+    columns_->emplace(insertionNumber, col);
 
     lastInsertNumber_ = insertionNumber;
     if (maxDim_ < (int)boundary->size() - 1) maxDim_ = boundary->size() - 1;
     timestamps_->emplace(insertionNumber, timestamp);
 }
 
-template<class ComplexStructure>
-template<class ColumnType, typename ContainerType>
-inline void Persistence<ComplexStructure>::Boundary_matrix<ColumnType, ContainerType>::insert_vertex(double insertionNumber, double timestamp)
+template<class ComplexStructure, class ColumnType>
+inline void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::insert_vertex(double insertionNumber, double timestamp)
 {
     isActivePositive_->emplace(insertionNumber, new std::pair<bool, bool>(true, true));
     timestamps_->emplace(insertionNumber, timestamp);
 }
 
-template<class ComplexStructure>
-template<class ColumnType, typename ContainerType>
-void Persistence<ComplexStructure>::Boundary_matrix<ColumnType, ContainerType>::reduce(double start)
+template<class ComplexStructure, class ColumnType>
+void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::reduce(double start)
 {
     for (int d = maxDim_; d > 0; d--){
         for (double i = start; i <= lastInsertNumber_; i++){
@@ -261,52 +244,18 @@ void Persistence<ComplexStructure>::Boundary_matrix<ColumnType, ContainerType>::
     }
 }
 
-template<class ComplexStructure>
-template<class ColumnType, typename ContainerType>
-void Persistence<ComplexStructure>::Boundary_matrix<ColumnType, ContainerType>::clear_out()
+template<class ComplexStructure, class ColumnType>
+void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::clear_out()
 {
     double r;
-#ifndef GUDHI_LIST
-    ContainerType tmp;
-#endif
-
     double c;
+
     for (auto it = columns_->begin(); it != columns_->end(); it++){
         c = it->first;
         ColumnType *column = columns_->at(c);
         r = column->get_pivot();
         if (isActivePositive_->at(r)->first){
-#ifdef GUDHI_LIST
-            typename ContainerType::reverse_iterator it;
-            typename ContainerType::iterator it2;
-            it = column->get_reverse_begin_iterator();
-            it++;
-            while (it != column->get_reverse_end_iterator()){
-                if (latest_->find(*it) != latest_->end() && !isActivePositive_->at(*it)->first){
-                    column->add(columns_->at(latest_->at(*(it--))));
-                } else if (!isActivePositive_->at(*it)->second && !isActivePositive_->at(*it)->first) {
-                    it2 = (++it).base();
-                    it--; it--;
-                    column->erase(&it2);
-                }
-                it++;
-            }
-#else
-            tmp.clear();
-            tmp.push_back(column->pop_pivot());
-            double max = column->pop_pivot();
-            while (max != -1){
-                if (latest_->find(max) != latest_->end() && !isActivePositive_->at(max)->first){
-                    column->insert(max);
-                    column->add(columns_->at(latest->at(max)));
-                } else if (isActivePositive_->at(max)->second || isActivePositive_->at(max)->first) {
-                    tmp.push_back(max);
-                }
-                max = column->pop_pivot();
-            }
-            std::reverse(tmp.begin(), tmp.end());
-            column->set(&tmp);
-#endif
+            column->clean(latest_, isActivePositive_, columns_);
         }
     }
 
@@ -340,48 +289,42 @@ void Persistence<ComplexStructure>::Boundary_matrix<ColumnType, ContainerType>::
     }
 }
 
-template<class ComplexStructure>
-template<class ColumnType, typename ContainerType>
-inline void Persistence<ComplexStructure>::Boundary_matrix<ColumnType, ContainerType>::mark_inactive(std::vector<double> *insertionNumbers)
+template<class ComplexStructure, class ColumnType>
+inline void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::mark_inactive(std::vector<double> *insertionNumbers)
 {
     for (std::vector<double>::size_type i = 0; i < insertionNumbers->size(); i++){
         isActivePositive_->at(insertionNumbers->at(i))->first = false;
     }
 }
 
-template<class ComplexStructure>
-template<class ColumnType, typename ContainerType>
-inline void Persistence<ComplexStructure>::Boundary_matrix<ColumnType, ContainerType>::mark_inactive(double insertionNumber)
+template<class ComplexStructure, class ColumnType>
+inline void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::mark_inactive(double insertionNumber)
 {
     isActivePositive_->at(insertionNumber)->first = false;
 }
 
-template<class ComplexStructure>
-template<class ColumnType, typename ContainerType>
-inline double Persistence<ComplexStructure>::Boundary_matrix<ColumnType, ContainerType>::get_last_insert_number() const
+template<class ComplexStructure, class ColumnType>
+inline double Persistence<ComplexStructure, ColumnType>::Boundary_matrix::get_last_insert_number() const
 {
     return lastInsertNumber_;
 }
 
-template<class ComplexStructure>
-template<class ColumnType, typename ContainerType>
-inline int Persistence<ComplexStructure>::Boundary_matrix<ColumnType, ContainerType>::get_max_dim() const
+template<class ComplexStructure, class ColumnType>
+inline int Persistence<ComplexStructure, ColumnType>::Boundary_matrix::get_max_dim() const
 {
     return maxDim_;
 }
 
-template<class ComplexStructure>
-template<class ColumnType, typename ContainerType>
-inline void Persistence<ComplexStructure>::Boundary_matrix<ColumnType, ContainerType>::clear_column(double columnIndex)
+template<class ComplexStructure, class ColumnType>
+inline void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::clear_column(double columnIndex)
 {
     if (columns_->find(columnIndex) == columns_->end()) return;
     delete columns_->at(columnIndex);
     columns_->erase(columnIndex);
 }
 
-template<class ComplexStructure>
-template<class ColumnType, typename ContainerType>
-inline void Persistence<ComplexStructure>::Boundary_matrix<ColumnType, ContainerType>::print_persistence_pair(int dim, double birth, double death)
+template<class ComplexStructure, class ColumnType>
+inline void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::print_persistence_pair(int dim, double birth, double death)
 {
     if (timestamps_->at(birth) != timestamps_->at(death)) *persistencePairsFile_ << std::setprecision(std::numeric_limits<double>::digits10 + 1)
                                                                               << dim << " " << timestamps_->at(birth) << " " << timestamps_->at(death) << std::endl;

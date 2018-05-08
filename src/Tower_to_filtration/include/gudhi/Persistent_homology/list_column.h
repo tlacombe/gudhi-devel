@@ -25,6 +25,7 @@
 
 #include <iostream>
 #include <list>
+#include <unordered_map>
 
 namespace Gudhi {
 namespace tower_to_filtration {
@@ -32,7 +33,7 @@ namespace tower_to_filtration {
 class List_column
 {
 public:
-    List_column(std::list<double> *column, int dim);
+    List_column(int dim);
     ~List_column();
 
     void add(List_column *columnToAdd);
@@ -44,14 +45,19 @@ public:
     double get_size(){ return column_->size(); }
     int get_dim() const{ return dim_; }
     double get_pivot();
+    void clean(std::unordered_map<double, double> *latest, std::unordered_map<double, std::pair<bool, bool> *> *isActivePositive,
+               std::unordered_map<double, List_column *> *columns);
+    void push_back(double cell);
 
 private:
     int dim_;
     std::list<double> *column_;
 };
 
-List_column::List_column(std::list<double> *column, int dim) : dim_(dim), column_(column)
-{}
+List_column::List_column(int dim) : dim_(dim)
+{
+    column_ = new std::list<double>();
+}
 
 List_column::~List_column()
 {
@@ -81,6 +87,30 @@ void List_column::add(List_column *columnToAdd)
 inline double List_column::get_pivot(){
     if (column_->empty()) return -1;
     return column_->back();
+}
+
+void List_column::clean(std::unordered_map<double, double> *latest, std::unordered_map<double, std::pair<bool, bool>*> *isActivePositive,
+                        std::unordered_map<double, List_column*> *columns)
+{
+    std::list<double>::reverse_iterator it;
+    std::list<double>::iterator it2;
+    it = column_->rbegin();
+    it++;
+    while (it != column_->rend()){
+        if (latest->find(*it) != latest->end() && !isActivePositive->at(*it)->first){
+            add(columns->at(latest->at(*(it--))));
+        } else if (!isActivePositive->at(*it)->second && !isActivePositive->at(*it)->first) {
+            it2 = (++it).base();
+            it--; it--;
+            column_->erase(it2);
+        }
+        it++;
+    }
+}
+
+void List_column::push_back(double cell)
+{
+    column_->push_back(cell);
 }
 
 }
