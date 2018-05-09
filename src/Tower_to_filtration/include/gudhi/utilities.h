@@ -37,6 +37,17 @@ namespace Gudhi {
 namespace tower_to_filtration {
 
 template<class ComplexStructure>
+/**
+ * @brief Reads the tower operation stored in @p line and store the corresponding vertices in @p vertices. Returns the operation type.
+ *
+ * For the right line format, see @ref sophiafileformat.
+ *
+ * @param line line te be read.
+ * @param vertices pointer to an empty vector of doubles. If the operation is an inclusion, it will store the vertices of the inserted simplex in increasing order ;
+ * if the operation is a contraction, it will store the two contracted vertices.
+ * @param timestamp time value associated to the operation.
+ * @return The operation type: #INCLUSION if it is an inclusion, #CONTRACTION if it is a contraction, or #COMMENT if it is not an operation.
+ */
 typename Tower_converter<ComplexStructure>::operationType read_operation(std::string *line, std::vector<double> *vertices, double *timestamp)
 {
     using TC = Tower_converter<ComplexStructure>;
@@ -82,6 +93,12 @@ typename Tower_converter<ComplexStructure>::operationType read_operation(std::st
 }
 
 template<class ComplexStructure>
+/**
+ * @brief Reads @p file containing a tower and feed it to @tc to construct the corresponding filtration.
+ * @param file file to be read. For the right file format, see @ref sophiafileformat.
+ * @param tc instance of @ref Gudhi::tower_to_filtration::Tower_converter<ComplexStructure>.
+ * @return @p file.
+ */
 std::ifstream& operator>>(std::ifstream& file, Tower_converter<ComplexStructure>& tc)
 {
     using TC = Tower_converter<ComplexStructure>;
@@ -114,6 +131,12 @@ std::ifstream& operator>>(std::ifstream& file, Tower_converter<ComplexStructure>
 }
 
 template<class ComplexStructure, class ColumnType>
+/**
+ * @brief Reads @p file containing a tower and feed it to @p pers to compute its persistence barcode.
+ * @param file file to be read. For the right file format, see @ref sophiafileformat.
+ * @param pers instance of @ref Gudhi::tower_to_filtration::Persistence<ComplexStructure,ColumnType>.
+ * @return @p file.
+ */
 std::ifstream& operator>>(std::ifstream& file, Persistence<ComplexStructure,ColumnType>& pers)
 {
     using TC = Tower_converter<ComplexStructure>;

@@ -65,73 +65,17 @@ public:
         VERTICES    /**< Simplices will be represented by the identifiers of their vertices in the output. */
     };
 
-    /**
-     * @brief Constructor without parameters.
-     *
-     * Initializes the members. The output option is set as "no output".
-     */
     Tower_converter();
-    /**
-     * @brief Full constructor.
-     *
-     * Initializes the members. The output stream will be redirected to @p outputFileName with the output format @p type.
-     *
-     * @param outputFileName File name for the output.
-     * @param type Output format. By default it is #VERTICES. See Enumeration #streamingType.
-     */
     Tower_converter(std::string outputFileName, streamingType type = VERTICES);
     ~Tower_converter();
 
-    /**
-     * @brief Add an elementary insertion as the next tower operation and convert it into the output stream.
-     * @param simplex simplex to be inserted, represented as a vector of its vertex identifiers in increasing order.
-     * @param timestamp time value or filtration value which will be associated to the operation in the filtration. Has to be equal or higher to the precedent ones.
-     * @return true if the insertion is successful, false otherwise.
-     */
     bool add_insertion(std::vector<double> *simplex, double timestamp);
-    /**
-     * @brief Add an elementary insertion as the next tower operation and convert it into the output stream.
-     * @param simplex simplex to be inserted, represented as a vector of its vertex identifiers in increasing order.
-     * @param timestamp time value or filtration value which will be associated to the operation in the filtration. Has to be equal or higher to the precedent ones.
-     * @param simplexBoundary pointer to an (empty) vector, where the identifiers of the boundary of the inserted simplex will be stored.
-     * @param simplexInsertionNumber pointer to an identifier, which will be replaced by the one of the inserted simplex.
-     * @return true if the insertion is successful, false otherwise.
-     */
     bool add_insertion(std::vector<double> *simplex, double timestamp, std::vector<index> *simplexBoundary, index *simplexInsertionNumber);
-    /**
-     * @brief Add an elementary contraction as the next tower operation and convert it into a equivalent sequence of insertions into the output stream.
-     * @param v identifier of the contracted vertex which disapears.
-     * @param u identifier of the contracted vertex which remains.
-     * @param timestamp time value or filtration value which will be associated to the operation in the filtration. Has to be equal or higher to the precedent ones.
-     * @return The identifier of the first new simplex in the equivalent insertion ; the remaining new simplices will take the identifiers which follows continuously.
-     */
     index add_contraction(double v, double u, double timestamp);
-    /**
-     * @brief Add an elementary contraction as the next tower operation and convert it into a equivalent sequence of insertions into the output stream.
-     * @param v identifier of the contracted vertex which disapears.
-     * @param u identifier of the contracted vertex which remains.
-     * @param timestamp time value or filtration value which will be associated to the operation in the filtration. Has to be equal or higher to the precedent ones.
-     * @param addedBoundaries pointer to an (empty) vector, where the boundaries of the inserted simplices will be stored.
-     * @param removedIndices pointer to an (empty) vector, where the identifiers of the simplices which become inactive will be stored.
-     * @return The identifier of the first new simplex in the equivalent insertion ; the remaining new simplices will take the identifiers which follows continuously.
-     */
     index add_contraction(double v, double u, double timestamp, std::vector<std::vector<index>*> *addedBoundaries, std::vector<index> *removedIndices);
 
-    /**
-     * @brief Returns the current size of the filtration.
-     * @return The current size of the filtration.
-     */
     double get_filtration_size() const;
-    /**
-     * @brief Returns the maximal size of the complex until now.
-     * @return The maximal size of the complex until now.
-     */
     double get_tower_width() const;
-    /**
-     * @brief Prints various information about the filtration in the terminal.
-     *
-     * Those are: filtration size, maximal size of a complex, maximal dimension of a simplex, tower width.
-     */
     void print_filtration_data();
 
 private:
@@ -142,21 +86,16 @@ private:
     double filtrationSize_;                         /**< Current filtration size. */
     double towerWidth_;                             /**< Current tower width. */
 
-    /**
-     * @brief Make the union of a set of simplices and a vertex.
-     * @param v vertex identifier to unify.
-     * @param simplices vector of simplices to unify with `v`. The simplices will be replaced by the resulting simplices.
-     */
     void get_union(vertex v, std::vector<simplex_base*> *simplices);
-    /**
-     * @brief Writes the simplex as an insertion in the output.
-     * @param simplex simplex to be inserted.
-     * @param timestamp filtration value of the insertion.
-     */
     void stream_simplex(simplex_base *simplex, double timestamp);
 };
 
 template<class ComplexStructure>
+/**
+ * @brief Constructor without parameters.
+ *
+ * Initializes the members. The output option is set as "no output".
+ */
 Tower_converter<ComplexStructure>::Tower_converter() : streamingType_(VERTICES), filtrationSize_(0), towerWidth_(0)
 {
     outputStream_ = NULL;
@@ -165,6 +104,14 @@ Tower_converter<ComplexStructure>::Tower_converter() : streamingType_(VERTICES),
 }
 
 template<class ComplexStructure>
+/**
+ * @brief Full constructor.
+ *
+ * Initializes the members. The output stream will be redirected to @p outputFileName with the output format @p type.
+ *
+ * @param outputFileName File name for the output.
+ * @param type Output format. By default it is #VERTICES. See Enumeration #streamingType.
+ */
 Tower_converter<ComplexStructure>::Tower_converter(std::string outputFileName, streamingType type) : streamingType_(type), filtrationSize_(0), towerWidth_(0)
 {
     outputStream_ = new std::ofstream(outputFileName);
@@ -173,6 +120,9 @@ Tower_converter<ComplexStructure>::Tower_converter(std::string outputFileName, s
 }
 
 template<class ComplexStructure>
+/**
+ * @brief Destructor
+ */
 Tower_converter<ComplexStructure>::~Tower_converter()
 {
     if (outputStream_ != NULL) delete outputStream_;
@@ -181,12 +131,26 @@ Tower_converter<ComplexStructure>::~Tower_converter()
 }
 
 template<class ComplexStructure>
+/**
+ * @brief Add an elementary insertion as the next tower operation and convert it into the output stream.
+ * @param simplex simplex to be inserted, represented as a vector of its vertex identifiers in increasing order.
+ * @param timestamp time value or filtration value which will be associated to the operation in the filtration. Has to be equal or higher to the precedent ones.
+ * @return true if the insertion is successful, false otherwise.
+ */
 inline bool Tower_converter<ComplexStructure>::add_insertion(std::vector<double> *simplex, double timestamp)
 {
     return add_insertion(simplex, timestamp, NULL, NULL);
 }
 
 template<class ComplexStructure>
+/**
+ * @brief Add an elementary insertion as the next tower operation and convert it into the output stream.
+ * @param simplex simplex to be inserted, represented as a vector of its vertex identifiers in increasing order.
+ * @param timestamp time value or filtration value which will be associated to the operation in the filtration. Has to be equal or higher to the precedent ones.
+ * @param simplexBoundary pointer to an (empty) vector, where the identifiers of the boundary of the inserted simplex will be stored.
+ * @param simplexInsertionNumber pointer to an identifier, which will be replaced by the one of the inserted simplex.
+ * @return true if the insertion is successful, false otherwise.
+ */
 bool Tower_converter<ComplexStructure>::add_insertion(std::vector<double> *simplex, double timestamp, std::vector<index> *simplexBoundary, index *simplexInsertionNumber)
 {
     simplex_base transSimplex;
@@ -211,12 +175,28 @@ bool Tower_converter<ComplexStructure>::add_insertion(std::vector<double> *simpl
 }
 
 template<class ComplexStructure>
+/**
+ * @brief Add an elementary contraction as the next tower operation and convert it into a equivalent sequence of insertions into the output stream.
+ * @param v identifier of the contracted vertex which disapears.
+ * @param u identifier of the contracted vertex which remains.
+ * @param timestamp time value or filtration value which will be associated to the operation in the filtration. Has to be equal or higher to the precedent ones.
+ * @return The identifier of the first new simplex in the equivalent insertion ; the remaining new simplices will take the identifiers which follows continuously.
+ */
 inline typename Tower_converter<ComplexStructure>::index Tower_converter<ComplexStructure>::add_contraction(double v, double u, double timestamp)
 {
     return add_contraction(v, u, timestamp, NULL, NULL);
 }
 
 template<class ComplexStructure>
+/**
+ * @brief Add an elementary contraction as the next tower operation and convert it into a equivalent sequence of insertions into the output stream.
+ * @param v identifier of the contracted vertex which disapears.
+ * @param u identifier of the contracted vertex which remains.
+ * @param timestamp time value or filtration value which will be associated to the operation in the filtration. Has to be equal or higher to the precedent ones.
+ * @param addedBoundaries pointer to an (empty) vector, where the boundaries of the inserted simplices will be stored.
+ * @param removedIndices pointer to an (empty) vector, where the identifiers of the simplices which become inactive will be stored.
+ * @return The identifier of the first new simplex in the equivalent insertion ; the remaining new simplices will take the identifiers which follows continuously.
+ */
 typename Tower_converter<ComplexStructure>::index Tower_converter<ComplexStructure>::add_contraction(double v, double u, double timestamp,
                                                                           std::vector<std::vector<index>*> *addedBoundaries, std::vector<index> *removedIndices)
 {
@@ -254,18 +234,31 @@ typename Tower_converter<ComplexStructure>::index Tower_converter<ComplexStructu
 }
 
 template<class ComplexStructure>
+/**
+ * @brief Returns the current size of the filtration.
+ * @return The current size of the filtration.
+ */
 inline double Tower_converter<ComplexStructure>::get_filtration_size() const
 {
     return filtrationSize_;
 }
 
 template<class ComplexStructure>
+/**
+ * @brief Returns the maximal size of the complex until now.
+ * @return The maximal size of the complex until now.
+ */
 inline double Tower_converter<ComplexStructure>::get_tower_width() const
 {
     return towerWidth_;
 }
 
 template<class ComplexStructure>
+/**
+ * @brief Prints various information about the filtration in the terminal.
+ *
+ * Those are: filtration size, maximal size of a complex, maximal dimension of a simplex, tower width.
+ */
 inline void Tower_converter<ComplexStructure>::print_filtration_data()
 {
     std::cout << std::setprecision(std::numeric_limits<double>::digits10 + 1) << "Filtration Size: " << filtrationSize_ << "\n";
@@ -275,6 +268,11 @@ inline void Tower_converter<ComplexStructure>::print_filtration_data()
 }
 
 template<class ComplexStructure>
+/**
+ * @brief Make the union of a set of simplices and a vertex.
+ * @param v vertex identifier to unify.
+ * @param simplices vector of simplices to unify with @p v. The simplices will be replaced by the resulting simplices.
+ */
 void Tower_converter<ComplexStructure>::get_union(vertex v, std::vector<simplex_base*> *simplices)
 {
     for (auto itSimplices = simplices->begin(); itSimplices != simplices->end(); itSimplices++){
@@ -287,6 +285,11 @@ void Tower_converter<ComplexStructure>::get_union(vertex v, std::vector<simplex_
 }
 
 template<class ComplexStructure>
+/**
+ * @brief Writes the simplex as an insertion in the output.
+ * @param simplex simplex to be inserted.
+ * @param timestamp filtration value of the insertion.
+ */
 void Tower_converter<ComplexStructure>::stream_simplex(simplex_base *simplex, double timestamp)
 {
     filtrationSize_++;

@@ -48,7 +48,7 @@ public:
      */
     void push_back(double cell);
     /**
-     * @brief Return the pivot of the column, which is the last nonzero value.
+     * @brief Return the pivot of the column, which is the index of the last nonzero value.
      * @return The last nonzero value of the column.
      */
     double get_pivot();

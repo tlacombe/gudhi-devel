@@ -71,13 +71,13 @@ public:
         int get_max_dim() const;
 
 	private:
-        std::unordered_map<double, ColumnType*> *columns_;
-        std::unordered_map<double, double> *latest_;
-        std::unordered_map<double, std::pair<bool, bool>*> *isActivePositive_;
-        std::unordered_map<double, double> *timestamps_;
-        double lastInsertNumber_;
-        int maxDim_;
-        std::ofstream *persistencePairsFile_;
+        std::unordered_map<double, ColumnType*> *columns_;                      /**< Columns of the matrix. The key is the column number. */
+        std::unordered_map<double, double> *latest_;                            /**< Pivot to column map. */
+        std::unordered_map<double, std::pair<bool, bool>*> *isActivePositive_;  /**< Indicates if a column is active (first value) and/or is positive. */
+        std::unordered_map<double, double> *timestamps_;                        /**< Column number to filtration value map. */
+        double lastInsertNumber_;                                               /**< Identifier of the latest inserted simplex (as column). */
+        int maxDim_;                                                            /**< Maximal dimension of an inserted simplex. */
+        std::ofstream *persistencePairsFile_;                                   /**< Output stream. */
 
         void clear_column(double columnIndex);
         void print_persistence_pair(int dim, double birth, double death);
@@ -90,15 +90,20 @@ public:
     void print_filtration_data();
 
 private:
-    Tower_converter<ComplexStructure> *converter_;
-    Boundary_matrix *matrix_;
-    double reductionInterval_;
-    double lastReduction_;
+    Tower_converter<ComplexStructure> *converter_;  /**< Pointer to @ref Gudhi::tower_to_filtration::Tower_converter<ComplexStructure> */
+    Boundary_matrix *matrix_;                       /**< Boundary matrix. */
+    double reductionInterval_;                      /**< Number of steps between each matrix processing. */
+    double lastReduction_;                          /**< Number of steps since the last matrix processing. */
 
     void compute_partial_persistence();
 };
 
 template<class ComplexStructure, class ColumnType>
+/**
+ * @brief Constructor
+ * @param reductionInterval number of steps between each matrix processing. The higher the interval, the faster the computing, but the bigger the space consumption.
+ * @param persistencePairsFileName file name for the output.
+ */
 Persistence<ComplexStructure, ColumnType>::Persistence(double reductionInterval, std::string persistencePairsFileName) : reductionInterval_(reductionInterval), lastReduction_(-1)
 {
     converter_ = new Tower_converter<ComplexStructure>();
@@ -107,6 +112,9 @@ Persistence<ComplexStructure, ColumnType>::Persistence(double reductionInterval,
 }
 
 template<class ComplexStructure, class ColumnType>
+/**
+ * @brief Destructor
+ */
 Persistence<ComplexStructure, ColumnType>::~Persistence()
 {
     delete converter_;
@@ -114,6 +122,12 @@ Persistence<ComplexStructure, ColumnType>::~Persistence()
 }
 
 template<class ComplexStructure, class ColumnType>
+/**
+ * @brief Add an elementary insertion as the next tower operation.
+ * @param simplex simplex to be inserted, represented as a vector of its vertex identifiers in increasing order.
+ * @param timestamp time value or filtration value which will be associated to the operation in the filtration. Has to be equal or higher to the precedent ones.
+ * @return true if the insertion is successful, false otherwise.
+ */
 bool Persistence<ComplexStructure, ColumnType>::add_insertion(std::vector<double> *simplex, double timestamp)
 {
     std::vector<double> boundary;
@@ -134,6 +148,12 @@ bool Persistence<ComplexStructure, ColumnType>::add_insertion(std::vector<double
 }
 
 template<class ComplexStructure, class ColumnType>
+/**
+ * @brief Add an elementary contraction as the next tower operation.
+ * @param v identifier of the contracted vertex which disapears.
+ * @param u identifier of the contracted vertex which remains.
+ * @param timestamp time value or filtration value which will be associated to the operation in the filtration. Has to be equal or higher to the precedent ones.
+ */
 void Persistence<ComplexStructure, ColumnType>::add_contraction(double v, double u, double timestamp)
 {
     std::vector<std::vector<double>*> boundaries;
@@ -153,6 +173,9 @@ void Persistence<ComplexStructure, ColumnType>::add_contraction(double v, double
 }
 
 template<class ComplexStructure, class ColumnType>
+/**
+ * @brief Starts matrix processing. To call when the entire tower was given in the input and the last processing has to be made.
+ */
 inline void Persistence<ComplexStructure, ColumnType>::finalize_reduction()
 {
     if (lastReduction_ != matrix_->get_last_insert_number()) matrix_->reduce(lastReduction_ + 1);
@@ -160,12 +183,20 @@ inline void Persistence<ComplexStructure, ColumnType>::finalize_reduction()
 }
 
 template<class ComplexStructure, class ColumnType>
+/**
+ * @brief Prints various information about the resulting filtration in the terminal.
+ *
+ * Those are: filtration size, maximal size of a complex, maximal dimension of a simplex, tower width.
+ */
 inline void Persistence<ComplexStructure, ColumnType>::print_filtration_data()
 {
     converter_->print_filtration_data();
 }
 
 template<class ComplexStructure, class ColumnType>
+/**
+ * @brief Starts matrix reduction and clearing.
+ */
 inline void Persistence<ComplexStructure, ColumnType>::compute_partial_persistence()
 {
     matrix_->reduce(lastReduction_ + 1);
@@ -174,6 +205,10 @@ inline void Persistence<ComplexStructure, ColumnType>::compute_partial_persisten
 }
 
 template<class ComplexStructure, class ColumnType>
+/**
+ * @brief Constructor
+ * @param persistencePairsFileName file name for the output.
+ */
 Persistence<ComplexStructure, ColumnType>::Boundary_matrix::Boundary_matrix(std::string persistencePairsFileName) : lastInsertNumber_(-1), maxDim_(-1)
 {
     columns_ = new std::unordered_map<double, ColumnType*>();
@@ -188,6 +223,9 @@ Persistence<ComplexStructure, ColumnType>::Boundary_matrix::Boundary_matrix(std:
 }
 
 template<class ComplexStructure, class ColumnType>
+/**
+ * @brief Destructor.
+ */
 Persistence<ComplexStructure, ColumnType>::Boundary_matrix::~Boundary_matrix()
 {
     for (auto it = columns_->begin(); it != columns_->end(); it++){
@@ -205,6 +243,12 @@ Persistence<ComplexStructure, ColumnType>::Boundary_matrix::~Boundary_matrix()
 }
 
 template<class ComplexStructure, class ColumnType>
+/**
+ * @brief Insert a nonempty column in the matrix.
+ * @param insertionNumber identifier of the simplex whose boundary is represented in this column.
+ * @param boundary column to be inserted ; has to represent a new nonzero boundary.
+ * @param timestamp filtration value of the corresponding simplex.
+ */
 void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::insert_column(double insertionNumber, std::vector<double> *boundary, double timestamp)
 {
     ColumnType *col = new ColumnType(boundary->size() - 1);
@@ -222,6 +266,11 @@ void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::insert_column(d
 }
 
 template<class ComplexStructure, class ColumnType>
+/**
+ * @brief Insert a vertex in the matrix.
+ * @param insertionNumber identifier of the vertex.
+ * @param timestamp filtration value of the vertex.
+ */
 inline void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::insert_vertex(double insertionNumber, double timestamp)
 {
     isActivePositive_->emplace(insertionNumber, new std::pair<bool, bool>(true, true));
@@ -229,6 +278,10 @@ inline void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::insert_v
 }
 
 template<class ComplexStructure, class ColumnType>
+/**
+ * @brief Reduces the matrix from column @p start to the last inserted column in order.
+ * @param start number of the column to start the reduction from.
+ */
 void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::reduce(double start)
 {
     for (int d = maxDim_; d > 0; d--){
@@ -256,6 +309,9 @@ void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::reduce(double s
 }
 
 template<class ComplexStructure, class ColumnType>
+/**
+ * @brief Clears the matrix from useless cells. See @ref KerberS17 for more details.
+ */
 void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::clear_out()
 {
     double r;
@@ -301,6 +357,10 @@ void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::clear_out()
 }
 
 template<class ComplexStructure, class ColumnType>
+/**
+ * @brief Marks columns as inactive.
+ * @param insertionNumbers numbers of the columns to be marked.
+ */
 inline void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::mark_inactive(std::vector<double> *insertionNumbers)
 {
     for (std::vector<double>::size_type i = 0; i < insertionNumbers->size(); i++){
@@ -309,24 +369,40 @@ inline void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::mark_ina
 }
 
 template<class ComplexStructure, class ColumnType>
+/**
+ * @brief Marks a single column as inactive.
+ * @param insertionNumber number of the column to be marked.
+ */
 inline void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::mark_inactive(double insertionNumber)
 {
     isActivePositive_->at(insertionNumber)->first = false;
 }
 
 template<class ComplexStructure, class ColumnType>
+/**
+ * @brief Return the number of the last inserted simplex.
+ * @return The number of the last inserted simplex.
+ */
 inline double Persistence<ComplexStructure, ColumnType>::Boundary_matrix::get_last_insert_number() const
 {
     return lastInsertNumber_;
 }
 
 template<class ComplexStructure, class ColumnType>
+/**
+ * @brief Returns the maximal dimension of an inserted simplex.
+ * @return The maximal dimension of an inserted simplex.
+ */
 inline int Persistence<ComplexStructure, ColumnType>::Boundary_matrix::get_max_dim() const
 {
     return maxDim_;
 }
 
 template<class ComplexStructure, class ColumnType>
+/**
+ * @brief Erases the content of a column and the column itself.
+ * @param columnIndex number of the column to be deleted.
+ */
 inline void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::clear_column(double columnIndex)
 {
     if (columns_->find(columnIndex) == columns_->end()) return;
@@ -335,6 +411,12 @@ inline void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::clear_co
 }
 
 template<class ComplexStructure, class ColumnType>
+/**
+ * @brief Print the given persistence pair (birth and death) into the output.
+ * @param dim dimension of the corresponding cycle class.
+ * @param birth birth value of the corresponding cycle class.
+ * @param death death value of the corresponding cycle class.
+ */
 inline void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::print_persistence_pair(int dim, double birth, double death)
 {
     if (timestamps_->at(birth) != timestamps_->at(death)) *persistencePairsFile_ << std::setprecision(std::numeric_limits<double>::digits10 + 1)
