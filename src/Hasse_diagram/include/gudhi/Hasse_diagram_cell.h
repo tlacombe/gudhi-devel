@@ -37,7 +37,6 @@
 
 
 namespace Gudhi {
-
 namespace Hasse_diagram {
 
 
