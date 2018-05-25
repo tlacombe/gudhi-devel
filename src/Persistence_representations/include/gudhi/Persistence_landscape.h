@@ -732,7 +732,7 @@ double Persistence_landscape::compute_integral_of_landscape(double p) const {
 double Persistence_landscape::compute_value_at_a_given_point(unsigned level, double x) const {
   bool compute_value_at_a_given_pointDbg = false;
   // in such a case lambda_level = 0.
-  if (level > this->land.size()) return 0;
+  if (level >= this->land.size()) return 0;
 
   // we know that the points in this->land[level] are ordered according to x coordinate. Therefore, we can find the
   // point by using bisection:
@@ -1323,6 +1323,10 @@ double compute_inner_product(const Persistence_landscape& l1, const Persistence_
           std::cerr << "Incrementing second \n";
         }
       }
+      
+      if ( l1It + 1 >= l1.land[level].size()  )break;
+      if ( l2It + 1 >= l2.land[level].size()  )break;
+      
       // Now, we shift x1 and x2:
       x1 = x2;
       if (l1.land[level][l1It + 1].first < l2.land[level][l2It + 1].first) {

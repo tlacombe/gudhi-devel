@@ -102,7 +102,7 @@ class Persistence_landscape_interface : public Persistence_landscape
 
   double compute_value_at_a_given_point_interface(unsigned level, double x) const
   {
-	  std::cerr << "LEVEL : " << level << " x :" << x << std::endl;
+	  //std::cerr << "LEVEL : " << level << " x :" << x << std::endl;
 	  return this->compute_value_at_a_given_point(level,x);
   }
 

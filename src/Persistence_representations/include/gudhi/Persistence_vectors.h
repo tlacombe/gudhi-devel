@@ -114,8 +114,8 @@ class Vector_distances_in_diagram {
   void write_to_file(const char* filename) const;
 
   /**
-      * Write a vector to a file.
-     **/
+  * Write a vector to a file.
+  **/
   void print_to_file(const char* filename) const { this->write_to_file(filename); }
 
   /**
