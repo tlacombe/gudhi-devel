@@ -31,9 +31,9 @@
 
 namespace Gudhi {
 	
-//But if we want to have the same names of classes in C++ and cyton side we ned this interface, because othervise we will have a name conflict. And we want to have the same names on the 
-//C++ and python side for various reasonc (clarity, documentantions etc.).
-//If the C++ class we inherid from are template class, we are inherid from concretization, for instance Persistence_intervals<double>.
+//If we want to have the same names of classes in C++ and cyton side we need this interface, because othervise we will have a name conflict. And we want to have the same names on the 
+//C++ and python side for various reasons (clarity, documentantions etc.).
+//If the C++ class we inherid from is a template class, we then inherite from its concretization, for instance Persistence_intervals<double>.
 //Also in this class, we create an interface functions that will be used in the python side. That will allow to have the same name of the functions in the C++ and python side. 
 
 namespace Persistence_representations {

@@ -69,7 +69,7 @@ class Persistence_landscape_interface : public Persistence_landscape
 	  this->compute_average(to_average_new);
   }
 
-/*
+
   void load_landscape_from_file_interface(const char* filename)
   {
 	  this->load_landscape_from_file(filename);
@@ -102,6 +102,7 @@ class Persistence_landscape_interface : public Persistence_landscape
 
   double compute_value_at_a_given_point_interface(unsigned level, double x) const
   {
+	  std::cerr << "LEVEL : " << level << " x :" << x << std::endl;
 	  return this->compute_value_at_a_given_point(level,x);
   }
 
@@ -137,12 +138,12 @@ class Persistence_landscape_interface : public Persistence_landscape
 
   double find_max_interface(unsigned lambda) const
   {
-	  return this->find_max();
+	  return this->find_max(lambda);
   }
 
   friend double compute_inner_product_interface(const Persistence_landscape& l1, const Persistence_landscape& l2)
   {
-	  return this->compute_inner_product(l1,l2);
+	  return compute_inner_product(l1,l2);
   }
 
   double project_to_R_interface(int number_of_function) const 
@@ -163,9 +164,9 @@ class Persistence_landscape_interface : public Persistence_landscape
   }
   
   
-  size_t number_of_vectorize_function_interface() const 
+  size_t number_of_vectorize_functions_interface() const 
   {
-	  return this->number_of_vectorize_function();
+	  return this->number_of_vectorize_functions();
   }
   
   
@@ -191,7 +192,7 @@ class Persistence_landscape_interface : public Persistence_landscape
   {
 	  return this->get_y_range( level );
   }
-  */
+  
 };
 
 }  // namespace Persistence_representations
