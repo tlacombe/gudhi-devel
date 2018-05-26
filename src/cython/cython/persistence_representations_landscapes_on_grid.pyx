@@ -50,11 +50,10 @@ cdef extern from "Persistence_landscape_on_grid_interface.h" namespace "Gudhi::P
         double compute_integral_of_landscape()const
         double compute_integral_of_a_level_of_a_landscape(size_t)const
         double compute_integral_of_landscape(double)const
-        double compute_value_at_a_given_point(unsigned , double)const
-        double compute_maximum()const
-        double compute_minimum()const
+        double compute_value_at_a_given_point(unsigned , double)const        
+        pair[double,double] compute_minimum_maximuminterface()const
         double compute_norm_of_landscape(double)
-        Persistence_landscape_on_grid_interface* new_abs_interface()
+        void abs_interface()
         size_t size()const
         double find_max(unsigned)const
         double project_to_R(int)const
@@ -146,14 +145,9 @@ cdef class PersistenceLandscapesOnGrid:
                     self.thisptr = new Persistence_landscape_on_grid_interface(file_with_intervals,0, grid_min_, grid_max_,number_of_points_, number_of_levels)
             else:            
                 if (file_with_intervals is '') and (vector_of_intervals is not None):
-                    self.thisptr = new Persistence_landscape_on_grid_interface(vector_of_intervals, grid_min_, grid_max_, number_of_points_,number_of_levels)
-                    #Persistence_landscape_on_grid_interface(vector_of_intervals, grid_min_, grid_max_,number_of_points_, number_of_levels)                                           
+                    self.thisptr = new Persistence_landscape_on_grid_interface()#(vector_of_intervals,  grid_min_, grid_max_, number_of_points_, number_of_levels)
                 else:
-                    print("Persistence interals can be constructed from vector of birth-death pairs,  vector_of_intervals or a Gudhi-style file.")                     
-
-
-#Persistence_landscape_on_grid_interface(const vector[pair[double, double]], double grid_min_, double grid_max_,  size_t number_of_points_, unsigned number_of_levels_of_landscape)
-
+                    self.thisptr = new Persistence_landscape_on_grid_interface()
 
 
     def __dealloc__(self):
@@ -229,19 +223,12 @@ cdef class PersistenceLandscapesOnGrid:
         if ( self.thisptr != NULL ) and ( level is not None ) and ( x is not None ):
             return self.thisptr.compute_value_at_a_given_point(level,x)
 
-    def compute_maximum( self ):
-        """
-        Computations of maximum (y) value of landscape.
-        """
-        if ( self.thisptr != NULL ):
-            return self.thisptr.compute_maximum()
-
-    def compute_minimum( self ):
+    def compute_minimum_maximuminterface( self ):
         """
         Computations of minimum (y) value of landscape.
         """
         if ( self.thisptr != NULL ):
-            return self.thisptr.compute_minimum()
+            return self.thisptr.compute_minimum_maximuminterface()
 
     def compute_norm_of_landscape(self,i):
         """
@@ -264,9 +251,7 @@ cdef class PersistenceLandscapesOnGrid:
         this procedure.
         """
         if ( self.thisptr != NULL ):
-            abs_ = PersistenceLandscapesOnGrid()
-            abs_.thisptr = self.thisptr.new_abs_interface()
-            return abs_
+            self.thisptr.abs_interface()            
 
 
     def size( self ):

@@ -24,15 +24,13 @@
 #define PERSISTENCE_VECTORS_INTERFACE_H_
 
 // gudhi include
-#include <gudhi/persistence_vectors.h>
-s
+#include <gudhi/Persistence_vectors.h>
+
 namespace Gudhi {
 namespace Persistence_representations {
 
 
-
-template <typename F>
-class Vector_distances_in_diagram_interface : Vector_distances_in_diagram<Euclidean_distance> {
+class Vector_distances_in_diagram_interface : public Vector_distances_in_diagram<Euclidean_distance> {
  public:
   Vector_distances_in_diagram_interface():Vector_distances_in_diagram(){}
 
@@ -45,7 +43,7 @@ class Vector_distances_in_diagram_interface : Vector_distances_in_diagram<Euclid
                               
   inline double vector_in_position_interface(size_t position) const 
   {
-	  return this->vector_in_position(position):
+	  return this->vector_in_position(position);
   }
     
   inline size_t size_interface() const 
@@ -88,10 +86,17 @@ class Vector_distances_in_diagram_interface : Vector_distances_in_diagram<Euclid
 	  return this->number_of_vectorize_functions();
   }
 
-  void compute_average_interface(const std::vector<Vector_distances_in_diagram*>& to_average)
+  void compute_average_interface(const std::vector<Vector_distances_in_diagram_interface*>& to_average)
   {
-	  this->compute_average(to_average);
+	  std::vector<Vector_distances_in_diagram*> to_average_new;
+	  to_average_new.reserve( to_average.size() );
+	  for ( size_t i = 0 ; i != to_average.size() ; ++i )
+	  {
+		  to_average_new.push_back( (Vector_distances_in_diagram_interface*)to_average[i] );
+	  }
+	  this->compute_average(to_average_new);
   }
+  
 
   double distance_interface(const Vector_distances_in_diagram& second, double power = 1) const
   {

@@ -887,7 +887,7 @@ class Persistence_landscape_on_grid {
   * The parameter of this function is a Persistence_landscape_on_grid.
   * This function is required in Topological_data_with_scalar_product concept.
   **/
-  double compute_scalar_product(const Persistence_landscape_on_grid& second) {
+  double compute_scalar_product(const Persistence_landscape_on_grid& second)const {
     return compute_inner_product((*this), second);
   }
 

@@ -170,10 +170,10 @@ class Persistence_landscape_interface : public Persistence_landscape
   }
   
   
-  void compute_average_interface(const std::vector<Persistence_landscape*>& to_average) 
-  {
-	  return this->compute_average(to_average);
-  }
+  //void compute_average_interface(const std::vector<Persistence_landscape*>& to_average) 
+  //{
+  //  return this->compute_average(to_average);
+  //}
   
   
   double distance_interface(const Persistence_landscape& second, double power = 1) 

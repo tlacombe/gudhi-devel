@@ -59,12 +59,6 @@ class Persistence_landscape_on_grid_interface : public Persistence_landscape_on_
   Persistence_landscape_on_grid_interface(const char* filename, size_t number_of_points, uint16_t dimension = std::numeric_limits<uint16_t>::max()):
   Persistence_landscape_on_grid(filename,number_of_points,dimension){}  
   
-
-  Persistence_landscape_on_grid_interface* new_abs_interface()
-  {
-	   return (Persistence_landscape_on_grid_interface*)this->new_abs();
-  }
-  
   void new_compute_average(const std::vector<Persistence_landscape_on_grid_interface*>& to_average) 
   {
 	  std::vector<Persistence_landscape_on_grid*> to_average_new;
@@ -77,7 +71,7 @@ class Persistence_landscape_on_grid_interface : public Persistence_landscape_on_
   }
 
 
-/*
+
   void load_landscape_from_file_interface(const char* filename)
   {
 	  this->load_landscape_from_file(filename);
@@ -94,13 +88,6 @@ class Persistence_landscape_on_grid_interface : public Persistence_landscape_on_
   {
 	  return this->compute_integral_of_landscape();
   }
-
-
-  double compute_integral_of_a_level_of_a_landscape_interface(size_t level) const
-  {
-	  return this->compute_integral_of_a_level_of_a_landscape(level);
-  }
-
 
   double compute_integral_of_landscape_interface(double p) const
   {
@@ -120,9 +107,9 @@ class Persistence_landscape_on_grid_interface : public Persistence_landscape_on_
   }
   
   
-  double compute_minimum_interface() const 
+  std::pair<double,double> compute_minimum_maximuminterface() const 
   {
-	  return this->compute_minimum();
+	  return this->compute_minimum_maximum();
   }
   
   
@@ -132,7 +119,7 @@ class Persistence_landscape_on_grid_interface : public Persistence_landscape_on_
   }
   
   
-  Persistence_landscape abs_interface()
+  void abs_interface()
   {
 	  return this->abs();
   }
@@ -144,12 +131,12 @@ class Persistence_landscape_on_grid_interface : public Persistence_landscape_on_
 
   double find_max_interface(unsigned lambda) const
   {
-	  return this->find_max();
+	  return this->find_max(lambda);
   }
 
-  friend double compute_inner_product_interface(const Persistence_landscape& l1, const Persistence_landscape& l2)
+  friend double compute_inner_product_interface(const Persistence_landscape_on_grid_interface& l1, const Persistence_landscape_on_grid_interface& l2)
   {
-	  return this->compute_inner_product(l1,l2);
+	  return compute_inner_product((Persistence_landscape_on_grid_interface)l1,(Persistence_landscape_on_grid_interface)l2);
   }
 
   double project_to_R_interface(int number_of_function) const 
@@ -170,27 +157,33 @@ class Persistence_landscape_on_grid_interface : public Persistence_landscape_on_
   }
   
   
-  size_t number_of_vectorize_function_interface() const 
+  size_t number_of_vectorize_functions_interface() const 
   {
-	  return this->number_of_vectorize_function();
+	  return this->number_of_vectorize_functions();
   }
   
   
-  void compute_average_interface(const std::vector<Persistence_landscape*>& to_average) 
+  void compute_average_interface(const std::vector<Persistence_landscape_on_grid_interface*>& to_average) 
   {
-	  return this->compute_average(to_average);
+	  std::vector<Persistence_landscape_on_grid*> to_average_new;	  
+	  to_average_new.reserve( to_average.size() );
+	  for ( size_t i = 0 ; i != to_average.size() ; ++i )
+	  {
+		  to_average_new.push_back( (Persistence_landscape_on_grid*)to_average[i] );
+	  }
+	  return this->compute_average(to_average_new);
   }
   
   
-  double distance_interface(const Persistence_landscape& second, double power = 1) 
+  double distance_interface(const Persistence_landscape_on_grid_interface& second, double power = 1) 
   {
-	  return this->distance( second, power );
+	  return this->distance( (Persistence_landscape_on_grid)second, power );
   }
  
  
-  double compute_scalar_product_interface(const Persistence_landscape& second) const 
+  double compute_scalar_product_interface(const Persistence_landscape_on_grid_interface& second) const 
   {
-	  return this->compute_scalar_product( second );
+	  return this->compute_scalar_product( (Persistence_landscape_on_grid)second );
   }
 
 
@@ -198,7 +191,7 @@ class Persistence_landscape_on_grid_interface : public Persistence_landscape_on_
   {
 	  return this->get_y_range( level );
   }
-  */
+  
 };   
 
 }  // namespace Persistence_representations
