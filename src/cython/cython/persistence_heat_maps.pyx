@@ -37,17 +37,9 @@ __license__ = "GPL v3"
 cdef extern from "Persistence_heat_maps_interface.h" namespace "Gudhi::Persistence_representations":
 	cdef cppclass Persistence_heat_maps_interface "Gudhi::Persistence_representations::Persistence_heat_maps_interface":
 		Persistence_heat_maps_interface()
-		Persistence_heat_maps_interface(const vector[pair[double, double]]& interval,
-							size_t how_many_pixels_raidus_of_Gausian_kernel,
-							size_t number_of_pixels,
-							double min_ = 0,
-							double max_ = 0)															
-											   
-		Persistence_heat_maps_interface(const char* filename, size_t how_many_pixels_raidus_of_Gausian_kernel,
-							size_t number_of_pixels,
-							double min_ = 0,
-							double max_ = 0,
-							unsigned dimensions = 0)
+		#For some reasons such a constructors are not accepted. That is why we use the static methods from below instead. 
+		#Persistence_heat_maps_interface(const vector[pair[double, double]]& interval,size_t how_many_pixels_raidus_of_Gausian_kernel,size_t number_of_pixels,double min_ = 0,double max_ = 0)																										  
+		#Persistence_heat_maps_interface(const char* filename, size_t how_many_pixels_raidus_of_Gausian_kernel,size_t number_of_pixels,double min_ = 0,double max_ = 0,unsigned dimensions = 0)
 
 		void compute_mean_interface(const vector[Persistence_heat_maps_interface*]& maps_)
 		void compute_median_interface(const vector[Persistence_heat_maps_interface*]& maps_)
@@ -66,6 +58,22 @@ cdef extern from "Persistence_heat_maps_interface.h" namespace "Gudhi::Persisten
 		double compute_scalar_product_interface(const Persistence_heat_maps_interface& second_) const
 		pair[double, double] get_x_range_interface() const
 		pair[double, double] get_y_range_interface() const
+		
+		#**************
+        #static methods
+		@staticmethod
+		Persistence_heat_maps_interface* construct_from_file( const char* filename, size_t how_many_pixels_raidus_of_Gausian_kernel,
+							size_t number_of_pixels,
+							double min_,
+							double max_,
+							unsigned dimensions)
+		@staticmethod
+		Persistence_heat_maps_interface* construct_from_vector_of_pairs( const vector[pair[double, double]]& interval,
+							size_t how_many_pixels_raidus_of_Gausian_kernel,
+							size_t number_of_pixels,
+							double min_,
+							double max_)
+        #***************
 
         
         
@@ -104,22 +112,22 @@ cdef class PersistenceHeatMaps:
 				if (dimension is not None):
 					if os.path.isfile(file_with_intervals):
 						if (min_ is not None) and (max_ is not None):
-							self.thisptr = new Persistence_heat_maps_interface(file_with_intervals, how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels, min_, max_, dimension)
+							self.thisptr = Persistence_heat_maps_interface.construct_from_file(file_with_intervals, how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels, min_, max_, dimension)
 						else:
-							self.thisptr = new Persistence_heat_maps_interface(file_with_intervals, how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels,0,0,0)
+							self.thisptr = Persistence_heat_maps_interface.construct_from_file(file_with_intervals, how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels,0,0,0)
 					else:
 						print("file " + file_with_intervals + " not found.")
 				else:
 					if (min_ is not None) and (max_ is not None):
-						self.thisptr = new Persistence_heat_maps_interface(file_with_intervals, how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels, min_, max_, 0)
+						self.thisptr = Persistence_heat_maps_interface.construct_from_file(file_with_intervals, how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels, min_, max_, 0)
 					else:
-						self.thisptr = new Persistence_heat_maps_interface(file_with_intervals, how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels,0,0,0)
+						self.thisptr = Persistence_heat_maps_interface.construct_from_file(file_with_intervals, how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels,0,0,0)
 			else:            
 				if (file_with_intervals is '') and (vector_of_intervals is not None):
 					if (min_ is not None) and (max_ is not None):
-						self.thisptr = new Persistence_heat_maps_interface(vector_of_intervals, how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels, min_, max_)
+						self.thisptr = Persistence_heat_maps_interface.construct_from_vector_of_pairs(vector_of_intervals, how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels, min_, max_)
 					else:
-						self.thisptr = new Persistence_heat_maps_interface(vector_of_intervals, how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels,0,0)
+						self.thisptr = Persistence_heat_maps_interface.construct_from_vector_of_pairs(vector_of_intervals, how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels,0,0)
 				else:
 					self.thisptr = new Persistence_heat_maps_interface()
 
@@ -141,8 +149,8 @@ cdef class PersistenceHeatMaps:
 		:type PersistenceHeatMaps
 		"""            
 		cdef vector[Persistence_heat_maps_interface*] cpp_list    
-		if ( self.thisptr != NULL ) and ( to_average is not None ):	
-			for elt in to_average: 
+		if ( self.thisptr != NULL ) and ( maps_ is not None ):	
+			for elt in maps_: 
 				cpp_list.push_back((<PersistenceHeatMaps>elt).thisptr)
 			self.thisptr.compute_mean_interface( cpp_list )  
             
@@ -156,8 +164,8 @@ cdef class PersistenceHeatMaps:
 		:type PersistenceHeatMaps
 		"""            
 		cdef vector[Persistence_heat_maps_interface*] cpp_list    
-		if ( self.thisptr != NULL ) and ( to_average is not None ):	
-			for elt in to_average: 
+		if ( self.thisptr != NULL ) and ( maps_ is not None ):	
+			for elt in maps_: 
 				cpp_list.push_back((<PersistenceHeatMaps>elt).thisptr)
 			self.thisptr.compute_median_interface( cpp_list ) 
             
@@ -171,8 +179,8 @@ cdef class PersistenceHeatMaps:
 		:type PersistenceHeatMaps
 		"""            
 		cdef vector[Persistence_heat_maps_interface*] cpp_list    
-		if ( self.thisptr != NULL ) and ( to_average is not None ):	
-			for elt in to_average: 
+		if ( self.thisptr != NULL ) and ( maps_ is not None ):	
+			for elt in maps_: 
 				cpp_list.push_back((<PersistenceHeatMaps>elt).thisptr)
 			self.thisptr.compute_percentage_of_active_interface( cpp_list )  
                        
@@ -196,14 +204,14 @@ cdef class PersistenceHeatMaps:
 		if ( self.thisptr != NULL ) and ( filename is not None ):
 			self.thisptr.print_to_file_interface(filename)                          
        
-	def check_if_the_same( self, second ):
+	def check_if_the_same( self, PersistenceHeatMaps second ):
 		"""
 		Check if this Persistence Heat Map and the second Persistence Heat Map
 		are the same.
 		:type bool
 		"""
-		if ( self.thisptr != NULL ):
-			return self.thisptr.check_if_the_same_interface( second.thisptr )
+		if ( (self.thisptr != NULL) and (second is not None) and (second.thisptr != NULL) ):
+			return self.thisptr.check_if_the_same_interface( deref(second.thisptr) )
             
 	def get_min( self ):
 		"""

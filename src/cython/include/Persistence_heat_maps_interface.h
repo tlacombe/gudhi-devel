@@ -23,49 +23,56 @@
 #ifndef PERSISTENCE_HEAT_MAPS_INTERFACE_H_
 #define PERSISTENCE_HEAT_MAPS_INTERFACE_H_
 
-// gudhi include
-#include <gudhi/read_persistence_from_file.h>
-#include <gudhi/common_persistence_representations.h>
-
-// standard include
-#include <vector>
-#include <sstream>
-#include <iostream>
-#include <cmath>
-#include <limits>
-#include <algorithm>
-#include <utility>
-#include <string>
-#include <functional>
+#include <gudhi/Persistence_heat_maps.h>
 
 namespace Gudhi {
 namespace Persistence_representations {
 
-class Persistence_heat_maps_interface : public Persistence_heat_maps {
+class Persistence_heat_maps_interface : public Persistence_heat_maps<constant_scaling_function> {
  public:
 
   Persistence_heat_maps_interface():Persistence_heat_maps(){}
 
  
   Persistence_heat_maps_interface(const std::vector<std::pair<double, double> >& interval,
-                        size_t how_many_pixels_raidus_of_Gausian_kernel,
+						size_t how_many_pixels_raidus_of_Gausian_kernel,
                         size_t number_of_pixels,
                         double min_,
-                        double max_):
+                        double max_
+                        ):
    Persistence_heat_maps(interval,create_Gaussian_filter(how_many_pixels_raidus_of_Gausian_kernel, 1),
-						true,number_of_pixels,(min_ == 0 ? : std::numeric_limits<double>::max(), min_) , (max_ == 0 ? : std::numeric_limits<double>::max(), max_)){}   						                
+						true,number_of_pixels,((min_ == 0) ?  std::numeric_limits<double>::max() : min_) , ((max_ == 0) ? std::numeric_limits<double>::max() : max_)){}   			
+									                
   
-  Persistence_heat_maps_interface(const char* filename, size_t how_many_pixels_raidus_of_Gausian_kernel,
+  Persistence_heat_maps_interface(const char* filename, 
+						size_t how_many_pixels_raidus_of_Gausian_kernel,
                         size_t number_of_pixels,
                         double min_,
                         double max_,
-                        unsigned dimension = std::numeric_limits<unsigned>::max()):
+                        unsigned dimension
+                        ):
   Persistence_heat_maps(filename,create_Gaussian_filter(how_many_pixels_raidus_of_Gausian_kernel, 1),
-						true,number_of_pixels,min_ == 0 ? : std::numeric_limits<double>::max() , (min_ == 0 ? : std::numeric_limits<double>::max(), min_) , (max_ == 0 ? : std::numeric_limits<double>::max(), max_),dimension){}
+						true,number_of_pixels, ((min_ == 0) ?  std::numeric_limits<double>::max() : min_) , ((max_ == 0) ? std::numeric_limits<double>::max() : max_),dimension){}
+						
+  //****************
+  static Persistence_heat_maps_interface* construct_from_file(  const char* filename, size_t how_many_pixels_raidus_of_Gausian_kernel,
+																size_t number_of_pixels, double min_ = 0,
+																double max_ = 0, unsigned dimensions = 0 )
+  {
+      Persistence_heat_maps_interface* result = new Persistence_heat_maps_interface(filename,how_many_pixels_raidus_of_Gausian_kernel,number_of_pixels,min_,max_,dimensions);
+	  return result;  
+  }
+  static Persistence_heat_maps_interface* construct_from_vector_of_pairs( const std::vector<std::pair<double, double> >& interval, size_t how_many_pixels_raidus_of_Gausian_kernel, size_t number_of_pixels, double min_ = 0, double max_ = 0 )
+  {
+      Persistence_heat_maps_interface* result = new Persistence_heat_maps_interface(interval, how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels, min_, max_);
+	  return result;  
+  }
+    
+  //****************						
 
   void compute_mean_interface(const std::vector<Persistence_heat_maps_interface*>& maps_)
   {
-	  std::vector<Persistence_heat_maps*>& maps;
+	  std::vector<Persistence_heat_maps*> maps;
 	  maps.reserve( maps_.size() );
 	  for ( size_t i = 0 ; i != maps_.size() ; ++i )
 	  {
@@ -76,7 +83,7 @@ class Persistence_heat_maps_interface : public Persistence_heat_maps {
 
   void compute_median_interface(const std::vector<Persistence_heat_maps_interface*>& maps_)
   {
-	  std::vector<Persistence_heat_maps*>& maps;
+	  std::vector<Persistence_heat_maps*> maps;
 	  maps.reserve( maps_.size() );
 	  for ( size_t i = 0 ; i != maps_.size() ; ++i )
 	  {
@@ -87,7 +94,7 @@ class Persistence_heat_maps_interface : public Persistence_heat_maps {
   
   void compute_percentage_of_active_interface(const std::vector<Persistence_heat_maps_interface*>& maps_, size_t cutoff = 1)
   {
-	  std::vector<Persistence_heat_maps*>& maps;
+	  std::vector<Persistence_heat_maps*> maps;
 	  maps.reserve( maps_.size() );
 	  for ( size_t i = 0 ; i != maps_.size() ; ++i )
 	  {
@@ -143,14 +150,14 @@ class Persistence_heat_maps_interface : public Persistence_heat_maps {
 
   double distance_interface(const Persistence_heat_maps_interface& second_, double power = 1) const
   {
-	  return this->distance( (Persistence_heat_maps)second, power );
+	  return this->distance( (Persistence_heat_maps)second_, power );
   }  
 
   void compute_average_interface(const std::vector<Persistence_heat_maps_interface*>& to_average)
   {
-	  std::vector<Persistence_heat_maps*>& maps;
+	  std::vector<Persistence_heat_maps*> maps;
 	  maps.reserve( to_average.size() );
-	  for ( size_t i = 0 ; i != maps_.size() ; ++i )
+	  for ( size_t i = 0 ; i != to_average.size() ; ++i )
 	  {
 		  maps.push_back( (Persistence_heat_maps*)to_average[i] );
 	  }
@@ -171,7 +178,6 @@ class Persistence_heat_maps_interface : public Persistence_heat_maps {
   {
 	  return this->get_y_range();
   }  
-
 };
 
 
