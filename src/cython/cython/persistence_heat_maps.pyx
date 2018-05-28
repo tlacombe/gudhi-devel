@@ -272,18 +272,19 @@ cdef class PersistenceHeatMaps:
 		"""
 		if ( self.thisptr != NULL ):
 			return self.thisptr.number_of_projections_to_R() 
-                        
-	def distance(self, PersistenceHeatMaps second, power):
-		"""
-		A function to compute distance between Persistence Heat Maps.
-		The parameter of this function is a PersistenceHeatMaps.
-		This function is required in Topological_data_with_distances concept.
-		For max norm distance, set power to numeric_limits<double>::max()
-		:param the landascape to compute distance to
-		:type double
-		"""
-		if ( self.thisptr != NULL ) and ( second is not None ) and ( power is not None ):
-			return self.thisptr.distance(deref(second.thisptr), power)    
+     
+    #I havev problem with getting this function compiled due to a strange error                     
+	#def distance(self, PersistenceHeatMaps second, power):
+	#	"""
+	#	A function to compute distance between Persistence Heat Maps.
+	#	The parameter of this function is a PersistenceHeatMaps.
+	#	This function is required in Topological_data_with_distances concept.
+	#	For max norm distance, set power to numeric_limits<double>::max()
+	#	:param the heat map to compute distance to
+	#	:type double
+	#	"""
+	#	if ( self.thisptr != NULL ) and ( second is not None ) and ( power is not None ):
+	#		return self.thisptr.distance(deref(second.thisptr), power) 	   
                         
 	def compute_average( self,to_average=[] ):
 		"""
@@ -304,7 +305,7 @@ cdef class PersistenceHeatMaps:
 		A function to compute scalar product of Persistence Heat Maps.
 		The parameter of this function is a PersistenceHeatMap.
 		This function is required in Topological_data_with_scalar_product concept.
-		:param the landascape to compute scalar product with
+		:param the heat map to compute scalar product with
 		:type double
 		"""
 		if ( self.thisptr != NULL ) and ( second is not None ):
