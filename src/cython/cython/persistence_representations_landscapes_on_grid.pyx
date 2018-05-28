@@ -16,7 +16,7 @@ import sys
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
+   the Free Software Foundation, either ver_interfacesion 3 of the License, or
    (at your option) any later version.
 
    This program is distributed in the hope that it will be useful,
@@ -51,9 +51,9 @@ cdef extern from "Persistence_landscape_on_grid_interface.h" namespace "Gudhi::P
         double compute_integral_of_a_level_of_a_landscape(size_t)const
         double compute_integral_of_landscape(double)const
         double compute_value_at_a_given_point(unsigned , double)const        
-        pair[double,double] compute_minimum_maximuminterface()const
+        pair[double,double] compute_minimum_maximum()const
         double compute_norm_of_landscape(double)
-        void abs_interface()
+        void abs()
         size_t size()const
         double find_max(unsigned)const
         double project_to_R(int)const
@@ -223,12 +223,12 @@ cdef class PersistenceLandscapesOnGrid:
         if ( self.thisptr != NULL ) and ( level is not None ) and ( x is not None ):
             return self.thisptr.compute_value_at_a_given_point(level,x)
 
-    def compute_minimum_maximuminterface( self ):
+    def compute_minimum_maximum( self ):
         """
         Computations of minimum (y) value of landscape.
         """
         if ( self.thisptr != NULL ):
-            return self.thisptr.compute_minimum_maximuminterface()
+            return self.thisptr.compute_minimum_maximum()
 
     def compute_norm_of_landscape(self,i):
         """
@@ -251,7 +251,7 @@ cdef class PersistenceLandscapesOnGrid:
         this procedure.
         """
         if ( self.thisptr != NULL ):
-            self.thisptr.abs_interface()            
+            self.thisptr.abs()            
 
 
     def size( self ):

@@ -39,16 +39,16 @@ cdef extern from "Persistence_vectors_interface.h" namespace "Gudhi::Persistence
         Vector_distances_in_diagram_interface()
         Vector_distances_in_diagram_interface(vector[pair[double, double]], size_t where_to_cut ) 
         Vector_distances_in_diagram_interface(const char* filename, size_t where_to_cut, unsigned dimension)                
-        size_t size_interface()const                
-        void print_to_file_interface(const char* filename)const
-        void load_from_file_interface(const char* filename)const        
-        double project_to_R_interface(size_t number_of_function)const               
-        size_t number_of_projections_to_R_interface()const        
-        vector[double] vectorize_interface(int number_of_function) const
-        size_t number_of_vectorize_functions_interface() const 
+        size_t size()const                
+        void print_to_file(const char* filename)const
+        void load_from_file(const char* filename)const        
+        double project_to_R(size_t number_of_function)const               
+        size_t number_of_projections_to_R()const        
+        vector[double] vectorize(int number_of_function) const
+        size_t number_of_vectorize_functions() const 
         void compute_average_interface(const vector[Vector_distances_in_diagram_interface*] to_average)
-        double distance_interface(const Vector_distances_in_diagram_interface& second, double power)
-        double compute_scalar_product_interface(const Vector_distances_in_diagram_interface& second)
+        double distance(const Vector_distances_in_diagram_interface& second, double power)
+        double compute_scalar_product(const Vector_distances_in_diagram_interface& second)
      
         
         
@@ -128,7 +128,7 @@ cdef class PersistenceVectors:
         :type String
         """
         if ( self.thisptr != NULL ) and ( filename is not None ):
-            self.thisptr.load_from_file_interface(filename)
+            self.thisptr.load_from_file(filename)
             
 
     def print_to_file(self,filename) :
@@ -139,14 +139,14 @@ cdef class PersistenceVectors:
         :type String
         """
         if ( self.thisptr != NULL ) and ( filename is not None ):
-            self.thisptr.print_to_file_interface(filename)
+            self.thisptr.print_to_file(filename)
 
     def size( self ):
         """
         Returns the size of the vector.
         """
         if ( self.thisptr != NULL ):
-            return self.thisptr.size_interface()
+            return self.thisptr.size()
   
     def project_to_R(self, number_of_function):
         """
@@ -161,7 +161,7 @@ cdef class PersistenceVectors:
         :type nonnegative integer
         """
         if ( self.thisptr != NULL ) and ( number_of_function is not None ):
-            return self.thisptr.project_to_R_interface(number_of_function)
+            return self.thisptr.project_to_R(number_of_function)
 
 
     def number_of_projections_to_R(self):
@@ -171,7 +171,7 @@ cdef class PersistenceVectors:
         Real_valued_topological_data concept
         """
         if ( self.thisptr != NULL ):
-            return self.thisptr.number_of_projections_to_R_interface()
+            return self.thisptr.number_of_projections_to_R()
 
     def vectorize(self, number_of_function):
         """
@@ -182,7 +182,7 @@ cdef class PersistenceVectors:
         :type nonnegative intege
         """
         if ( self.thisptr != NULL ) and ( number_of_function is not None ):
-            return self.thisptr.vectorize_interface(number_of_function)
+            return self.thisptr.vectorize(number_of_function)
 
     def number_of_vectorize_functions(self):
         """
@@ -190,7 +190,7 @@ cdef class PersistenceVectors:
         of the vector. 
         """
         if ( self.thisptr != NULL ):
-            return self.thisptr.number_of_vectorize_functions_interface()
+            return self.thisptr.number_of_vectorize_functions()
 
     def compute_average( self,to_average=[] ):
         """
@@ -219,7 +219,7 @@ cdef class PersistenceVectors:
         :type PersistenceLandscape
         """
         if ( self.thisptr != NULL ) and ( second is not None ) and ( power is not None ):
-            return self.thisptr.distance_interface(deref(second.thisptr), power)
+            return self.thisptr.distance(deref(second.thisptr), power)
  
     def compute_scalar_product(self, PersistenceVectors second):
         """
@@ -230,7 +230,7 @@ cdef class PersistenceVectors:
         :type PersistenceLandscape
         """
         if ( self.thisptr != NULL ) and ( second is not None ):
-            return self.thisptr.compute_scalar_product_interface( deref(second.thisptr) )
+            return self.thisptr.compute_scalar_product( deref(second.thisptr) )
 
  
 

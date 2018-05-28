@@ -44,20 +44,20 @@ cdef extern from "Persistence_heat_maps_interface.h" namespace "Gudhi::Persisten
 		void compute_mean_interface(const vector[Persistence_heat_maps_interface*]& maps_)
 		void compute_median_interface(const vector[Persistence_heat_maps_interface*]& maps_)
 		void compute_percentage_of_active_interface(const vector[Persistence_heat_maps_interface*]& maps_, size_t cutoff = 1)
-		void print_to_file_interface(const char* filename) const
-		void load_from_file_interface(const char* filename)
-		bool check_if_the_same_interface(const Persistence_heat_maps_interface& second) const 
-		double get_min_interface() const
-		double get_max_interface() const
-		vector[double] vectorize_interface(int number_of_function) const
-		size_t number_of_vectorize_functions_interface() const
-		double project_to_R_interface(int number_of_function) const
-		size_t number_of_projections_to_R_interface() const
-		double distance_interface(const Persistence_heat_maps_interface& second_, double power = 1) const
+		void print_to_file(const char* filename) const
+		void load_from_file(const char* filename)
+		bool check_if_the_same(const Persistence_heat_maps_interface& second) const 
+		double get_min() const
+		double get_max() const
+		vector[double] vectorize(int number_of_function) const
+		size_t number_of_vectorize_functions() const
+		double project_to_R(int number_of_function) const
+		size_t number_of_projections_to_R() const
+		double distance(const Persistence_heat_maps_interface& second_, double power = 1) const
 		void compute_average_interface(const vector[Persistence_heat_maps_interface*]& to_average)
-		double compute_scalar_product_interface(const Persistence_heat_maps_interface& second_) const
-		pair[double, double] get_x_range_interface() const
-		pair[double, double] get_y_range_interface() const
+		double compute_scalar_product(const Persistence_heat_maps_interface& second_) const
+		pair[double, double] get_x_range() const
+		pair[double, double] get_y_range() const
 		
 		#**************
         #static methods
@@ -192,7 +192,7 @@ cdef class PersistenceHeatMaps:
 		:type String
 		"""
 		if ( self.thisptr != NULL ) and ( filename is not None ):
-			self.thisptr.load_from_file_interface(filename)            
+			self.thisptr.load_from_file(filename)            
 
 	def print_to_file(self,filename) :
 		"""
@@ -202,7 +202,7 @@ cdef class PersistenceHeatMaps:
 		:type String
 		"""
 		if ( self.thisptr != NULL ) and ( filename is not None ):
-			self.thisptr.print_to_file_interface(filename)                          
+			self.thisptr.print_to_file(filename)                          
        
 	def check_if_the_same( self, PersistenceHeatMaps second ):
 		"""
@@ -211,7 +211,7 @@ cdef class PersistenceHeatMaps:
 		:type bool
 		"""
 		if ( (self.thisptr != NULL) and (second is not None) and (second.thisptr != NULL) ):
-			return self.thisptr.check_if_the_same_interface( deref(second.thisptr) )
+			return self.thisptr.check_if_the_same( deref(second.thisptr) )
             
 	def get_min( self ):
 		"""
@@ -219,7 +219,7 @@ cdef class PersistenceHeatMaps:
 		:type double
 		"""
 		if ( self.thisptr != NULL ):
-			return self.thisptr.get_min_interface()      
+			return self.thisptr.get_min()      
             
 	def get_max( self ):
 		"""
@@ -227,7 +227,7 @@ cdef class PersistenceHeatMaps:
 		:type double
 		"""
 		if ( self.thisptr != NULL ):
-			return self.thisptr.get_max_interface()              
+			return self.thisptr.get_max()              
             
 	def vectorize(self, number_of_function):
 		"""
@@ -238,7 +238,7 @@ cdef class PersistenceHeatMaps:
 		:type vector of doubles
 		"""
 		if ( self.thisptr != NULL ) and ( number_of_function is not None ):
-			return self.thisptr.vectorize_interface(number_of_function)
+			return self.thisptr.vectorize(number_of_function)
 
 	def number_of_vectorize_functions(self):
 		"""
@@ -246,7 +246,7 @@ cdef class PersistenceHeatMaps:
 		of the vector. 
 		"""
 		if ( self.thisptr != NULL ):
-			return self.thisptr.number_of_vectorize_functions_interface()   
+			return self.thisptr.number_of_vectorize_functions()   
                         
 	def project_to_R(self, number_of_function):
 		"""
@@ -261,7 +261,7 @@ cdef class PersistenceHeatMaps:
 		:type doubles
 		"""
 		if ( self.thisptr != NULL ) and ( number_of_function is not None ):
-			return self.thisptr.project_to_R_interface(number_of_function)
+			return self.thisptr.project_to_R(number_of_function)
 
 	def number_of_projections_to_R(self):
 		"""
@@ -271,7 +271,7 @@ cdef class PersistenceHeatMaps:
 		:type integer
 		"""
 		if ( self.thisptr != NULL ):
-			return self.thisptr.number_of_projections_to_R_interface() 
+			return self.thisptr.number_of_projections_to_R() 
                         
 	def distance(self, PersistenceHeatMaps second, power):
 		"""
@@ -283,7 +283,7 @@ cdef class PersistenceHeatMaps:
 		:type double
 		"""
 		if ( self.thisptr != NULL ) and ( second is not None ) and ( power is not None ):
-			return self.thisptr.distance_interface(deref(second.thisptr), power)    
+			return self.thisptr.distance(deref(second.thisptr), power)    
                         
 	def compute_average( self,to_average=[] ):
 		"""
@@ -308,18 +308,20 @@ cdef class PersistenceHeatMaps:
 		:type double
 		"""
 		if ( self.thisptr != NULL ) and ( second is not None ):
-			return self.thisptr.compute_scalar_product_interface( deref(second.thisptr) )
+			return self.thisptr.compute_scalar_product( deref(second.thisptr) )
                         
 	def get_x_range( self ):
 		"""
 		Returns the x range of Persistence Heat Maps.
+		:type pair[double,double]
 		"""
 		if ( self.thisptr != NULL ):
-			return self.thisptr.get_x_range_interface() 
+			return self.thisptr.get_x_range() 
                         
 	def get_y_range( self ):
 		"""
 		Returns the y range of Persistence Heat Maps.
+		:type pair[double,double]
 		"""
 		if ( self.thisptr != NULL ):
-			return self.thisptr.get_y_range_interface()                               
+			return self.thisptr.get_y_range()                               

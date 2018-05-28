@@ -52,7 +52,6 @@ class Persistence_landscape_interface : public Persistence_landscape
     
   //****************
 
-  
   Persistence_landscape_interface* new_abs_interface()
   {
 	   return (Persistence_landscape_interface*)this->new_abs();
@@ -67,130 +66,6 @@ class Persistence_landscape_interface : public Persistence_landscape
 		  to_average_new.push_back( (Persistence_landscape*)to_average[i] );
 	  }
 	  this->compute_average(to_average_new);
-  }
-
-
-  void load_landscape_from_file_interface(const char* filename)
-  {
-	  this->load_landscape_from_file(filename);
-  }
-
-
-  void print_to_file_interface(const char* filename) const
-  {
-	  this->print_to_file(filename);
-  }
-
-
-  double compute_integral_of_landscape_interface() const
-  {
-	  return this->compute_integral_of_landscape();
-  }
-
-
-  double compute_integral_of_a_level_of_a_landscape_interface(size_t level) const
-  {
-	  return this->compute_integral_of_a_level_of_a_landscape(level);
-  }
-
-
-  double compute_integral_of_landscape_interface(double p) const
-  {
-	  return this->compute_integral_of_landscape(p);
-  }
-
-
-  double compute_value_at_a_given_point_interface(unsigned level, double x) const
-  {
-	  //std::cerr << "LEVEL : " << level << " x :" << x << std::endl;
-	  return this->compute_value_at_a_given_point(level,x);
-  }
-
-
-  double compute_maximum_interface() const
-  {
-	  return this->compute_maximum();
-  }
-  
-  
-  double compute_minimum_interface() const 
-  {
-	  return this->compute_minimum();
-  }
-  
-  
-  
-  double compute_norm_of_landscape_interface(double i) 
-  {
-	  return this->compute_norm_of_landscape(i);
-  }
-  
-  
-  Persistence_landscape abs_interface()
-  {
-	  return this->abs();
-  }
-
-  size_t size_interface() const
-  {
-	  return this->size();
-  }
-
-  double find_max_interface(unsigned lambda) const
-  {
-	  return this->find_max(lambda);
-  }
-
-  friend double compute_inner_product_interface(const Persistence_landscape& l1, const Persistence_landscape& l2)
-  {
-	  return compute_inner_product(l1,l2);
-  }
-
-  double project_to_R_interface(int number_of_function) const 
-  {
-	  return this->project_to_R(number_of_function); 
-  }
-  
-  
-  size_t number_of_projections_to_R_interface() const 
-  {
-	  return this->number_of_projections_to_R();
-  }
-  
-  
-  std::vector<double> vectorize_interface(int number_of_function) const 
-  {
-	  return this->vectorize( number_of_function );
-  }
-  
-  
-  size_t number_of_vectorize_functions_interface() const 
-  {
-	  return this->number_of_vectorize_functions();
-  }
-  
-  
-  //void compute_average_interface(const std::vector<Persistence_landscape*>& to_average) 
-  //{
-  //  return this->compute_average(to_average);
-  //}
-  
-  
-  double distance_interface(const Persistence_landscape& second, double power = 1) 
-  {
-	  return this->distance( second, power );
-  }
- 
- 
-  double compute_scalar_product_interface(const Persistence_landscape& second) const 
-  {
-	  return this->compute_scalar_product( second );
-  }
-
-
-  std::pair<double, double> get_y_range_interface(size_t level = 0) const 
-  {
-	  return this->get_y_range( level );
   }
   
 };

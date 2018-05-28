@@ -35,7 +35,7 @@ namespace Persistence_representations {
   * In case of p-Wasserstein distance, the power is equal to p. power = std::limit<double>::max() for bottleneck
   * distance.
   *
-  * In case of L^p landscape distance, the power is equal to p. s
+  * In case of L^p landscape distance, the power is equal to p.
   */
 class Topological_data_with_distances {
  public:

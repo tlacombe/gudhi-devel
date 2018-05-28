@@ -67,9 +67,7 @@ class Persistence_heat_maps_interface : public Persistence_heat_maps<constant_sc
       Persistence_heat_maps_interface* result = new Persistence_heat_maps_interface(interval, how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels, min_, max_);
 	  return result;  
   }
-    
-  //****************						
-
+  
   void compute_mean_interface(const std::vector<Persistence_heat_maps_interface*>& maps_)
   {
 	  std::vector<Persistence_heat_maps*> maps;
@@ -103,56 +101,6 @@ class Persistence_heat_maps_interface : public Persistence_heat_maps<constant_sc
 	  this->compute_percentage_of_active(maps,cutoff);
   }
   
-  void print_to_file_interface(const char* filename) const
-  {
-	  this->print_to_file(filename);
-  }  
-
-  void load_from_file_interface(const char* filename)
-  {
-	  this->load_from_file( filename );
-  }  
-
-  inline bool check_if_the_same_interface(const Persistence_heat_maps_interface& second) const 
-  {
-	  return this->check_if_the_same( second );
-  }  
-
-  inline double get_min_interface() const
-  {
-	  return this->get_min();
-  }  
-
-  inline double get_max_interface() const
-  {
-	  return this->get_max();
-  }  
-
-  std::vector<double> vectorize_interface(int number_of_function) const
-  {
-	  return this->vectorize(number_of_function);
-  }  
-  
-  size_t number_of_vectorize_functions_interface() const
-  {
-	  return this->number_of_vectorize_functions();
-  }  
-  
-  double project_to_R_interface(int number_of_function) const
-  {
-	  return this->project_to_R( number_of_function );
-  }  
-  
-  size_t number_of_projections_to_R_interface() const
-  {
-	  return this->number_of_projections_to_R();
-  }  
-
-  double distance_interface(const Persistence_heat_maps_interface& second_, double power = 1) const
-  {
-	  return this->distance( (Persistence_heat_maps)second_, power );
-  }  
-
   void compute_average_interface(const std::vector<Persistence_heat_maps_interface*>& to_average)
   {
 	  std::vector<Persistence_heat_maps*> maps;
@@ -162,21 +110,6 @@ class Persistence_heat_maps_interface : public Persistence_heat_maps<constant_sc
 		  maps.push_back( (Persistence_heat_maps*)to_average[i] );
 	  }
 	  this->compute_average( maps );
-  }  
-  
-  double compute_scalar_product_interface(const Persistence_heat_maps_interface& second_) const
-  {
-	  return this->compute_scalar_product( (Persistence_heat_maps)second_ );
-  }  
-  
-  std::pair<double, double> get_x_range_interface() const
-  {
-	  return this->get_x_range();
-  }  
-
-  std::pair<double, double> get_y_range_interface() const
-  {
-	  return this->get_y_range();
   }  
 };
 
