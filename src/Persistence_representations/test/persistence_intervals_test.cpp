@@ -35,15 +35,14 @@ double epsilon = 0.0000005;
 
 // cout << "Left most end of the interval : " << min_max_.first << std::endl;
 // cout << "Right most end of the interval : " << min_max_.second << std::endl;
-BOOST_AUTO_TEST_CASE(check_min_max_function) {
-	std::cerr << "First test \n";
+BOOST_AUTO_TEST_CASE(check_min_max_function) {	
   Persistence_intervals p("data/file_with_diagram");
   std::pair<double, double> min_max_ = p.get_x_range();
 
-  // cout << min_max_.first << " " << min_max_.second << std::endl;getchar();
+  //std::cout << min_max_.first << " " << min_max_.second << std::endl;getchar();
 
   BOOST_CHECK(fabs(min_max_.first - 0.0290362) <= epsilon);
-  BOOST_CHECK(fabs(min_max_.second - 0.994537) <= epsilon);
+  BOOST_CHECK(fabs(min_max_.second - 0.872896) <= epsilon);
 }
 
 BOOST_AUTO_TEST_CASE(check_length_of_dominant_intervals) {
@@ -64,6 +63,7 @@ BOOST_AUTO_TEST_CASE(check_length_of_dominant_intervals) {
     BOOST_CHECK(fabs(dominant_ten_intervals_length[i] - dominant_intervals_length[i]) <= epsilon);
   }
 }
+
 BOOST_AUTO_TEST_CASE(check_dominant_intervals) {
   Persistence_intervals p("data/file_with_diagram");
   std::vector<std::pair<double, double> > ten_dominant_intervals = p.dominant_intervals(10);
@@ -126,32 +126,17 @@ BOOST_AUTO_TEST_CASE(check_cumulative_histograms_of_lengths) {
     BOOST_CHECK(fabs(cumulative_histogram[i] - template_cumulative_histogram[i]) <= epsilon);
   }
 }
+
 BOOST_AUTO_TEST_CASE(check_characteristic_function_of_diagram) {
   Persistence_intervals p("data/file_with_diagram");
   std::pair<double, double> min_max_ = p.get_x_range();
-  std::vector<double> char_funct_diag = p.characteristic_function_of_diagram(min_max_.first, min_max_.second);
-  std::vector<double> template_char_funct_diag;
-  template_char_funct_diag.push_back(0.370665);
-  template_char_funct_diag.push_back(0.84058);
-  template_char_funct_diag.push_back(1.24649);
-  template_char_funct_diag.push_back(1.3664);
-  template_char_funct_diag.push_back(1.34032);
-  template_char_funct_diag.push_back(1.31904);
-  template_char_funct_diag.push_back(1.14076);
-  template_char_funct_diag.push_back(0.991259);
-  template_char_funct_diag.push_back(0.800714);
-  template_char_funct_diag.push_back(0.0676303);
-
+  std::vector<double> char_funct_diag = p.characteristic_function_of_diagram(min_max_.first, min_max_.second);  
+  std::vector<double> template_char_funct_diag = 
+  {0.206754,0.703076,0.890049,1.11585,1.20245,1.11881,1.15286,0.997037,
+   0.916985,0.743666};
   for (size_t i = 0; i != char_funct_diag.size(); ++i) {
-    // cout << char_funct_diag[i] << std::endl;
-    if (fabs(char_funct_diag[i] - template_char_funct_diag[i]) >= 0.0001) {
-      std::cout << "Boost test fail  check_characteristic_function_of_diagram : " << std::endl;
-      std::cerr << char_funct_diag[i] << " " << template_char_funct_diag[i] << std::endl;
-      std::cerr << fabs(char_funct_diag[i] - template_char_funct_diag[i]) << std::endl;
-      std::cerr << 0.0001 << std::endl;
-      //getchar();
-    }
-    BOOST_CHECK(fabs(char_funct_diag[i] - template_char_funct_diag[i]) <= 0.0001);
+    //std::cout << char_funct_diag[i] << std::endl;
+    BOOST_CHECK(fabs(char_funct_diag[i] - template_char_funct_diag[i]) <= 0.00001);
   }
 }
 
@@ -160,21 +145,11 @@ BOOST_AUTO_TEST_CASE(check_cumulative_characteristic_function_of_diagram) {
   std::pair<double, double> min_max_ = p.get_x_range();
   std::vector<double> cumul_char_funct_diag =
       p.cumulative_characteristic_function_of_diagram(min_max_.first, min_max_.second);
-  std::vector<double> template_char_funct_diag_cumul;
-
-  template_char_funct_diag_cumul.push_back(0.370665);
-  template_char_funct_diag_cumul.push_back(1.21125);
-  template_char_funct_diag_cumul.push_back(2.45774);
-  template_char_funct_diag_cumul.push_back(3.82414);
-  template_char_funct_diag_cumul.push_back(5.16446);
-  template_char_funct_diag_cumul.push_back(6.4835);
-  template_char_funct_diag_cumul.push_back(7.62426);
-  template_char_funct_diag_cumul.push_back(8.61552);
-  template_char_funct_diag_cumul.push_back(9.41623);
-  template_char_funct_diag_cumul.push_back(9.48386);
+  std::vector<double> template_char_funct_diag_cumul = 
+  {0.206754,0.90983,1.79988,2.91573,4.11818,5.23699,6.38985,7.38688,8.30387,9.04753};
 
   for (size_t i = 0; i != cumul_char_funct_diag.size(); ++i) {
-    // cout << cumul_char_funct_diag[i] << std::endl;
+    //std::cout << cumul_char_funct_diag[i] << ",";
     BOOST_CHECK(fabs(cumul_char_funct_diag[i] - template_char_funct_diag_cumul[i]) <= 0.0001);
   }
 }
@@ -301,3 +276,4 @@ BOOST_AUTO_TEST_CASE(check_k_n_n) {
     BOOST_CHECK(fabs(knn[i] - knn_template[i]) <= 0.000005);
   }
 }
+

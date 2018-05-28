@@ -71,7 +71,7 @@ class Persistence_intervals {
     double max_ = -std::numeric_limits<int>::max();
     for (size_t i = 0; i != this->intervals.size(); ++i) {
       if (this->intervals[i].first < min_) min_ = this->intervals[i].first;
-      if (this->intervals[i].second > max_) max_ = this->intervals[i].second;
+      if (this->intervals[i].first > max_) max_ = this->intervals[i].first;
     }
     return std::make_pair(min_, max_);
   }
@@ -260,11 +260,19 @@ class Persistence_intervals {
 };
 
 Persistence_intervals::Persistence_intervals(const char* filename, unsigned dimension) {
+  bool dbg = false;
   if (dimension == std::numeric_limits<unsigned>::max()) {
     this->intervals = read_persistence_intervals_in_one_dimension_from_file(filename);
   } else {
     this->intervals = read_persistence_intervals_in_one_dimension_from_file(filename, dimension);
-  }
+  }  
+  if ( dbg )
+  {
+	  for ( size_t i = 0 ; i != this->intervals.size() ; ++i )
+	  {
+		  std::cout << this->intervals[i].first << " " << this->intervals[i].second << std::endl;
+	  }
+  }  
   this->set_up_numbers_of_functions_for_vectorization_and_projections_to_reals();
 }  // Persistence_intervals
 
