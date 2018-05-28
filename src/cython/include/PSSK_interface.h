@@ -4,7 +4,7 @@
  *
  *    Author(s):       Pawel Dlotko
  *
- *    Copyright (C) 2017  Swansea University
+ *    Copyright (C) 2018  Swansea University
  *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -43,17 +43,84 @@ namespace Persistence_representations {
 class PSSK_interface : public PSSK {
  public:
   PSSK_interface(){}
+  				
 
   PSSK_interface(const std::vector<std::pair<double, double> >& interval,
-       std::vector<std::vector<double> > filter = create_Gaussian_filter(5, 1), size_t number_of_pixels = 1000,
+       size_t how_many_pixels_raidus_of_Gausian_kernel, size_t number_of_pixels = 1000,
        double min_ = -1, double max_ = -1)
       :
-      PSSK(interval,filter,number_of_pixels,min_,max_){}
+      PSSK(interval,create_Gaussian_filter(how_many_pixels_raidus_of_Gausian_kernel, 1),
+           number_of_pixels,((min_ == 0) ?  std::numeric_limits<double>::max() : min_),
+           ((max_ == 0) ?  std::numeric_limits<double>::max() : max_)){}
 
-  PSSK_interface(const char* filename, std::vector<std::vector<double> > filter = create_Gaussian_filter(5, 1),
+  PSSK_interface(const char* filename, size_t how_many_pixels_raidus_of_Gausian_kernel,
        size_t number_of_pixels = 1000, double min_ = -1, double max_ = -1,
        unsigned dimension = std::numeric_limits<unsigned>::max())
-      :PSSK(filename,filter,number_of_pixels,min_,max_,dimension){}
+      :PSSK(filename,create_Gaussian_filter(how_many_pixels_raidus_of_Gausian_kernel, 1),
+            number_of_pixels,((min_ == 0) ?  std::numeric_limits<double>::max() : min_),
+            ((max_ == 0) ?  std::numeric_limits<double>::max() : max_),dimension){}
+            
+  
+  
+  static PSSK_interface* construct_from_file(  const char* filename, size_t how_many_pixels_raidus_of_Gausian_kernel,
+																size_t number_of_pixels, double min_ = 0,
+																double max_ = 0, unsigned dimensions = 0 )
+  {
+      PSSK_interface* result = new PSSK_interface(filename,how_many_pixels_raidus_of_Gausian_kernel,number_of_pixels,min_,max_,dimensions);
+	  return result;  
+  }
+  
+  
+  static PSSK_interface* construct_from_vector_of_pairs( const std::vector<std::pair<double, double> >& interval, size_t how_many_pixels_raidus_of_Gausian_kernel, size_t number_of_pixels, double min_ = 0, double max_ = 0 )
+  {
+      PSSK_interface* result = new PSSK_interface(interval, how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels, min_, max_);
+	  return result;  
+  }    
+  
+  
+  void compute_mean_interface(const std::vector<PSSK_interface*>& maps_)
+  {
+	  std::vector<Persistence_heat_maps*> maps;
+	  maps.reserve( maps_.size() );
+	  for ( size_t i = 0 ; i != maps_.size() ; ++i )
+	  {
+		  maps.push_back( (Persistence_heat_maps*)maps_[i] );
+	  }
+	  this->compute_mean(maps);
+  }
+
+  void compute_median_interface(const std::vector<PSSK_interface*>& maps_)
+  {
+	  std::vector<Persistence_heat_maps*> maps;
+	  maps.reserve( maps_.size() );
+	  for ( size_t i = 0 ; i != maps_.size() ; ++i )
+	  {
+		  maps.push_back( (Persistence_heat_maps*)maps_[i] );
+	  }
+	  this->compute_median(maps);
+  }
+  
+  void compute_percentage_of_active_interface(const std::vector<PSSK_interface*>& maps_, size_t cutoff = 1)
+  {
+	  std::vector<Persistence_heat_maps*> maps;
+	  maps.reserve( maps_.size() );
+	  for ( size_t i = 0 ; i != maps_.size() ; ++i )
+	  {
+		  maps.push_back( (Persistence_heat_maps*)maps_[i] );
+	  }
+	  this->compute_percentage_of_active(maps,cutoff);
+  }
+  
+  void compute_average_interface(const std::vector<PSSK_interface*>& to_average)
+  {
+	  std::vector<Persistence_heat_maps*> maps;
+	  maps.reserve( to_average.size() );
+	  for ( size_t i = 0 ; i != to_average.size() ; ++i )
+	  {
+		  maps.push_back( (Persistence_heat_maps*)to_average[i] );
+	  }
+	  this->compute_average( maps );
+  }           
  
 };
 
