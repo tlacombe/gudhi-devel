@@ -686,10 +686,9 @@ double Persistence_landscape::compute_integral_of_a_level_of_a_landscape(size_t 
     return result;
   }
   // also negative landscapes are assumed to be zero.
-  if (level < 0) return 0;
+  if (level < 0) return result;
 
   for (size_t nr = 2; nr != this->land[level].size() - 1; ++nr) {
-    // it suffices to compute every planar integral and then sum them up for each lambda_n
     result += 0.5 * (this->land[level][nr].first - this->land[level][nr - 1].first) *
               (this->land[level][nr].second + this->land[level][nr - 1].second);
   }

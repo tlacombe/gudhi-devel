@@ -188,7 +188,7 @@ cdef class PersistenceLandscapes:
 		:type nonnegative integer.
 		"""
 		if ( self.thisptr != NULL ) and ( level is not None ):
-			return self.thisptr.compute_integral_of_landscape(level)
+			return self.thisptr.compute_integral_of_a_level_of_a_landscape(level)
 
 	def compute_integral_of_landscape(self,p):
 		"""
