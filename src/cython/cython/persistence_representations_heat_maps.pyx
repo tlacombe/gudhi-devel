@@ -82,15 +82,15 @@ cdef class PersistenceHeatMaps:
 	cdef Persistence_heat_maps_interface* thisptr
 
 #Can we have only one constructor, or can we have more
-	def __init__(self, how_many_pixels_raidus_of_Gausian_kernel=50, number_of_pixels=1000, 
-	min_=None, max_=None,dimension=-1):
+	def __init__(self, how_many_pixels_raidus_of_Gausian_kernel=5, number_of_pixels=1000, 
+	vector_of_intervals=None, file_with_intervals='', min_=0, max_=0,dimension=-1):
 		"""
 		This is a class implementing persistence heat maps. At every point of a diagram we place a Gaussiian kernel (standard deviation is given in terms of the number of pixels).
 		This way we obtain yet another representation of persistence that can be used in data analysis. 
 		"""	
 
 	def __cinit__(self, how_many_pixels_raidus_of_Gausian_kernel=5, number_of_pixels=1000, 
-	vector_of_intervals=None, file_with_intervals='', min_=None, max_=None,dimension=-1):
+	vector_of_intervals=None, file_with_intervals='', min_=0, max_=0,dimension=-1):
 		"""
 		This is a constructor of a class PersistenceHeatMaps.
 		The persistence intervals can be input to the class by either providing a filename
@@ -105,7 +105,7 @@ cdef class PersistenceHeatMaps:
 		If not set, will be computed based on the input data. 
 		:param dimension - na optional parameter, a dimension of the intervals to be read from a file.           
 		"""
-		if ( (vector_of_intervals is None) or ( file_with_intervals is '' ) ):
+		if ( (vector_of_intervals is None) and ( file_with_intervals is '' ) ):	
 			print "Please provide parameters to construct the persistence heat maps. Object has not been constructed." 
 		else:
 			if (vector_of_intervals is None) and (file_with_intervals is not ''):

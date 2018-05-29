@@ -95,7 +95,7 @@ cdef class PersistenceVectors:
 		:param where_to_cut - number of elements to be generated in the 
 		vector. 
 		"""
-		if ( (vector_of_intervals is None) or ( file_with_intervals is '' ) ):
+		if ( (vector_of_intervals is None) and ( file_with_intervals is '' ) ):
 			print "Please provide parameters to construct the persistence vectors." 
 		else:
 			if (vector_of_intervals is None) and (file_with_intervals is not ''):

@@ -109,7 +109,7 @@ cdef class PSSK:
 		If not set, will be computed based on the input data. 
 		:param dimension - na optional parameter, a dimension of the intervals to be read from a file.           
 		"""
-		if ( (vector_of_intervals is None) or ( file_with_intervals is '' ) ):
+		if ( (vector_of_intervals is None) and ( file_with_intervals is '' ) ):
 			print "Please provide parameters to construct the persistence vectors." 
 		else:
 			if (vector_of_intervals is None) and (file_with_intervals is not ''):				
