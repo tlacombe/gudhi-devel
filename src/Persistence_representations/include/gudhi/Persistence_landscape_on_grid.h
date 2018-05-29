@@ -469,6 +469,14 @@ class Persistence_landscape_on_grid {
     }
     return true;
   }
+  
+  
+  /**
+   * Another method to check if landscapes are the same
+  **/ 
+  bool check_if_the_same(const Persistence_landscape_on_grid& rhs) const {    
+    return *this == rhs;
+  }
 
   /**
        * An operator to compare two persistence landscapes.

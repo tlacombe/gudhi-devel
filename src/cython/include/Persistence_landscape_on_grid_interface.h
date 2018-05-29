@@ -35,21 +35,25 @@ class Persistence_landscape_on_grid_interface : public Persistence_landscape_on_
   Persistence_landscape_on_grid_interface():Persistence_landscape_on_grid(){}
 
   Persistence_landscape_on_grid_interface(const std::vector<std::pair<double, double> >& p, double grid_min_, double grid_max_,
-  size_t number_of_points_):Persistence_landscape_on_grid(p, grid_min_, grid_max_,number_of_points_){}
+  size_t number_of_points_):Persistence_landscape_on_grid(p, (grid_min_ == grid_max_ ? std::numeric_limits<double>::max() : grid_min_), 
+                                                          (grid_min_ == grid_max_ ? std::numeric_limits<double>::max() : grid_max_),number_of_points_){}
                                 
 
   Persistence_landscape_on_grid_interface(const std::vector<std::pair<double, double> >& p, double grid_min_, double grid_max_,
   size_t number_of_points_, unsigned number_of_levels_of_landscape):
-  Persistence_landscape_on_grid(p, grid_min_, grid_max_,number_of_points_, number_of_levels_of_landscape){}
+  Persistence_landscape_on_grid(p, (grid_min_ == grid_max_ ? std::numeric_limits<double>::max() : grid_min_), 
+  (grid_min_ == grid_max_ ? std::numeric_limits<double>::max() : grid_max_),number_of_points_, number_of_levels_of_landscape){}
 
 
   Persistence_landscape_on_grid_interface(const char* filename, double grid_min_, double grid_max_, size_t number_of_points_,
   unsigned number_of_levels_of_landscape, uint16_t dimension_ = std::numeric_limits<uint16_t>::max()):
-  Persistence_landscape_on_grid(filename, grid_min_, grid_max_, number_of_points_, number_of_levels_of_landscape, dimension_ ){}
+  Persistence_landscape_on_grid(filename, (grid_min_ == grid_max_ ? std::numeric_limits<double>::max() : grid_min_), 
+  (grid_min_ == grid_max_ ? std::numeric_limits<double>::max() : grid_max_), number_of_points_, number_of_levels_of_landscape, dimension_ ){}
   
 
   Persistence_landscape_on_grid_interface(const char* filename, double grid_min_, double grid_max_, size_t number_of_points_,
-  uint16_t dimension_ = std::numeric_limits<uint16_t>::max()):Persistence_landscape_on_grid(filename,grid_min_,grid_max_,number_of_points_,dimension_ ){}
+  uint16_t dimension_ = std::numeric_limits<uint16_t>::max()):Persistence_landscape_on_grid(filename,(grid_min_ == grid_max_ ? std::numeric_limits<double>::max() : grid_min_),
+  (grid_min_ == grid_max_ ? std::numeric_limits<double>::max() : grid_max_),number_of_points_,dimension_ ){}
 
 
   Persistence_landscape_on_grid_interface(const char* filename, size_t number_of_points, unsigned number_of_levels_of_landscape, uint16_t dimension = std::numeric_limits<uint16_t>::max()):

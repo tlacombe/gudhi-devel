@@ -39,8 +39,8 @@ include '@CMAKE_CURRENT_SOURCE_DIR@/cython/strong_witness_complex.pyx'
 include "@CMAKE_CURRENT_SOURCE_DIR@/cython/persistence_representations_intervals.pyx"
 include "@CMAKE_CURRENT_SOURCE_DIR@/cython/persistence_representations_landscapes.pyx"
 include "@CMAKE_CURRENT_SOURCE_DIR@/cython/persistence_representations_landscapes_on_grid.pyx"
-include "@CMAKE_CURRENT_SOURCE_DIR@/cython/persistence_vectors.pyx"
-include "@CMAKE_CURRENT_SOURCE_DIR@/cython/persistence_heat_maps.pyx"
+include "@CMAKE_CURRENT_SOURCE_DIR@/cython/persistence_representations_vectors.pyx"
+include "@CMAKE_CURRENT_SOURCE_DIR@/cython/persistence_representations_heat_maps.pyx"
 include "@CMAKE_CURRENT_SOURCE_DIR@/cython/PSSK.pyx"
 @GUDHI_CYTHON_ALPHA_COMPLEX@
 @GUDHI_CYTHON_EUCLIDEAN_WITNESS_COMPLEX@

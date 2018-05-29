@@ -60,6 +60,8 @@ std::vector<std::pair<double, double> > read_persistence_intervals_in_one_dimens
       read_persistence_intervals_in_dimension(filename, (int)dimension);
   std::vector<std::pair<double, double> > final_barcode;
   final_barcode.reserve(barcode_initial.size());
+  
+  std::cerr << "barcode_initial.size() (command form file read_persistence_from_file.h) : " << barcode_initial.size() << std::endl;
 
   if (dbg) {
     std::cerr << "Here are the intervals that we read from the file : \n";

@@ -260,11 +260,29 @@ class Persistence_intervals {
 };
 
 Persistence_intervals::Persistence_intervals(const char* filename, unsigned dimension) {
+  bool dbg = true;	
+  if ( dbg )
+  {
+	  std::cerr << "We will be reading from : " << filename << std::endl;
+	  std::cerr << "Dimension : " << dimension << std::endl;
+  }
+  
   if (dimension == std::numeric_limits<unsigned>::max()) {
     this->intervals = read_persistence_intervals_in_one_dimension_from_file(filename);
   } else {
     this->intervals = read_persistence_intervals_in_one_dimension_from_file(filename, dimension);
   }
+  
+  if ( dbg )
+  {
+	  std::cerr << "Here are the persistence intervals : \n";
+	  for ( size_t i = 0 ; i != this->intervals.size() ; ++i )
+	  {
+		  std::cerr << this->intervals[i].first << " " << this->intervals[i].second << "\n";
+	  }
+  }
+  
+  
   this->set_up_numbers_of_functions_for_vectorization_and_projections_to_reals();
 }  // Persistence_intervals
 

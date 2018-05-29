@@ -1,4 +1,4 @@
-/*    This file is part of the Gudhi Library. The Gudhi library
+/*    This file is part of the Gudhi Library. Tnhe Gudhi library
  *    (Geometric Understanding in Higher Dimensions) is a generic C++
  *    library for computational topology.
  *
@@ -43,6 +43,7 @@ class Persistence_intervals_interface : public Persistence_intervals
  public: 
 	Persistence_intervals_interface(const char* filename, unsigned dimension = std::numeric_limits<unsigned>::max())
 	: Persistence_intervals(filename, dimension) {
+		std::cerr << "Construction form a file \n";
   }
 
 	Persistence_intervals_interface(const std::vector<std::pair<double, double> >& intervals)

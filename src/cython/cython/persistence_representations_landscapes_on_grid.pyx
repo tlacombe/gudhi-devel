@@ -65,6 +65,7 @@ cdef extern from "Persistence_landscape_on_grid_interface.h" namespace "Gudhi::P
 		double distance(Persistence_landscape_on_grid_interface&, double)
 		double compute_scalar_product(const Persistence_landscape_on_grid_interface&)const
 		pair[double, double] get_y_range(size_t)const
+		bool check_if_the_same(const Persistence_landscape_on_grid_interface& rhs) const
 
 
 
@@ -77,7 +78,7 @@ cdef class PersistenceLandscapesOnGrid:
 
 #Can we have only one constructor, or can we have more
 	def __init__(self, grid_min_=0, grid_max_=0,number_of_points_=1000, file_with_intervals='', 
-	vector_of_intervals=None, dimension=None,number_of_levels=sys.maxsize):
+	vector_of_intervals=None, dimension=None,number_of_levels=100):
 		"""
 		This is a class implementing persistence landscapes data structures.
 		For theoretical description, please consult <i>Statistical topological
@@ -101,7 +102,7 @@ cdef class PersistenceLandscapesOnGrid:
 
 
 	def __cinit__(self, grid_min_=0, grid_max_=0,number_of_points_=1000, file_with_intervals='', 
-	vector_of_intervals=None, dimension=None,number_of_levels=sys.maxsize):
+	vector_of_intervals=None, dimension=None,number_of_levels=100):
 		"""
 		This is a constructor of a class PersistenceLandscapes.
 		It either take text file and a positive integer, or a vector
