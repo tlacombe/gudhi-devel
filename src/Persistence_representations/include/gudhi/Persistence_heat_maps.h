@@ -242,7 +242,7 @@ class Persistence_heat_maps {
                         bool erase_below_diagonal = false, size_t number_of_pixels = 1000,
                         double min_ = std::numeric_limits<double>::max(),
                         double max_ = std::numeric_limits<double>::max(),
-                        unsigned dimension = std::numeric_limits<unsigned>::max());
+                        int dimension = -1);
 
   /**
    * Compute a mean value of a collection of heat maps and store it in the current object. Note that all the persistence
@@ -647,9 +647,9 @@ template <typename Scalling_of_kernels>
 Persistence_heat_maps<Scalling_of_kernels>::Persistence_heat_maps(const char* filename,
                                                                   std::vector<std::vector<double> > filter,
                                                                   bool erase_below_diagonal, size_t number_of_pixels,
-                                                                  double min_, double max_, unsigned dimension) {
+                                                                  double min_, double max_, int dimension) {
   std::vector<std::pair<double, double> > intervals_;
-  if (dimension == std::numeric_limits<unsigned>::max()) {
+  if (dimension == -1) {
     intervals_ = read_persistence_intervals_in_one_dimension_from_file(filename);
   } else {
     intervals_ = read_persistence_intervals_in_one_dimension_from_file(filename, dimension);

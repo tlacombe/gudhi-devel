@@ -54,7 +54,7 @@ class Persistence_intervals {
    * * The second parameter of a constructor is a dimension of intervals to be read from a file. If your file contains
    *only birth-death pairs, use the default value.
   **/
-  Persistence_intervals(const char* filename, unsigned dimension = std::numeric_limits<unsigned>::max());
+  Persistence_intervals(const char* filename, int dimension = -1);
 
   /**
    * This is a constructor of a class Persistence_intervals from a vector of pairs. Each pair is assumed to represent a
@@ -259,15 +259,15 @@ class Persistence_intervals {
   size_t number_of_functions_for_projections_to_reals;
 };
 
-Persistence_intervals::Persistence_intervals(const char* filename, unsigned dimension) {
-  bool dbg = true;	
+Persistence_intervals::Persistence_intervals(const char* filename, int dimension) {
+  bool dbg = false;
   if ( dbg )
   {
 	  std::cerr << "We will be reading from : " << filename << std::endl;
 	  std::cerr << "Dimension : " << dimension << std::endl;
   }
   
-  if (dimension == std::numeric_limits<unsigned>::max()) {
+  if (dimension == -1) {
     this->intervals = read_persistence_intervals_in_one_dimension_from_file(filename);
   } else {
     this->intervals = read_persistence_intervals_in_one_dimension_from_file(filename, dimension);

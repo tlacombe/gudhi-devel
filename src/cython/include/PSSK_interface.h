@@ -55,7 +55,7 @@ class PSSK_interface : public PSSK {
 
   PSSK_interface(const char* filename, size_t how_many_pixels_raidus_of_Gausian_kernel,
        size_t number_of_pixels = 1000, double min_ = -1, double max_ = -1,
-       unsigned dimension = std::numeric_limits<unsigned>::max())
+       int dimension = -1)
       :PSSK(filename,create_Gaussian_filter(how_many_pixels_raidus_of_Gausian_kernel, 1),
             number_of_pixels,((min_ == 0) ?  std::numeric_limits<double>::max() : min_),
             ((max_ == 0) ?  std::numeric_limits<double>::max() : max_),dimension){}
@@ -64,7 +64,7 @@ class PSSK_interface : public PSSK {
   
   static PSSK_interface* construct_from_file(  const char* filename, size_t how_many_pixels_raidus_of_Gausian_kernel,
 																size_t number_of_pixels, double min_ = 0,
-																double max_ = 0, unsigned dimensions = 0 )
+																double max_ = 0, int dimensions = -1 )
   {
       PSSK_interface* result = new PSSK_interface(filename,how_many_pixels_raidus_of_Gausian_kernel,number_of_pixels,min_,max_,dimensions);
 	  return result;  

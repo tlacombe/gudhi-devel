@@ -41,9 +41,8 @@ namespace Persistence_representations {
 class Persistence_intervals_interface : public Persistence_intervals 
 {
  public: 
-	Persistence_intervals_interface(const char* filename, unsigned dimension = std::numeric_limits<unsigned>::max())
-	: Persistence_intervals(filename, dimension) {
-		std::cerr << "Construction form a file \n";
+	Persistence_intervals_interface(const char* filename, int dimension = -1)
+	: Persistence_intervals(filename, dimension) {		
   }
 
 	Persistence_intervals_interface(const std::vector<std::pair<double, double> >& intervals)

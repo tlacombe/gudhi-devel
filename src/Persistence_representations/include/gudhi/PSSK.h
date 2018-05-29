@@ -56,10 +56,10 @@ class PSSK : public Persistence_heat_maps<constant_scaling_function> {
 
   PSSK(const char* filename, std::vector<std::vector<double> > filter = create_Gaussian_filter(5, 1),
        size_t number_of_pixels = 1000, double min_ = -1, double max_ = -1,
-       unsigned dimension = std::numeric_limits<unsigned>::max())
+       int dimension = -1)
       : Persistence_heat_maps() {
     std::vector<std::pair<double, double> > intervals_;
-    if (dimension == std::numeric_limits<unsigned>::max()) {
+    if (dimension == -1) {
       intervals_ = read_persistence_intervals_in_one_dimension_from_file(filename);
     } else {
       intervals_ = read_persistence_intervals_in_one_dimension_from_file(filename, dimension);

@@ -38,7 +38,7 @@ cdef extern from "Persistence_vectors_interface.h" namespace "Gudhi::Persistence
 	cdef cppclass Vector_distances_in_diagram_interface "Gudhi::Persistence_representations::Vector_distances_in_diagram_interface":
 		Vector_distances_in_diagram_interface()
 		Vector_distances_in_diagram_interface(vector[pair[double, double]], size_t where_to_cut ) 
-		Vector_distances_in_diagram_interface(const char* filename, size_t where_to_cut, unsigned dimension)				
+		Vector_distances_in_diagram_interface(const char* filename, size_t where_to_cut, int dimension)				
 		size_t size()const				
 		void print_to_file(const char* filename)const
 		void load_from_file(const char* filename)const		
@@ -58,7 +58,7 @@ cdef class PersistenceVectors:
 
 #Can we have only one constructor, or can we have more
 	def __init__(self, where_to_cut=100, file_with_intervals='', 
-	vector_of_intervals=None, dimension=None):
+	vector_of_intervals=None, dimension=-1):
 		"""
 		This is an implementation of idea presented in the paper 
 		<i>Stable Topological Signatures for Points on 3D  Shapes</i> 
@@ -74,7 +74,7 @@ cdef class PersistenceVectors:
 		"""	
 
 	def __cinit__(self, where_to_cut=100, file_with_intervals='', 
-	vector_of_intervals=None, dimension=None):
+	vector_of_intervals=None, dimension=-1):
 		"""
 		This is a constructor of a class PersistenceVectors.
 		It either take text file and a positive integer, or a vector
@@ -99,13 +99,10 @@ cdef class PersistenceVectors:
 			print "Please provide parameters to construct the persistence vectors." 
 		else:
 			if (vector_of_intervals is None) and (file_with_intervals is not ''):
-				if (dimension is not None):
-					if os.path.isfile(file_with_intervals):
-						self.thisptr = new Vector_distances_in_diagram_interface(file_with_intervals, where_to_cut, dimension)
-					else:
-						print("file " + file_with_intervals + " not found.")
+				if os.path.isfile(file_with_intervals):
+					self.thisptr = new Vector_distances_in_diagram_interface(str.encode(file_with_intervals), where_to_cut, dimension)
 				else:
-					self.thisptr = new Vector_distances_in_diagram_interface(file_with_intervals, where_to_cut, 0)
+					print("file " + file_with_intervals + " not found.")
 			else:			
 				if (file_with_intervals is '') and (vector_of_intervals is not None):
 					self.thisptr = new Vector_distances_in_diagram_interface(vector_of_intervals, where_to_cut)														

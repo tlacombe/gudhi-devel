@@ -87,7 +87,7 @@ class Persistence_landscape {
     *input file is the following: in each line we put birth-death pair. Last line is assumed
        * to be empty. Even if the points within a line are not ordered, they will be ordered while the input is read.
       **/
-  Persistence_landscape(const char* filename, size_t dimension = std::numeric_limits<unsigned>::max(),
+  Persistence_landscape(const char* filename, int dimension = -1,
                         size_t number_of_levels = std::numeric_limits<size_t>::max());
 
   /**
@@ -469,9 +469,9 @@ class Persistence_landscape {
   }
 };
 
-Persistence_landscape::Persistence_landscape(const char* filename, size_t dimension, size_t number_of_levels) {
+Persistence_landscape::Persistence_landscape(const char* filename, int dimension, size_t number_of_levels) {
   std::vector<std::pair<double, double> > barcode;
-  if (dimension < std::numeric_limits<double>::max()) {
+  if (dimension != -1) {
     barcode = read_persistence_intervals_in_one_dimension_from_file(filename, dimension);
   } else {
     barcode = read_persistence_intervals_in_one_dimension_from_file(filename);

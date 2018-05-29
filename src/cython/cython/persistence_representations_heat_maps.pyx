@@ -66,7 +66,7 @@ cdef extern from "Persistence_heat_maps_interface.h" namespace "Gudhi::Persisten
 							size_t number_of_pixels,
 							double min_,
 							double max_,
-							unsigned dimensions)
+							int dimensions)
 		@staticmethod
 		Persistence_heat_maps_interface* construct_from_vector_of_pairs( const vector[pair[double, double]]& interval,
 							size_t how_many_pixels_raidus_of_Gausian_kernel,
@@ -83,14 +83,14 @@ cdef class PersistenceHeatMaps:
 
 #Can we have only one constructor, or can we have more
 	def __init__(self, how_many_pixels_raidus_of_Gausian_kernel=50, number_of_pixels=1000, 
-	min_=None, max_=None,dimension=None):
+	min_=None, max_=None,dimension=-1):
 		"""
 		This is a class implementing persistence heat maps. At every point of a diagram we place a Gaussiian kernel (standard deviation is given in terms of the number of pixels).
 		This way we obtain yet another representation of persistence that can be used in data analysis. 
 		"""	
 
 	def __cinit__(self, how_many_pixels_raidus_of_Gausian_kernel=5, number_of_pixels=1000, 
-	vector_of_intervals=None, file_with_intervals='', min_=None, max_=None,dimension=None):
+	vector_of_intervals=None, file_with_intervals='', min_=None, max_=None,dimension=-1):
 		"""
 		This is a constructor of a class PersistenceHeatMaps.
 		The persistence intervals can be input to the class by either providing a filename
@@ -109,19 +109,13 @@ cdef class PersistenceHeatMaps:
 			print "Please provide parameters to construct the persistence heat maps. Object has not been constructed." 
 		else:
 			if (vector_of_intervals is None) and (file_with_intervals is not ''):
-				if (dimension is not None):
-					if os.path.isfile(file_with_intervals):
-						if (min_ is not None) and (max_ is not None):
-							self.thisptr = Persistence_heat_maps_interface.construct_from_file(file_with_intervals, how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels, min_, max_, dimension)
-						else:
-							self.thisptr = Persistence_heat_maps_interface.construct_from_file(file_with_intervals, how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels,0,0,0)
-					else:
-						print("file " + file_with_intervals + " not found.")
-				else:
+				if os.path.isfile(file_with_intervals):
 					if (min_ is not None) and (max_ is not None):
-						self.thisptr = Persistence_heat_maps_interface.construct_from_file(file_with_intervals, how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels, min_, max_, 0)
+						self.thisptr = Persistence_heat_maps_interface.construct_from_file(str.encode(file_with_intervals), how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels, min_, max_, dimension)
 					else:
-						self.thisptr = Persistence_heat_maps_interface.construct_from_file(file_with_intervals, how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels,0,0,0)
+						self.thisptr = Persistence_heat_maps_interface.construct_from_file(str.encode(file_with_intervals), how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels,0,0,0)
+				else:
+					print("file " + file_with_intervals + " not found."	)			
 			else:            
 				if (file_with_intervals is '') and (vector_of_intervals is not None):
 					if (min_ is not None) and (max_ is not None):

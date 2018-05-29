@@ -38,7 +38,7 @@ class Vector_distances_in_diagram_interface : public Vector_distances_in_diagram
   Vector_distances_in_diagram(intervals,where_to_cut){}
 
   Vector_distances_in_diagram_interface(const char* filename, size_t where_to_cut,
-                              unsigned dimension = std::numeric_limits<unsigned>::max()):
+                              int dimension = -1):
   Vector_distances_in_diagram(filename,where_to_cut,dimension){}
   
   void compute_average_interface(const std::vector<Vector_distances_in_diagram_interface*>& to_average)

@@ -40,7 +40,7 @@ cdef extern from "PSSK_interface.h" namespace "Gudhi::Persistence_representation
 		
 		void compute_mean_interface(const vector[PSSK_interface*]& maps_)
 		void compute_median_interface(const vector[PSSK_interface*]& maps_)
-		void compute_percentage_of_active_interface(const vector[PSSK_interface*]& maps_, size_t cutoff = 1)
+		void compute_percentage_of_active_interface(const vector[PSSK_interface*]& maps_, size_t cutoff )
 		
 		void print_to_file(const char* filename) const
 		void load_from_file(const char* filename)
@@ -51,7 +51,7 @@ cdef extern from "PSSK_interface.h" namespace "Gudhi::Persistence_representation
 		size_t number_of_vectorize_functions() const
 		double project_to_R(int number_of_function) const
 		size_t number_of_projections_to_R() const
-		double distance(const PSSK_interface& second_, double power = 1) const
+		double distance(const PSSK_interface& second_, double power) const
 		void compute_average_interface(const vector[PSSK_interface*]& to_average)
 		double compute_scalar_product(const PSSK_interface& second_) const
 		pair[double, double] get_x_range() const
@@ -64,7 +64,7 @@ cdef extern from "PSSK_interface.h" namespace "Gudhi::Persistence_representation
 							size_t number_of_pixels,
 							double min_,
 							double max_,
-							unsigned dimensions)
+							int dimensions)
 		@staticmethod
 		PSSK_interface* construct_from_vector_of_pairs( const vector[pair[double, double]]& interval,
 							size_t how_many_pixels_raidus_of_Gausian_kernel,
@@ -82,7 +82,7 @@ cdef class PSSK:
 
 #Can we have only one constructor, or can we have more
 	def __init__(self, how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels, 
-	min_=None, max_=None,dimension=None):
+	min_=None, max_=None,dimension=-1):
 		"""
 		This is a version of a representation presented in https://arxiv.org/abs/1412.6821
 		In that paper the authors are using the representation just to compute kernel. Over here, we extend the usability by
@@ -94,7 +94,7 @@ cdef class PSSK:
 		"""	
 
 	def __cinit__(self, how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels, 
-	vector_of_intervals=None, file_with_intervals='', min_=None, max_=None,dimension=None):
+	vector_of_intervals=None, file_with_intervals='', min_=None, max_=None,dimension=-1):
 		"""
 		This is a constructor of a class PSSK.
 		The persistence intervals can be input to the class by either providing a filename
@@ -112,20 +112,14 @@ cdef class PSSK:
 		if ( (vector_of_intervals is None) or ( file_with_intervals is '' ) ):
 			print "Please provide parameters to construct the persistence vectors." 
 		else:
-			if (vector_of_intervals is None) and (file_with_intervals is not ''):
-				if (dimension is not None):
-					if os.path.isfile(file_with_intervals):
-						if (min_ is not None) and (max_ is not None):
-							self.thisptr = PSSK_interface.construct_from_file(file_with_intervals, how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels, min_, max_, dimension)
-						else:
-							self.thisptr = PSSK_interface.construct_from_file(file_with_intervals, how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels,0,0,0)
-					else:
-						print("file " + file_with_intervals + " not found.")
-				else:
+			if (vector_of_intervals is None) and (file_with_intervals is not ''):				
+				if os.path.isfile(file_with_intervals):
 					if (min_ is not None) and (max_ is not None):
-						self.thisptr = PSSK_interface.construct_from_file(file_with_intervals, how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels, min_, max_, 0)
+						self.thisptr = PSSK_interface.construct_from_file(str.encode(file_with_intervals), how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels, min_, max_, dimension)
 					else:
-						self.thisptr = PSSK_interface.construct_from_file(file_with_intervals, how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels,0,0,0)
+						self.thisptr = PSSK_interface.construct_from_file(str.encode(file_with_intervals), how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels,0,0,0)
+				else:
+					print("file " + file_with_intervals + " not found.")				
 			else:            
 				if (file_with_intervals is '') and (vector_of_intervals is not None):
 					if (min_ is not None) and (max_ is not None):
@@ -172,7 +166,7 @@ cdef class PSSK:
 				cpp_list.push_back((<PSSK>elt).thisptr)
 			self.thisptr.compute_median_interface( cpp_list ) 
             
-	def compute_percentage_of_active( self,maps_=[] ):
+	def compute_percentage_of_active( self,maps_=[] , cutoff = 1 ):
 		"""
 		Compute a median of a collection of PSSK and store it in 
 		the current object. Note that all the PSSK send in a 
@@ -185,7 +179,7 @@ cdef class PSSK:
 		if ( self.thisptr != NULL ) and ( maps_ is not None ):	
 			for elt in maps_: 
 				cpp_list.push_back((<PSSK>elt).thisptr)
-			self.thisptr.compute_percentage_of_active_interface( cpp_list )  
+			self.thisptr.compute_percentage_of_active_interface( cpp_list , cutoff)  
                        
 	def load_from_file(self,filename):
 		"""

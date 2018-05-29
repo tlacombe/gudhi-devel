@@ -38,13 +38,13 @@ cdef extern from "Persistence_landscape_on_grid_interface.h" namespace "Gudhi::P
 	cdef cppclass Persistence_landscape_on_grid_interface "Gudhi::Persistence_representations::Persistence_landscape_on_grid_interface":
 		Persistence_landscape_on_grid_interface()
 		Persistence_landscape_on_grid_interface(vector[pair[double, double]], double grid_min_, double grid_max_, size_t number_of_points_)
-		Persistence_landscape_on_grid_interface(vector[pair[double, double]], double grid_min_, double grid_max_, size_t number_of_points_, unsigned number_of_levels_of_landscape)
+		Persistence_landscape_on_grid_interface(vector[pair[double, double]], double grid_min_, double grid_max_, size_t number_of_points_, size_t number_of_levels_of_landscape)
 		Persistence_landscape_on_grid_interface(const char* filename, double grid_min_, double grid_max_, size_t number_of_points_,
 		unsigned number_of_levels_of_landscape, unsigned)
 		Persistence_landscape_on_grid_interface(const char* filename, double grid_min_, double grid_max_, size_t number_of_points_,
-		unsigned dimension_)
-		Persistence_landscape_on_grid_interface(const char* filename, size_t number_of_points, unsigned number_of_levels_of_landscape, unsigned dimension)
-		Persistence_landscape_on_grid_interface(const char* filename, size_t number_of_points, unsigned dimension)			   
+		int dimension_)
+		Persistence_landscape_on_grid_interface(const char* filename, size_t number_of_points, unsigned number_of_levels_of_landscape, int dimension)
+		Persistence_landscape_on_grid_interface(const char* filename, size_t number_of_points, int dimension)			   
 		void load_landscape_from_file(const char*)
 		void print_to_file(const char*)const
 		double compute_integral_of_landscape()const
@@ -78,7 +78,7 @@ cdef class PersistenceLandscapesOnGrid:
 
 #Can we have only one constructor, or can we have more
 	def __init__(self, grid_min_=0, grid_max_=0,number_of_points_=1000, file_with_intervals='', 
-	vector_of_intervals=None, dimension=None,number_of_levels=100):
+	vector_of_intervals=None, dimension=-1,number_of_levels=100):
 		"""
 		This is a class implementing persistence landscapes data structures.
 		For theoretical description, please consult <i>Statistical topological
@@ -102,7 +102,7 @@ cdef class PersistenceLandscapesOnGrid:
 
 
 	def __cinit__(self, grid_min_=0, grid_max_=0,number_of_points_=1000, file_with_intervals='', 
-	vector_of_intervals=None, dimension=None,number_of_levels=100):
+	vector_of_intervals=None, dimension=-1,number_of_levels=100):
 		"""
 		This is a constructor of a class PersistenceLandscapes.
 		It either take text file and a positive integer, or a vector
@@ -118,7 +118,7 @@ cdef class PersistenceLandscapesOnGrid:
 		:param vector_of_intervals -- vector of pairs of doubles with
 			   birth-death pairs. None if we construct it from file.
 		:type vector of pairs of doubles or None
-		:param dimension -- diension of intervals to be extracted from file
+		:param dimension -- dimension of intervals to be extracted from file
 		:type nonnegative integer or None
 		:param file_with_intervals - a path to Gudhi style file with
 			   persistence interfals.
@@ -136,14 +136,11 @@ cdef class PersistenceLandscapesOnGrid:
 		if ( (grid_min_ is None) or ( grid_max_ is None ) or ( number_of_points_ is None ) ):
 			print "Please provide parameters of the grid in order to construct the persistence landscape on a grid." 
 		else:
-			if (vector_of_intervals is None) and (file_with_intervals is not ''):
-				if (dimension is not None):
-					if os.path.isfile(file_with_intervals):
-						self.thisptr = new Persistence_landscape_on_grid_interface(file_with_intervals, dimension, grid_min_, grid_max_,number_of_points_, number_of_levels)
-					else:
-						print("file " + file_with_intervals + " not found.")
+			if (vector_of_intervals is None) and (file_with_intervals is not ''):				
+				if os.path.isfile(file_with_intervals):
+					self.thisptr = new Persistence_landscape_on_grid_interface(str.encode(file_with_intervals), dimension, grid_min_, grid_max_,number_of_points_, number_of_levels)
 				else:
-					self.thisptr = new Persistence_landscape_on_grid_interface(file_with_intervals,0, grid_min_, grid_max_,number_of_points_, number_of_levels)
+					print("file " + file_with_intervals + " not found.")				
 			else:			
 				if (file_with_intervals is '') and (vector_of_intervals is not None):
 					self.thisptr = new Persistence_landscape_on_grid_interface()#(vector_of_intervals,  grid_min_, grid_max_, number_of_points_, number_of_levels)

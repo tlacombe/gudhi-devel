@@ -80,7 +80,7 @@ cdef class PersistenceLandscapes:
 
 
 #Can we have only one constructor, or can we have more
-	def __init__(self, vector_of_intervals=None, dimension=None, file_with_intervals='',number_of_levels=sys.maxsize):
+	def __init__(self, vector_of_intervals=None, dimension=-1, file_with_intervals='',number_of_levels=sys.maxsize):
 		"""
 		This is a class implementing persistence landscapes data structures.
 		For theoretical description, please consult <i>Statistical topological
@@ -103,7 +103,7 @@ cdef class PersistenceLandscapes:
    
 
 
-	def __cinit__(self, vector_of_intervals=None, dimension=None, file_with_intervals='',number_of_levels=sys.maxsize):
+	def __cinit__(self, vector_of_intervals=None, dimension=-1 , file_with_intervals='',number_of_levels=sys.maxsize):
 		"""
 		This is a constructor of a class PersistenceLandscapes.
 		It either take text file and a positive integer, or a vector
@@ -119,7 +119,7 @@ cdef class PersistenceLandscapes:
 		:param vector_of_intervals -- vector of pairs of doubles with
 		   birth-death pairs. None if we construct it from file.
 		:type vector of pairs of doubles or None
-		:param dimension -- diension of intervals to be extracted from file
+		:param dimension -- dimension of intervals to be extracted from file
 		:type nonnegative integer or None
 		:param file_with_intervals - a path to Gudhi style file with
 		   persistence interfals.
@@ -128,16 +128,12 @@ cdef class PersistenceLandscapes:
 		generated (if not set, all of the are generated).
 		:type positive integer
 		"""
-		if (vector_of_intervals is None) and (file_with_intervals is not ''):
-			if (dimension is not None):
-				if os.path.isfile(file_with_intervals):
-					#self.thisptr = new Persistence_landscape_interface(file_with_intervals, dimension, number_of_levels)
-					self.thisptr = Persistence_landscape_interface.construct_from_file(file_with_intervals, dimension, number_of_levels)
-				else:
-					print("file " + file_with_intervals + " not found.")
+		if (vector_of_intervals is None) and (file_with_intervals is not ''):			
+			if os.path.isfile(file_with_intervals):
+				#self.thisptr = new Persistence_landscape_interface(file_with_intervals, dimension, number_of_levels)
+				self.thisptr = Persistence_landscape_interface.construct_from_file(str.encode(file_with_intervals), dimension, number_of_levels)
 			else:
-				#self.thisptr = new Persistence_landscape_interface(file_with_intervals, number_of_levels)
-				self.thisptr = Persistence_landscape_interface.construct_from_file(file_with_intervals,0, number_of_levels)
+				print("file " + file_with_intervals + " not found.")			
 		elif (file_with_intervals is '') and (vector_of_intervals is not None):
 			#self.thisptr = new Persistence_landscape_interface(vector_of_intervals, true, number_of_levels)
 			self.thisptr = Persistence_landscape_interface.construct_from_vector_of_pairs(vector_of_intervals, number_of_levels)

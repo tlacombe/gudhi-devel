@@ -81,7 +81,7 @@ class Vector_distances_in_diagram {
     *the output vectors.
       **/
   Vector_distances_in_diagram(const char* filename, size_t where_to_cut,
-                              unsigned dimension = std::numeric_limits<unsigned>::max());
+                              int dimension = -1 );
 
   /**
    *  Writing to a stream.
@@ -354,10 +354,10 @@ Vector_distances_in_diagram<F>::Vector_distances_in_diagram(const std::vector<st
 
 template <typename F>
 Vector_distances_in_diagram<F>::Vector_distances_in_diagram(const char* filename, size_t where_to_cut,
-                                                            unsigned dimension)
+                                                            int dimension)
     : where_to_cut(where_to_cut) {
   std::vector<std::pair<double, double> > intervals;
-  if (dimension == std::numeric_limits<unsigned>::max()) {
+  if (dimension == -1) {
     intervals = read_persistence_intervals_in_one_dimension_from_file(filename);
   } else {
     intervals = read_persistence_intervals_in_one_dimension_from_file(filename, dimension);

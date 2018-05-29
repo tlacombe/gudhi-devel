@@ -49,7 +49,7 @@ class Persistence_heat_maps_interface : public Persistence_heat_maps<constant_sc
                         size_t number_of_pixels,
                         double min_,
                         double max_,
-                        unsigned dimension
+                        int dimension
                         ):
   Persistence_heat_maps(filename,create_Gaussian_filter(how_many_pixels_raidus_of_Gausian_kernel, 1),
 						true,number_of_pixels, ((min_ == 0) ?  std::numeric_limits<double>::max() : min_) , ((max_ == 0) ? std::numeric_limits<double>::max() : max_),dimension){}
@@ -57,7 +57,7 @@ class Persistence_heat_maps_interface : public Persistence_heat_maps<constant_sc
   //****************
   static Persistence_heat_maps_interface* construct_from_file(  const char* filename, size_t how_many_pixels_raidus_of_Gausian_kernel,
 																size_t number_of_pixels, double min_ = 0,
-																double max_ = 0, unsigned dimensions = 0 )
+																double max_ = 0, int dimensions = -1 )
   {
       Persistence_heat_maps_interface* result = new Persistence_heat_maps_interface(filename,how_many_pixels_raidus_of_Gausian_kernel,number_of_pixels,min_,max_,dimensions);
 	  return result;  
