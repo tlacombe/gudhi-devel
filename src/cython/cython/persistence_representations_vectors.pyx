@@ -57,7 +57,7 @@ cdef class PersistenceVectors:
 	cdef Vector_distances_in_diagram_interface* thisptr
 
 #Can we have only one constructor, or can we have more
-	def __init__(self, where_to_cut, file_with_intervals='', 
+	def __init__(self, where_to_cut=100, file_with_intervals='', 
 	vector_of_intervals=None, dimension=None):
 		"""
 		This is an implementation of idea presented in the paper 
@@ -73,7 +73,7 @@ cdef class PersistenceVectors:
 		Topological_data_with_scalar_product
 		"""	
 
-	def __cinit__(self, where_to_cut, file_with_intervals='', 
+	def __cinit__(self, where_to_cut=100, file_with_intervals='', 
 	vector_of_intervals=None, dimension=None):
 		"""
 		This is a constructor of a class PersistenceVectors.

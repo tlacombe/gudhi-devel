@@ -43,7 +43,7 @@ cdef extern from "Persistence_heat_maps_interface.h" namespace "Gudhi::Persisten
 
 		void compute_mean_interface(const vector[Persistence_heat_maps_interface*]& maps_)
 		void compute_median_interface(const vector[Persistence_heat_maps_interface*]& maps_)
-		void compute_percentage_of_active_interface(const vector[Persistence_heat_maps_interface*]& maps_, size_t cutoff = 1)
+		void compute_percentage_of_active_interface(const vector[Persistence_heat_maps_interface*]& maps_, size_t cutoff )
 		void print_to_file(const char* filename) const
 		void load_from_file(const char* filename)
 		bool check_if_the_same(const Persistence_heat_maps_interface& second) const 
@@ -82,14 +82,14 @@ cdef class PersistenceHeatMaps:
 	cdef Persistence_heat_maps_interface* thisptr
 
 #Can we have only one constructor, or can we have more
-	def __init__(self, how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels, 
+	def __init__(self, how_many_pixels_raidus_of_Gausian_kernel=50, number_of_pixels=1000, 
 	min_=None, max_=None,dimension=None):
 		"""
 		This is a class implementing persistence heat maps. At every point of a diagram we place a Gaussiian kernel (standard deviation is given in terms of the number of pixels).
 		This way we obtain yet another representation of persistence that can be used in data analysis. 
 		"""	
 
-	def __cinit__(self, how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels, 
+	def __cinit__(self, how_many_pixels_raidus_of_Gausian_kernel=5, number_of_pixels=1000, 
 	vector_of_intervals=None, file_with_intervals='', min_=None, max_=None,dimension=None):
 		"""
 		This is a constructor of a class PersistenceHeatMaps.
@@ -106,7 +106,7 @@ cdef class PersistenceHeatMaps:
 		:param dimension - na optional parameter, a dimension of the intervals to be read from a file.           
 		"""
 		if ( (vector_of_intervals is None) or ( file_with_intervals is '' ) ):
-			print "Please provide parameters to construct the persistence vectors." 
+			print "Please provide parameters to construct the persistence heat maps. Object has not been constructed." 
 		else:
 			if (vector_of_intervals is None) and (file_with_intervals is not ''):
 				if (dimension is not None):
@@ -169,7 +169,7 @@ cdef class PersistenceHeatMaps:
 				cpp_list.push_back((<PersistenceHeatMaps>elt).thisptr)
 			self.thisptr.compute_median_interface( cpp_list ) 
             
-	def compute_percentage_of_active( self,maps_=[] ):
+	def compute_percentage_of_active( self,maps_=[] , cutoff = 1 ):
 		"""
 		Compute a median of a collection of heat maps and store it in 
 		the current object. Note that all the persistence maps send in a 
@@ -182,7 +182,7 @@ cdef class PersistenceHeatMaps:
 		if ( self.thisptr != NULL ) and ( maps_ is not None ):	
 			for elt in maps_: 
 				cpp_list.push_back((<PersistenceHeatMaps>elt).thisptr)
-			self.thisptr.compute_percentage_of_active_interface( cpp_list )  
+			self.thisptr.compute_percentage_of_active_interface( cpp_list , cutoff)  
                        
 	def load_from_file(self,filename):
 		"""

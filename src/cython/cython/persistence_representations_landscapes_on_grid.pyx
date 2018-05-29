@@ -76,7 +76,7 @@ cdef class PersistenceLandscapesOnGrid:
 	cdef Persistence_landscape_on_grid_interface* thisptr
 
 #Can we have only one constructor, or can we have more
-	def __init__(self, grid_min_, grid_max_,number_of_points_, file_with_intervals='', 
+	def __init__(self, grid_min_=0, grid_max_=0,number_of_points_=1000, file_with_intervals='', 
 	vector_of_intervals=None, dimension=None,number_of_levels=sys.maxsize):
 		"""
 		This is a class implementing persistence landscapes data structures.
@@ -100,7 +100,7 @@ cdef class PersistenceLandscapesOnGrid:
    
 
 
-	def __cinit__(self, grid_min_, grid_max_,number_of_points_, file_with_intervals='', 
+	def __cinit__(self, grid_min_=0, grid_max_=0,number_of_points_=1000, file_with_intervals='', 
 	vector_of_intervals=None, dimension=None,number_of_levels=sys.maxsize):
 		"""
 		This is a constructor of a class PersistenceLandscapes.
