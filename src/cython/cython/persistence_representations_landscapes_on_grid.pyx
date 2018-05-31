@@ -37,8 +37,7 @@ __license__ = "GPL v3"
 cdef extern from "Persistence_landscape_on_grid_interface.h" namespace "Gudhi::Persistence_representations":
 	cdef cppclass Persistence_landscape_on_grid_interface "Gudhi::Persistence_representations::Persistence_landscape_on_grid_interface":
 		Persistence_landscape_on_grid_interface()
-		Persistence_landscape_on_grid_interface(vector[pair[double, double]], double grid_min_, double grid_max_, size_t number_of_points_)
-		Persistence_landscape_on_grid_interface(vector[pair[double, double]], double grid_min_, double grid_max_, size_t number_of_points_, size_t number_of_levels_of_landscape)
+		Persistence_landscape_on_grid_interface(vector[pair[double, double]], double grid_min_, double grid_max_, size_t number_of_points_)		
 		Persistence_landscape_on_grid_interface(const char* filename, double grid_min_, double grid_max_, size_t number_of_points_,
 		unsigned number_of_levels_of_landscape, unsigned)
 		Persistence_landscape_on_grid_interface(const char* filename, double grid_min_, double grid_max_, size_t number_of_points_,
@@ -143,7 +142,7 @@ cdef class PersistenceLandscapesOnGrid:
 					print("file " + file_with_intervals + " not found.")				
 			else:			
 				if (file_with_intervals is '') and (vector_of_intervals is not None):
-					self.thisptr = new Persistence_landscape_on_grid_interface()#(vector_of_intervals,  grid_min_, grid_max_, number_of_points_, number_of_levels)
+					self.thisptr = new Persistence_landscape_on_grid_interface(vector_of_intervals,  grid_min_, grid_max_, number_of_points_, number_of_levels)
 				else:
 					self.thisptr = new Persistence_landscape_on_grid_interface()
 
@@ -371,3 +370,12 @@ cdef class PersistenceLandscapesOnGrid:
 		if ( self.thisptr != NULL ):
 			return self.thisptr.get_y_range(level)
 
+	def check_if_the_same(self, PersistenceLandscapesOnGrid second):
+		"""
+		Return true if this landscape and the second landscape on a grid are the same
+		and false othervise.
+		:param PersistenceLandscapesOnGrid, the second landscape
+		:type bool
+		"""
+		if ( self.thisptr != NULL ):
+			return self.thisptr.check_if_the_same( deref(second.thisptr) )

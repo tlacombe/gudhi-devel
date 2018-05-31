@@ -476,21 +476,24 @@ Persistence_landscape::Persistence_landscape(const char* filename, int dimension
     barcode = read_persistence_intervals_in_one_dimension_from_file(filename, dimension);   
   } else {
     barcode = read_persistence_intervals_in_one_dimension_from_file(filename);
-  }    
+  }      
+  //std::cerr << "Consruction of landaspes from file \n";
+  //for ( size_t i = 0 ; i != barcode.size() ; ++i )
+  //{
+  //	 std::cout << std::setprecision(15) << barcode[i].first <<  " " << barcode[i].second << std::endl;
+  //}
   this->construct_persistence_landscape_from_barcode(barcode, number_of_levels);
   this->set_up_numbers_of_functions_for_vectorization_and_projections_to_reals();
 }
 
-bool operatorEqualDbg = true;
+bool operatorEqualDbg = false;
 bool Persistence_landscape::operator==(const Persistence_landscape& rhs) const {
   if (this->land.size() != rhs.land.size()) {
     if (operatorEqualDbg) 
     { 
 		std::cerr << "this->land.size() : " << this->land.size() << std::endl;
 		std::cerr << "rhs.land.size() : " << rhs.land.size() << std::endl;		
-	}
-		
-		
+	}			
     return false;
   }
   for (size_t level = 0; level != this->land.size(); ++level) {
@@ -517,7 +520,13 @@ bool Persistence_landscape::operator==(const Persistence_landscape& rhs) const {
 }
 
 Persistence_landscape::Persistence_landscape(const std::vector<std::pair<double, double> >& p,
-                                             size_t number_of_levels) {
+                                             size_t number_of_levels) {												
+  //std::cerr << "Consruction of landaspes from vector of pairs \n";
+  //for ( size_t i = 0 ; i != p.size() ; ++i )
+  //{
+  //	  std::cout << std::setprecision(15) << p[i].first <<  " " << p[i].second << std::endl;
+  //}											 
+												 
   this->construct_persistence_landscape_from_barcode(p, number_of_levels);
   this->set_up_numbers_of_functions_for_vectorization_and_projections_to_reals();
 }
@@ -538,7 +547,7 @@ void Persistence_landscape::construct_persistence_landscape_from_barcode(
   if (dbg) {
     std::cerr << "Bars : \n";
     for (size_t i = 0; i != bars.size(); ++i) {
-      std::cerr << bars[i].first << " " << bars[i].second << "\n";
+      std::cerr << std::setprecision(15) << bars[i].first << " " << bars[i].second << "\n";
     }
     getchar();
   }

@@ -312,3 +312,8 @@ if(CYTHON_FOUND)
 
   endif(SPHINX_PATH AND NOT CGAL_WITH_EIGEN3_VERSION VERSION_LESS 4.8.1)
 endif(CYTHON_FOUND)
+
+
+#persistence representation tests:
+add_gudhi_py_test(test_persistence_representations_landscapes.py)
+add_gudhi_py_test(test_persistence_representations_landscapes_on_grid.py)

@@ -1127,6 +1127,12 @@ Persistence_landscape_on_grid::Persistence_landscape_on_grid(const char* filenam
   } else {
     p = read_persistence_intervals_in_one_dimension_from_file(filename, dimension);
   }
+  
+  //for ( size_t i = 0 ; i != p.size() ; ++i )
+  //{
+  //		std::cerr << p[i].first << " " << p[i].second << std::endl;
+  //}
+  
   this->set_up_values_of_landscapes(p, grid_min_, grid_max_, number_of_points_);
 }
 
@@ -1140,6 +1146,12 @@ Persistence_landscape_on_grid::Persistence_landscape_on_grid(const char* filenam
   } else {
     p = read_persistence_intervals_in_one_dimension_from_file(filename, dimension);
   }
+  
+  //for ( size_t i = 0 ; i != p.size() ; ++i )
+  //{
+  //		std::cerr << p[i].first << " " << p[i].second << std::endl;
+  //}
+  
   this->set_up_values_of_landscapes(p, grid_min_, grid_max_, number_of_points_, number_of_levels_of_landscape);
 }
 
@@ -1151,6 +1163,12 @@ Persistence_landscape_on_grid::Persistence_landscape_on_grid(const char* filenam
   } else {
     p = read_persistence_intervals_in_one_dimension_from_file(filename, dimension);
   }
+  
+  //for ( size_t i = 0 ; i != p.size() ; ++i )
+  //{
+  //		std::cerr << p[i].first << " " << p[i].second << std::endl;
+  //}
+  
   double grid_min_ = std::numeric_limits<double>::max();
   double grid_max_ = -std::numeric_limits<double>::max();
   for (size_t i = 0; i != p.size(); ++i) {
@@ -1169,6 +1187,12 @@ Persistence_landscape_on_grid::Persistence_landscape_on_grid(const char* filenam
   } else {
     p = read_persistence_intervals_in_one_dimension_from_file(filename, dimension);
   }
+  
+  //for ( size_t i = 0 ; i != p.size() ; ++i )
+  //{
+  //		std::cerr << p[i].first << " " << p[i].second << std::endl;
+  //}
+  
   double grid_min_ = std::numeric_limits<double>::max();
   double grid_max_ = -std::numeric_limits<double>::max();
   for (size_t i = 0; i != p.size(); ++i) {

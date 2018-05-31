@@ -185,10 +185,10 @@ cdef class PersistenceLandscapes:
 		:type nonnegative integer.
 		"""
 		if ( self.thisptr != NULL ) and ( level is not None ):
-			print "Computing integral of level", level
+			#print "Computing integral of level", level
 			return self.thisptr.compute_integral_of_a_level_of_a_landscape(level)
 
-	def compute_integral_of_landscape(self,p):
+	def compute_integral_of_power_of_landscape(self,p):
 		"""
 		This function compute integral of the landscape p-th power of a
 		landscape (defined formally as sum of integrals on R of p-th powers
@@ -199,6 +199,9 @@ cdef class PersistenceLandscapes:
 		"""
 		if ( self.thisptr != NULL ) and ( p is not None ):
 			return self.thisptr.compute_integral_of_landscape(p)
+		else:
+			return self.thisptr.compute_integral_of_landscape()			
+				
 
 	def compute_value_at_a_given_point(self, level,  x):
 		"""

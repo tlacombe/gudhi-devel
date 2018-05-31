@@ -35,7 +35,7 @@ using namespace Gudhi::Persistence_representations;
 double epsilon = 0.0005;
 
 BOOST_AUTO_TEST_CASE(check_construction_of_landscape) {
-  Persistence_landscape_on_grid l("data/file_with_diagram_1", 100, -1);
+  Persistence_landscape_on_grid l("data/file_with_diagram_2", 100, -1);
   l.print_to_file("landscape_from_file_with_diagram_1");
 
   Persistence_landscape_on_grid g;
@@ -43,6 +43,8 @@ BOOST_AUTO_TEST_CASE(check_construction_of_landscape) {
 
   BOOST_CHECK(l == g);
 }
+
+
 
 BOOST_AUTO_TEST_CASE(check_construction_of_landscape_using_only_ten_levels) {
   // TODO
@@ -184,7 +186,7 @@ BOOST_AUTO_TEST_CASE(check_computations_of_maxima_and_norms) {
   //std::cerr << p.compute_norm_of_landscape(2) << " " <<  "1.84143" << std::endl;
   //std::cerr << p.compute_norm_of_landscape(3) << " " <<  "0.927067" << std::endl;
   //std::cerr << compute_distance_of_landscapes_on_grid(p, sum, 1) << " " <<  "16.8519" << std::endl;
-  //std::cerr << compute_distance_of_landscapes_on_grid(p, sum, 2) << " " <<  "1.44542" << std::endl;*/
+  //std::cerr << compute_distance_of_landscapes_on_grid(p, sum, 2) << " " <<  "1.44542" << std::endl;s
   //std::cerr << std::setprecision(10) <<  compute_distance_of_landscapes_on_grid(p, sum, std::numeric_limits<double>::max()) << " " << "0.45"  << std::endl;
 
 
@@ -234,6 +236,7 @@ BOOST_AUTO_TEST_CASE(check_computations_of_scalar_product) {
   Persistence_landscape_on_grid q("data/file_with_diagram_1", 0., 1., (size_t)10000);
   GUDHI_TEST_FLOAT_EQUALITY_CHECK(p.compute_scalar_product(q), 0.754367, epsilon);
 }
+
 
 // Below I am storing the code used to generate tests for that functionality.
 /*

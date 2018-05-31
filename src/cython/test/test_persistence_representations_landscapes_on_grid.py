@@ -1,5 +1,6 @@
 import gudhi
 import sys
+import math
 
 """
     This file is part of the Gudhi Library. The Gudhi library
@@ -32,12 +33,11 @@ epsilon = 0.0000005;
 
 
 def test_check_construction_of_landscape:
-    #l = gudhi.PersistenceLandscapesOnGrid("data/file_with_diagram_1", 100)
     l = gudhi.PersistenceLandscapesOnGrid(file_with_intervals='data/file_with_diagram_1')
     l.print_to_file("landscape_from_file_with_diagram_1")
     g = gudhi.PersistenceLandscapesOnGrid()
     g.load_landscape_from_file("landscape_from_file_with_diagram_1")
-    assert (l.thisptr == g.thisptr) 
+    assert l.check_if_the_same(g)
 
 def test_check_construction_of_landscape_using_only_ten_levels:
     number = 10
