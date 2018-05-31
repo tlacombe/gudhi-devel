@@ -38,32 +38,38 @@ namespace Gudhi {
  *
  * It stores explicitely its own filtration value and its own Simplex_key.
  */
-template<class SimplexTree>
-struct Simplex_tree_node_explicit_storage : SimplexTree::Filtration_simplex_base, SimplexTree::Key_simplex_base {
+template <class SimplexTree>
+struct Simplex_tree_node_explicit_storage : SimplexTree::Filtration_simplex_base,
+                                            SimplexTree::Key_simplex_base,
+                                            SimplexTree::Hooks_simplex_base,
+                                            SimplexTree::Annotation_simplex_base {
   typedef typename SimplexTree::Siblings Siblings;
   typedef typename SimplexTree::Filtration_value Filtration_value;
   typedef typename SimplexTree::Simplex_key Simplex_key;
 
-  Simplex_tree_node_explicit_storage(Siblings * sib = nullptr,
-                                     Filtration_value filtration = 0)
-      : children_(sib) {
+  Simplex_tree_node_explicit_storage(Siblings *sib = nullptr, Filtration_value filtration = 0) : children_(sib) {
     this->assign_filtration(filtration);
   }
+
+  // If hooks are stored, they will be exchanged by the copy constructor
+  // and the hooks of *this will become unvalid.
+  Simplex_tree_node_explicit_storage(const Simplex_tree_node_explicit_storage &other)
+      : SimplexTree::Filtration_simplex_base(other),
+        SimplexTree::Key_simplex_base(other),
+        SimplexTree::Hooks_simplex_base(other),
+        SimplexTree::Annotation_simplex_base(other),
+        children_(other.children_) {}
 
   /*
    * Assign children to the node
    */
-  void assign_children(Siblings * children) {
-    children_ = children;
-  }
+  void assign_children(Siblings *children) { children_ = children; }
 
   /* Careful -> children_ can be NULL*/
-  Siblings * children() {
-    return children_;
-  }
+  Siblings *children() { return children_; }
 
  private:
-  Siblings * children_;
+  Siblings *children_;
 };
 
 /* @} */  // end addtogroup simplex_tree
