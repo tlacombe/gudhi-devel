@@ -36,19 +36,12 @@ __license__ = "GPL v3"
 
 cdef extern from "Persistence_landscape_on_grid_interface.h" namespace "Gudhi::Persistence_representations":
 	cdef cppclass Persistence_landscape_on_grid_interface "Gudhi::Persistence_representations::Persistence_landscape_on_grid_interface":
-		Persistence_landscape_on_grid_interface()
-		Persistence_landscape_on_grid_interface(vector[pair[double, double]], double grid_min_, double grid_max_, size_t number_of_points_)		
-		Persistence_landscape_on_grid_interface(const char* filename, double grid_min_, double grid_max_, size_t number_of_points_,
-		unsigned number_of_levels_of_landscape, unsigned)
-		Persistence_landscape_on_grid_interface(const char* filename, double grid_min_, double grid_max_, size_t number_of_points_,
-		int dimension_)
-		Persistence_landscape_on_grid_interface(const char* filename, size_t number_of_points, unsigned number_of_levels_of_landscape, int dimension)
-		Persistence_landscape_on_grid_interface(const char* filename, size_t number_of_points, int dimension)			   
+		Persistence_landscape_on_grid_interface()				  
 		void load_landscape_from_file(const char*)
 		void print_to_file(const char*)const
 		double compute_integral_of_landscape()const
-		double compute_integral_of_a_level_of_a_landscape(size_t)const
-		double compute_integral_of_landscape(double)const
+		double compute_integral_of_a_level_of_a_landscape(size_t)const		
+		double compute_integral_of_power_of_landscape(double p)const
 		double compute_value_at_a_given_point(unsigned , double)const		
 		pair[double,double] compute_minimum_maximum()const
 		double compute_norm_of_landscape(double)
@@ -65,6 +58,14 @@ cdef extern from "Persistence_landscape_on_grid_interface.h" namespace "Gudhi::P
 		double compute_scalar_product(const Persistence_landscape_on_grid_interface&)const
 		pair[double, double] get_y_range(size_t)const
 		bool check_if_the_same(const Persistence_landscape_on_grid_interface& rhs) const
+		#**************
+		#static methods
+		@staticmethod		
+		Persistence_landscape_on_grid_interface* construct_from_file(const char* filename, double grid_min_, double grid_max_, size_t number_of_points_,int dimension_)
+		@staticmethod		
+		Persistence_landscape_on_grid_interface* construct_from_vector(vector[pair[double, double]], double grid_min_, double grid_max_, size_t number_of_points_)
+		#***************
+		
 
 
 
@@ -132,19 +133,17 @@ cdef class PersistenceLandscapesOnGrid:
 		generated (if not set, all of the are generated).
 		:type positive integer
 		"""
-		if ( (grid_min_ is None) or ( grid_max_ is None ) or ( number_of_points_ is None ) ):
-			print "Please provide parameters of the grid in order to construct the persistence landscape on a grid." 
-		else:
-			if (vector_of_intervals is None) and (file_with_intervals is not ''):				
-				if os.path.isfile(file_with_intervals):
-					self.thisptr = new Persistence_landscape_on_grid_interface(str.encode(file_with_intervals), dimension, grid_min_, grid_max_,number_of_points_, number_of_levels)
-				else:
-					print("file " + file_with_intervals + " not found.")				
-			else:			
-				if (file_with_intervals is '') and (vector_of_intervals is not None):
-					self.thisptr = new Persistence_landscape_on_grid_interface(vector_of_intervals,  grid_min_, grid_max_, number_of_points_, number_of_levels)
-				else:
-					self.thisptr = new Persistence_landscape_on_grid_interface()
+		if (vector_of_intervals is None) and (file_with_intervals is not ''):				
+			if os.path.isfile(file_with_intervals):
+				self.thisptr = Persistence_landscape_on_grid_interface.construct_from_file(str.encode(file_with_intervals), grid_min_, grid_max_,number_of_points_, dimension)
+			else:
+				print("file " + file_with_intervals + " not found.")				
+		else:			
+			if (file_with_intervals is '') and (vector_of_intervals is not None):
+				self.thisptr = Persistence_landscape_on_grid_interface.construct_from_vector(vector_of_intervals,  grid_min_, grid_max_, number_of_points_)
+			else:
+				print "Creatign empty persistence landscape on a grid."
+				self.thisptr = new Persistence_landscape_on_grid_interface()
 
 
 	def __dealloc__(self):
@@ -190,9 +189,9 @@ cdef class PersistenceLandscapesOnGrid:
 		:type nonnegative integer.
 		"""
 		if ( self.thisptr != NULL ) and ( level is not None ):
-			return self.thisptr.compute_integral_of_landscape(level)
+			return self.thisptr.compute_integral_of_a_level_of_a_landscape(level)
 
-	def compute_integral_of_landscape(self,p):
+	def compute_integral_of_power_of_landscape(self,p):
 		"""
 		This function compute integral of the landscape p-th power of a
 		landscape (defined formally as sum of integrals on R of p-th powers
@@ -202,7 +201,7 @@ cdef class PersistenceLandscapesOnGrid:
 		:type Real value
 		"""
 		if ( self.thisptr != NULL ) and ( p is not None ):
-			return self.thisptr.compute_integral_of_landscape(p)
+			return self.thisptr.compute_integral_of_power_of_landscape(p)
 
 	def compute_value_at_a_given_point(self, level,  x):
 		"""

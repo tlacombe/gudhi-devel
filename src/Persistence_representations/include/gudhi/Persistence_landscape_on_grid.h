@@ -1,4 +1,4 @@
-/**    This file is part of the Gudhi Library. The Gudhi library
+/**    This file is part of the Gudhi fvLibrary. The Gudhi library
  *    (Geometric Understanding in Higher Dimensions) is a generic C++
  *    library for computational topology.
  *
@@ -151,6 +151,7 @@ class Persistence_landscape_on_grid {
    *functions)
   **/
   double compute_integral_of_landscape() const {
+	//std::cerr << "compute_integral_of_landscape \n";
     size_t maximal_level = this->number_of_nonzero_levels();
     double result = 0;
     for (size_t i = 0; i != maximal_level; ++i) {
@@ -162,7 +163,9 @@ class Persistence_landscape_on_grid {
   /**
        * This function compute integral of the 'level'-level of a landscape.
       **/
-  double compute_integral_of_landscape(size_t level) const {
+  double compute_integral_of_landscape(size_t level) const
+  {
+	//std::cerr << "compute_integral_of_landscape(size_t level)\n";
     bool dbg = false;
     double result = 0;
     double dx = (this->grid_max - this->grid_min) / static_cast<double>(this->values_of_landscapes.size() - 1);
@@ -210,7 +213,8 @@ class Persistence_landscape_on_grid {
    * This function compute integral of the landscape p-th power of a landscape (defined formally as sum of integrals on
    *R of p-th powers of all landscape functions)
   **/
-  double compute_integral_of_landscape(double p) const {	 
+  double compute_integral_of_landscape(double p) const {
+	std::cerr << "compute_integral_of_landscape(double)\n";  	 
     size_t maximal_level = this->number_of_nonzero_levels();
     double result = 0;
     for (size_t i = 0; i != maximal_level; ++i) {
@@ -977,21 +981,25 @@ void Persistence_landscape_on_grid::set_up_values_of_landscapes(const std::vecto
     }
   }
 
-  if ((grid_min_ == std::numeric_limits<double>::max()) || (grid_max_ == std::numeric_limits<double>::max())) {
+  if (((grid_min_ >= std::numeric_limits<double>::max()) || (grid_max_ >= std::numeric_limits<double>::max())) 
+     ||
+     ( grid_min_ == grid_max_ ))
+  {
     // in this case, we need to find grid_min_ and grid_min_ based on the data.
     double min = std::numeric_limits<double>::max();
-    double max = std::numeric_limits<double>::min();
+    double max = -std::numeric_limits<double>::max();
     for (size_t i = 0; i != p.size(); ++i) {
       if (p[i].first < min) min = p[i].first;
       if (p[i].second > max) max = p[i].second;
     }
-    if (grid_min_ == std::numeric_limits<double>::max()) {
+    if (grid_min_ >= std::numeric_limits<double>::max()) {
       grid_min_ = min;
-    } else {
+    } 
+    if (grid_max_ >= std::numeric_limits<double>::max()) {
       // in this case grid_max_ == std::numeric_limits<double>::max()
       grid_max_ = max;
     }
-  }
+  } 
 
   // if number_of_levels == std::numeric_limits<size_t>::max(), then we will have all the nonzero values of landscapes,
   // and will store them in a vector

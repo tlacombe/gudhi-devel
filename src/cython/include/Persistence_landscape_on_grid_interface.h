@@ -63,6 +63,31 @@ class Persistence_landscape_on_grid_interface : public Persistence_landscape_on_
   Persistence_landscape_on_grid_interface(const char* filename, size_t number_of_points, int dimension = -1):
   Persistence_landscape_on_grid(filename,number_of_points,dimension){}  
   
+  //******************************
+  static Persistence_landscape_on_grid_interface* construct_from_file( const char* filename, double grid_min_, double grid_max_, size_t number_of_points_,int dimension_ )
+  {	  
+      Persistence_landscape_on_grid_interface* result = new Persistence_landscape_on_grid_interface(filename,grid_min_,grid_max_,number_of_points_,dimension_);
+	  return result;  
+  }
+  static Persistence_landscape_on_grid_interface* construct_from_vector( std::vector<std::pair<double, double > > v, double grid_min_, double grid_max_, size_t number_of_points_ )
+  {
+      Persistence_landscape_on_grid_interface* result = new Persistence_landscape_on_grid_interface(v,grid_min_,grid_max_,number_of_points_);
+	  return result;  
+  }
+  //******************************
+  
+  
+  double compute_integral_of_power_of_landscape(double p)const
+  {
+	  return this->compute_integral_of_landscape(p);
+  }
+  
+  double compute_integral_of_a_level_of_a_landscape(size_t level)
+  {
+	  return this->compute_integral_of_landscape(level);
+  }
+
+  
   void new_compute_average(const std::vector<Persistence_landscape_on_grid_interface*>& to_average) 
   {
 	  std::vector<Persistence_landscape_on_grid*> to_average_new;
