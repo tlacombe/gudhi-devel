@@ -62,16 +62,8 @@ BOOST_AUTO_TEST_CASE(check_computations_of_integrals) {
 BOOST_AUTO_TEST_CASE(check_computations_of_integrals_for_each_level_separatelly) {
   std::vector<std::pair<double, double> > diag =
   read_persistence_intervals_in_one_dimension_from_file("data/file_with_diagram");
-  
-      for ( size_t i = 0 ; i != diag.size() ; ++i )
-    {
-		std::cout << std::setprecision(10) << diag[i].first << " " << diag[i].second << std::endl;
-	}
-  
-  Persistence_landscape p(diag);
-  
-  Persistence_landscape q;
-  q.load_landscape_from_file("data/file_with_landscape_from_file_with_diagram");
+  Persistence_landscape p(diag);  
+  Persistence_landscape q("data/file_with_diagram") ;  
   std::cerr << "( p == q ) : " << ( p == q ) << std::endl;
   
 
