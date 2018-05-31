@@ -35,7 +35,7 @@ using namespace Gudhi::Persistence_representations;
 double epsilon = 0.0005;
 
 BOOST_AUTO_TEST_CASE(check_construction_of_landscape) {
-  Persistence_landscape_on_grid l("data/file_with_diagram_1", 100, std::numeric_limits<unsigned short>::max());
+  Persistence_landscape_on_grid l("data/file_with_diagram_1", 100, -1);
   l.print_to_file("landscape_from_file_with_diagram_1");
 
   Persistence_landscape_on_grid g;
@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE(check_construction_of_landscape_using_only_ten_levels) {
   // TODO
   unsigned number = 10;
   Persistence_landscape_on_grid l("data/file_with_diagram_1", 100, number);
-  Persistence_landscape_on_grid g("data/file_with_diagram_1", 100, std::numeric_limits<unsigned short>::max());
+  Persistence_landscape_on_grid g("data/file_with_diagram_1", 100, -1);
   // cut all the elements of order > 10 in g.
 
   for (size_t level = 0; level != number; ++level) {
@@ -62,12 +62,12 @@ BOOST_AUTO_TEST_CASE(check_construction_of_landscape_using_only_ten_levels) {
 }
 
 BOOST_AUTO_TEST_CASE(check_computations_of_integrals) {
-  Persistence_landscape_on_grid p("data/file_with_diagram_1", 100, std::numeric_limits<unsigned short>::max());
+  Persistence_landscape_on_grid p("data/file_with_diagram_1", 100, -1);
   GUDHI_TEST_FLOAT_EQUALITY_CHECK(p.compute_integral_of_landscape(), 27.343, epsilon);
 }
 
 BOOST_AUTO_TEST_CASE(check_computations_of_integrals_for_each_level_separatelly) {
-  Persistence_landscape_on_grid p("data/file_with_diagram_1", 100, std::numeric_limits<unsigned short>::max());
+  Persistence_landscape_on_grid p("data/file_with_diagram_1", 100, -1);
 
   std::vector<double> integrals_fir_different_levels;
   // integrals_fir_different_levels.push_back();
@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE(check_computations_of_integrals_for_each_level_separatelly)
 }
 
 BOOST_AUTO_TEST_CASE(check_computations_of_integrals_of_powers_of_landscape) {
-  Persistence_landscape_on_grid p("data/file_with_diagram_1", 100, std::numeric_limits<unsigned short>::max());
+  Persistence_landscape_on_grid p("data/file_with_diagram_1", 100, -1);
 
   std::vector<double> integrals_fir_different_powers;
   integrals_fir_different_powers.push_back(0.241168);
@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE(check_computations_of_integrals_of_powers_of_landscape) {
 }
 
 BOOST_AUTO_TEST_CASE(check_computations_of_values_on_different_points) {
-  Persistence_landscape_on_grid p("data/file_with_diagram_1", 100, std::numeric_limits<unsigned short>::max());
+  Persistence_landscape_on_grid p("data/file_with_diagram_1", 100, -1);
 
   std::vector<double> results_level_0;
   results_level_0.push_back(0.00997867);
@@ -151,8 +151,8 @@ BOOST_AUTO_TEST_CASE(check_computations_of_values_on_different_points) {
 }
 
 BOOST_AUTO_TEST_CASE(check_computations_sum_differences_and_multiplications) {
-  Persistence_landscape_on_grid p("data/file_with_diagram_1", 100, std::numeric_limits<unsigned short>::max());
-  Persistence_landscape_on_grid second("data/file_with_diagram_1", 100, std::numeric_limits<unsigned short>::max());
+  Persistence_landscape_on_grid p("data/file_with_diagram_1", 100, -1);
+  Persistence_landscape_on_grid second("data/file_with_diagram_1", 100, -1);
 
   Persistence_landscape_on_grid sum = p + second;
   Persistence_landscape_on_grid difference = p - second;
@@ -174,9 +174,19 @@ BOOST_AUTO_TEST_CASE(check_computations_sum_differences_and_multiplications) {
 }
 
 BOOST_AUTO_TEST_CASE(check_computations_of_maxima_and_norms) {
-  Persistence_landscape_on_grid p("data/file_with_diagram_1", 0., 1., 100);
-  Persistence_landscape_on_grid second("data/file_with_diagram_2", 0., 1., 100);
+  Persistence_landscape_on_grid p("data/file_with_diagram_1", 0., 1., (size_t)100);
+  Persistence_landscape_on_grid second("data/file_with_diagram_2", 0., 1., (size_t)100);
   Persistence_landscape_on_grid sum = p + second;
+  
+  
+  //std::cerr << p.compute_maximum() << " " <<  "0.46" << std::endl;
+  //std::cerr << p.compute_norm_of_landscape(1) << " " <<  "27.3373" << std::endl;
+  //std::cerr << p.compute_norm_of_landscape(2) << " " <<  "1.84143" << std::endl;
+  //std::cerr << p.compute_norm_of_landscape(3) << " " <<  "0.927067" << std::endl;
+  //std::cerr << compute_distance_of_landscapes_on_grid(p, sum, 1) << " " <<  "16.8519" << std::endl;
+  //std::cerr << compute_distance_of_landscapes_on_grid(p, sum, 2) << " " <<  "1.44542" << std::endl;*/
+  //std::cerr << std::setprecision(10) <<  compute_distance_of_landscapes_on_grid(p, sum, std::numeric_limits<double>::max()) << " " << "0.45"  << std::endl;
+
 
   GUDHI_TEST_FLOAT_EQUALITY_CHECK(p.compute_maximum(), 0.46, epsilon);
   GUDHI_TEST_FLOAT_EQUALITY_CHECK(p.compute_norm_of_landscape(1), 27.3373, epsilon);
@@ -184,8 +194,7 @@ BOOST_AUTO_TEST_CASE(check_computations_of_maxima_and_norms) {
   GUDHI_TEST_FLOAT_EQUALITY_CHECK(p.compute_norm_of_landscape(3), 0.927067, epsilon);
   GUDHI_TEST_FLOAT_EQUALITY_CHECK(compute_distance_of_landscapes_on_grid(p, sum, 1), 16.8519, epsilon);
   GUDHI_TEST_FLOAT_EQUALITY_CHECK(compute_distance_of_landscapes_on_grid(p, sum, 2), 1.44542, epsilon);
-  GUDHI_TEST_FLOAT_EQUALITY_CHECK(compute_distance_of_landscapes_on_grid(p, sum, std::numeric_limits<double>::max()),
-                                  0.45, epsilon);
+  GUDHI_TEST_FLOAT_EQUALITY_CHECK(compute_distance_of_landscapes_on_grid(p, sum, std::numeric_limits<double>::max()),0.45, epsilon);
 }
 
 BOOST_AUTO_TEST_CASE(check_default_parameters_of_distances) {
@@ -202,8 +211,8 @@ BOOST_AUTO_TEST_CASE(check_default_parameters_of_distances) {
 }
 
 BOOST_AUTO_TEST_CASE(check_computations_of_averages) {
-  Persistence_landscape_on_grid p("data/file_with_diagram", 0., 1., 100);
-  Persistence_landscape_on_grid q("data/file_with_diagram_1", 0., 1., 100);
+  Persistence_landscape_on_grid p("data/file_with_diagram", 0., 1., (size_t)100);
+  Persistence_landscape_on_grid q("data/file_with_diagram_1", 0., 1., (size_t)100);
   Persistence_landscape_on_grid av;
   av.compute_average({&p, &q});
 
@@ -213,16 +222,16 @@ BOOST_AUTO_TEST_CASE(check_computations_of_averages) {
 }
 
 BOOST_AUTO_TEST_CASE(check_computations_of_distances) {
-  Persistence_landscape_on_grid p("data/file_with_diagram", 0., 1., 10000);
-  Persistence_landscape_on_grid q("data/file_with_diagram_1", 0., 1., 10000);
+  Persistence_landscape_on_grid p("data/file_with_diagram", 0., 1., (size_t)10000);
+  Persistence_landscape_on_grid q("data/file_with_diagram_1", 0., 1., (size_t)10000);
   GUDHI_TEST_FLOAT_EQUALITY_CHECK(p.distance(q), 25.5779, epsilon);
   GUDHI_TEST_FLOAT_EQUALITY_CHECK(p.distance(q, 2), 2.04891, epsilon);
   GUDHI_TEST_FLOAT_EQUALITY_CHECK(p.distance(q, std::numeric_limits<double>::max()), 0.359, epsilon);
 }
 
 BOOST_AUTO_TEST_CASE(check_computations_of_scalar_product) {
-  Persistence_landscape_on_grid p("data/file_with_diagram", 0., 1., 10000);
-  Persistence_landscape_on_grid q("data/file_with_diagram_1", 0., 1., 10000);
+  Persistence_landscape_on_grid p("data/file_with_diagram", 0., 1., (size_t)10000);
+  Persistence_landscape_on_grid q("data/file_with_diagram_1", 0., 1., (size_t)10000);
   GUDHI_TEST_FLOAT_EQUALITY_CHECK(p.compute_scalar_product(q), 0.754367, epsilon);
 }
 

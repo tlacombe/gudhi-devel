@@ -38,10 +38,12 @@ class Persistence_landscape_interface : public Persistence_landscape
 
   Persistence_landscape_interface(const char* filename, int dimension , size_t number_of_levels = std::numeric_limits<size_t>::max() ):Persistence_landscape(filename,dimension,number_of_levels){}
   
+  bool compare( const Persistence_landscape_interface& second )const{return (*this)==second;}
+  
   //****************
   static Persistence_landscape_interface* construct_from_file( const char* filename, int dimension , size_t number_of_levels = std::numeric_limits<size_t>::max() )
-  {
-    Persistence_landscape_interface* result = new Persistence_landscape_interface(filename,dimension,number_of_levels);
+  {	  
+      Persistence_landscape_interface* result = new Persistence_landscape_interface(filename,dimension,number_of_levels);
 	  return result;  
   }
   static Persistence_landscape_interface* construct_from_vector_of_pairs( const std::vector<std::pair<double, double> >& p, size_t number_of_levels = std::numeric_limits<size_t>::max() )

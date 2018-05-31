@@ -60,10 +60,11 @@ cdef extern from "Persistence_landscape_interface.h" namespace "Gudhi::Persisten
 		double distance(const Persistence_landscape_interface&, double)
 		double compute_scalar_product(const Persistence_landscape_interface&)const
 		pair[double, double] get_y_range(size_t)const
+		bool compare( const Persistence_landscape_interface& second )const
 		#**************
 		#static methods
 		@staticmethod
-		Persistence_landscape_interface* construct_from_file( const char*, size_t, size_t)
+		Persistence_landscape_interface* construct_from_file( const char*, int, size_t)
 		@staticmethod
 		Persistence_landscape_interface* construct_from_vector_of_pairs( const vector[pair[double, double]], size_t)
 		#***************
@@ -184,7 +185,8 @@ cdef class PersistenceLandscapes:
 		:type nonnegative integer.
 		"""
 		if ( self.thisptr != NULL ) and ( level is not None ):
-			return self.thisptr.compute_integral_of_landscape(level)
+			print "Computing integral of level", level
+			return self.thisptr.compute_integral_of_a_level_of_a_landscape(level)
 
 	def compute_integral_of_landscape(self,p):
 		"""
@@ -374,4 +376,16 @@ cdef class PersistenceLandscapes:
 		"""
 		if ( self.thisptr != NULL ):
 			return self.thisptr.get_y_range(level)
+			
+										
+				
+	def compare(self, PersistenceLandscapes second):
+		"""
+		Return true if this landscape and the second landscape are the same
+		and false othervise.
+		:param PersistenceLandscapes, the second landscape
+		:type bool
+		"""
+		if ( self.thisptr != NULL ):
+			return self.thisptr.compare( deref(second.thisptr) )
 

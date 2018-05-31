@@ -34,7 +34,7 @@ using namespace Gudhi;
 using namespace Gudhi::Persistence_representations;
 
 double epsilon = 0.0005;
-
+/*
 BOOST_AUTO_TEST_CASE(check_construction_of_landscape) {
   std::vector<std::pair<double, double> > diag =
       read_persistence_intervals_in_one_dimension_from_file("data/file_with_diagram");
@@ -57,12 +57,23 @@ BOOST_AUTO_TEST_CASE(check_computations_of_integrals) {
       read_persistence_intervals_in_one_dimension_from_file("data/file_with_diagram");
   Persistence_landscape p(diag);
   GUDHI_TEST_FLOAT_EQUALITY_CHECK(p.compute_integral_of_landscape(), 2.34992, epsilon);
-}
+}*/
 
 BOOST_AUTO_TEST_CASE(check_computations_of_integrals_for_each_level_separatelly) {
   std::vector<std::pair<double, double> > diag =
-      read_persistence_intervals_in_one_dimension_from_file("data/file_with_diagram");
+  read_persistence_intervals_in_one_dimension_from_file("data/file_with_diagram");
+  
+      for ( size_t i = 0 ; i != diag.size() ; ++i )
+    {
+		std::cout << std::setprecision(10) << diag[i].first << " " << diag[i].second << std::endl;
+	}
+  
   Persistence_landscape p(diag);
+  
+  Persistence_landscape q;
+  q.load_landscape_from_file("data/file_with_landscape_from_file_with_diagram");
+  std::cerr << "( p == q ) : " << ( p == q ) << std::endl;
+  
 
   std::vector<double> integrals_for_different_levels;
   integrals_for_different_levels.push_back(0.216432);
@@ -92,12 +103,12 @@ BOOST_AUTO_TEST_CASE(check_computations_of_integrals_for_each_level_separatelly)
   integrals_for_different_levels.push_back(0.00229033);
   integrals_for_different_levels.push_back(0.000195296);
 
-  for (size_t level = 0; level != p.size(); ++level) {
-    GUDHI_TEST_FLOAT_EQUALITY_CHECK(p.compute_integral_of_a_level_of_a_landscape(level),
+  for (size_t level = 0; level != p.size(); ++level) {	
+    GUDHI_TEST_FLOAT_EQUALITY_CHECK(p.compute_integral_of_a_level_of_a_landscape((size_t)level),
                                     integrals_for_different_levels[level], epsilon);
   }
 }
-
+/*
 BOOST_AUTO_TEST_CASE(check_computations_of_integrals_of_powers_of_landscape) {
   std::vector<std::pair<double, double> > diag =
       read_persistence_intervals_in_one_dimension_from_file("data/file_with_diagram");

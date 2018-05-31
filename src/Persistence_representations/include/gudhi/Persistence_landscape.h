@@ -38,6 +38,7 @@
 #include <string>
 #include <utility>
 #include <functional>
+#include <iomanip>
 
 namespace Gudhi {
 namespace Persistence_representations {
@@ -472,18 +473,24 @@ class Persistence_landscape {
 Persistence_landscape::Persistence_landscape(const char* filename, int dimension, size_t number_of_levels) {
   std::vector<std::pair<double, double> > barcode;
   if (dimension != -1) {
-    barcode = read_persistence_intervals_in_one_dimension_from_file(filename, dimension);
+    barcode = read_persistence_intervals_in_one_dimension_from_file(filename, dimension);   
   } else {
     barcode = read_persistence_intervals_in_one_dimension_from_file(filename);
-  }
+  }    
   this->construct_persistence_landscape_from_barcode(barcode, number_of_levels);
   this->set_up_numbers_of_functions_for_vectorization_and_projections_to_reals();
 }
 
-bool operatorEqualDbg = false;
+bool operatorEqualDbg = true;
 bool Persistence_landscape::operator==(const Persistence_landscape& rhs) const {
   if (this->land.size() != rhs.land.size()) {
-    if (operatorEqualDbg) std::cerr << "1\n";
+    if (operatorEqualDbg) 
+    { 
+		std::cerr << "this->land.size() : " << this->land.size() << std::endl;
+		std::cerr << "rhs.land.size() : " << rhs.land.size() << std::endl;		
+	}
+		
+		
     return false;
   }
   for (size_t level = 0; level != this->land.size(); ++level) {
@@ -497,7 +504,7 @@ bool Persistence_landscape::operator==(const Persistence_landscape& rhs) const {
       if (!(almost_equal(this->land[level][i].first, rhs.land[level][i].first) &&
             almost_equal(this->land[level][i].second, rhs.land[level][i].second))) {
         if (operatorEqualDbg)
-          std::cerr << "this->land[level][i] : " << this->land[level][i].first << " " << this->land[level][i].second
+          std::cerr << std::setprecision(10) << "this->land[level][i] : " << this->land[level][i].first << " " << this->land[level][i].second
                     << "\n";
         if (operatorEqualDbg)
           std::cerr << "rhs.land[level][i] : " << rhs.land[level][i].first << " " << rhs.land[level][i].second << "\n";
@@ -681,7 +688,8 @@ double Persistence_landscape::compute_integral_of_landscape() const {
   return result;
 }
 
-double Persistence_landscape::compute_integral_of_a_level_of_a_landscape(size_t level) const {
+double Persistence_landscape::compute_integral_of_a_level_of_a_landscape(size_t level) const {	 
+  //std::cerr << "compute_integral_of_a_level_of_a_landscape \n";	
   double result = 0;
   if (level >= this->land.size()) {
     // this landscape function is constantly equal 0, so is the integral.
@@ -694,8 +702,8 @@ double Persistence_landscape::compute_integral_of_a_level_of_a_landscape(size_t 
     // it suffices to compute every planar integral and then sum them up for each lambda_n
     result += 0.5 * (this->land[level][nr].first - this->land[level][nr - 1].first) *
               (this->land[level][nr].second + this->land[level][nr - 1].second);
-  }
-
+  }  
+  //std::cerr << "result : " << result << std::endl;
   return result;
 }
 

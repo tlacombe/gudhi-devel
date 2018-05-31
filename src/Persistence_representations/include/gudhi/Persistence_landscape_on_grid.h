@@ -196,6 +196,13 @@ class Persistence_landscape_on_grid {
       previous_x = current_x;
       previous_y = current_y;
     }
+    
+    if ( dbg )
+    {
+		std::cerr << "Integral of the level : " << level << " of landscape is : " << result;
+		getchar();
+	}
+    
     return result;
   }
 
@@ -203,7 +210,7 @@ class Persistence_landscape_on_grid {
    * This function compute integral of the landscape p-th power of a landscape (defined formally as sum of integrals on
    *R of p-th powers of all landscape functions)
   **/
-  double compute_integral_of_landscape(double p) const {
+  double compute_integral_of_landscape(double p) const {	 
     size_t maximal_level = this->number_of_nonzero_levels();
     double result = 0;
     for (size_t i = 0; i != maximal_level; ++i) {
@@ -216,8 +223,13 @@ class Persistence_landscape_on_grid {
        * This function compute integral of the landscape p-th power of a level of a landscape (defined formally as sum
     *of integrals on R of p-th powers of all landscape functions)
       **/
-  double compute_integral_of_landscape(double p, size_t level) const {
+  double compute_integral_of_landscape(double p, size_t level) const {	  
     bool dbg = false;
+    
+    if ( dbg )
+    {
+		std::cerr << "p : " << p << std::endl;
+	}
 
     double result = 0;
     double dx = (this->grid_max - this->grid_min) / static_cast<double>(this->values_of_landscapes.size() - 1);
@@ -269,7 +281,11 @@ class Persistence_landscape_on_grid {
       previous_x = current_x;
       previous_y = current_y;
     }
-    if (dbg) std::cerr << "The total result is : " << result << std::endl;
+    if (dbg) 
+    {
+		std::cerr << "The total result on the level : " << level << " is " << result << std::endl;
+		getchar();
+	}
     return result;
   }
 
@@ -1104,7 +1120,7 @@ Persistence_landscape_on_grid::Persistence_landscape_on_grid(const std::vector<s
 }
 
 Persistence_landscape_on_grid::Persistence_landscape_on_grid(const char* filename, double grid_min_, double grid_max_,
-                                                             size_t number_of_points_, int dimension) {
+                                                             size_t number_of_points_, int dimension) {														 
   std::vector<std::pair<double, double> > p;
   if (dimension == -1) {
     p = read_persistence_intervals_in_one_dimension_from_file(filename);

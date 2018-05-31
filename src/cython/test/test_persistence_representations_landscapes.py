@@ -1,4 +1,5 @@
 import gudhi	
+import math
 
 """
     This file is part of the Gudhi Library. The Gudhi library
@@ -29,32 +30,50 @@ __license__ = "GPL v3"
 
 epsilon = 0.0000005;
 
+#I do not understand how come those tests are passing, since the module should be 
+#called gudhi.PersistenceLandscapes....
+
 def test_check_construction_of_landscape():    
-    p = gudhi.Persistence_landscape("data/file_with_diagram",0)
-    q = gudhi.Persistence_landscape()
+    p = gudhi.PersistenceLandscapes(file_with_intervals="data/file_with_diagram")
+    q = gudhi.PersistenceLandscapes()
     q.load_landscape_from_file("data/file_with_landscape_from_file_with_diagram")
-    assert p == q
+    assert p.compare(q)   
 
 
 def test_check_construction_of_landscape_form_gudhi_style_file():
-    p = gudhi.Persistence_landscape("data/persistence_file_with_four_entries_per_line", 1)
-    q = gudhi.Persistence_landscape()
+    p = gudhi.PersistenceLandscapes(file_with_intervals="data/persistence_file_with_four_entries_per_line", 1)
+    q = gudhi.PersistenceLandscapes()
     q.load_landscape_from_file("data/persistence_file_with_four_entries_per_line_landscape");  
-    assert p == q;
+    assert p.compare(q);
 
 def test_check_computations_of_integrals():  
-    p = gudhi.Persistence_landscape("data/file_with_diagram",0)
+    p = gudhi.PersistenceLandscapes(file_with_intervals="data/file_with_diagram")
     integral = p.compute_integral_of_landscape()
-    assert fabs(integral - 2.34992) <= 0.00001
+    assert math.fabs(integral - 2.34992) <= 0.00001
+    
+    
+def test_check_construction_of_landscape():
+    diag = gudhi.read_persistence_intervals_in_dimension(persistence_file='data/file_with_diagram')
+    p = gudhi.PersistenceLandscapes(diag)
+    q = gudhi.PersistenceLandscapes(file_with_intervals="data/file_with_diagram")    
+    assert p.compare(q)  
 
 
 def test_check_computations_of_integrals_for_each_level_separatelly():
-    diag = read_persistence_intervals_in_one_dimension_from_file("data/file_with_diagram");
-    p = gudhi.Persistence_landscape(diag)
+    diag = gudhi.read_persistence_intervals_in_dimension(persistence_file='data/file_with_diagram')
+    p = gudhi.PersistenceLandscapes(diag)
+    q = gudhi.PersistenceLandscapes()
+    q.load_landscape_from_file("data/file_with_landscape_from_file_with_diagram")
+    assert p.compare(q)
+    
+    
     integrals_for_different_levels = [0.216432,0.204763,0.188793,0.178856,0.163142,0.155015,0.143046,0.133765,0.123531,0.117393,0.111269,0.104283,0.0941308,0.0811208,0.0679001,0.0580801,0.0489647,0.0407936,0.0342599,0.02896,0.0239881,0.0171792,0.0071511,0.00462067,0.00229033,0.000195296]
     for lv in range(0, len(integrals_for_different_levels)):
         integral = p.compute_integral_of_a_level_of_a_landscape(lv);
-        assert fabs(integral - integrals_fir_different_levels[lv]) <= 0.00001
+        print integrals_for_different_levels[lv]
+        assert math.fabs(integral - integrals_for_different_levels[lv]) <= 0.00001
+        
+        dodac test w ktorym porownujemy czytanie z pliku z konstrukcja z wektora
 
 def test_check_computations_of_integrals_of_powers_of_landscape():
     diag = read_persistence_intervals_in_one_dimension_from_file("data/file_with_diagram")
