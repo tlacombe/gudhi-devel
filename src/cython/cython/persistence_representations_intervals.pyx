@@ -219,7 +219,7 @@ cdef class PersistenceIntervals:
 			if (self.thisptr != NULL):
 				return self.thisptr.cumulative_histogram_of_lengths(10)
 
-	def characteristic_function_of_diagram(self, x_min, x_max, number_of_bins):
+	def characteristic_function_of_diagram(self, x_min, x_max, number_of_bins=10):
 		"""
 		In this procedure we assume that each barcode is a characteristic
 		function of a hight equal to its length. The persistence diagram
@@ -242,7 +242,7 @@ cdef class PersistenceIntervals:
 			if (self.thisptr != NULL) and (x_min is not None) and (x_max is not None):
 				return self.thisptr.characteristic_function_of_diagram(x_min, x_max, 10)
 
-	def cumulative_characteristic_function_of_diagram(self, x_min, x_max, number_of_bins):
+	def cumulative_characteristic_function_of_diagram(self, x_min, x_max, number_of_bins=10):
 		"""
 		Cumulative version of the function characteristic_function_of_diagram.
 		:param x_min -- Begin of range of function.

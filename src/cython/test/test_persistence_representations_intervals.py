@@ -1,4 +1,5 @@
 import gudhi
+import math
 
 """This file is part of the Gudhi Library. The Gudhi library
    (Geometric Understanding in Higher Dimensions) is a generic C++
@@ -29,59 +30,59 @@ __license__ = "GPL v3"
 epsilon = 0.0000005;
  
 def test_check_min_max_function():	
-	p = gudhi.PersistenceIntervals(None,None,"data/file_with_diagram")
+	p = gudhi.PersistenceIntervals(file_with_intervals="data/file_with_diagram")
 	min_max_ = p.get_x_range()
-	assert fabs(min_max_[0] - 0.0290362) <= epsilon
-	assert fabs(min_max_[1] - 0.994537) <= epsilon
+	assert math.fabs(min_max_[0] - 0.0290362) <= epsilon
+	assert math.fabs(min_max_[1] - 0.994537) <= epsilon
 
 def test_check_length_of_dominant_intervals():
-	p = gudhi.PersistenceIntervals(None,None,"data/file_with_diagram")
+	p = gudhi.PersistenceIntervals(file_with_intervals="data/file_with_diagram")
 	dominant_ten_intervals_length = p.length_of_dominant_intervals(10)
-	dominant_intervals_length_ = [0.862625,0.800893,0.762061,0.756501,0.729367,0.718177,0.708395,0.702844,0.700468,0.622177]	
+	dominant_intervals_length_ = [0.8626250172000001, 0.8008928647, 0.762060545, 0.7565008858, 0.7293674164999999, 0.7181771387, 0.7083949571, 0.7028439633, 0.7004682264, 0.622176573]
 	assert dominant_ten_intervals_length == dominant_intervals_length_ 
 
 
 def test_check_dominant_intervals(): 
-	p = gudhi.PersistenceIntervals(None,None,"data/file_with_diagram");
+	p = gudhi.PersistenceIntervals(file_with_intervals="data/file_with_diagram");
 	ten_dominant_intervals = p.dominant_intervals(10);
-	templ = [ (0.114718, 0.977343) , (0.133638, 0.93453) , (0.104599, 0.866659) , (0.149798, 0.906299), (0.247352, 0.976719) , (0.192675, 0.910852) , (0.191836, 0.900231) , (0.284998, 0.987842) , (0.294069, 0.994537), (0.267421, 0.889597)]	
-	assert fabs(ten_dominant_intervals - templ) <= epsilon
+	templ = [(0.1147177995, 0.9773428167), (0.1336375578, 0.9345304225), (0.1045988346, 0.8666593796), (0.1497983027, 0.9062991885), (0.2473518713, 0.9767192878), (0.1926749829, 0.9108521216), (0.1918362495, 0.9002312066), (0.2849982539, 0.9878422172), (0.2940688241, 0.9945370505), (0.2674207884, 0.8895973614)]	
+	assert ten_dominant_intervals == templ
 	
 	
 def test_check_histogram_of_lengths():
-	p = gudhi.PersistenceIntervals(None,None,"data/file_with_diagram")
+	p = gudhi.PersistenceIntervals(file_with_intervals="data/file_with_diagram")
 	histogram = p.histogram_of_lengths(10);
 	template_histogram = [10,5,3,4,4,3,6,1,7,1,1]	
-	assert fabs(histogram - template_histogram) <= epsilon
+	assert histogram == template_histogram
 
 
 def test_check_cumulative_histograms_of_lengths():
-	p = gudhi.PersistenceIntervals(None,None,"data/file_with_diagram")
+	p = gudhi.PersistenceIntervals(file_with_intervals="data/file_with_diagram")
 	cumulative_histogram = p.cumulative_histogram_of_lengths(10)
 	template_cumulative_histogram  = [10,15,18,22,26,29,35,36,43,44,45]
-	assert fabs(cumulative_histogram - template_cumulative_histogram) <= epsilon
+	assert cumulative_histogram == template_cumulative_histogram
 
 
 def test_check_characteristic_function_of_diagram():
-	p = gudhi.PersistenceIntervals(None,None,"data/file_with_diagram")
+	p = gudhi.PersistenceIntervals(file_with_intervals="data/file_with_diagram")
 	min_max_ = p.get_x_range();
 	char_funct_diag = p.characteristic_function_of_diagram(min_max_[0], min_max_[1]);
-	template_char_funct_diag = [0.370665,0.84058,1.24649,1.3664,1.34032,1.31904,1.14076,0.991259,0.800714,0.0676303]	
-	assert fabs(char_funct_diag - template_char_funct_diag) <= 0.0001
+	template_char_funct_diag = [0.3706650096057107, 0.8405801460478484, 1.2464949441848387, 1.3664031938056187, 1.3403175486249868, 1.3190409371273135, 1.1407584208620511, 0.9912592030380287, 0.8007140228196504, 0.06763026374467777]
+	assert char_funct_diag == template_char_funct_diag
 
 
 def test_check_cumulative_characteristic_function_of_diagram():
-	p = gudhi.PersistenceIntervals(None,None,"data/file_with_diagram")
+	p = gudhi.PersistenceIntervals(file_with_intervals="data/file_with_diagram")
 	min_max_ = p.get_x_range()
-	cumul_char_funct_diag = p.cumulative_characteristic_function_of_diagram(min_max_.first, min_max_.second,None);
-	template_char_funct_diag_cumul = [0.370665,1.21125,2.45774,3.82414,5.16446,6.4835,7.62426,8.61552,9.41623,9.48386]	
-	assert fabs(cumul_char_funct_diag - template_char_funct_diag_cumul) <= 0.0001
+	cumul_char_funct_diag = p.cumulative_characteristic_function_of_diagram(min_max_[0], min_max_[1]);
+	template_char_funct_diag_cumul = [0.3706650096057107, 1.211245155653559, 2.457740099838398, 3.8241432936440165, 5.164460842269003, 6.483501779396317, 7.624260200258368, 8.615519403296396, 9.416233426116047, 9.483863689860724]
+	assert cumul_char_funct_diag == template_char_funct_diag_cumul
 
 
 def test_check_compute_persistent_betti_numbers():
-	p = gudhi.PersistenceIntervals(None,None,"data/file_with_diagram")
-	pbns = [(0.0290362, 1),(0.0307676, 2),(0.0366312, 3),(0.0544614, 4),(0.0920033, 5),(0.104599, 6),(0.114718, 7),(0.117379, 8),(0.123493, 9),(0.133638, 10)(0.137798, 9),(0.149798, 10),(0.155421, 11),(0.158443, 12)(0.176956, 13),(0.183234, 12),(0.191069, 13),(0.191333, 14),(0.191836, 15),(0.192675, 16),(0.208564, 17),(0.218425, 18),(0.219902, 17),(0.23233, 16),(0.234558, 17),(0.237166, 16),(0.247352, 17),(0.267421, 18),(0.268093, 19),(0.278734, 18),(0.284722, 19),(0.284998, 20),(0.294069, 21),(0.306293, 22),(0.322361, 21),(0.323152, 22),(0.371021, 23),(0.372395, 24),(0.387744, 25),(0.435537, 26),(0.462911, 25),(0.483569, 26),(0.489209, 25),(0.517115, 24),(0.522197, 23),(0.532665, 22),(0.545262, 23),(0.587227, 22),(0.593036, 23),(0.602647, 24),(0.605044, 25),(0.621962, 24),(0.629449, 23),(0.636719, 22),(0.64957, 21),(0.650781, 22),(0.654951, 23),(0.683489, 24),(0.687172, 23),(0.69703, 22),(0.701174, 21),(0.717623, 22),(0.722023, 21),(0.722298, 20),(0.725347, 19),(0.73071, 18),(0.758355, 17),(0.770913, 18),(0.790833, 17),(0.821211, 16),(0.849305, 17),(0.853669, 16),(0.866659, 15),(0.872896, 16),(0.889597, 15),(0.900231, 14),(0.903847, 13),(0.906299, 12),(0.910852, 11),(0.93453, 10),(0.944757, 9),(0.947812, 8),(0.959154, 7),(0.975654, 6),(0.976719, 5),(0.977343, 4),(0.980129, 3),(0.987842, 2),(0.990127, 1),(0.994537, 0)]
+	p = gudhi.PersistenceIntervals(file_with_intervals="data/file_with_diagram")	
+	pbns = [(0.0290362441,1),(0.0307675984,2),(0.0366311713,3),(0.0544614334,4),(0.0920032915,5),(0.1045988346,6),(0.1147177995,7),(0.1173791633,8),(0.1234925873,9),(0.1336375578,10),(0.1377982685,9),(0.1497983027,10),(0.1554214768,11),(0.1584430523,12),(0.1769560101,13),(0.1832335867,12),(0.1910692175,13),(0.1913332292,14),(0.1918362495,15),(0.1926749829,16),(0.2085643625,17),(0.2184254499,18),(0.2199019471,17),(0.2323297802,16),(0.2345582605,17),(0.2371657227,16),(0.2473518713,17),(0.2674207884,18),(0.2680930813,19),(0.2787338524,18),(0.2847216921,19),(0.2849982539,20),(0.2940688241,21),(0.3062930094,22),(0.3223612854,21),(0.3231522712,22),(0.3710208764,23),(0.3723952303,24),(0.3877435371,25),(0.4355365708,26),(0.4629111887,25),(0.483568935,26),(0.4892093645,25),(0.5171153115,24),(0.5221970463,23),(0.5326650707,22),(0.545262265,23),(0.5872268199,22),(0.5930361075,23),(0.6026467816,24),(0.605044048,25),(0.6219619742,24),(0.6294493901,23),(0.636718961,22),(0.649569716,21),(0.650780786,22),(0.6549508263,23),(0.6834892731,24),(0.6871715707,23),(0.6970299556,22),(0.7011736326,21),(0.7176230095,22),(0.7220228854,21),(0.7222979715,20),(0.7253469135,19),(0.730709507,18),(0.7583554041,17),(0.7709131132,18),(0.7908326657,17),(0.8212106009,16),(0.8493046183,17),(0.8536686709,16),(0.8666593796,15),(0.8728962245,16),(0.8895973614,15),(0.9002312066,14),(0.9038473698,13),(0.9062991885,12),(0.9108521216,11),(0.9345304225,10),(0.9447571123,9),(0.9478115036,8),(0.9591544003,7),(0.9756544009,6),(0.9767192878,5),(0.9773428167,4),(0.9801285535,3),(0.9878422172,2),(0.9901270741,1),(0.9945370505,0)]
 	pbns_new = p.compute_persistent_betti_numbers();  
-	assert fabs(pbns - pbns_new) <= epsilon
+	assert pbns == pbns_new
     
 
