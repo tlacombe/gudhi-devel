@@ -214,8 +214,8 @@ class Persistence_heat_maps {
   Persistence_heat_maps(const std::vector<std::pair<double, double> >& interval,
                         std::vector<std::vector<double> > filter = create_Gaussian_filter(5, 1),
                         bool erase_below_diagonal = false, size_t number_of_pixels = 1000,
-                        double min_ = std::numeric_limits<double>::max(),
-                        double max_ = std::numeric_limits<double>::max());
+                        double min_ = -1,
+                        double max_ = -1);
 
   /**
        * Construction that takes at the input a name of a file with persistence intervals, a filter (radius 5 by
@@ -240,8 +240,8 @@ class Persistence_heat_maps {
   **/
   Persistence_heat_maps(const char* filename, std::vector<std::vector<double> > filter = create_Gaussian_filter(5, 1),
                         bool erase_below_diagonal = false, size_t number_of_pixels = 1000,
-                        double min_ = std::numeric_limits<double>::max(),
-                        double max_ = std::numeric_limits<double>::max(),
+                        double min_ = -1,
+                        double max_ = -1,
                         int dimension = -1);
 
   /**
@@ -514,7 +514,7 @@ class Persistence_heat_maps {
                  std::vector<std::vector<double> > filter = create_Gaussian_filter(5, 1),
 
                  bool erase_below_diagonal = false, size_t number_of_pixels = 1000,
-                 double min_ = std::numeric_limits<double>::max(), double max_ = std::numeric_limits<double>::max());
+                 double min_ = -1, double max_ = -1);
 
   void set_up_parameters_for_basic_classes() {
     this->number_of_functions_for_vectorization = 1;
@@ -560,11 +560,12 @@ void Persistence_heat_maps<Scalling_of_kernels>::construct(const std::vector<std
     max_ += fabs(max_ - min_) / 100;
   }
 
-  if (dbg) {
+  if (dbg) 
+  {
+	  std::cerr << "Construct \n";
     std::cerr << "min_ : " << min_ << std::endl;
     std::cerr << "max_ : " << max_ << std::endl;
     std::cerr << "number_of_pixels : " << number_of_pixels << std::endl;
-    getchar();
   }
 
   this->min_ = min_;
@@ -647,7 +648,7 @@ template <typename Scalling_of_kernels>
 Persistence_heat_maps<Scalling_of_kernels>::Persistence_heat_maps(const char* filename,
                                                                   std::vector<std::vector<double> > filter,
                                                                   bool erase_below_diagonal, size_t number_of_pixels,
-                                                                  double min_, double max_, int dimension) {
+                                                                  double min_, double max_, int dimension) {																		  																	 
   std::vector<std::pair<double, double> > intervals_;
   if (dimension == -1) {
     intervals_ = read_persistence_intervals_in_one_dimension_from_file(filename);
@@ -778,7 +779,6 @@ void Persistence_heat_maps<Scalling_of_kernels>::print_to_file(const char* filen
 template <typename Scalling_of_kernels>
 void Persistence_heat_maps<Scalling_of_kernels>::load_from_file(const char* filename) {
   bool dbg = false;
-
   std::ifstream in;
   in.open(filename);
 
@@ -791,7 +791,8 @@ void Persistence_heat_maps<Scalling_of_kernels>::load_from_file(const char* file
   // now we read the file one by one.
 
   in >> this->min_ >> this->max_;
-  if (dbg) {
+  if (dbg) 
+  {
     std::cerr << "Reading the following values of min and max : " << this->min_ << " , " << this->max_ << std::endl;
   }
 

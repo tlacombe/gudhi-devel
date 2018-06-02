@@ -40,6 +40,7 @@
 #include <utility>
 #include <string>
 #include <cstdint>
+#include <iomanip>
 
 namespace Gudhi {
 namespace Persistence_representations {
@@ -213,8 +214,7 @@ class Persistence_landscape_on_grid {
    * This function compute integral of the landscape p-th power of a landscape (defined formally as sum of integrals on
    *R of p-th powers of all landscape functions)
   **/
-  double compute_integral_of_landscape(double p) const {
-	std::cerr << "compute_integral_of_landscape(double)\n";  	 
+  double compute_integral_of_landscape(double p) const {	 
     size_t maximal_level = this->number_of_nonzero_levels();
     double result = 0;
     for (size_t i = 0; i != maximal_level; ++i) {
@@ -1134,11 +1134,12 @@ Persistence_landscape_on_grid::Persistence_landscape_on_grid(const char* filenam
     p = read_persistence_intervals_in_one_dimension_from_file(filename);
   } else {
     p = read_persistence_intervals_in_one_dimension_from_file(filename, dimension);
-  }
-  
+  }  
+  //std::cerr << std::setprecision(15) << "grid_min_ : " << grid_min_ << " grid_max_ : " << grid_max_ << " number_of_points_ : " << number_of_points_ << " dimension : " << dimension << std::endl;  
+  //std::cerr << "A \n";
   //for ( size_t i = 0 ; i != p.size() ; ++i )
   //{
-  //		std::cerr << p[i].first << " " << p[i].second << std::endl;
+ //		std::cerr << p[i].first << " " << p[i].second << std::endl;
   //}
   
   this->set_up_values_of_landscapes(p, grid_min_, grid_max_, number_of_points_);
@@ -1155,6 +1156,7 @@ Persistence_landscape_on_grid::Persistence_landscape_on_grid(const char* filenam
     p = read_persistence_intervals_in_one_dimension_from_file(filename, dimension);
   }
   
+  //std::cerr << "B \n";
   //for ( size_t i = 0 ; i != p.size() ; ++i )
   //{
   //		std::cerr << p[i].first << " " << p[i].second << std::endl;
@@ -1172,6 +1174,7 @@ Persistence_landscape_on_grid::Persistence_landscape_on_grid(const char* filenam
     p = read_persistence_intervals_in_one_dimension_from_file(filename, dimension);
   }
   
+  //std::cerr << "C \n";
   //for ( size_t i = 0 ; i != p.size() ; ++i )
   //{
   //		std::cerr << p[i].first << " " << p[i].second << std::endl;
@@ -1196,6 +1199,7 @@ Persistence_landscape_on_grid::Persistence_landscape_on_grid(const char* filenam
     p = read_persistence_intervals_in_one_dimension_from_file(filename, dimension);
   }
   
+  //std::cerr << "D \n";
   //for ( size_t i = 0 ; i != p.size() ; ++i )
   //{
   //		std::cerr << p[i].first << " " << p[i].second << std::endl;

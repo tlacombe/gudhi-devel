@@ -49,6 +49,7 @@ cdef extern from "Persistence_vectors_interface.h" namespace "Gudhi::Persistence
 		void compute_average_interface(const vector[Vector_distances_in_diagram_interface*] to_average)
 		double distance(const Vector_distances_in_diagram_interface& second, double power)
 		double compute_scalar_product(const Vector_distances_in_diagram_interface& second)
+		bool compare( const Vector_distances_in_diagram_interface& second )  const
 	 
 		
 		
@@ -96,7 +97,8 @@ cdef class PersistenceVectors:
 		vector. 
 		"""
 		if ( (vector_of_intervals is None) and ( file_with_intervals is '' ) ):
-			print "Please provide parameters to construct the persistence vectors." 
+			print "Empty persistence vector will be created." 
+			self.thisptr = new Vector_distances_in_diagram_interface()
 		else:
 			if (vector_of_intervals is None) and (file_with_intervals is not ''):
 				if os.path.isfile(file_with_intervals):
@@ -117,7 +119,7 @@ cdef class PersistenceVectors:
 		if self.thisptr != NULL:
 			del self.thisptr	  
 
-	def load_vector_from_file(self,filename):
+	def load_from_file(self,filename):
 		"""
 		This procedure loads a persistence vector from file. It erase all the data
 		that was previously stored in this vector.
@@ -131,7 +133,7 @@ cdef class PersistenceVectors:
 	def print_to_file(self,filename) :
 		"""
 		The procedure stores a persistence vector to a file. The file can be later
-		used by a procedure load_vector_from_file.
+		used by a procedure load_from_file.
 		:param Name of the file.
 		:type String
 		"""
@@ -233,3 +235,10 @@ cdef class PersistenceVectors:
 
  
 
+	def compare( self , PersistenceVectors second ):
+		"""
+		Returns true if the second Persistence Vector is identical to
+		the first one, and false in the other case. 
+		"""
+		if ( self.thisptr != NULL ): 
+			return self.thisptr.compare( deref(second.thisptr) ) 

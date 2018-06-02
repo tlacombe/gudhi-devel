@@ -51,6 +51,11 @@ class Vector_distances_in_diagram_interface : public Vector_distances_in_diagram
 	  }
 	  this->compute_average(to_average_new);
   }  
+  
+  bool compare( const Vector_distances_in_diagram_interface& second )  const
+  {
+	  return ((*this) == second);
+  }
 };
 
 }  // namespace Persistence_representations

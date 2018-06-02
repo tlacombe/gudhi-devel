@@ -41,7 +41,7 @@ class Persistence_heat_maps_interface : public Persistence_heat_maps<constant_sc
                         double max_
                         ):
    Persistence_heat_maps(interval,create_Gaussian_filter(how_many_pixels_raidus_of_Gausian_kernel, 1),
-						true,number_of_pixels,((min_ == 0) ?  std::numeric_limits<double>::max() : min_) , ((max_ == 0) ? std::numeric_limits<double>::max() : max_)){}   			
+						this->erase_below_diagonal,number_of_pixels,((min_ == max_) ?  -1 : min_) , ((min_ == max_) ? -1 : max_)){}   			
 									                
   
   Persistence_heat_maps_interface(const char* filename, 
@@ -52,13 +52,13 @@ class Persistence_heat_maps_interface : public Persistence_heat_maps<constant_sc
                         int dimension
                         ):
   Persistence_heat_maps(filename,create_Gaussian_filter(how_many_pixels_raidus_of_Gausian_kernel, 1),
-						true,number_of_pixels, ((min_ == 0) ?  std::numeric_limits<double>::max() : min_) , ((max_ == 0) ? std::numeric_limits<double>::max() : max_),dimension){}
+						this->erase_below_diagonal,number_of_pixels, ((min_ == max_) ?  -1 : min_) , ((min_ == max_) ? -1 : max_),dimension){}
 						
   //****************
   static Persistence_heat_maps_interface* construct_from_file(  const char* filename, size_t how_many_pixels_raidus_of_Gausian_kernel,
-																size_t number_of_pixels, double min_ = 0,
-																double max_ = 0, int dimensions = -1 )
-  {
+																size_t number_of_pixels, double min_ = -1,
+																double max_ = -1, int dimensions = -1 )
+  {	  	  
       Persistence_heat_maps_interface* result = new Persistence_heat_maps_interface(filename,how_many_pixels_raidus_of_Gausian_kernel,number_of_pixels,min_,max_,dimensions);
 	  return result;  
   }
@@ -111,7 +111,16 @@ class Persistence_heat_maps_interface : public Persistence_heat_maps<constant_sc
 	  }
 	  this->compute_average( maps );
   }  
+  
+  bool compare( const Persistence_heat_maps_interface& second )const 
+  {
+	  return *this == second;
+  }
+  
+  static bool erase_below_diagonal;
 };
+
+bool Persistence_heat_maps_interface::erase_below_diagonal = false;
 
 
 }  // namespace Persistence_representations

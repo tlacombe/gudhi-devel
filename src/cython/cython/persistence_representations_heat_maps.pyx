@@ -58,6 +58,7 @@ cdef extern from "Persistence_heat_maps_interface.h" namespace "Gudhi::Persisten
 		double compute_scalar_product(const Persistence_heat_maps_interface& second_) const
 		pair[double, double] get_x_range() const
 		pair[double, double] get_y_range() const
+		bool compare( const Persistence_heat_maps_interface& second )const 
 		
 		#**************
         #static methods
@@ -106,11 +107,12 @@ cdef class PersistenceHeatMaps:
 		:param dimension - na optional parameter, a dimension of the intervals to be read from a file.           
 		"""
 		if ( (vector_of_intervals is None) and ( file_with_intervals is '' ) ):	
-			print "Please provide parameters to construct the persistence heat maps. Object has not been constructed." 
+			print "Creating empty persistence heat map." 
+			self.thisptr = new Persistence_heat_maps_interface()
 		else:
 			if (vector_of_intervals is None) and (file_with_intervals is not ''):
 				if os.path.isfile(file_with_intervals):
-					if (min_ is not None) and (max_ is not None):
+					if (min_ is not None) and (max_ is not None):							
 						self.thisptr = Persistence_heat_maps_interface.construct_from_file(str.encode(file_with_intervals), how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels, min_, max_, dimension)
 					else:
 						self.thisptr = Persistence_heat_maps_interface.construct_from_file(str.encode(file_with_intervals), how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels,0,0,0)
@@ -178,7 +180,7 @@ cdef class PersistenceHeatMaps:
 				cpp_list.push_back((<PersistenceHeatMaps>elt).thisptr)
 			self.thisptr.compute_percentage_of_active_interface( cpp_list , cutoff)  
                        
-	def load_from_file(self,filename):
+	def load_heat_map_from_file(self,filename):
 		"""
 		This procedure loads a persistence heat map from file. It erase all the data
 		that was previously stored in this vector.
@@ -186,7 +188,8 @@ cdef class PersistenceHeatMaps:
 		:type String
 		"""
 		if ( self.thisptr != NULL ) and ( filename is not None ):
-			self.thisptr.load_from_file(filename)            
+			self.thisptr.load_from_file(filename)   
+		        
 
 	def print_to_file(self,filename) :
 		"""
@@ -268,7 +271,7 @@ cdef class PersistenceHeatMaps:
 			return self.thisptr.number_of_projections_to_R() 
      
     #I havev problem with getting this function compiled due to a strange error                     
-	def distance(self, PersistenceHeatMaps second, power):
+	def distance(self, PersistenceHeatMaps second, power = 1):
 		"""
 		A function to compute distance between Persistence Heat Maps.
 		The parameter of this function is a PersistenceHeatMaps.
@@ -320,3 +323,11 @@ cdef class PersistenceHeatMaps:
 		"""
 		if ( self.thisptr != NULL ):
 			return self.thisptr.get_y_range()                               
+			
+	def compare( self , PersistenceHeatMaps second ):
+		"""
+		Returns true if the second Persistence Heat Map is identical to
+		the first one, and false in the other case. 
+		"""
+		if ( self.thisptr != NULL ): 
+			return self.thisptr.compare( deref(second.thisptr) ) 

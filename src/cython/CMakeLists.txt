@@ -317,3 +317,6 @@ endif(CYTHON_FOUND)
 #persistence representation tests:
 add_gudhi_py_test(test_persistence_representations_landscapes.py)
 add_gudhi_py_test(test_persistence_representations_landscapes_on_grid.py)
+add_gudhi_py_test(test_persistence_representations_heat_maps.py)
+add_gudhi_py_test(test_persistence_representations_vectors.py)
+add_gudhi_py_test(test_persistence_representations_intervals.py)
