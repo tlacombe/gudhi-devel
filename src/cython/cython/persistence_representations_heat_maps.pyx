@@ -180,7 +180,7 @@ cdef class PersistenceHeatMaps:
 				cpp_list.push_back((<PersistenceHeatMaps>elt).thisptr)
 			self.thisptr.compute_percentage_of_active_interface( cpp_list , cutoff)  
                        
-	def load_heat_map_from_file(self,filename):
+	def load_from_file(self,filename):
 		"""
 		This procedure loads a persistence heat map from file. It erase all the data
 		that was previously stored in this vector.
@@ -194,7 +194,7 @@ cdef class PersistenceHeatMaps:
 	def print_to_file(self,filename) :
 		"""
 		The procedure stores a persistence heat map to a file. The file can be later
-		used by a procedure load_vector_from_file.
+		used by a procedure load_from_file.
 		:param Name of the file.
 		:type String
 		"""

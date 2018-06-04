@@ -37,14 +37,14 @@ epsilon = 0.0000005;
 def test_check_construction_of_landscape():
 	p = gudhi.PersistenceLandscapes(file_with_intervals="data/file_with_diagram")
 	q = gudhi.PersistenceLandscapes()
-	q.load_landscape_from_file("data/file_with_landscape_from_file_with_diagram")
+	q.load_from_file("data/file_with_landscape_from_file_with_diagram")
 	assert p.compare(q)   
 
 
 def test_check_construction_of_landscape_form_gudhi_style_file():
 	p = gudhi.PersistenceLandscapes(file_with_intervals="data/persistence_file_with_four_entries_per_line", dimension=1)
 	q = gudhi.PersistenceLandscapes()
-	q.load_landscape_from_file("data/persistence_file_with_four_entries_per_line_landscape");  
+	q.load_from_file("data/persistence_file_with_four_entries_per_line_landscape");  
 	assert p.compare(q)
 
 def test_check_computations_of_integrals():  
@@ -59,7 +59,7 @@ def test_check_construction_of_landscape():
 	q = gudhi.PersistenceLandscapes(file_with_intervals="data/file_with_diagram")    
 	assert p.compare(q) 
 	q = gudhi.PersistenceLandscapes()
-	q.load_landscape_from_file("data/file_with_landscape_from_file_with_diagram")
+	q.load_from_file("data/file_with_landscape_from_file_with_diagram")
 	assert p.compare(q) 
 	diag = [(0.1497983027, 0.9062991885), (0.7176230095, 0.730709507), (0.0544614334, 0.3223612854), (0.2674207884, 0.8895973614),
 	(0.1234925873, 0.6294493901), (0.1769560101, 0.1832335867), (0.2473518713, 0.9767192878), (0.8728962245, 0.9756544009),
@@ -119,7 +119,7 @@ def test_check_computations_of_maxima_and_norms():
 	diag = gudhi.read_persistence_intervals_in_dimension("data/file_with_diagram")
 	p = gudhi.PersistenceLandscapes(diag)
 	second = gudhi.PersistenceLandscapes()
-	second.load_landscape_from_file("data/file_with_landscape_from_file_with_diagram_1")
+	second.load_from_file("data/file_with_landscape_from_file_with_diagram_1")
 	assert math.fabs(p.compute_maximum() - 0.431313) <= 0.00001
 	assert math.fabs(p.compute_norm_of_landscape(1) - 2.34992) <= 0.00001
 	assert math.fabs(p.compute_norm_of_landscape(2) - 0.706095) <= 0.00001
@@ -130,7 +130,7 @@ def test_check_default_parameters_of_distances():
 	diag = gudhi.read_persistence_intervals_in_dimension("data/file_with_diagram")
 	p = gudhi.PersistenceLandscapes(diag)    
 	q = gudhi.PersistenceLandscapes()
-	q.load_landscape_from_file("data/file_with_landscape_from_file_with_diagram_1")
+	q.load_from_file("data/file_with_landscape_from_file_with_diagram_1")
 	dist_numeric_limit_max = p.distance(q, sys.float_info.max);
 	dist_infinity = p.distance(q, sys.float_info.max);
 	assert dist_numeric_limit_max == dist_infinity
@@ -140,11 +140,11 @@ def test_check_computations_of_averages():
 	diag = gudhi.read_persistence_intervals_in_dimension("data/file_with_diagram")
 	p = gudhi.PersistenceLandscapes(diag)
 	q = gudhi.PersistenceLandscapes()
-	q.load_landscape_from_file("data/file_with_landscape_from_file_with_diagram_1")
+	q.load_from_file("data/file_with_landscape_from_file_with_diagram_1")
 	av = gudhi.PersistenceLandscapes()
 	av.compute_average([p, q])
 	template_average = gudhi.PersistenceLandscapes()
-	template_average.load_landscape_from_file("data/average")
+	template_average.load_from_file("data/average")
 	assert template_average.compare(av)
 
 
@@ -152,7 +152,7 @@ def test_check_computations_of_distances():
 	diag = gudhi.read_persistence_intervals_in_dimension("data/file_with_diagram")
 	p = gudhi.PersistenceLandscapes(diag)
 	q = gudhi.PersistenceLandscapes()
-	q.load_landscape_from_file("data/file_with_landscape_from_file_with_diagram_1")
+	q.load_from_file("data/file_with_landscape_from_file_with_diagram_1")
 	assert math.fabs(p.distance(q,1) - 25.5824) <= 0.00005
 	assert math.fabs(p.distance(q, 2) - 2.1262155641322) <= 0.00001
 	assert math.fabs(p.distance(q, sys.float_info.max) - 0.359068) <= 0.00001
@@ -162,6 +162,6 @@ def test_check_computations_of_scalar_product():
 	diag = gudhi.read_persistence_intervals_in_dimension("data/file_with_diagram")
 	p = gudhi.PersistenceLandscapes(diag)
 	q = gudhi.PersistenceLandscapes()
-	q.load_landscape_from_file("data/file_with_landscape_from_file_with_diagram_1")
+	q.load_from_file("data/file_with_landscape_from_file_with_diagram_1")
 	assert math.fabs(p.compute_scalar_product(q) - 0.754498) <= 0.00001
 

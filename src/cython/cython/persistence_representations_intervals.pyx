@@ -60,6 +60,11 @@ cdef extern from "Persistence_intervals_interface.h" namespace "Gudhi::Persisten
 		size_t number_of_projections_to_R() const
 		vector[double] vectorize(int number_of_function) const
 		size_t number_of_vectorize_functions() const
+		vector[pair[double, double] ] output_for_visualization()
+		
+cdef extern from "Bottleneck_distance_interface.h" namespace "Gudhi::persistence_diagram":
+	double bottleneck(vector[pair[double, double]], vector[pair[double, double]], double)
+	double bottleneck(vector[pair[double, double]], vector[pair[double, double]])		
 
 """
 make sure that here we call the functions from the intermediate .h file,
@@ -313,3 +318,11 @@ cdef class PersistenceIntervals:
 		"""
 		if (self.thisptr != NULL):
 			return self.thisptr.number_of_vectorize_functions()
+
+
+	def distance(self , PersistenceIntervals c , tolerance = 0):
+		"""
+		Compute a bottleneck distance between this, and the second diagram.
+		"""
+		if (self.thisptr != NULL):
+			return bottleneck(self.thisptr.output_for_visualization(), self.thisptr.output_for_visualization(),tolerance)			

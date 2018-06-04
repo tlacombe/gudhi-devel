@@ -35,7 +35,7 @@ def test_check_construction_of_landscape():
     l = gudhi.PersistenceLandscapesOnGrid(file_with_intervals='data/file_with_diagram_1')
     l.print_to_file("landscape_from_file_with_diagram_1")
     g = gudhi.PersistenceLandscapesOnGrid()
-    g.load_landscape_from_file("landscape_from_file_with_diagram_1")
+    g.load_from_file("landscape_from_file_with_diagram_1")
     assert l.check_if_the_same(g)
     
 def test_check_computations_of_integrals():
@@ -104,7 +104,7 @@ def test_check_computations_of_averages():
     av.compute_average([p,q])
 
     template_average = gudhi.PersistenceLandscapesOnGrid()
-    template_average.load_landscape_from_file("data/average_on_a_grid")
+    template_average.load_from_file("data/average_on_a_grid")
     assert template_average.check_if_the_same(av)
  
 def test_check_computations_of_integrals_of_powers_of_landscape():

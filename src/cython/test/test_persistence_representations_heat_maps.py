@@ -37,7 +37,7 @@ epsilon = 0.0000005;
 def test_check_construction_of_heat_map():    
 	p = gudhi.PersistenceHeatMaps(file_with_intervals="data/file_with_diagram",how_many_pixels_raidus_of_Gausian_kernel=100,min_=0,max_=1)
 	q = gudhi.PersistenceHeatMaps()
-	q.load_heat_map_from_file("data/persistence_heat_map_from_file_with_diagram")
+	q.load_from_file("data/persistence_heat_map_from_file_with_diagram")
 	assert p.compare(q)
     
     
@@ -46,7 +46,7 @@ def check_construction_of_heat_maps():
 	p = gudhi.PersistenceHeatMaps(file_with_intervals="data/file_with_diagram", how_many_pixels_raidus_of_Gausian_kernel=100, min_=0, max_=1)
 	p.print_to_file("data/persistence_heat_map_from_file_with_diagram");
 	q = gudhi.PersistenceHeatMaps();
-	q.load_heat_map_from_file("data/persistence_heat_map_from_file_with_diagram");
+	q.load_from_file("data/persistence_heat_map_from_file_with_diagram");
 	assert p.compare(q)
 
 
@@ -59,7 +59,7 @@ def check_averages_of_heat_maps():
 	av.compute_average([p,q,r]);
 
 	template_average = gudhi.PersistenceHeatMaps();
-	template_average.load_heat_map_from_file("data/template_average_of_heat_maps");
+	template_average.load_from_file("data/template_average_of_heat_maps");
 
 	assert av.compare(template_average)
 
@@ -74,7 +74,7 @@ def check_median_of_heat_maps():
 	median.compute_median(to_compute_median);
 
 	template_median = gudhi.PersistenceHeatMaps();
-	template_median.load_heat_map_from_file("data/template_median_of_heat_maps");
+	template_median.load_from_file("data/template_median_of_heat_maps");
 
 	assert median.compare(template_median)
 
@@ -89,7 +89,7 @@ def check_compute_percentage_of_active_of_heat_maps():
 	percentage_of_active.compute_percentage_of_active(to_compute_percentage_of_active, 0.1);
 
 	template_percentage_of_active = gudhi.PersistenceHeatMaps();
-	template_percentage_of_active.load_heat_map_from_file("data/template_percentage_of_active_of_heat_maps");
+	template_percentage_of_active.load_from_file("data/template_percentage_of_active_of_heat_maps");
 
 	assert percentage_of_active.compare(template_percentage_of_active)
 

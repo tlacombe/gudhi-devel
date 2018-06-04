@@ -149,7 +149,7 @@ cdef class PersistenceLandscapes:
 		if self.thisptr != NULL:
 			del self.thisptr
 
-	def load_landscape_from_file(self,filename):
+	def load_from_file(self,filename):
 		"""
 		This procedure loads a landscape from file. It erase all the data
 		that was previously stored in this landscape.
@@ -162,7 +162,7 @@ cdef class PersistenceLandscapes:
 	def print_to_file(self,filename) :
 		"""
 		The procedure stores a landscape to a file. The file can be later
-		used by a procedure load_landscape_from_file.
+		used by a procedure load_from_file.
 		:param Name of the file.
 		:type String
 		"""
