@@ -56,6 +56,7 @@ cdef extern from "PSSK_interface.h" namespace "Gudhi::Persistence_representation
 		double compute_scalar_product(const PSSK_interface& second_) const
 		pair[double, double] get_x_range() const
 		pair[double, double] get_y_range() const
+		bool compare( const PSSK_interface& second );
 		
 		#**************
         #static methods
@@ -81,8 +82,8 @@ cdef class PSSK:
 
 
 #Can we have only one constructor, or can we have more
-	def __init__(self, how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels, 
-	min_=None, max_=None,dimension=-1):
+	def __init__(self, how_many_pixels_raidus_of_Gausian_kernel = 200, number_of_pixels=1000, 
+	vector_of_intervals=None, file_with_intervals='', min_=None, max_=None,dimension=-1):
 		"""
 		This is a version of a representation presented in https://arxiv.org/abs/1412.6821
 		In that paper the authors are using the representation just to compute kernel. Over here, we extend the usability by
@@ -93,7 +94,7 @@ cdef class PSSK:
 		at (q,p).
 		"""	
 
-	def __cinit__(self, how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels, 
+	def __cinit__(self, how_many_pixels_raidus_of_Gausian_kernel = 200, number_of_pixels=1000, 
 	vector_of_intervals=None, file_with_intervals='', min_=None, max_=None,dimension=-1):
 		"""
 		This is a constructor of a class PSSK.
@@ -110,7 +111,8 @@ cdef class PSSK:
 		:param dimension - na optional parameter, a dimension of the intervals to be read from a file.           
 		"""
 		if ( (vector_of_intervals is None) and ( file_with_intervals is '' ) ):
-			print "Please provide parameters to construct the persistence vectors." 
+			print "Empty PSSK will be created." 
+			self.thisptr = new PSSK_interface()			
 		else:
 			if (vector_of_intervals is None) and (file_with_intervals is not ''):				
 				if os.path.isfile(file_with_intervals):
@@ -127,6 +129,7 @@ cdef class PSSK:
 					else:
 						self.thisptr = PSSK_interface.construct_from_vector_of_pairs(vector_of_intervals, how_many_pixels_raidus_of_Gausian_kernel, number_of_pixels,0,0)
 				else:
+					print "Empty PSSK will be created." 
 					self.thisptr = new PSSK_interface()
 
 	def __dealloc__(self):
@@ -271,17 +274,17 @@ cdef class PSSK:
 			return self.thisptr.number_of_projections_to_R() 
      
     #I havev problem with getting this function compiled due to a strange error                     
-	#def distance(self, PSSK second, power):
-	#	"""
-	#	A function to compute distance between PSSK.
-	#	The parameter of this function is a PSSK.
-	#	This function is required in Topological_data_with_distances concept.
-	#	For max norm distance, set power to numeric_limits<double>::max()
-	#	:param the heat map to compute distance to
-	#	:type double
-	#	"""
-	#	if ( self.thisptr != NULL ) and ( second is not None ) and ( power is not None ):
-	#		return self.thisptr.distance(deref(second.thisptr), power) 	   
+	def distance(self, PSSK second, power = 1):
+		"""
+		A function to compute distance between PSSK.
+		The parameter of this function is a PSSK.
+		This function is required in Topological_data_with_distances concept.
+		For max norm distance, set power to numeric_limits<double>::max()
+		:param the heat map to compute distance to
+		:type double
+		"""
+		if ( self.thisptr != NULL ) and ( second is not None ) and ( power is not None ):
+			return self.thisptr.distance(deref(second.thisptr), power) 	   
                         
 	def compute_average( self,to_average=[] ):
 		"""
@@ -323,3 +326,14 @@ cdef class PSSK:
 		"""
 		if ( self.thisptr != NULL ):
 			return self.thisptr.get_y_range()                               
+
+	def compare(self, PSSK second):
+		"""
+		Return true if this landscape and the second landscape are the same
+		and false othervise.
+		:param PSSK, the second pssk 
+		:type bool
+		"""
+		if ( self.thisptr != NULL ):
+			return self.thisptr.compare( deref(second.thisptr) )
+

@@ -50,15 +50,15 @@ class PSSK_interface : public PSSK {
        double min_ = -1, double max_ = -1)
       :
       PSSK(interval,create_Gaussian_filter(how_many_pixels_raidus_of_Gausian_kernel, 1),
-           number_of_pixels,((min_ == 0) ?  std::numeric_limits<double>::max() : min_),
-           ((max_ == 0) ?  std::numeric_limits<double>::max() : max_)){}
+           number_of_pixels,((min_ == max_) ?  std::numeric_limits<double>::max() : min_),
+           ((min_ == max_) ?  -1 : max_)){}
 
   PSSK_interface(const char* filename, size_t how_many_pixels_raidus_of_Gausian_kernel,
        size_t number_of_pixels = 1000, double min_ = -1, double max_ = -1,
        int dimension = -1)
       :PSSK(filename,create_Gaussian_filter(how_many_pixels_raidus_of_Gausian_kernel, 1),
-            number_of_pixels,((min_ == 0) ?  std::numeric_limits<double>::max() : min_),
-            ((max_ == 0) ?  std::numeric_limits<double>::max() : max_),dimension){}
+            number_of_pixels,((min_ == max_) ?  std::numeric_limits<double>::max() : min_),
+            ((min_ == max_) ?  -1 : max_),dimension){}
             
   
   
@@ -120,7 +120,12 @@ class PSSK_interface : public PSSK {
 		  maps.push_back( (Persistence_heat_maps*)to_average[i] );
 	  }
 	  this->compute_average( maps );
-  }           
+  }        
+  
+  bool compare( const PSSK_interface& second )const
+  {
+	  return ( *this == second );
+  }
  
 };
 
