@@ -32,15 +32,15 @@ __license__ = "GPL v3"
 
 epsilon = 0.0000005;
     
-def check_construction_of_PSSK():  
+def test_check_construction_of_PSSK():
 	p = gudhi.PSSK(file_with_intervals="data/file_with_diagram", how_many_pixels_raidus_of_Gausian_kernel=100, min_=0, max_=1)
-	p.print_to_file("data/pssk_from_file_with_diagram");
-	q = gudhi.PSSK();
-	q.load_from_file("data/persistence_heat_map_from_file_with_diagram");
+	p.print_to_file("data/pssk_from_file_with_diagram")
+	q = gudhi.PSSK()
+	q.load_from_file("data/persistence_heat_map_from_file_with_diagram")
 	assert p.compare(q)
 
 
-def check_averages_of_heat_maps():
+def test_check_averages_of_heat_maps():
 	p = gudhi.PSSK(file_with_intervals="data/file_with_diagram", how_many_pixels_raidus_of_Gausian_kernel=30, min_=0, max_=10);
 	q = gudhi.PSSK(file_with_intervals="data/file_with_diagram_1", how_many_pixels_raidus_of_Gausian_kernel=30, min_=0, max_=10);
 	r = gudhi.PSSK(file_with_intervals="data/file_with_diagram_2", how_many_pixels_raidus_of_Gausian_kernel=30, min_=0, max_=10);
@@ -54,7 +54,7 @@ def check_averages_of_heat_maps():
 	assert av.compare(template_average)
 
 
-def check_median_of_heat_maps():  
+def test_check_median_of_heat_maps():
 	p = gudhi.PSSK(file_with_intervals="data/file_with_diagram",how_many_pixels_raidus_of_Gausian_kernel=30, min_=0, max_=1);
 	q = gudhi.PSSK(file_with_intervals="data/file_with_diagram_1", how_many_pixels_raidus_of_Gausian_kernel=30, min_=0, max_=1);
 	r = gudhi.PSSK(file_with_intervals="data/file_with_diagram_2", how_many_pixels_raidus_of_Gausian_kernel=30, min_=0, max_=1);
@@ -69,7 +69,7 @@ def check_median_of_heat_maps():
 	assert median.compare(template_median)
 
 
-def check_compute_percentage_of_active_of_heat_maps():  
+def test_check_compute_percentage_of_active_of_heat_maps():
 	p = gudhi.PSSK(file_with_intervals="data/file_with_diagram",how_many_pixels_raidus_of_Gausian_kernel=30, min_=0, max_=1);
 	q = gudhi.PSSK(file_with_intervals="data/file_with_diagram_1",how_many_pixels_raidus_of_Gausian_kernel=30, min_=0, max_=1);
 	r = gudhi.PSSK(file_with_intervals="data/file_with_diagram_2",how_many_pixels_raidus_of_Gausian_kernel=30, min_=0, max_=1);
@@ -84,7 +84,7 @@ def check_compute_percentage_of_active_of_heat_maps():
 	assert percentage_of_active.compare(template_percentage_of_active)
 
 
-def check_vectorize_for_heat_maps():  
+def test_check_vectorize_for_heat_maps():
 	p = gudhi.PSSK(file_with_intervals="data/file_with_diagram", how_many_pixels_raidus_of_Gausian_kernel=30, number_of_pixels=5, min_=0, max_=1);
 	p_vect_template= [0.0,  -0.000980622792375895, -0.0019701161569953343, -0.0029425369316000752, -0.0038723844540576, 0.000980622792375895, 0.0, -0.0009981974959707251, -0.0019877974973262287, -0.002942849271999715, 0.0019701161569953343, 0.0009981974959707251, 0.0, -0.0009983033008608634, -0.0019705338815308084, 0.0029425369316000752, 0.0019877974973262287, 0.0009983033008608634, 0.0, -0.0009809343151245984, 0.0038723844540576, 0.002942849271999715, 0.0019705338815308084, 0.0009809343151245984, 0.0]
 	p_vect = p.vectorize(0);
@@ -93,7 +93,7 @@ def check_vectorize_for_heat_maps():
   
 
 
-def check_distance_for_heat_maps():  
+def test_check_distance_for_heat_maps():
 	p = gudhi.PSSK(file_with_intervals="data/file_with_diagram", how_many_pixels_raidus_of_Gausian_kernel=30, min_=0, max_=1);
 	q = gudhi.PSSK(file_with_intervals="data/file_with_diagram_1", how_many_pixels_raidus_of_Gausian_kernel=30, min_=0, max_=1);
 	r = gudhi.PSSK(file_with_intervals="data/file_with_diagram_2", how_many_pixels_raidus_of_Gausian_kernel=30, min_=0, max_=1);
@@ -110,18 +110,18 @@ def check_distance_for_heat_maps():
 	assert math.fabs(r.distance(r) - 0.) < epsilon
 
 
-def check_projections_to_R_for_heat_maps():
+def test_check_projections_to_R_for_heat_maps():
 	p = gudhi.PSSK(file_with_intervals="data/file_with_diagram",  how_many_pixels_raidus_of_Gausian_kernel=30, min_=0, max_=1);
 	q = gudhi.PSSK(file_with_intervals="data/file_with_diagram_1",  how_many_pixels_raidus_of_Gausian_kernel=30, min_=0, max_=1);
 	r = gudhi.PSSK(file_with_intervals="data/file_with_diagram_2",  how_many_pixels_raidus_of_Gausian_kernel=30, min_=0, max_=1);
 
-	epsilon = 0.0005;	
+	epsilon = 0.0005;
 	assert math.fabs(p.project_to_R(0) - 5.524932004884425e-13) < epsilon
 	assert math.fabs(q.project_to_R(0) - 9.202995379043659e-13) < epsilon
 	assert math.fabs(r.project_to_R(0) - -7.056164654707466e-12) < epsilon
 
 
-def check_scalar_products_for_heat_maps():
+def test_check_scalar_products_for_heat_maps():
 	p = gudhi.PSSK(file_with_intervals="data/file_with_diagram",  how_many_pixels_raidus_of_Gausian_kernel=30, min_=0, max_=1);
 	q = gudhi.PSSK(file_with_intervals="data/file_with_diagram_1",  how_many_pixels_raidus_of_Gausian_kernel=30, min_=0, max_=1);
 	r = gudhi.PSSK(file_with_intervals="data/file_with_diagram_2",  how_many_pixels_raidus_of_Gausian_kernel=30, min_=0, max_=1);
