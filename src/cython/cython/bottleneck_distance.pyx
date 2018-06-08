@@ -1,7 +1,4 @@
-from cython cimport numeric
-from libcpp.vector cimport vector
-from libcpp.utility cimport pair
-import os
+from bottleneck_distance cimport bottleneck
 
 """This file is part of the Gudhi Library. The Gudhi library
    (Geometric Understanding in Higher Dimensions) is a generic C++
@@ -28,10 +25,6 @@ import os
 __author__ = "Vincent Rouvreau"
 __copyright__ = "Copyright (C) 2016 Inria"
 __license__ = "GPL v3"
-
-cdef extern from "Bottleneck_distance_interface.h" namespace "Gudhi::persistence_diagram":
-    double bottleneck(vector[pair[double, double]], vector[pair[double, double]], double)
-    double bottleneck(vector[pair[double, double]], vector[pair[double, double]])
 
 def bottleneck_distance(diagram_1, diagram_2, e=None):
     """This function returns the point corresponding to a given vertex.

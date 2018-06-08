@@ -264,6 +264,14 @@ if(CYTHON_FOUND)
   # Reader utils
   add_gudhi_py_test(test_reader_utils)
 
+  #persistence representation tests:
+  add_gudhi_py_test(test_persistence_representations_landscapes)
+  add_gudhi_py_test(test_persistence_representations_landscapes_on_grid)
+  add_gudhi_py_test(test_persistence_representations_heat_maps)
+  add_gudhi_py_test(test_persistence_representations_vectors)
+  add_gudhi_py_test(test_persistence_representations_intervals)
+  add_gudhi_py_test(test_PSSK)
+
   # Documentation generation is available through sphinx - requires all modules
   if(SPHINX_PATH AND NOT CGAL_WITH_EIGEN3_VERSION VERSION_LESS 4.8.1)
     set (GUDHI_SPHINX_MESSAGE "Generating API documentation with Sphinx in ${CMAKE_CURRENT_BINARY_DIR}/sphinx/")
@@ -287,12 +295,3 @@ if(CYTHON_FOUND)
 
   endif(SPHINX_PATH AND NOT CGAL_WITH_EIGEN3_VERSION VERSION_LESS 4.8.1)
 endif(CYTHON_FOUND)
-
-
-#persistence representation tests:
-add_gudhi_py_test(test_persistence_representations_landscapes.py)
-add_gudhi_py_test(test_persistence_representations_landscapes_on_grid.py)
-add_gudhi_py_test(test_persistence_representations_heat_maps.py)
-add_gudhi_py_test(test_persistence_representations_vectors.py)
-add_gudhi_py_test(test_persistence_representations_intervals.py)
-add_gudhi_py_test(test_PSSK.py)

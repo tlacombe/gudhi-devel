@@ -2,6 +2,7 @@ from cython cimport numeric
 from libcpp.vector cimport vector
 from libcpp.utility cimport pair
 from libcpp cimport bool
+from bottleneck_distance cimport bottleneck
 import os
 
 """
@@ -62,10 +63,6 @@ cdef extern from "Persistence_intervals_interface.h" namespace "Gudhi::Persisten
 		size_t number_of_vectorize_functions() const
 		vector[pair[double, double] ] output_for_visualization()
 		
-cdef extern from "Bottleneck_distance_interface.h" namespace "Gudhi::persistence_diagram":
-	double bottleneck(vector[pair[double, double]], vector[pair[double, double]], double)
-	double bottleneck(vector[pair[double, double]], vector[pair[double, double]])		
-
 """
 make sure that here we call the functions from the intermediate .h file,
 with dummy names, so that later below we can use the same names of the
