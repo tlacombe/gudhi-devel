@@ -73,35 +73,30 @@ cdef extern from "Persistence_landscape_on_grid_interface.h" namespace "Gudhi::P
 #convention for python class is PersistenceIntervals instead of Persistence_intervals
 #for methods it is def num_simplices(self).
 cdef class PersistenceLandscapesOnGrid:
+	"""
+	This is a class implementing persistence landscapes data structures.
+	For theoretical description, please consult <i>Statistical topological
+	data analysis using persistence landscapes</i>\cite bubenik_landscapes_2015,
+	and for details of algorithms, A persistence landscapes toolbox for
+	topological statistics</i>\cite bubenik_dlotko_landscapes_2016.
 
+	Persistence landscapes allow vectorization, computations of distances,
+	computations of projections to Real, computations of averages and
+	scalar products. Therefore they implement suitable interfaces. It
+	implements the following concepts: Vectorized_topological_data,
+	Topological_data_with_distances, Real_valued_topological_data,
+	Topological_data_with_averages, Topological_data_with_scalar_product
+
+	Note that at the moment, due to rounding errors during the construction
+	of persistence landscapes, elements which are different by 0.000005 are
+	considered the same. If the scale in your persistence diagrams is
+	comparable to this value, please rescale them before use this code.
+	"""
+		
 	cdef Persistence_landscape_on_grid_interface* thisptr
 
 #Can we have only one constructor, or can we have more
 	def __init__(self, grid_min_=0, grid_max_=0,number_of_points_=1000, file_with_intervals='', 
-	vector_of_intervals=None, dimension=-1,number_of_levels=100):
-		"""
-		This is a class implementing persistence landscapes data structures.
-		For theoretical description, please consult <i>Statistical topological
-		data analysis using persistence landscapes</i>\cite bubenik_landscapes_2015,
-		and for details of algorithms, A persistence landscapes toolbox for
-		topological statistics</i>\cite bubenik_dlotko_landscapes_2016.
-
-		Persistence landscapes allow vectorization, computations of distances,
-		computations of projections to Real, computations of averages and
-		scalar products. Therefore they implement suitable interfaces. It
-		implements the following concepts: Vectorized_topological_data,
-		Topological_data_with_distances, Real_valued_topological_data,
-		Topological_data_with_averages, Topological_data_with_scalar_product
-
-		Note that at the moment, due to rounding errors during the construction
-		of persistence landscapes, elements which are different by 0.000005 are
-		considered the same. If the scale in your persistence diagrams is
-		comparable to this value, please rescale them before use this code.
-		"""
-   
-
-
-	def __cinit__(self, grid_min_=0, grid_max_=0,number_of_points_=1000, file_with_intervals='', 
 	vector_of_intervals=None, dimension=-1,number_of_levels=100):
 		"""
 		This is a constructor of a class PersistenceLandscapes.
@@ -133,6 +128,12 @@ cdef class PersistenceLandscapesOnGrid:
 		generated (if not set, all of the are generated).
 		:type positive integer
 		"""
+   
+
+
+	def __cinit__(self, grid_min_=0, grid_max_=0,number_of_points_=1000, file_with_intervals='', 
+	vector_of_intervals=None, dimension=-1,number_of_levels=100):
+
 		if (vector_of_intervals is None) and (file_with_intervals is not ''):				
 			if os.path.isfile(file_with_intervals):
 				self.thisptr = Persistence_landscape_on_grid_interface.construct_from_file(str.encode(file_with_intervals), grid_min_, grid_max_,number_of_points_, dimension)
@@ -161,7 +162,10 @@ cdef class PersistenceLandscapesOnGrid:
 		:type String
 		"""
 		if ( self.thisptr != NULL ) and ( filename is not None ):
-			self.thisptr.load_landscape_from_file(filename)
+			if os.path.isfile(filename):                        
+				self.thisptr.load_landscape_from_file(str.encode(filename))
+		else:
+			print("file " + filename + " not found.")                  
 
 	def print_to_file(self,filename) :
 		"""
@@ -171,7 +175,7 @@ cdef class PersistenceLandscapesOnGrid:
 		:type String
 		"""
 		if ( self.thisptr != NULL ) and ( filename is not None ):
-			self.thisptr.print_to_file(filename)
+			self.thisptr.print_to_file(str.encode(filename))
 
 	def compute_integral_of_landscape(self):
 		"""

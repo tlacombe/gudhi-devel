@@ -87,21 +87,6 @@ cdef class PersistenceIntervals:
 	#__cinit__, where __ means private memeber
 	def __init__(self, vector_of_intervals=None, dimension=-1,
 				 file_with_intervals=''):
-		"""Persistence interals is a standard representation of
-		   persistent homology. This file provide implementation of a
-		   number of operations on persistence diagrams.
-
-		  :param vector_of_intervals: A vector of birth-death pairs.
-
-		Or
-
-		:param Gudhi style file togethr with a dimension of birth-death
-			   pairs to consider.
-		"""
-
-	#The real cython constructor
-	def __cinit__(self, vector_of_intervals=None, dimension=-1,
-				  file_with_intervals=''):
 		"""
 		This is a constructor of a class Persistence_intervals.
 		It either take text file and a positive integer, or a vector
@@ -120,7 +105,13 @@ cdef class PersistenceIntervals:
 		:param file_with_intervals - a path to Gudhi style file with
 			   persistence interfals.
 		:type string of None.
-		"""
+		"""					 
+
+
+	#The real cython constructor
+	def __cinit__(self, vector_of_intervals=None, dimension=-1,
+				  file_with_intervals=''):
+
 		if (vector_of_intervals is None) and (file_with_intervals is not ''):			
 			if os.path.isfile(file_with_intervals):
 				self.thisptr = new Persistence_intervals_interface(str.encode(file_with_intervals), dimension)

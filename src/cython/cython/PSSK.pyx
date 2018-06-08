@@ -77,24 +77,21 @@ cdef extern from "PSSK_interface.h" namespace "Gudhi::Persistence_representation
         
         
 cdef class PSSK:
-
+	"""
+	This is a version of a representation presented in https://arxiv.org/abs/1412.6821
+	In that paper the authors are using the representation just to compute kernel. Over here, we extend the usability by
+	far.
+	Note that the version presented here is not exact, since we are discretizing the kernel.
+	The only difference with respect to the original class is the method of creation. We have full (square) image, and for
+	every point (p,q), we add a kernel at (p,q) and the negative kernel
+	at (q,p).
+	"""	
+		
 	cdef PSSK_interface* thisptr
 
 
 #Can we have only one constructor, or can we have more
 	def __init__(self, how_many_pixels_raidus_of_Gausian_kernel = 200, number_of_pixels=1000, 
-	vector_of_intervals=None, file_with_intervals='', min_=None, max_=None,dimension=-1):
-		"""
-		This is a version of a representation presented in https://arxiv.org/abs/1412.6821
-		In that paper the authors are using the representation just to compute kernel. Over here, we extend the usability by
-		far.
-		Note that the version presented here is not exact, since we are discretizing the kernel.
-		The only difference with respect to the original class is the method of creation. We have full (square) image, and for
-		every point (p,q), we add a kernel at (p,q) and the negative kernel
-		at (q,p).
-		"""	
-
-	def __cinit__(self, how_many_pixels_raidus_of_Gausian_kernel = 200, number_of_pixels=1000, 
 	vector_of_intervals=None, file_with_intervals='', min_=None, max_=None,dimension=-1):
 		"""
 		This is a constructor of a class PSSK.
@@ -110,6 +107,9 @@ cdef class PSSK:
 		If not set, will be computed based on the input data. 
 		:param dimension - na optional parameter, a dimension of the intervals to be read from a file.           
 		"""
+
+	def __cinit__(self, how_many_pixels_raidus_of_Gausian_kernel = 200, number_of_pixels=1000, 
+	vector_of_intervals=None, file_with_intervals='', min_=None, max_=None,dimension=-1):
 		if ( (vector_of_intervals is None) and ( file_with_intervals is '' ) ):
 			print "Empty PSSK will be created." 
 			self.thisptr = new PSSK_interface()			
@@ -192,7 +192,11 @@ cdef class PSSK:
 		:type String
 		"""
 		if ( self.thisptr != NULL ) and ( filename is not None ):
-			self.thisptr.load_from_file(filename)            
+			if os.path.isfile(filename):                  
+				self.thisptr.load_from_file(str.encode(filename)) 
+			else:
+				print("file " + filename + " not found.")          
+			          
 
 	def print_to_file(self,filename) :
 		"""
@@ -202,7 +206,7 @@ cdef class PSSK:
 		:type String
 		"""
 		if ( self.thisptr != NULL ) and ( filename is not None ):
-			self.thisptr.print_to_file(filename)                          
+			self.thisptr.print_to_file(str.encode(filename))
        
 	def check_if_the_same( self, PSSK second ):
 		"""

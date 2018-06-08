@@ -75,36 +75,31 @@ cdef extern from "Persistence_landscape_interface.h" namespace "Gudhi::Persisten
 #convention for python class is PersistenceIntervals instead of Persistence_intervals
 #for methods it is def num_simplices(self).
 cdef class PersistenceLandscapes:
+	"""
+	This is a class implementing persistence landscapes data structures.
+	For theoretical description, please consult <i>Statistical topological
+	data analysis using persistence landscapes</i>\cite bubenik_landscapes_2015,
+	and for details of algorithms, A persistence landscapes toolbox for
+	topological statistics</i>\cite bubenik_dlotko_landscapes_2016.
 
-	cdef Persistence_landscape_interface* thisptr
+	Persistence landscapes allow vectorization, computations of distances,
+	computations of projections to Real, computations of averages and
+	scalar products. Therefore they implement suitable interfaces. It
+	implements the following concepts: Vectorized_topological_data,
+	Topological_data_with_distances, Real_valued_topological_data,
+	Topological_data_with_averages, Topological_data_with_scalar_product
 
+	Note that at the moment, due to rounding errors during the construction
+	of persistence landscapes, elements which are different by 0.000005 are
+	considered the same. If the scale in your persistence diagrams is
+	comparable to this value, please rescale them before use this code.
+	"""	
+
+	cdef Persistence_landscape_interface* thisptr		
 
 
 #Can we have only one constructor, or can we have more
 	def __init__(self, vector_of_intervals=None, dimension=-1, file_with_intervals='',number_of_levels=sys.maxsize):
-		"""
-		This is a class implementing persistence landscapes data structures.
-		For theoretical description, please consult <i>Statistical topological
-		data analysis using persistence landscapes</i>\cite bubenik_landscapes_2015,
-		and for details of algorithms, A persistence landscapes toolbox for
-		topological statistics</i>\cite bubenik_dlotko_landscapes_2016.
-
-		Persistence landscapes allow vectorization, computations of distances,
-		computations of projections to Real, computations of averages and
-		scalar products. Therefore they implement suitable interfaces. It
-		implements the following concepts: Vectorized_topological_data,
-		Topological_data_with_distances, Real_valued_topological_data,
-		Topological_data_with_averages, Topological_data_with_scalar_product
-
-		Note that at the moment, due to rounding errors during the construction
-		of persistence landscapes, elements which are different by 0.000005 are
-		considered the same. If the scale in your persistence diagrams is
-		comparable to this value, please rescale them before use this code.
-		"""
-   
-
-
-	def __cinit__(self, vector_of_intervals=None, dimension=-1 , file_with_intervals='',number_of_levels=sys.maxsize):
 		"""
 		This is a constructor of a class PersistenceLandscapes.
 		It either take text file and a positive integer, or a vector
@@ -129,6 +124,11 @@ cdef class PersistenceLandscapes:
 		generated (if not set, all of the are generated).
 		:type positive integer
 		"""
+   
+
+
+	def __cinit__(self, vector_of_intervals=None, dimension=-1 , file_with_intervals='',number_of_levels=sys.maxsize):
+
 		if (vector_of_intervals is None) and (file_with_intervals is not ''):			
 			if os.path.isfile(file_with_intervals):
 				#self.thisptr = new Persistence_landscape_interface(file_with_intervals, dimension, number_of_levels)
@@ -139,7 +139,7 @@ cdef class PersistenceLandscapes:
 			#self.thisptr = new Persistence_landscape_interface(vector_of_intervals, true, number_of_levels)
 			self.thisptr = Persistence_landscape_interface.construct_from_vector_of_pairs(vector_of_intervals, number_of_levels)
 		else:
-			print("Persistence interals can be constructed from vector of birth-death pairs,  vector_of_intervals or a Gudhi-style file.")                     
+			print("Persistence landscapes can be constructed from vector of birth-death pairs,  vector_of_intervals or a Gudhi-style file.")                     
 			self.thisptr = new Persistence_landscape_interface()
             
 	def __dealloc__(self):
@@ -157,7 +157,10 @@ cdef class PersistenceLandscapes:
 		:type String
 		"""
 		if ( self.thisptr != NULL ) and ( filename is not None ):
-			self.thisptr.load_landscape_from_file(filename)
+			if os.path.isfile(filename):                          
+				self.thisptr.load_landscape_from_file(str.encode(filename)) 
+			else:
+				print("file " + filename + " not found.")                   
 
 	def print_to_file(self,filename) :
 		"""
@@ -167,7 +170,7 @@ cdef class PersistenceLandscapes:
 		:type String
 		"""
 		if ( self.thisptr != NULL ) and ( filename is not None ):
-			self.thisptr.print_to_file(filename)
+			self.thisptr.print_to_file(str.encode(filename))
 
 	def compute_integral_of_landscape(self):
 		"""

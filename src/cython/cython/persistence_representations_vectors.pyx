@@ -54,27 +54,25 @@ cdef extern from "Persistence_vectors_interface.h" namespace "Gudhi::Persistence
 		
 		
 cdef class PersistenceVectors:
+	"""
+	This is an implementation of idea presented in the paper 
+	<i>Stable Topological Signatures for Points on 3D  Shapes</i> 
+	\cite Carriere_Oudot_Ovsjanikov_top_signatures_3d .<br>
+	The parameter of the class is the class that computes distance 
+	used to construct the vectors. The typical function is either 
+	Euclidean of maximum (Manhattan) distance.
+
+	This class implements the following concepts: 
+	Vectorized_topological_data, Topological_data_with_distances,
+	Real_valued_topological_data, Topological_data_with_averages, 
+	Topological_data_with_scalar_product
+	"""	
 
 	cdef Vector_distances_in_diagram_interface* thisptr
 
+
 #Can we have only one constructor, or can we have more
 	def __init__(self, where_to_cut=100, file_with_intervals='', 
-	vector_of_intervals=None, dimension=-1):
-		"""
-		This is an implementation of idea presented in the paper 
-		<i>Stable Topological Signatures for Points on 3D  Shapes</i> 
-		\cite Carriere_Oudot_Ovsjanikov_top_signatures_3d .<br>
-		The parameter of the class is the class that computes distance 
-		used to construct the vectors. The typical function is either 
-		Euclidean of maximum (Manhattan) distance.
- 
-		This class implements the following concepts: 
-		Vectorized_topological_data, Topological_data_with_distances,
-		Real_valued_topological_data, Topological_data_with_averages, 
-		Topological_data_with_scalar_product
-		"""	
-
-	def __cinit__(self, where_to_cut=100, file_with_intervals='', 
 	vector_of_intervals=None, dimension=-1):
 		"""
 		This is a constructor of a class PersistenceVectors.
@@ -96,6 +94,9 @@ cdef class PersistenceVectors:
 		:param where_to_cut - number of elements to be generated in the 
 		vector. 
 		"""
+
+	def __cinit__(self, where_to_cut=100, file_with_intervals='', 
+	vector_of_intervals=None, dimension=-1):
 		if ( (vector_of_intervals is None) and ( file_with_intervals is '' ) ):
 			print "Empty persistence vector will be created." 
 			self.thisptr = new Vector_distances_in_diagram_interface()
@@ -125,9 +126,12 @@ cdef class PersistenceVectors:
 		that was previously stored in this vector.
 		:param Name of the file.
 		:type String
-		"""
+		"""			
 		if ( self.thisptr != NULL ) and ( filename is not None ):
-			self.thisptr.load_from_file(filename)
+			if os.path.isfile(filename):                        
+				self.thisptr.load_from_file(str.encode(filename)) 
+			else:
+				print("file " + filename + " not found.")           
 			
 
 	def print_to_file(self,filename) :
@@ -138,7 +142,7 @@ cdef class PersistenceVectors:
 		:type String
 		"""
 		if ( self.thisptr != NULL ) and ( filename is not None ):
-			self.thisptr.print_to_file(filename)
+			self.thisptr.print_to_file(str.encode(filename))
 
 	def size( self ):
 		"""

@@ -1,6 +1,5 @@
 import gudhi	
 import math
-import sys
 
 """
     This file is part of the Gudhi Library. The Gudhi library
@@ -17,7 +16,7 @@ import sys
      (at your option) any later version.
 
     This program is distributed in the hope that it will be useful,
-     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     but WITHOUT ANY WARRANTY without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
      GNU General Public License for more details.
 
@@ -29,7 +28,7 @@ __author__ = "Pawel Dlotko"
 __copyright__ = "Copyright (C) 2018 Swansea University"
 __license__ = "GPL v3"
 
-epsilon = 0.0000005;
+epsilon = 0.0000005
 
 #I do not understand how come those tests are passing, since the module should be 
 #called gudhi.PersistenceLandscapes....
@@ -44,7 +43,7 @@ def test_check_construction_of_landscape():
 def test_check_construction_of_landscape_form_gudhi_style_file():
 	p = gudhi.PersistenceLandscapes(file_with_intervals="data/persistence_file_with_four_entries_per_line", dimension=1)
 	q = gudhi.PersistenceLandscapes()
-	q.load_from_file("data/persistence_file_with_four_entries_per_line_landscape");  
+	q.load_from_file("data/persistence_file_with_four_entries_per_line_landscape")  
 	assert p.compare(q)
 
 def test_check_computations_of_integrals():  
@@ -72,7 +71,7 @@ def test_check_construction_of_landscape():
 	(0.2940688241, 0.9945370505), (0.545262265, 0.9591544003), (0.6834892731, 0.7583554041), (0.483568935, 0.5221970463),
 	(0.3231522712, 0.9038473698), (0.6549508263, 0.9801285535), (0.1336375578, 0.9345304225), (0.605044048, 0.636718961),
 	(0.2849982539, 0.9878422172), (0.1913332292, 0.7253469135), (0.6026467816, 0.8212106009), (0.0366311713, 0.6219619742),
-	(0.3062930094, 0.6970299556)];
+	(0.3062930094, 0.6970299556)]
 	p = gudhi.PersistenceLandscapes(diag)
 	assert p.compare(q) 
     
@@ -84,7 +83,7 @@ def test_check_computations_of_integrals_for_each_level_separatelly():
 	p = gudhi.PersistenceLandscapes(diag)    
 	integrals_for_different_levels = [0.216432,0.204763,0.188793,0.178856,0.163142,0.155015,0.143046,0.133765,0.123531,0.117393,0.111269,0.104283,0.0941308,0.0811208,0.0679001,0.0580801,0.0489647,0.0407936,0.0342599,0.02896,0.0239881,0.0171792,0.0071511,0.00462067,0.00229033,0.000195296]
 	for lv in range(0, len(integrals_for_different_levels)):
-		integral = p.compute_integral_of_a_level_of_a_landscape(lv);        
+		integral = p.compute_integral_of_a_level_of_a_landscape(lv)        
 		assert math.fabs(integral - integrals_for_different_levels[lv]) <= 0.00001
         
         
@@ -100,7 +99,7 @@ def test_check_computations_of_integrals_of_powers_of_landscape():
 
 def test_check_computations_of_values_on_different_points():
 	diag = gudhi.read_persistence_intervals_in_dimension("data/file_with_diagram")
-	p = gudhi.PersistenceLandscapes(diag);
+	p = gudhi.PersistenceLandscapes(diag)
 	assert math.fabs(p.compute_value_at_a_given_point(1, 0.0)) <= 0.00001 
 	assert math.fabs(p.compute_value_at_a_given_point(1, 0.1) - 0.0692324) <= 0.00001
 	assert math.fabs(p.compute_value_at_a_given_point(1, 0.2) - 0.163369) <= 0.00001
@@ -131,8 +130,8 @@ def test_check_default_parameters_of_distances():
 	p = gudhi.PersistenceLandscapes(diag)    
 	q = gudhi.PersistenceLandscapes()
 	q.load_from_file("data/file_with_landscape_from_file_with_diagram_1")
-	dist_numeric_limit_max = p.distance(q, sys.float_info.max);
-	dist_infinity = p.distance(q, sys.float_info.max);
+	dist_numeric_limit_max = p.distance(q, sys.float_info.max)
+	dist_infinity = p.distance(q, sys.float_info.max)
 	assert dist_numeric_limit_max == dist_infinity
 
 

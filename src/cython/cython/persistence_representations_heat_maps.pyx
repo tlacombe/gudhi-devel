@@ -79,18 +79,15 @@ cdef extern from "Persistence_heat_maps_interface.h" namespace "Gudhi::Persisten
         
         
 cdef class PersistenceHeatMaps:
+	"""
+	This is a class implementing persistence heat maps. At every point of a diagram we place a Gaussiian kernel (standard deviation is given in terms of the number of pixels).
+	This way we obtain yet another representation of persistence that can be used in data analysis. 
+	"""	
 
 	cdef Persistence_heat_maps_interface* thisptr
 
 #Can we have only one constructor, or can we have more
 	def __init__(self, how_many_pixels_raidus_of_Gausian_kernel=5, number_of_pixels=1000, 
-	vector_of_intervals=None, file_with_intervals='', min_=0, max_=0,dimension=-1):
-		"""
-		This is a class implementing persistence heat maps. At every point of a diagram we place a Gaussiian kernel (standard deviation is given in terms of the number of pixels).
-		This way we obtain yet another representation of persistence that can be used in data analysis. 
-		"""	
-
-	def __cinit__(self, how_many_pixels_raidus_of_Gausian_kernel=5, number_of_pixels=1000, 
 	vector_of_intervals=None, file_with_intervals='', min_=0, max_=0,dimension=-1):
 		"""
 		This is a constructor of a class PersistenceHeatMaps.
@@ -105,7 +102,11 @@ cdef class PersistenceHeatMaps:
 		:param min_ an optional parameter determining the lower left corner of the image (min_,min_). 
 		If not set, will be computed based on the input data. 
 		:param dimension - na optional parameter, a dimension of the intervals to be read from a file.           
-		"""
+		"""		
+
+
+	def __cinit__(self, how_many_pixels_raidus_of_Gausian_kernel=5, number_of_pixels=1000, 
+	vector_of_intervals=None, file_with_intervals='', min_=0, max_=0,dimension=-1):
 		if ( (vector_of_intervals is None) and ( file_with_intervals is '' ) ):	
 			print "Creating empty persistence heat map." 
 			self.thisptr = new Persistence_heat_maps_interface()
@@ -186,9 +187,12 @@ cdef class PersistenceHeatMaps:
 		that was previously stored in this vector.
 		:param Name of the file.
 		:type String
-		"""
+		"""    
 		if ( self.thisptr != NULL ) and ( filename is not None ):
-			self.thisptr.load_from_file(filename)   
+			if os.path.isfile(filename):                         
+				self.thisptr.load_from_file(str.encode(filename)) 
+			else:
+				print("file " + filename + " not found.")                   
 		        
 
 	def print_to_file(self,filename) :
@@ -199,7 +203,7 @@ cdef class PersistenceHeatMaps:
 		:type String
 		"""
 		if ( self.thisptr != NULL ) and ( filename is not None ):
-			self.thisptr.print_to_file(filename)                          
+			self.thisptr.print_to_file(filename)       			                   
        
 	def check_if_the_same( self, PersistenceHeatMaps second ):
 		"""
