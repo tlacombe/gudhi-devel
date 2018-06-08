@@ -1,3 +1,7 @@
+:orphan:
+
+.. To get rid of WARNING: document isn't included in any toctree
+
 Installation
 ############
 
@@ -42,6 +46,9 @@ following command in a terminal:
     # For windows, you have to set PYTHONPATH environment variable
     export PYTHONPATH='$PYTHONPATH:/path-to-gudhi/build/cython'
     ctest -R py_test
+
+If tests fail, please try to :code:`import gudhi` and check the errors.
+The problem can come from a third-party library bad link or installation.
 
 Documentation
 =============
