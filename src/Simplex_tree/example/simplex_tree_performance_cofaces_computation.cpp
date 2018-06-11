@@ -51,7 +51,7 @@ typedef Simplex_tree<> brut_ST;
  * As a consequence, the construction of the same Rips complex with the first
  * options is slightly slower than with the second, because of the time taken
  * for allocating the pointers. However, the computation of cofaces becomes
- * much faster on large simplicial complexes where simplces have small stars.
+ * much faster on large simplicial complexes where simplices have small stars.
  */
 int main(int argc, char* argv[]) {
   if (argc != 4) {

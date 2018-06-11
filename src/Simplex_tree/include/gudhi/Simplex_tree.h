@@ -912,7 +912,7 @@ class Simplex_tree {
   /** Recursive search of cofaces
    * This function uses DFS
    *\param vertices contains a list of vertices, which represent the vertices of the simplex not found yet.
-   *\param curr_nbVertices represents the number of vertices of the simplex we reached by going through the tree.
+   *\param curr_nb Vertices represents the number of vertices of the simplex we reached by going through the tree.
    *\param cofaces contains a list of Simplex_handle, representing all the cofaces asked.
    *\param star true if we need the star of the simplex
    *\param nbVertices number of vertices of the cofaces we search
@@ -981,6 +981,13 @@ class Simplex_tree {
    */
 
   Cofaces_simplex_range star_simplex_range(const Simplex_handle simplex) { return cofaces_simplex_range(simplex, 0); }
+
+  /** \brief Compute the coboundary a n simplex
+   * \param simplex represent the simplex of which we search the coboundary, 
+   * i.e., all cofaces of codimension 1
+   * \return Vector of Simplex_handle, empty vector if no cofaces found.
+   */
+  Cofaces_simplex_range coboundary_simplex_range(const Simplex_handle simplex) { return cofaces_simplex_range(simplex, 1); }
 
   /** \brief Compute the cofaces of a n simplex
    * \param simplex represent the n-simplex of which we search the n+codimension cofaces

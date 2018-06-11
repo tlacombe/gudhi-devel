@@ -37,6 +37,8 @@ add_gudhi_module(Tangential_complex)
 add_gudhi_module(Witness_complex)
 add_gudhi_module(Nerve_GIC)
 
+add_subdirectory(src/Simplex_tree/example)
+
 message("++ GUDHI_MODULES list is:\"${GUDHI_MODULES}\"")
 
 # Include module CMake subdirectories
