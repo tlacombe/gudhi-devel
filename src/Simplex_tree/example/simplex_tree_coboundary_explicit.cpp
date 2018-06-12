@@ -4,7 +4,7 @@
  *
  *    Author(s):       Clément Maria
  *
- *    Copyright (C) 2014  INRIA Sophia Antipolis-Méditerranée (France)
+ *    Copyright (C) 2018 Inria
  *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -39,19 +39,8 @@ using Point = std::vector<double>;
 typedef Simplex_tree<Simplex_tree_options_zigzag_persistence> opt_ST;
 typedef Simplex_tree<> brut_ST;
 
-/* Compare the performance of the construction of Rips complexes and
- * the computation of cofaces for simplex trees with Options
- * Simplex_tree_options_zigzag_persistence and
- * Simplex_tree_options_full_featured.
- *
- * The major difference between the two options is that in the first one,
- * Nodes in the tree store two additionnal pointers, which allow for a fast
- * cofaces computation.
- *
- * As a consequence, the construction of the same Rips complex with the first
- * options is slightly slower than with the second, because of the time taken
- * for allocating the pointers. However, the computation of cofaces becomes
- * much faster on large simplicial complexes where simplices have small stars.
+/* 
+ * Display on std::cout the coboundaries of all simplices in a Rips complex.
  */
 int main(int argc, char* argv[]) {
   if (argc != 4) {
