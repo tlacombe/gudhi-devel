@@ -1327,6 +1327,7 @@ public:
   *                             simplices induced by the insertion of the edge.
   *
   * SimplexTreeOptions::link_simplices_through_max_vertex must be true.
+  * Simplex_tree::Dictionary must sort Vertex_handles w/ increasing natural order <
   */
   void flagcomplex_add_edge( Vertex_handle                   u 
                            , Vertex_handle                   v
@@ -1485,6 +1486,59 @@ private:
     else { sh_v->second.assign_children(curr_sib); inter.clear(); }
   }
 
+
+  //TODO boost::container::ordered_unique_range_t in the creation of a Siblings
+
+  /* Global expansion of a subtree in the simplex tree.
+   *
+   * The filtration value is absolute and defined by "Filtration_value fil". 
+   * The new Node are also connected appropriately in the coface 
+   * data structure.
+   */
+  void zz_siblings_expansion( 
+      Siblings       * siblings  // must contain elements
+    , Filtration_value fil
+    , int              k  //==max_dim expansion - dimension curr siblings 
+    , std::vector<Simplex_handle> & zz_filtration )
+  {
+    if (k == 0) { return; } //max dimension        
+    Dictionary_it next = ++(siblings->members().begin());
+
+    thread_local std::vector< std::pair<Vertex_handle, Node> > inter; 
+    for( Dictionary_it s_h = siblings->members().begin();
+         next != siblings->members().end(); ++s_h, ++next) 
+    { //find N^+(s_h)
+      Simplex_handle root_sh = find_vertex(s_h->first);
+      if( has_children(root_sh) )
+      {
+        zz_intersection( inter                      // output intersection
+                       , next                       // begin
+                       , siblings->members().end()  // end
+                       , root_sh->second.children()->members().begin()
+                       , root_sh->second.children()->members().end()
+                       , fil   );
+
+        if ( !inter.empty() ) 
+        { //inter is of type boost::container::ordered_unique_range_t
+          Siblings * new_sib = new Siblings( siblings    // oncles
+                                           , s_h->first  // parent
+                                           , inter);
+          s_h->second.assign_children(new_sib);
+          for( auto new_sh = new_sib->members().begin(); 
+               new_sh != new_sib->members().end(); ++new_sh )
+          { 
+            update_simplex_tree_after_node_insertion(new_sh);//cofaces hooks
+            zz_filtration.push_back(new_sh); //new_sib does not change anymore
+          }
+          inter.clear();
+          //recursive standard expansion for the rest of the subtree
+          zz_siblings_expansion(new_sib, fil, k - 1, zz_filtration);
+        }     // ensure the children property
+        else { s_h->second.assign_children(siblings); inter.clear();}  
+      }
+    }
+  }
+
   /* \brief Intersects Dictionary 1 [begin1;end1) with Dictionary 2 [begin2,end2)
    * and assigns Filtration_value fil to the Nodes. 
    *
@@ -1492,7 +1546,7 @@ private:
    * forces the filtration value fil for the new Nodes.
    *
    * todo merge zz_intersection and intersection with a 
-   * "filtration_strategy predicate"
+   * "filtration_strategy predicate".
    */
   static void zz_intersection( 
         std::vector<std::pair<Vertex_handle, Node> > & intersection
