@@ -1329,11 +1329,11 @@ public:
   * SimplexTreeOptions::link_simplices_through_max_vertex must be true.
   * Simplex_tree::Dictionary must sort Vertex_handles w/ increasing natural order <
   */
-  void flagcomplex_add_edge( Vertex_handle                   u 
-                           , Vertex_handle                   v
-                           , Filtration_value                fil
-                           , int                             dim_max
-                           , std::vector< Simplex_handle > & zz_filtration ) 
+  void flag_add_edge( Vertex_handle                   u 
+                    , Vertex_handle                   v
+                    , Filtration_value                fil
+                    , int                             dim_max
+                    , std::vector< Simplex_handle > & zz_filtration ) 
   {
     if(u == v) { // Are we inserting a vertex?
       auto res_ins = root_.members().emplace(u,Node(&root_,fil));
@@ -1572,8 +1572,8 @@ private:
     }
   }
 
-
-//basic methods implemented for Nodes, and not Simplex_handle
+//basic methods implemented for Nodes, and not Simplex_handle. The hooks in 
+//cofaces_data_structure_ gives access to Nodes.
 private:
   int dimension(Node & node, Vertex_handle u) {
     Siblings * curr_sib = self_siblings(node, u);
@@ -1590,6 +1590,60 @@ private:
     return (node.children()->parent() == u);
   }
 
+public:
+  /* Computes all simplices that ought to be removed 
+  * if the edge {u,v} were to disappear (puts them in zz_filtration). 
+  * This method does NOT modify the simplex tree. 
+  *
+  * zz_filtration must be empty.
+  */
+  void flag_zigzag_lazy_remove_edge( 
+                Vertex_handle u
+              , Vertex_handle v
+              , std::vector< Simplex_handle > & zz_filtration ) 
+  {
+    if( u == v ) {
+      std::cout << "insert vertex todo\n";
+      //to do insert vertex
+    }
+
+    if(v < u) { std::swap(u,v); } //so as u < v
+
+    //check whether the edge {u,v} is in the tree
+    auto root_it_u = root_.members().find(u); 
+    if(root_it_u == root_.members().end() || !(has_children(root_it_u))) { return; }
+    //Simplex_handle for edge {u,v}
+    Simplex_handle sh_uv = root_it_u->second.children()->members().find(v);
+    if(sh_uv == root_it_u->second.members().end()) { return; }//edge not here
+    //keep track of all cofaces, includiong the simplex itself
+    for(auto sh : star_simplex_range(sh_uv)) {zz_filtration.push_back(sh);}
+
+
+    // std::sort(zz_filtration.begin(), zz_filtration.end(), 
+    //                                             // is_after_in_filtration(this)
+    //             [](Simplex_handle sh1, Simplex_handle sh2)->bool {
+    //                             return sh1->second.key() > sh2->second.key();
+    //                           });
+  }
+  /* Put all remaining simplices in the complex into zz_filtration, in order to 
+   * empty it. 
+   */
+  void flag_zigzag_lazy_empty_complex(
+             std::vector< Simplex_handle > & zz_filtration)
+  {
+    for(auto sh : complex_simplex_range()) { zz_filtration.push_back(sh); }
+    // std::sort(zz_filtration.begin(), zz_filtration.end(), 
+    //                                  // is_after_in_filtration(this));
+    //     [](Simplex_handle sh1, Simplex_handle sh2)->bool {
+    //             return sh1->second.key() > sh2->second.key();
+    //           });
+  }
+
+  // void flag_remove_edge( Vertex_handle u
+  //                      , Vertex_handle v) {
+  //   std::vector< Simplex_handle > zz_filtration();
+  //   flag_zigzag_lazy_remove_edge(u,v,zz_filtration);//compute what to remove
+  // }
 
  public:
   /** \brief Expands a simplex tree containing only a graph. Simplices corresponding to cliques in the graph are added
