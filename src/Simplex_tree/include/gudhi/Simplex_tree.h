@@ -1264,6 +1264,35 @@ public:
   typedef boost::iterator_range< Flagzigzag_simplex_iterator > 
                                                       Flagzigzag_simplex_range;
 
+ /**
+  * Returns a range over the simplices of the flag zigzag filtration encoded
+  * for a vector of insertion and deletion of edges.
+  *
+  * zz_edge_fil is a range of Zigzag_edge< Simplex_tree >, containing a valid 
+  * sequence of insertions and removal of edges.
+  *
+  * dim_max is the maximal dimension of the dynamic complex constructed. 
+  *
+  * A ZigzagEdgeRange must be a range of ZigzagEdge. A model of ZigzagEdge 
+  * must contain operations:
+  * Vertex_handle u() return the endpoint with smaller label,
+  * Vertex_handle v() return the endpoint with bigger label,
+  * Filtration_value fil() return the filtration value in the zigzag 
+  * filtration,
+  * bool type() return true if the edge is inserted, false if it is removed.
+  *
+  * ZigzagEdge must be Zigzag_edge< Simplex_tree >.
+  */
+  template< class ZigzagEdgeRange >
+  Flagzigzag_simplex_range 
+  zigzag_simplex_range( ZigzagEdgeRange & zz_edge_fil
+                      , int dim_max )
+  { 
+    return 
+        Flagzigzag_simplex_range( 
+                      Flagzigzag_simplex_iterator(this, &zz_edge_fil, dim_max)
+                    , Flagzigzag_simplex_iterator()  );
+  }
 
 
 
