@@ -1268,10 +1268,12 @@ public:
   * Returns a range over the simplices of the flag zigzag filtration encoded
   * for a vector of insertion and deletion of edges.
   *
-  * zz_edge_fil is a range of Zigzag_edge< Simplex_tree >, containing a valid 
-  * sequence of insertions and removal of edges.
+  * @param[in] zz_edge_fil         range of Zigzag_edge< Simplex_tree >, 
+  *                                containing a valid sequence of insertions and 
+  *                                removal of edges.
   *
-  * dim_max is the maximal dimension of the dynamic complex constructed. 
+  * @param[in] dim_max             maximal dimension of the dynamic complex 
+  *                                constructed. 
   *
   * A ZigzagEdgeRange must be a range of ZigzagEdge. A model of ZigzagEdge 
   * must contain operations:
@@ -1280,6 +1282,7 @@ public:
   * Filtration_value fil() return the filtration value in the zigzag 
   * filtration,
   * bool type() return true if the edge is inserted, false if it is removed.
+  * if u() == v(), this is a vertex.
   *
   * ZigzagEdge must be Zigzag_edge< Simplex_tree >.
   */
@@ -1295,8 +1298,115 @@ public:
   }
 
 
+/* 
+  * Add an edge in the complex, its two vertices (if missing) 
+  * and all the missing 
+  * simplices of its star, defined to maintain the property 
+  * of the complex to be a flag complex. The edge {u,v} must not be in the complex.
+  *
+  * In term of edges in the graph, inserting edge u,v only affects N^+(u), 
+  * even if u and v were missing.
+  *
+  * For a new node with label v, we first do a local expansion for 
+  * computing the 
+  * children of this new node, and then a standard expansion for its children. 
+  * Nodes with label v (and their subtrees) already in the tree 
+  * do not get affected.
+  *
+  * Nodes with label u get affected only if a Node with label v is in their same
+  * siblings set. 
+  * We then try to insert "ponctually" v all over the subtree rooted 
+  * at Node(u). Each 
+  * insertion of a Node with v label induces a local expansion at this 
+  * Node (as explained above)
+  * and a sequence of "ponctual" insertion of Node(v) in the subtree 
+  * rooted at sibling nodes of the new node, on its left.
+  *
+  * @param[in] u,v              Vertex_handle representing the new edge
+  * @param[in] zz_filtration    Must be empty. Contains at the end all new 
+  *                             simplices induced by the insertion of the edge.
+  */
+  void flagcomplex_add_edge( Vertex_handle                   u 
+                           , Vertex_handle                   v
+                           , Filtration_value                fil
+                           , int                             dim_max
+                           , std::vector< Simplex_handle > & zz_filtration ) 
+  {
+    if(u == v) { // Are we inserting a vertex?
+      auto res_ins = root_.members().emplace(u,Node(&root_,fil));
+      if(res_ins.second) { //if the vertex was not in the complex
+        update_simplex_tree_after_node_insertion(res_ins.first);
+        zz_filtration.push_back(res_ins.first); 
+      }
+      return; //because the vertex is isolated, no more insertions.
+    }
+    // else, we are inserting an edge: ensure that u < v 
+    if(v < u) { std::swap(u,v); } 
+
+//Note that we copy Simplex_handle (aka map iterators) in zz_filtration 
+//whereas we are still modifying the Simplex_tree. Insertions in siblings may 
+//invalidate Simplex_handles; we take care of this fact by first doing all
+//insertion in a Sibling, then inserting all handles in zz_filtration.
+
+    //check whether vertices u and v are in the tree, insert them if necessary
+    auto res_ins_v = root_.members().emplace(v,Node(&root_,fil));
+    auto res_ins_u = root_.members().emplace(u,Node(&root_,fil)); 
+    if(res_ins_v.second) { 
+      update_simplex_tree_after_node_insertion(res_ins_v.first);
+      zz_filtration.push_back(res_ins_v.first); 
+    }
+    if(res_ins_u.second) { 
+      update_simplex_tree_after_node_insertion(res_ins_u.first);
+      zz_filtration.push_back(res_ins_u.first); 
+    } //check if the edge {u,v} is already in the complex.
+    if(has_children(res_ins_u.first) && res_in_u.first->second.children().members().find(v) != res_in_u.first->second.children().members()) {return;} 
+
+    //for all siblings containing a Node labeled with u (including the root), run 
+    //a zz_punctual_expansion                                 //todo parallelise
+    auto list_u_ptr = cofaces_data_structure_.access(u);//list of all u Nodes
+    for( auto hook_u_it =  list_u_ptr->begin(); 
+              hook_u_it != list_u_ptr->end();    ++hook_u_it )
+    { 
+      Node & node_u    = static_cast<Node&>(*hook_u_it);//corresponding node
+      Siblings * sib_u = self_siblings(node_u, u);//Siblings containing node
+      if(sib_u->members().find(v) != sib_u->members().end()) {
+        int curr_dim = dimension(node_u,u);
+        if(curr_dim < dim_max) 
+        {
+          if(!has_children(node_u, u)) //now has a new child Node labeled v
+          { node_u.assign_children(new Siblings(sib_u, u)); } 
+          zz_punctual_expansion( v
+                               , node_u.children()
+                               , fil
+                               , dim_max - curr_dim -1 
+                               , zz_filtration ); //u on top   
+        }
+      }
+    }
+    //todo sort zz_filtration appropriately
+    // sort( zz_filtration.begin(), zz_filtration.end(), 
+    //       is_before_in_filtration(this) 
+    //       );
+  }
 
 
+
+//basic methods implemented for Nodes, and not Simplex_handle
+private:
+  int dimension(Node & node, Vertex_handle u) {
+    Siblings * curr_sib = self_siblings(node, u);
+    int dim = 0;
+    while (curr_sib != nullptr) {
+      ++dim;
+      curr_sib = curr_sib->oncles();
+    }
+    return dim - 1;
+  }
+  /* \brief Returns true if the node in the simplex tree pointed by
+   * sh has children.*/
+  bool has_children(Node & node, Vertex_handle u) const {
+    return (node.children()->parent() == u);
+  }
 
 
  public:
