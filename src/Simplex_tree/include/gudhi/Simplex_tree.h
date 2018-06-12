@@ -1485,6 +1485,38 @@ private:
     else { sh_v->second.assign_children(curr_sib); inter.clear(); }
   }
 
+  /* \brief Intersects Dictionary 1 [begin1;end1) with Dictionary 2 [begin2,end2)
+   * and assigns Filtration_value fil to the Nodes. 
+   *
+   * The function is identical to Simplex_tree::intersection(...) except that it 
+   * forces the filtration value fil for the new Nodes.
+   *
+   * todo merge zz_intersection and intersection with a 
+   * "filtration_strategy predicate"
+   */
+  static void zz_intersection( 
+        std::vector<std::pair<Vertex_handle, Node> > & intersection
+      , Dictionary_it                                  begin1
+      , Dictionary_it                                  end1
+      , Dictionary_it                                  begin2
+      , Dictionary_it                                  end2
+      , Filtration_value                               fil ) 
+  {
+    if (begin1 == end1 || begin2 == end2) { return; } 
+    while (true) {
+      if (begin1->first < begin2->first) {++begin1; if(begin1 == end1) {return;} }
+      else 
+      {
+        if (begin1->first > begin2->first) {++begin2; if(begin2 == end2) {return;} }
+        else // begin1->first == begin2->first
+        { 
+          intersection.emplace_back( begin1->first, Node( nullptr, fil ) ); 
+          ++begin1; ++begin2;
+          if (begin1 == end1 || begin2 == end2) { return; }
+        }
+      }
+    }
+  }
 
 
 //basic methods implemented for Nodes, and not Simplex_handle
