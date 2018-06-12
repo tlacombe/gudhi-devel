@@ -26,6 +26,7 @@
 #include <gudhi/Simplex_tree/Simplex_tree_node_explicit_storage.h>
 #include <gudhi/Simplex_tree/Simplex_tree_siblings.h>
 #include <gudhi/Simplex_tree/Simplex_tree_iterators.h>
+#include <gudhi/Simplex_tree/Simplex_tree_zigzag_iterators.h>
 #include <gudhi/Simplex_tree/indexing_tag.h>
 
 #include <gudhi/reader_utils.h>
@@ -1230,6 +1231,44 @@ class Simplex_tree {
       }
     }
   }
+
+public:
+
+/* Dynamic flag complex.
+ *
+ * The following methods are dedicated to a stream-like construction of 
+ * of flag complexes, with addition and removal of vertices and edges as 
+ * atomic operations. 
+ *
+ * This can be used for a stream-like construction of zigzag filtrations (of flag 
+ * complexes) when knowing only the sequence of insertions and deletions of 
+ * vertices and edges.
+ *
+ * Options::store_key
+ * ????, Options::contiguous_vertices, 
+ * ????  Options::link_simplices_through_max_vertex              must all be true. 
+ */
+
+public:
+  /* Type of edges for representing implicetely the flag zigzag filtration.*/
+  typedef Zigzag_edge< Simplex_tree >                                Edge_type;
+
+  /** Forward iterator on the simplices (insertion and deletion) of the zigzag 
+  * filtration.
+  *
+  * 'value_type' is Simplex_handle.
+  */ 
+  typedef Flagzigzag_simplex_iterator< Simplex_tree > 
+                                                   Flagzigzag_simplex_iterator;
+/** Range for the flag zigzag filtration.*/
+  typedef boost::iterator_range< Flagzigzag_simplex_iterator > 
+                                                      Flagzigzag_simplex_range;
+
+
+
+
+
+
 
  public:
   /** \brief Expands a simplex tree containing only a graph. Simplices corresponding to cliques in the graph are added
