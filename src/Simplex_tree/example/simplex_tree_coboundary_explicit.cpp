@@ -4,7 +4,7 @@
  *
  *    Author(s):       Clément Maria
  *
- *    Copyright (C) 2014  INRIA Sophia Antipolis-Méditerranée (France)
+ *    Copyright (C) 2018  Inria
  *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
     std::cout << "        Number of simplices = " << opt_st.num_simplices() << std::endl;
 
     std::cout << "     Compute the coboundary of every simplex in the Simplex_tree:" << std::endl;
-    start = clock();
+    start = clock();  
 
     for (auto f_simplex : opt_st.filtration_simplex_range()) {  // for every simplex
       for(auto v : opt_st.simplex_vertex_range(f_simplex)) {std::cout << v <<" ";}
