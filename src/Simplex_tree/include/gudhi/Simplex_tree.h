@@ -1410,7 +1410,7 @@ private:
   { //insertion always succeeds because the edge {u,v} used to not be here.
     auto res_ins_v = sib->members().emplace(v, Node(sib,fil));
     update_simplex_tree_after_node_insertion(res_ins_v.first);//for cofaces hooks
-    zz_filtration.push_back(res_ins_v.first); //no more insertions in sib
+    zz_filtration.push_back(res_ins_v.first); //no more insertion in sib
 
     if(k == 0) { return; } //reached the maximal dimension
 
@@ -1440,6 +1440,51 @@ private:
       }
     }
   }
+
+/* After the insertion of edge {u,v}, expansion of a subtree rooted at v, where the 
+ * Node with label v has just been inserted, and its parent is a Node labeled with 
+ * u. sh has no children here. 
+ *
+ * k must be > 0
+ */
+  void zz_local_expansion( 
+      Simplex_handle   sh_v    //Node with label v which has just been inserted
+    , Siblings       * curr_sib //Siblings containing the node sh_v
+    , Filtration_value fil_uv //Fil value of the edge uv in the zz filtration
+    , int              k //Stopping condition for recursion based on max dim
+    , std::vector<Simplex_handle> &zz_filtration) //range of all new simplices
+  { //pick N^+(v)
+    Simplex_handle root_sh_v = find_vertex(sh_v->first);
+    if(!has_children(root_sh_v)) { return; } 
+    //intersect N^+(v) with labels y > v in curr_sib
+    Simplex_handle next_it = sh_v;    ++next_it; 
+    thread_local std::vector< std::pair<Vertex_handle, Node> > inter;
+
+    zz_intersection( inter
+                   , next_it
+                   , curr_sib->members().end()
+                   , root_sh_v->second.children()->members().begin()
+                   , root_sh_v->second.children()->members().end()
+                   , fil_uv );
+    
+    if(!inter.empty()) 
+    { //the construction assign the self_siblings as children to all nodes
+      Siblings * new_sib = new Siblings(curr_sib, sh_v->first, inter);
+      sh_v->second.assign_children(new_sib);
+      //update new Nodes and cofaces data structure
+      for( auto new_sh = new_sib->members().begin(); 
+           new_sh != new_sib->members().end(); ++new_sh )
+      { 
+        update_simplex_tree_after_node_insertion(new_sh);
+        zz_filtration.push_back(new_sh);//new_sib does not change anymore
+      }
+      inter.clear();
+      //recursive standard expansion for the rest of the subtree
+      zz_siblings_expansion(new_sib, fil_uv, k-1, zz_filtration ); 
+    }
+    else { sh_v->second.assign_children(curr_sib); inter.clear(); }
+  }
+
 
 
 //basic methods implemented for Nodes, and not Simplex_handle
