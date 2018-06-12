@@ -458,9 +458,9 @@ class Simplex_tree_opt_cofaces_simplex_iterator
     else {  // exact dimension
       max_dim_cofaces_ = codim + simp.size() - 1;
       all_cofaces = false;
-      do {
-        increment_bounded_dimension();
-      } while (st_ != nullptr && dim_sh_ != max_dim_cofaces_);
+      while (st_ != nullptr && dim_sh_ != max_dim_cofaces_) {
+        increment_bounded_dimension(); //look for a coface of right codimension
+      } 
     }
   }
 
@@ -503,8 +503,8 @@ class Simplex_tree_opt_cofaces_simplex_iterator
         ++dim_sh_;
         return;
       }
-    } else {                                                         // we are inside a subtree
-      if (!st_->has_children(sh_) || dim_sh_ == max_dim_cofaces_) {  //++sh_
+    } else { // we are inside a subtree
+      if (!st_->has_children(sh_) || dim_sh_ == max_dim_cofaces_) { //++sh_
         ++sh_;
         while (sh_ == sib_->members().end()) {
           if (dim_sh_ == dim_root_ + 1) {  // go to next subtree with dim_root_ <= dim_cofaces

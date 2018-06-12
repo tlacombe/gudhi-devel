@@ -53,12 +53,12 @@ struct Simplex_tree_node_explicit_storage : SimplexTree::Filtration_simplex_base
 
   // If hooks are stored, they will be exchanged by the copy constructor
   // and the hooks of *this will become unvalid.
-  Simplex_tree_node_explicit_storage(const Simplex_tree_node_explicit_storage &other)
-      : SimplexTree::Filtration_simplex_base(other),
-        SimplexTree::Key_simplex_base(other),
-        SimplexTree::Hooks_simplex_base(other),
-        SimplexTree::Annotation_simplex_base(other),
-        children_(other.children_) {}
+  // Simplex_tree_node_explicit_storage(const Simplex_tree_node_explicit_storage &other)
+  //     : SimplexTree::Filtration_simplex_base(other),
+  //       SimplexTree::Key_simplex_base(other),
+  //       SimplexTree::Hooks_simplex_base(other),
+  //       SimplexTree::Annotation_simplex_base(other),
+  //       children_(other.children_) {}
 
   /*
    * Assign children to the node
