@@ -1325,6 +1325,8 @@ public:
   * @param[in] u,v              Vertex_handle representing the new edge
   * @param[in] zz_filtration    Must be empty. Contains at the end all new 
   *                             simplices induced by the insertion of the edge.
+  *
+  * SimplexTreeOptions::link_simplices_through_max_vertex must be true.
   */
   void flagcomplex_add_edge( Vertex_handle                   u 
                            , Vertex_handle                   v
@@ -1336,7 +1338,7 @@ public:
       auto res_ins = root_.members().emplace(u,Node(&root_,fil));
       if(res_ins.second) { //if the vertex was not in the complex
         update_simplex_tree_after_node_insertion(res_ins.first);
-        zz_filtration.push_back(res_ins.first); 
+        zz_filtration.push_back(res_ins.first); //no more insert in root_.members()
       }
       return; //because the vertex is isolated, no more insertions.
     }
@@ -1353,16 +1355,16 @@ public:
     auto res_ins_u = root_.members().emplace(u,Node(&root_,fil)); 
     if(res_ins_v.second) { 
       update_simplex_tree_after_node_insertion(res_ins_v.first);
-      zz_filtration.push_back(res_ins_v.first); 
+      zz_filtration.push_back(res_ins_v.first); //no more inserts in root_.members()
     }
     if(res_ins_u.second) { 
       update_simplex_tree_after_node_insertion(res_ins_u.first);
-      zz_filtration.push_back(res_ins_u.first); 
-    } //check if the edge {u,v} is already in the complex.
+      zz_filtration.push_back(res_ins_u.first); //no more inserts in root_.members()
+    } //check if the edge {u,v} is already in the complex, if true, nothing to do.
     if(has_children(res_ins_u.first) && res_in_u.first->second.children().members().find(v) != res_in_u.first->second.children().members()) {return;} 
 
     //for all siblings containing a Node labeled with u (including the root), run 
-    //a zz_punctual_expansion                                 //todo parallelise
+    //a zz_punctual_expansion       //todo parallelise
     auto list_u_ptr = cofaces_data_structure_.access(u);//list of all u Nodes
     for( auto hook_u_it =  list_u_ptr->begin(); 
               hook_u_it != list_u_ptr->end();    ++hook_u_it )
@@ -1378,7 +1380,7 @@ public:
           zz_punctual_expansion( v
                                , node_u.children()
                                , fil
-                               , dim_max - curr_dim -1 
+                               , dim_max - curr_dim -1 //>= 0
                                , zz_filtration ); //u on top   
         }
       }
@@ -1389,6 +1391,55 @@ public:
     //       );
   }
 
+private:
+/* 
+ * Insert a Node with label v in the set of siblings sib, and percolate the 
+ * expansion on the subtree rooted at sib. Sibling sib must not contain 
+ * v. 
+ * The percolation of the expansion is twofold:
+ * 1- the newly inserted Node labeled v in sib has a subtree computed 
+ * via zz_local_expansion. 
+ * 2- All Node in the members of sib, with label x and x < v, 
+ * need in turn a local_expansion by v iff N^+(x) contains v.
+ */
+  void zz_punctual_expansion( Vertex_handle    v
+                            , Siblings *       sib
+                            , Filtration_value fil
+                            , int              k //k == dim_max - dimension simplices in sib
+                            , std::vector<Simplex_handle> & zz_filtration )
+  { //insertion always succeeds because the edge {u,v} used to not be here.
+    auto res_ins_v = sib->members().emplace(v, Node(sib,fil));
+    update_simplex_tree_after_node_insertion(res_ins_v.first);//for cofaces hooks
+    zz_filtration.push_back(res_ins_v.first); //no more insertions in sib
+
+    if(k == 0) { return; } //reached the maximal dimension
+
+    //create the subtree of new Node(v)
+    zz_local_expansion( res_ins_v.first
+                      , sib
+                      , fil
+                      , k 
+                      , zz_filtration ); 
+
+    //punctual expansion in nodes on the left of v, i.e. with label x < v
+    for( auto sh = sib->members().begin(); sh != res_ins_v.first; ++sh )
+    { //if v belongs to N^+(x), punctual expansion
+      Simplex_handle root_sh = find_vertex(sh->first); //Node(x), x < v
+      if( has_children(root_sh) && 
+                          root_sh->second.children()->members().find(v) 
+                       != root_sh->second.children()->members().end()  ) 
+      { //edge {x,v} is in the complex
+        if(!has_children(sh)) 
+        { sh->second.assign_children(new Siblings(sib, sh->first)); } 
+        //insert v in the children of sh, and expand.
+        zz_punctual_expansion( v
+                             , sh->second.children()
+                             , fil
+                             , k-1
+                             , zz_filtration );
+      }
+    }
+  }
 
 
 //basic methods implemented for Nodes, and not Simplex_handle
@@ -1403,7 +1454,7 @@ private:
     return dim - 1;
   }
   /* \brief Returns true if the node in the simplex tree pointed by
-   * sh has children.*/
+   * sh has children. node must have label u*/
   bool has_children(Node & node, Vertex_handle u) const {
     return (node.children()->parent() == u);
   }
