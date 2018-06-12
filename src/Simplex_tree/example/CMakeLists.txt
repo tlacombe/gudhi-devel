@@ -5,6 +5,11 @@ if (TBB_FOUND)
   target_link_libraries(Simplex_tree_example_performance_cofaces_computation ${TBB_LIBRARIES})
 endif()
 
+add_executable ( Simplex_tree_example_coboundary_explicit simplex_tree_coboundary_explicit.cpp )
+if (TBB_FOUND)
+  target_link_libraries(Simplex_tree_example_coboundary_explicit ${TBB_LIBRARIES})
+endif()
+
 add_executable ( Simplex_tree_example_from_cliques_of_graph simplex_tree_from_cliques_of_graph.cpp )
 if (TBB_FOUND)
   target_link_libraries(Simplex_tree_example_from_cliques_of_graph ${TBB_LIBRARIES})
