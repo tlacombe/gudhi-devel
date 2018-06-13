@@ -334,7 +334,8 @@ void compute_zigzag_persistence()
   assert(num_arrow_ == 0); //start with an 'empty' complex.
   for( auto zzsh : cpx_->filtration_simplex_range() )
   { 
-    cpx_->assign_key(zzsh, num_arrow_); //assign keys on-the-fly
+    //keys must be assigned by the filtration_simplex_iterator
+    // cpx_->assign_key(zzsh, num_arrow_); //assign keys on-the-fly
     //check whether the arrow is forward or backward
     if(cpx_->simplicial_map_flag(zzsh)) { 
       auto fil = cpx_->filtration(zzsh); //check whether the filtr val has changed

@@ -95,7 +95,11 @@ class Simplex_tree {
   // Note: this wastes space when Vertex_handle is 32 bits and Node is aligned on 64 bits. It would be better to use a
   // flat_set (with our own comparator) where we can control the layout of the struct (put Vertex_handle and
   // Simplex_key next to each other).
-  typedef typename boost::container::flat_map<Vertex_handle, Node> Dictionary;
+  typedef typename boost::container::flat_map<Vertex_handle, Node> flat_map;
+  //Dictionary::iterator remain valid under insertions and deletions
+  typedef std::map<Vertex_handle, Node> map;
+
+  typedef typename std::conditional<Options::simplex_handle_strong_validity, map, flat_map>::type Dictionary;
 
   /* \brief Set of nodes sharing a same parent in the simplex tree. */
   /* \brief Set of nodes sharing a same parent in the simplex tree. */
@@ -1413,6 +1417,9 @@ public:
     } //check if the edge {u,v} is already in the complex, if true, nothing to do.
     if(has_children(res_ins_u.first) && res_in_u.first->second.children().members().find(v) != res_in_u.first->second.children().members()) {return;} 
 
+//upper bound on dimension
+    dimension_ = dim_max; dimension_to_be_lowered_ = true;
+
     //for all siblings containing a Node labeled with u (including the root), run 
     //a zz_punctual_expansion       //todo parallelise
     auto list_u_ptr = cofaces_data_structure_.access(u);//list of all u Nodes
@@ -1436,9 +1443,9 @@ public:
       }
     }
     //todo sort zz_filtration appropriately
-    // sort( zz_filtration.begin(), zz_filtration.end(), 
-    //       is_before_in_filtration(this) 
-    //       );
+    sort( zz_filtration.begin(), zz_filtration.end(), 
+          is_before_in_filtration(this) 
+          );
   }
 
 private:
@@ -1664,36 +1671,22 @@ public:
       Simplex_handle sh_uv = root_it_u->second.children()->members().find(v);
       if(sh_uv == root_it_u->second.members().end()) { return; }//edge not here
     }     
-
     //keep track of all cofaces of the simplex removed, including the simplex itself
     for(auto sh : star_simplex_range(sh_uv)) {zz_filtration.push_back(sh);}
-
-    // std::sort(zz_filtration.begin(), zz_filtration.end(), 
-    //                                             // is_after_in_filtration(this)
-    //             [](Simplex_handle sh1, Simplex_handle sh2)->bool {
-    //                             return sh1->second.key() > sh2->second.key();
-    //                           });
   }
   /* Put all remaining simplices in the complex into zz_filtration, in order to 
    * empty it. Does NOT modify the complex. 
    */
   void flag_lazy_empty_complex(
              std::vector< Simplex_handle > & zz_filtration)
-  {
-    for(auto sh : complex_simplex_range()) { zz_filtration.push_back(sh); }
-    // std::sort(zz_filtration.begin(), zz_filtration.end(), 
-    //                                  // is_after_in_filtration(this));
-    //     [](Simplex_handle sh1, Simplex_handle sh2)->bool {
-    //             return sh1->second.key() > sh2->second.key();
-    //           });
-  }
-
-  void flag_remove_edge( Vertex_handle u
-                       , Vertex_handle v) {
-    std::vector< Simplex_handle > zz_filtration();
-    flag_zigzag_lazy_remove_edge(u,v,zz_filtration);//compute what to remove
-
-
+  { for(auto sh : complex_simplex_range()) { zz_filtration.push_back(sh); }  }
+/* SimplexHandleRange is a range of Simplex_handles such that simplices are 
+ * ordered in a reverse inclusion order.*/
+  template<SimplexHandleRange>
+  void remove_maximal_simplices(SimplexHandleRange &rg) {
+    for( auto sh : rg) {
+      sh.second->unlink_hooks(); //<--- put in hook destructor instead
+      remove_maximal_simplex(sh);} //modify the complex 
   }
 
  public:
@@ -2036,6 +2029,7 @@ struct Simplex_tree_options_full_featured {
   static const bool link_simplices_through_max_vertex = false;
   static const bool store_annotation_vector = false;
   static const bool store_morse_matching = false;
+  static const bool simplex_handle_strong_validity = false;
 };
 
 /** Model of SimplexTreeOptions, faster than `Simplex_tree_options_full_featured` but note the unsafe
@@ -2055,6 +2049,7 @@ struct Simplex_tree_options_fast_persistence {
   static const bool link_simplices_through_max_vertex = false;
   static const bool store_annotation_vector = false;
   static const bool store_morse_matching = false;
+  static const bool simplex_handle_strong_validity = false;
 };
 
 /** Model of SimplexTreeOptions, with a zigzag_indexing_tag.
@@ -2078,6 +2073,7 @@ struct Simplex_tree_options_zigzag_persistence {
   static const bool link_simplices_through_max_vertex = true;
   static const bool store_annotation_vector = false; //for zigzag cohomology
   static const bool store_morse_matching = true;
+  static const bool simplex_handle_strong_validity = true;//Dictionary::iterators remain valid even after insertions and deletions
 };
 
 /** @} */  // end defgroup simplex_tree
