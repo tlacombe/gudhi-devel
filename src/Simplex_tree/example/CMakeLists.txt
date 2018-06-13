@@ -1,5 +1,11 @@
 project(Simplex_tree_examples)
 
+add_executable ( Simplex_tree_example_simple_zigzag_flag_filtration simple_simplex_tree_zigzag_flag_filtration.cpp )
+if (TBB_FOUND)
+  target_link_libraries(Simplex_tree_example_simple_zigzag_flag_filtration ${TBB_LIBRARIES})
+endif()
+
+
 add_executable ( Simplex_tree_example_performance_cofaces_computation simplex_tree_performance_cofaces_computation.cpp )
 if (TBB_FOUND)
   target_link_libraries(Simplex_tree_example_performance_cofaces_computation ${TBB_LIBRARIES})
