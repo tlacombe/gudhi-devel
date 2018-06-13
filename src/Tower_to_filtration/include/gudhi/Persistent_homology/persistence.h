@@ -310,7 +310,7 @@ void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::reduce(double s
 
 template<class ComplexStructure, class ColumnType>
 /**
- * @brief Clears the matrix from useless cells. See @ref KerberS17 for more details.
+ * @brief Clears the matrix from useless cells. See \cite KerberS17 for more details.
  */
 void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::clear_out()
 {
