@@ -246,6 +246,7 @@ class Simplex_tree {
     void assign_annotation(void* ann) {}
   };
 
+
  public:
   typedef typename std::conditional<Options::store_annotation_vector, Annotation_simplex_base_zzpersistence,
                                     Annotation_simplex_base_dummy>::type Annotation_simplex_base;
@@ -259,6 +260,54 @@ class Simplex_tree {
    * SimplexTreeOptions store_annotation_vector is true.
    */
   void assign_simplex_annotation(Simplex_handle sh, void* ann) { sh->second.assign_annotation(ann); }
+
+private:
+  /* Allows to pair simplices, in particular in a Morse matching.*/
+  struct Pairing_simplex_base_dummy {
+    Pairing_simplex_base_dummy() {}
+    Pairing_simplex_base_morse(Simplex_handle sh) : sh_(sh) {}
+    Simplex_handle morse_pairing() {return null_simplex();}
+    void assign_morse_pairing(Simplex_handle sh) {}
+    bool is_critical() { return true; }
+  };
+  struct Pairing_simplex_base_morse {
+    Pairing_simplex_base_morse() : sh_(null_simplex()) {}
+    Pairing_simplex_base_morse(Simplex_handle sh) : sh_(sh) {}
+    Simplex_handle morse_pairing() {return sh_;}
+    void assign_morse_pairing(Simplex_handle sh) {sh_ = sh;}
+    bool is_critical() { return sh_ == null_simplex(); }//true iff critical
+    //nullptr iff Node represents a critical simplex, paired simp otherwise
+    Simplex_handle sh_;
+  };
+public:
+  typedef typename std::conditional<Options::store_morse_matching, 
+                       Pairing_simplex_base_morse, Pairing_simplex_base_dummy>::type
+                                                            Pairing_simplex_base;
+/**
+  * Return the Simplex_handle to the simplex with which sh is paired. 
+  * Return null_ptr() if sh is critical. 
+  * sh must be distinct from null_simplex()
+  */
+  void pair(Simplex_handle sh) { sh.second->morse_pairing(); }
+/**
+  * Return true iff the simplex is critical.
+  */
+  bool critical(Simplex_handle) { return morse_pairing(sh) == null_simplex(); }
+/**
+  * Pair sh_t with sh_s and sh_s with sh_t.
+  * Both Simplex_handles must be valid, non null_simplex() handles.
+  */
+  void assign_morse_pairing(Simplex_handle sh_t, Simplex_handle sh_s) {
+    sh_t.second->assign_morse_matching(sh_s);
+    sh_s.second->assign_morse_matching(sh_t);
+  }
+/**
+  * Assign null_simplex() as paired simplex to sh, making sh critical.
+  */
+  void assign_morse_pairing(Simplex_handle sh) {
+    sh.second->assign_morse_matching(null_simplex());
+  }
+
 
  private:
   // update all extra data structures in the Simplex_tree, include fast
@@ -1597,27 +1646,27 @@ public:
   *
   * zz_filtration must be empty.
   */
-  void flag_zigzag_lazy_remove_edge( 
+  void flag_lazy_remove_edge( 
                 Vertex_handle u
               , Vertex_handle v
               , std::vector< Simplex_handle > & zz_filtration ) 
   {
-    if( u == v ) {
-      std::cout << "insert vertex todo\n";
-      //to do insert vertex
-    }
+    Simplex_handle sh_uv; //The simplex that get removed (edge or vertex)
+    
+    if(v < u) { std::swap(u,v); } //so as u <= v
+    auto root_it_u = root_.members().find(u);
+    if(root_it_u == root_.members().end()) {return;}
 
-    if(v < u) { std::swap(u,v); } //so as u < v
+    if( u == v ) { sh_uv = root_it_u; } //vertex u
+    else { //edge {u,v}, u < v
+      if(!(has_children(root_it_u))) { return; }
+      //Simplex_handle for edge {u,v}
+      Simplex_handle sh_uv = root_it_u->second.children()->members().find(v);
+      if(sh_uv == root_it_u->second.members().end()) { return; }//edge not here
+    }     
 
-    //check whether the edge {u,v} is in the tree
-    auto root_it_u = root_.members().find(u); 
-    if(root_it_u == root_.members().end() || !(has_children(root_it_u))) { return; }
-    //Simplex_handle for edge {u,v}
-    Simplex_handle sh_uv = root_it_u->second.children()->members().find(v);
-    if(sh_uv == root_it_u->second.members().end()) { return; }//edge not here
-    //keep track of all cofaces, includiong the simplex itself
+    //keep track of all cofaces of the simplex removed, including the simplex itself
     for(auto sh : star_simplex_range(sh_uv)) {zz_filtration.push_back(sh);}
-
 
     // std::sort(zz_filtration.begin(), zz_filtration.end(), 
     //                                             // is_after_in_filtration(this)
@@ -1626,9 +1675,9 @@ public:
     //                           });
   }
   /* Put all remaining simplices in the complex into zz_filtration, in order to 
-   * empty it. 
+   * empty it. Does NOT modify the complex. 
    */
-  void flag_zigzag_lazy_empty_complex(
+  void flag_lazy_empty_complex(
              std::vector< Simplex_handle > & zz_filtration)
   {
     for(auto sh : complex_simplex_range()) { zz_filtration.push_back(sh); }
@@ -1639,11 +1688,13 @@ public:
     //           });
   }
 
-  // void flag_remove_edge( Vertex_handle u
-  //                      , Vertex_handle v) {
-  //   std::vector< Simplex_handle > zz_filtration();
-  //   flag_zigzag_lazy_remove_edge(u,v,zz_filtration);//compute what to remove
-  // }
+  void flag_remove_edge( Vertex_handle u
+                       , Vertex_handle v) {
+    std::vector< Simplex_handle > zz_filtration();
+    flag_zigzag_lazy_remove_edge(u,v,zz_filtration);//compute what to remove
+
+
+  }
 
  public:
   /** \brief Expands a simplex tree containing only a graph. Simplices corresponding to cliques in the graph are added
@@ -1984,6 +2035,7 @@ struct Simplex_tree_options_full_featured {
   static const bool contiguous_vertices = false;
   static const bool link_simplices_through_max_vertex = false;
   static const bool store_annotation_vector = false;
+  static const bool store_morse_matching = false;
 };
 
 /** Model of SimplexTreeOptions, faster than `Simplex_tree_options_full_featured` but note the unsafe
@@ -2002,6 +2054,7 @@ struct Simplex_tree_options_fast_persistence {
   static const bool contiguous_vertices = true;
   static const bool link_simplices_through_max_vertex = false;
   static const bool store_annotation_vector = false;
+  static const bool store_morse_matching = false;
 };
 
 /** Model of SimplexTreeOptions, with a zigzag_indexing_tag.
@@ -2023,7 +2076,8 @@ struct Simplex_tree_options_zigzag_persistence {
   static const bool store_filtration = true;
   static const bool contiguous_vertices = false;
   static const bool link_simplices_through_max_vertex = true;
-  static const bool store_annotation_vector = true;
+  static const bool store_annotation_vector = false; //for zigzag cohomology
+  static const bool store_morse_matching = true;
 };
 
 /** @} */  // end defgroup simplex_tree
