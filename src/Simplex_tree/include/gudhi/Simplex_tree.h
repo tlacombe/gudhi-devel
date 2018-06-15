@@ -34,6 +34,7 @@
 #include <gudhi/Debug_utils.h>
 
 #include <boost/container/flat_map.hpp>
+#include <boost/container/map.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/range/adaptor/reversed.hpp>
@@ -97,9 +98,12 @@ class Simplex_tree {
   // Simplex_key next to each other).
   typedef typename boost::container::flat_map<Vertex_handle, Node> flat_map;
   //Dictionary::iterator remain valid under insertions and deletions
-  typedef std::map<Vertex_handle, Node> map;
+  typedef typename boost::container::map<Vertex_handle, Node> map;
 
   typedef typename std::conditional<Options::simplex_handle_strong_validity, map, flat_map>::type Dictionary;
+
+  // typedef typename std::conditional<Options::simplex_handle_strong_validity, typename map::iterator, typename flat_map::iterator>::type Simplex_handle;
+
 
   /* \brief Set of nodes sharing a same parent in the simplex tree. */
   /* \brief Set of nodes sharing a same parent in the simplex tree. */
@@ -269,18 +273,18 @@ private:
   /* Allows to pair simplices, in particular in a Morse matching.*/
   struct Pairing_simplex_base_dummy {
     Pairing_simplex_base_dummy() {}
-    Pairing_simplex_base_morse(Simplex_handle sh) : sh_(sh) {}
-    Simplex_handle morse_pairing() {return null_simplex();}
+    Pairing_simplex_base_dummy(Simplex_handle sh) {}
+    // Simplex_handle morse_pairing() {return this->null_simplex();}
     void assign_morse_pairing(Simplex_handle sh) {}
     bool is_critical() { return true; }
   };
   struct Pairing_simplex_base_morse {
-    Pairing_simplex_base_morse() : sh_(null_simplex()) {}
+    Pairing_simplex_base_morse() {}
     Pairing_simplex_base_morse(Simplex_handle sh) : sh_(sh) {}
     Simplex_handle morse_pairing() {return sh_;}
     void assign_morse_pairing(Simplex_handle sh) {sh_ = sh;}
-    bool is_critical() { return sh_ == null_simplex(); }//true iff critical
-    //nullptr iff Node represents a critical simplex, paired simp otherwise
+    bool is_critical() { return &(sh_.second) == &(static_cast<Node&>(*this)); }//true iff critical
+    //sh_ points to itself if critical, paired simplex otherwise
     Simplex_handle sh_;
   };
 public:
@@ -292,14 +296,14 @@ public:
   * Return null_ptr() if sh is critical. 
   * sh must be distinct from null_simplex()
   */
-  void pair(Simplex_handle sh) { sh.second->morse_pairing(); }
+  void pair(Simplex_handle sh) { sh->second.morse_pairing(); }
 /**
   * Return true iff the simplex is critical.
   */
-  bool critical(Simplex_handle) { return morse_pairing(sh) == null_simplex(); }
+  bool critical(Simplex_handle sh) { return is_null(morse_pairing(sh)); }
 /**
   * Pair sh_t with sh_s and sh_s with sh_t.
-  * Both Simplex_handles must be valid, non null_simplex() handles.
+  * Both Simplex_handles must be valid, distinct from null_simplex() handles.
   */
   void assign_morse_pairing(Simplex_handle sh_t, Simplex_handle sh_s) {
     sh_t.second->assign_morse_matching(sh_s);
@@ -309,7 +313,7 @@ public:
   * Assign null_simplex() as paired simplex to sh, making sh critical.
   */
   void assign_morse_pairing(Simplex_handle sh) {
-    sh.second->assign_morse_matching(null_simplex());
+    sh->second.assign_morse_matching(null_simplex());
   }
 
 
@@ -435,7 +439,7 @@ public:
    * equal to \f$(-1)^{\text{dim} \sigma}\f$ the canonical orientation on the simplex.
    */
   Simplex_vertex_range simplex_vertex_range(Simplex_handle sh) {
-    assert(sh != null_simplex());  // Empty simplex
+    assert(!is_null(sh));  // Empty simplex
     return Simplex_vertex_range(Simplex_vertex_iterator(this, sh), Simplex_vertex_iterator(this));
   }
 
@@ -463,14 +467,18 @@ public:
    * @{ */
 
   /** \brief Constructs an empty simplex tree. */
-  Simplex_tree() : null_vertex_(-1), root_(nullptr, null_vertex_), filtration_vect_(), dimension_(-1) {}
+  Simplex_tree() : null_vertex_(-1), root_(nullptr, null_vertex_), filtration_vect_(), dimension_(-1) {//explicit value for null_simplex_;
+    null_simplex_ = null_dictionary_.emplace(null_vertex(),Node()).first;
+  }
 
   /** \brief User-defined copy constructor reproduces the whole tree structure. */
   Simplex_tree(const Simplex_tree& simplex_source)
       : null_vertex_(simplex_source.null_vertex_),
         root_(nullptr, null_vertex_, simplex_source.root_.members_),
         filtration_vect_(),
-        dimension_(simplex_source.dimension_) {
+        dimension_(simplex_source.dimension_),
+        null_dictionary_(simplex_source.null_dictionary_),
+        null_simplex_(simplex_source.null_simplex_) {
     auto root_source = simplex_source.root_;
     rec_copy(&root_, &root_source);
   }
@@ -498,7 +506,9 @@ public:
       : null_vertex_(std::move(old.null_vertex_)),
         root_(std::move(old.root_)),
         filtration_vect_(std::move(old.filtration_vect_)),
-        dimension_(std::move(old.dimension_)) {
+        dimension_(std::move(old.dimension_)),
+        null_dictionary_(std::move(old.null_dictionary_)),
+        null_simplex_(std::move(old.null_simplex_)) {
     old.dimension_ = -1;
     old.root_ = Siblings(nullptr, null_vertex_);
   }
@@ -568,8 +578,8 @@ public:
    * Called on the null_simplex, it returns infinity.
    * If SimplexTreeOptions::store_filtration is false, returns 0.
    */
-  static Filtration_value filtration(Simplex_handle sh) {
-    if (sh != null_simplex()) {
+  Filtration_value filtration(Simplex_handle sh) {
+    if (!is_null(sh)) {
       return sh->second.filtration();
     } else {
       return std::numeric_limits<Filtration_value>::infinity();
@@ -580,7 +590,7 @@ public:
    * \exception std::invalid_argument In debug mode, if sh is a null_simplex.
    */
   void assign_filtration(Simplex_handle sh, Filtration_value fv) {
-    GUDHI_CHECK(sh != null_simplex(),
+    GUDHI_CHECK(!is_null(sh),
                 std::invalid_argument("Simplex_tree::assign_filtration - cannot assign filtration on null_simplex"));
     sh->second.assign_filtration(fv);
   }
@@ -589,7 +599,19 @@ public:
    * associated to the simplices in the simplicial complex.
    *
    * One can call filtration(null_simplex()). */
-  static Simplex_handle null_simplex() { return Dictionary_it(nullptr); }
+  Simplex_handle null_simplex() const//{ return Dictionary_it(nullptr); }
+  { return null_simplex_; }
+
+  /** \brief Returns true iff the Simplex_handle is null.
+    *
+    * The Simplex_handle must either point at a simplex in the Simplex_tree 
+    * from which null_simplex is called, or be the null_simplex of this 
+    * Simplex_tree.*/
+  bool is_null(Simplex_handle sh) {
+    if(sh->first == null_vertex()) return true;
+    return false;
+  }
+
 
   /** \brief Returns a key different for all keys associated to the
    * simplices of the simplicial complex. */
@@ -680,7 +702,7 @@ public:
     Siblings* tmp_sib = &root_;
     Dictionary_it tmp_dit;
     auto vi = simplex.begin();
-    if (Options::contiguous_vertices) {
+    if constexpr(Options::contiguous_vertices) {
       // Equivalent to the first iteration of the normal loop
       GUDHI_CHECK(contiguous_vertices(), "non-contiguous vertices");
       Vertex_handle v = *vi++;
@@ -702,7 +724,7 @@ public:
   /** \brief Returns the Simplex_handle corresponding to the 0-simplex
    * representing the vertex with Vertex_handle v. */
   Simplex_handle find_vertex(Vertex_handle v) {
-    if (Options::contiguous_vertices) {
+    if constexpr(Options::contiguous_vertices) {
       assert(contiguous_vertices());
       return root_.members_.begin() + v;
     } else {
@@ -885,7 +907,7 @@ public:
       simplex_one->second.assign_children(new Siblings(sib, vertex_one));
     auto res = rec_insert_simplex_and_subfaces_sorted(simplex_one->second.children(), first, last, filt);
     // No need to continue if the full simplex was already there with a low enough filtration value.
-    if (res.first != null_simplex()) rec_insert_simplex_and_subfaces_sorted(sib, first, last, filt);
+    if (!is_null(res.first)) rec_insert_simplex_and_subfaces_sorted(sib, first, last, filt);
     return res;
   }
 
@@ -1172,8 +1194,9 @@ public:
     } else {
       dimension_ = 1;
     }
-
-    root_.members_.reserve(boost::num_vertices(skel_graph));
+    if(!Options::simplex_handle_strong_validity) {//flat_map
+      root_.members_.reserve(boost::num_vertices(skel_graph));
+    }
 
     typename boost::graph_traits<OneSkeletonGraph>::vertex_iterator v_it, v_it_end;
     for (std::tie(v_it, v_it_end) = boost::vertices(skel_graph); v_it != v_it_end; ++v_it) {
@@ -1415,7 +1438,7 @@ public:
       update_simplex_tree_after_node_insertion(res_ins_u.first);
       zz_filtration.push_back(res_ins_u.first); //no more inserts in root_.members()
     } //check if the edge {u,v} is already in the complex, if true, nothing to do.
-    if(has_children(res_ins_u.first) && res_in_u.first->second.children().members().find(v) != res_in_u.first->second.children().members()) {return;} 
+    if(has_children(res_ins_u.first) && res_ins_u.first->second.children()->members().find(v) != res_ins_u.first->second.children()->members().end()) {return;} 
 
 //upper bound on dimension
     dimension_ = dim_max; dimension_to_be_lowered_ = true;
@@ -1669,7 +1692,7 @@ public:
       if(!(has_children(root_it_u))) { return; }
       //Simplex_handle for edge {u,v}
       Simplex_handle sh_uv = root_it_u->second.children()->members().find(v);
-      if(sh_uv == root_it_u->second.members().end()) { return; }//edge not here
+      if(sh_uv == root_it_u->second.children()->members().end()) { return; }//edge not here
     }     
     //keep track of all cofaces of the simplex removed, including the simplex itself
     for(auto sh : star_simplex_range(sh_uv)) {zz_filtration.push_back(sh);}
@@ -1682,10 +1705,10 @@ public:
   { for(auto sh : complex_simplex_range()) { zz_filtration.push_back(sh); }  }
 /* SimplexHandleRange is a range of Simplex_handles such that simplices are 
  * ordered in a reverse inclusion order.*/
-  template<SimplexHandleRange>
+  template<class SimplexHandleRange>
   void remove_maximal_simplices(SimplexHandleRange &rg) {
     for( auto sh : rg) {
-      sh.second->unlink_hooks(); //<--- put in hook destructor instead
+      sh->second.unlink_hooks(); //<--- put in hook destructor instead
       remove_maximal_simplex(sh);} //modify the complex 
   }
 
@@ -1737,7 +1760,7 @@ public:
         // If all the boundaries are present, 'next' needs to be inserted
         for (Simplex_handle border : boundary_simplex_range(simplex)) {
           Simplex_handle border_child = find_child(border, next->first);
-          if (border_child == null_simplex()) {
+          if (is_null(border_child)) {
             to_be_inserted = false;
             break;
           }
@@ -1850,7 +1873,7 @@ public:
       Boundary_simplex_range boundary = boundary_simplex_range(&simplex);
       Boundary_simplex_iterator max_border =
           std::max_element(std::begin(boundary), std::end(boundary),
-                           [](Simplex_handle sh1, Simplex_handle sh2) { return filtration(sh1) < filtration(sh2); });
+                           [this](Simplex_handle sh1, Simplex_handle sh2) { return filtration(sh1) < filtration(sh2); });
 
       Filtration_value max_filt_border_value = filtration(*max_border);
       if (simplex.second.filtration() < max_filt_border_value) {
@@ -1977,6 +2000,10 @@ public:
   /** \brief Upper bound on the dimension of the simplicial complex.*/
   int dimension_;
   bool dimension_to_be_lowered_ = false;
+
+private:
+  Dictionary null_dictionary_;
+  Simplex_handle null_simplex_;
 };
 
 // Print a Simplex_tree in os.

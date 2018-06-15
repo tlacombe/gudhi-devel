@@ -173,6 +173,8 @@ struct MiniSTOptions {
   static const bool contiguous_vertices = false;
   static const bool link_simplices_through_max_vertex = false;
   static const bool store_annotation_vector = false;
+  static const bool store_morse_matching = false;
+  static const bool simplex_handle_strong_validity = false;
 };
 
 using Mini_simplex_tree = Gudhi::Simplex_tree<MiniSTOptions>;

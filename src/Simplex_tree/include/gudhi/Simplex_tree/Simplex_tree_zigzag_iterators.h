@@ -77,7 +77,7 @@ class Flagzigzag_simplex_iterator
       
       //add the first edge
       arrow_direction_ = edge_it_->type(); //must be true, i.e., and insertion
-      cpx_->flag_zigzag_add_edge( edge_it_->u(), edge_it_->v(), edge_it_->fil()
+      cpx_->flag_add_edge( edge_it_->u(), edge_it_->v(), edge_it_->fil()
                                 , dim_max_, partial_zzfil_);
       sh_it_ = partial_zzfil_.begin();
       ++edge_it_;
@@ -150,7 +150,7 @@ class Flagzigzag_simplex_iterator
           else {//no edge left, consider simplices remaining in the complex 
             are_we_done = true;//happens once
             //fills up zz_partial with the remaining simplices in complex
-            cpx_->flag_zigzag_lazy_empty_complex(partial_zzfil_); 
+            cpx_->flag_lazy_empty_complex(partial_zzfil_); 
             arrow_direction_ = false; //only backward arrows now
 
             sort( partial_zzfil_.begin(), partial_zzfil_.end()
@@ -164,18 +164,18 @@ class Flagzigzag_simplex_iterator
         }
         //partial_zzfil_ is empty
         if( edge_it_->type() ) { //forward arrow //modify the complex
-          cpx_->flag_zigzag_add_edge( edge_it_->u(), edge_it_->v()
-                                    , edge_it_->fil()
-                                    , dim_max_, partial_zzfil_ );
+          cpx_->flag_add_edge( edge_it_->u(), edge_it_->v()
+                             , edge_it_->fil()
+                             , dim_max_, partial_zzfil_ );
           arrow_direction_ = true; //the arrow is forward
 
-          //flag_zigzag_add_edge output a SORTED sequence of simplices
+          //flag_add_edge output a SORTED sequence of simplices
           for(auto & sh : partial_zzfil_) //set key values
           { sh->second.assign_key(counter_insert); ++counter_insert; }
         }
         else { //backward arrow
-          cpx_->flag_zigzag_lazy_remove_edge( edge_it_->u(), edge_it_->v()
-                                   , partial_zzfil_ ); //does not modify cpx
+          cpx_->flag_lazy_remove_edge( edge_it_->u(), edge_it_->v()
+                                     , partial_zzfil_ ); //does not modify cpx
           arrow_direction_ = false; //the arrow is backward
  
           sort( partial_zzfil_.begin(), partial_zzfil_.end()
@@ -188,12 +188,7 @@ class Flagzigzag_simplex_iterator
         ++edge_it_;
       }
     }
-  }
-
-
-///////////////to remove
-    // int num_E;
-    // int curr_edg;
+  
 
 
   //complex getting modified
