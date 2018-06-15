@@ -177,7 +177,7 @@ class Flagzigzag_simplex_iterator
           cpx_->flag_lazy_remove_edge( edge_it_->u(), edge_it_->v()
                                      , partial_zzfil_ ); //does not modify cpx
           arrow_direction_ = false; //the arrow is backward
- 
+
           sort( partial_zzfil_.begin(), partial_zzfil_.end()
               , [](Simplex_handle sh1, Simplex_handle sh2)->bool {
                   return sh1->second.key() > sh2->second.key();

@@ -40,22 +40,22 @@ int main()
   edge_filtration.emplace_back(2,2,   0,true);  //insert {2}
   edge_filtration.emplace_back(0,0,   0,true);  //insert {0}
   edge_filtration.emplace_back(0,1, 0.1,true);  //insert {0,1}
-  edge_filtration.emplace_back(1,2, 0.2,true);  //insert {1,2}
-  edge_filtration.emplace_back(3,3,   0,true);  //insert {3}
+  edge_filtration.emplace_back(1,2, 0.2,true);  //insert {1  ,2}
+  edge_filtration.emplace_back(3,3,   0.25,true);  //insert {3}
   edge_filtration.emplace_back(3,0, 0.3,true);  //insert {0,3}
   edge_filtration.emplace_back(0,2, 0.4,true);  //insert {0,2}
   edge_filtration.emplace_back(2,3, 0.5,true);  //insert {2,3}
   edge_filtration.emplace_back(1,3, 0.6,true);  //insert {1,3}
   edge_filtration.emplace_back(0,2,  -1,false); //remove {0,2}
   edge_filtration.emplace_back(1,3,  -1,false); //remove {1,3}
-  edge_filtration.emplace_back(0,2,  -1,true);  //insert {0,2}
+  edge_filtration.emplace_back(0,2,  1.15,true);  //insert {0,2}
   edge_filtration.emplace_back(2,3,  -1,false); //remove {2,3}
 
-
+  
   std::cout << "Edge filtration: \n";
   for(auto edg : edge_filtration) 
   {
-    if(edg.type()) { std::cout << "+ "; } else { std::cout << "- "; }
+   if(edg.type()) { std::cout << "+ "; } else { std::cout << "- "; }
     std::cout <<  " " << edg.u() << " " << edg.v() << "          " << edg.fil()        << std::endl;
   }
   std::cout << std::endl;

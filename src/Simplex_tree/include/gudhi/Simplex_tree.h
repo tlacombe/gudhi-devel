@@ -296,11 +296,11 @@ public:
   * Return null_ptr() if sh is critical. 
   * sh must be distinct from null_simplex()
   */
-  void pair(Simplex_handle sh) { sh->second.morse_pairing(); }
+  Simplex_handle morse_pair(Simplex_handle sh) {return sh->second.morse_pairing(); }
 /**
   * Return true iff the simplex is critical.
   */
-  bool critical(Simplex_handle sh) { return is_null(morse_pairing(sh)); }
+  bool critical(Simplex_handle sh) { return sh->second.is_critical(); }
 /**
   * Pair sh_t with sh_s and sh_s with sh_t.
   * Both Simplex_handles must be valid, distinct from null_simplex() handles.
@@ -310,10 +310,10 @@ public:
     sh_s.second->assign_morse_matching(sh_t);
   }
 /**
-  * Assign null_simplex() as paired simplex to sh, making sh critical.
+  * Assign its own Simplex_handle as paired simplex to sh, making sh critical.
   */
   void assign_morse_pairing(Simplex_handle sh) {
-    sh->second.assign_morse_matching(null_simplex());
+    sh->second.assign_morse_matching(sh);
   }
 
 
@@ -633,7 +633,8 @@ public:
   size_t num_simplices(Siblings* sib) {
     auto sib_begin = sib->members().begin();
     auto sib_end = sib->members().end();
-    size_t simplices_number = sib_end - sib_begin;
+    // size_t simplices_number = sib_end - sib_begin;
+    size_t simplices_number = sib->members().size();
     for (auto sh = sib_begin; sh != sib_end; ++sh) {
       if (has_children(sh)) {
         simplices_number += num_simplices(sh->second.children());
@@ -1682,20 +1683,28 @@ public:
               , std::vector< Simplex_handle > & zz_filtration ) 
   {
     Simplex_handle sh_uv; //The simplex that get removed (edge or vertex)
-    
-    if(v < u) { std::swap(u,v); } //so as u <= v
-    auto root_it_u = root_.members().find(u);
-    if(root_it_u == root_.members().end()) {return;}
 
-    if( u == v ) { sh_uv = root_it_u; } //vertex u
+    if(v < u) { std::swap(u,v); } //so as u <= v
+
+    auto root_it_u = root_.members().find(u);
+    if(root_it_u == root_.members().end()) {return;}//u not in Simplex_tree
+
+    if( u == v ) { 
+      sh_uv = root_it_u; 
+      //keep track of all cofaces of the simplex removed, including simplex itself
+      for(auto sh : star_simplex_range(sh_uv)) {zz_filtration.push_back(sh);}
+      return;
+      } //vertex u
     else { //edge {u,v}, u < v
-      if(!(has_children(root_it_u))) { return; }
+      if(!(has_children(root_it_u))) { return; }// N^+(u) = \emptyset
       //Simplex_handle for edge {u,v}
       Simplex_handle sh_uv = root_it_u->second.children()->members().find(v);
       if(sh_uv == root_it_u->second.children()->members().end()) { return; }//edge not here
-    }     
-    //keep track of all cofaces of the simplex removed, including the simplex itself
-    for(auto sh : star_simplex_range(sh_uv)) {zz_filtration.push_back(sh);}
+    // std::cout << filtration(sh_uv) << "\n"; 
+      //keep track of all cofaces of the simplex removed, including simplex itself
+      for(auto sh : star_simplex_range(sh_uv)) {zz_filtration.push_back(sh);}
+      return;
+    }
   }
   /* Put all remaining simplices in the complex into zz_filtration, in order to 
    * empty it. Does NOT modify the complex. 
