@@ -35,10 +35,9 @@ void points_to_edge_filtration(Point_container const &points,
   size_t n = points.size();
   filtration_values.resize(n);
   filtration_values[0] = std::numeric_limits<double>::infinity();//eps_0
-  tbb::parallel_for(size_t i = 1; i != n; ++i) {
+  tbb::parallel_for(size_t i = 1; i != n; ++i) {//truly parallelisable
     double dist = std::numeric_limits<double>::infinity();
     tbb::parallel_for(size_t j = 0; j != i; ++j) {
-      //find distance from p_j to p_i
       auto curr_dist = distance(points[i],points[j]); 
       if(dist > curr_dist) { dist = curr_dist; } //maintain shortest distance
     }
@@ -48,6 +47,15 @@ void points_to_edge_filtration(Point_container const &points,
     if(filtration_values[i] > filtration_values[i-1]) //make decreasing
     {  filtration_values[i] = filtration_values[i-1];  }
   }
-  
 
+
+  for(size_t i = 0; i < n; ++i) {//all eps_i
+    std::vector
+    edge_filtration.emplace_back(i, i, filtration_values[i], true);//add the vertex
+    for(size_t j = 0; j < i; ++j) {
+
+    }
+  }
+
+  //continue!
 }
