@@ -306,14 +306,14 @@ public:
   * Both Simplex_handles must be valid, distinct from null_simplex() handles.
   */
   void assign_morse_pairing(Simplex_handle sh_t, Simplex_handle sh_s) {
-    sh_t.second->assign_morse_matching(sh_s);
-    sh_s.second->assign_morse_matching(sh_t);
+    sh_t.second->assign_morse_pairing(sh_s);
+    sh_s.second->assign_morse_pairing(sh_t);
   }
 /**
   * Assign its own Simplex_handle as paired simplex to sh, making sh critical.
   */
   void assign_morse_pairing(Simplex_handle sh) {
-    sh->second.assign_morse_matching(sh);
+    sh->second.assign_morse_pairing(sh);
   }
 
 
@@ -376,19 +376,19 @@ public:
   * 'value_type' is Simplex_handle.
   */ 
   typedef Flagzigzag_simplex_iterator< Simplex_tree > 
-                                                   Flagzigzag_simplex_iterator;
+                                                   Zigzag_simplex_iterator;
 /** Range for the flag zigzag filtration.*/
-  typedef boost::iterator_range< Flagzigzag_simplex_iterator > 
-                                                      Flagzigzag_simplex_range;
+  typedef boost::iterator_range< Zigzag_simplex_iterator > 
+                                                      Zigzag_simplex_range;
   /** \brief Range over the simplices of the simplicial complex, ordered by the filtration. */
   typedef typename std::conditional< Options::is_zigzag, 
-                      Flagzigzag_simplex_range,
+                      Zigzag_simplex_range,
                       std::vector<Simplex_handle> >::type  Filtration_simplex_range;
   /** \brief Iterator over the simplices of the simplicial complex, ordered by the filtration.
    *
    * 'value_type' is Simplex_handle. */
   typedef typename std::conditional< Options::is_zigzag, 
-                      Flagzigzag_simplex_iterator,
+                      Zigzag_simplex_iterator,
                       typename std::vector<Simplex_handle>::const_iterator >::type 
                                                         Filtration_simplex_iterator;
 
@@ -442,6 +442,7 @@ public:
    * method initializes it (i.e. order the simplices). If the complex has changed since the last time the filtration
    * was initialized, please call `initialize_filtration()` to recompute it. */
   Filtration_simplex_range const& filtration_simplex_range(linear_indexing_tag) {
+    std::cout << "linear_indexing_tag \n";
     if (filtration_vect_.empty()) {
       initialize_filtration();
     }
@@ -483,7 +484,7 @@ public:
    * @{ */
 
   /** \brief Constructs an empty simplex tree. */
-  Simplex_tree() : flag_zigzag_simplex_range_initialized_(false), null_vertex_(-1), root_(nullptr, null_vertex_), filtration_vect_(), dimension_(-1) {//explicit value for null_simplex_;
+  Simplex_tree() : zigzag_simplex_range_initialized_(false), null_vertex_(-1), root_(nullptr, null_vertex_), filtration_vect_(), dimension_(-1) {//explicit value for null_simplex_;
     null_simplex_ = null_dictionary_.emplace(null_vertex(),Node()).first;
   }
 
@@ -1369,42 +1370,46 @@ private:
   *
   * ZigzagEdge must be Zigzag_edge< Simplex_tree >.
   */
+public:
   template< class ZigzagEdgeRange >
-  Flagzigzag_simplex_range 
-  zigzag_simplex_range( ZigzagEdgeRange & zz_edge_fil
+  Zigzag_simplex_range 
+  zigzag_simplex_range( ZigzagEdgeRange * zz_edge_fil
                       , int dim_max )
   { 
     return 
-        Flagzigzag_simplex_range( 
-                      Flagzigzag_simplex_iterator(this, &zz_edge_fil, dim_max)
-                    , Flagzigzag_simplex_iterator()  );
+        Zigzag_simplex_range( 
+                      Zigzag_simplex_iterator(this, zz_edge_fil, dim_max)
+                    , Zigzag_simplex_iterator()  );
   }
 
 public:
 //Initialize a Flag_zigzag_simplex_range
   template< class ZigzagEdgeRange >
-  void initialize_filtration( ZigzagEdgeRange & zz_edge_fil, int dim_max )
+  void initialize_filtration( ZigzagEdgeRange * zz_edge_fil, int dim_max )
   { //empty complex
     //todo
-    flag_zigzag_simplex_range_ = zigzag_simplex_range(zz_edge_fil, dim_max); 
-    flag_zigzag_simplex_range_initialized_ = true;
+    std::cout << "initialize filtration zigzag \n";
+    zigzag_simplex_range_ = zigzag_simplex_range(zz_edge_fil, dim_max); 
+    zigzag_simplex_range_initialized_ = true;
   }
 
 //must call initialize_filtration beforehand
-  Flagzigzag_simplex_range const& filtration_simplex_range(zigzag_indexing_tag)
+  Zigzag_simplex_range const& filtration_simplex_range(zigzag_indexing_tag)
   { 
-    assert(flag_zigzag_simplex_range_initialized_);
-    flag_zigzag_simplex_range_initialized_ = false;
-    return flag_zigzag_simplex_range_; 
+    std::cout << "zigzag_indexing_tag \n";
+    assert(zigzag_simplex_range_initialized_);
+    zigzag_simplex_range_initialized_ = false;
+    return zigzag_simplex_range_; 
   }
 
 
   Filtration_simplex_range const& filtration_simplex_range() 
-  { return filtration_simplex_range(Indexing_tag()); }
+  { std::cout << "AAA\n";
+    return filtration_simplex_range(Indexing_tag()); }
 
 private:
-  Flagzigzag_simplex_range flag_zigzag_simplex_range_;
-  bool                     flag_zigzag_simplex_range_initialized_;
+  Zigzag_simplex_range zigzag_simplex_range_;
+  bool                 zigzag_simplex_range_initialized_;
 
 
 public:
@@ -1452,6 +1457,7 @@ public:
         update_simplex_tree_after_node_insertion(res_ins.first);
         zz_filtration.push_back(res_ins.first); //no more insert in root_.members()
       }
+      std::cout << "done.\n";
       return; //because the vertex is isolated, no more insertions.
     }
     // else, we are inserting an edge: ensure that u < v 

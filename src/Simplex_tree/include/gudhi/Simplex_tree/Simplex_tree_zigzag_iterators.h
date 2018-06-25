@@ -69,7 +69,7 @@ class Flagzigzag_simplex_iterator
       dim_max_                = dim_max;
       are_we_done             = false;
       cpx_                    = cpx;
-      counter_insert    = 0;
+      counter_insert          = 0;
       partial_zzfil_          = std::vector< Simplex_handle >(); //TODO?
       edge_it_                = zigzag_edge_filtration_->begin();
       if(edge_it_ == zigzag_edge_filtration_->end()) 
@@ -84,6 +84,18 @@ class Flagzigzag_simplex_iterator
       for(auto & sh : partial_zzfil_) 
       { sh->second.assign_key(counter_insert); ++counter_insert; } 
     }
+
+//User-defined copy constructor
+    Flagzigzag_simplex_iterator(const Flagzigzag_simplex_iterator& other )
+    : cpx_(other.cpx_)
+    , zigzag_edge_filtration_(other.zigzag_edge_filtration_)
+    , dim_max_(other.dim_max_)
+    , partial_zzfil_(other.partial_zzfil_)
+    , sh_it_(partial_zzfil_.begin())
+    , edge_it_(other.edge_it_)
+    , arrow_direction_(other.arrow_direction_)
+    , counter_insert(other.counter_insert)
+    , are_we_done(other.are_we_done) {}
 
     bool arrow_direction() { return arrow_direction_; }
 
@@ -186,7 +198,7 @@ class Flagzigzag_simplex_iterator
        //partial_zzfil_ contains at least the new edge
         sh_it_ = partial_zzfil_.begin(); 
         ++edge_it_;
-      }
+      } 
     }
   
 

@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
 
   std::cout << "Edge filtration: \n";
   for(auto edg : edge_filtration) 
-  {
+  { 
    if(edg.type()) { std::cout << "+ "; } else { std::cout << "- "; }
     std::cout <<  " " << edg.u() << " " << edg.v() << "    " << edg.fil() << std::endl;
   }
@@ -77,9 +77,11 @@ int main(int argc, char* argv[])
 
   // traverse the filtration
   Simplex_tree st;
-  st.initialize_filtration(edge_filtration, dim_max);
+  st.initialize_filtration(&edge_filtration, dim_max); 
   auto zz_rg = st.filtration_simplex_range();
   
+  // auto zz_rg = st.zigzag_simplex_range(edge_filtration, dim_max);
+
   std::cout << "Simplex filtration: \n";
   for(auto it = zz_rg.begin(); it != zz_rg.end(); ++it ) {
     if(it.arrow_direction()) {std::cout << "+ ";} else {std::cout << "- ";}
@@ -91,7 +93,7 @@ int main(int argc, char* argv[])
   return 0;
 }
 
-
+ 
 //program options
 void program_options(int argc, char* argv[], std::string& off_file_points, Filtration_value& nu, Filtration_value &mu, int& dim_max) {
   namespace po = boost::program_options;
