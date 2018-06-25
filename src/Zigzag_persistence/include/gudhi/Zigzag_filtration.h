@@ -7,8 +7,8 @@
   * computes the edge-filtration corresponding to the oscillating Rips zigzag 
   * filtration of the set of points, i.e.,
   * ... <- R({p_0, ... , p_{i}}, nu * eps_i) ->
-  *                   R({p_1, ... , p_i, p_{i+1}}, mu * eps_i) <- 
-  *                              R({p_1, ... , p_i, p_{i+1}}, nu * eps_{i+1}) -> ...
+  *                   R({p_0, ... , p_i, p_{i+1}}, mu * eps_i) <- 
+  *                              R({p_0, ... , p_i, p_{i+1}}, nu * eps_{i+1}) -> ...
   * where 0 < nu <= mu, and eps_i is defined as the sparsity of the point cloud 
   * {p_1, ... , p_i}, i.e., the shortest distance between two points in the set. 
   * This is a decreasing sequence of numbers.
@@ -48,14 +48,33 @@ void points_to_edge_filtration(Point_container const &points,
     {  filtration_values[i] = filtration_values[i-1];  }
   }
 
-
-  for(size_t i = 0; i < n; ++i) {//all eps_i
-    std::vector
-    edge_filtration.emplace_back(i, i, filtration_values[i], true);//add the vertex
-    for(size_t j = 0; j < i; ++j) {
-
+  //initialise R({p_0}, \nu * eps_0)
+  edge_filtration.emplace_back(0, 0, filtration_values[0], true);//add p_0
+  for(size_t i = 0; i < n-1; ++i) {//all eps_i
+    //R({p_0, ... , p_i}, nu * eps_i) -> R({p_1, ... , p_i, p_{i+1}}, mu * eps_i)   
+    for(size_t j = 1; j <= i; ++j) {//nu eps_i < length(p_j, p_k) <= mu eps_i
+      for(size_t k = 0; k < j; ++k) {
+        if(distance(points[j],points[k]) <= mu * filtration_values[i] && 
+           distance(points[j],points[k]) > nu * filtration_values[i]) {
+          edge_filtration.emplace_back(k, j, filtration_values[i], true);//edge k,j 
+        }
+      }
+    }
+    edge_filtration.emplace_back(i+1, i+1, filtration_values[i], true);//add p_{i+1}
+    for(size_t j = 0; j < i+1; ++j) {//edges (p_{i+1}, p_j) of length <= mu * eps_i 
+      if(distance(points[j],points[i+1]) <= mu * filtration_values[i]) {
+        edge_filtration.emplace_back(j, i+1, filtration_values[i], true);//edge 
+      }
+    }
+    //R({p_0, ... , p_{i+1}}, mu * eps_i) <- R({p_0, ... , p_{i+1}}, nu * eps_{i+1})
+    for(size_t j = 1; j <= i+1; ++j) {//nu eps_i+1 < length(p_j, p_k) <= mu eps_i
+      for(size_t k = 0; k < j; ++k) {
+        if(distance(points[j],points[k]) <= mu * filtration_values[i] && 
+           distance(points[j],points[k]) >  nu * filtration_values[i+1]) {
+          edge_filtration.emplace_back(k, j, filtration_values[i+1], false);
+        }
+      }
     }
   }
-
-  //continue!
 }
+

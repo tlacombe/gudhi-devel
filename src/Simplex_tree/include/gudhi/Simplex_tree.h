@@ -1375,6 +1375,16 @@ public:
   }
 
 
+//Initialize a Flag_zigzag_simplex_range
+  void initialize_filtration( ZigzagEdgeRange & zz_edge_fil, int dim_max )
+  { flagzigzag_simplex_range_ = zigzag_simplex_range(zz_edge_fil, dim_max); }
+
+//must call initialize_filtration before hand
+  Flagzigzag_simplex_range const& filtration_simplex_range(Indexing_tag = Indexing_tag()) //must be zigzag, cannot differ by return type
+  { return flag_zigzag_simplex_range_; }
+
+  Flagzigzag_simplex_range flag_zigzag_simplex_range_;
+
 /* 
   * Add an edge in the complex, its two vertices (if missing) 
   * and all the missing 

@@ -35,6 +35,9 @@
 #include <boost/pool/object_pool.hpp>
 #include <boost/progress.hpp>
 
+namespace Gudhi {
+
+namespace zigzag_persistence {
 
 template <typename FilteredComplex>
 class matrix_chain;
@@ -849,6 +852,10 @@ matrix_chain * arrow_transposition_case_study( matrix_chain * curr_col
 
 
 };
+
+} //namespace zigzag_persistence
+
+} //namespace Gudhi
 
 #endif //_ZIGZAG_PERSISTENT_HOMOLOGY_
 
