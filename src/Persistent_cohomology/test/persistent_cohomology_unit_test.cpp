@@ -164,6 +164,7 @@ BOOST_AUTO_TEST_CASE(rips_persistent_cohomology_single_field_dim_5) { test_rips_
  * Maximum number of simplices to compute persistence is <CODE>std::numeric_limits<std::uint8_t>::max()<\CODE> = 256.*/
 struct MiniSTOptions {
   typedef linear_indexing_tag Indexing_tag;
+  static const bool is_zigzag = false;
   typedef short Vertex_handle;
   typedef double Filtration_value;
   // Maximum number of simplices to compute persistence is 2^8 - 1 = 255. One is reserved for null_key

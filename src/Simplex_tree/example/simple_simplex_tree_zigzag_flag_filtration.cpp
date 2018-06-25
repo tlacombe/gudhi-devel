@@ -63,7 +63,8 @@ int main()
   Complex_ds st;
 
   // traverse the filtration
-  auto zz_rg = st.zigzag_simplex_range(edge_filtration, dim_max);
+  st.initialize_filtration(edge_filtration, dim_max);
+  auto zz_rg = st.filtration_simplex_range();
   
   std::cout << "Simplex filtration: \n";
 

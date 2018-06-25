@@ -370,12 +370,28 @@ public:
   /** \brief Range over the simplices of the skeleton of the simplicial complex, for a given
    * dimension. */
   typedef boost::iterator_range<Skeleton_simplex_iterator> Skeleton_simplex_range;
+  /** Forward iterator on the simplices (insertion and deletion) of a zigzag 
+  * filtration.
+  *
+  * 'value_type' is Simplex_handle.
+  */ 
+  typedef Flagzigzag_simplex_iterator< Simplex_tree > 
+                                                   Flagzigzag_simplex_iterator;
+/** Range for the flag zigzag filtration.*/
+  typedef boost::iterator_range< Flagzigzag_simplex_iterator > 
+                                                      Flagzigzag_simplex_range;
   /** \brief Range over the simplices of the simplicial complex, ordered by the filtration. */
-  typedef std::vector<Simplex_handle> Filtration_simplex_range;
+  typedef typename std::conditional< Options::is_zigzag, 
+                      Flagzigzag_simplex_range,
+                      std::vector<Simplex_handle> >::type  Filtration_simplex_range;
   /** \brief Iterator over the simplices of the simplicial complex, ordered by the filtration.
    *
    * 'value_type' is Simplex_handle. */
-  typedef typename Filtration_simplex_range::const_iterator Filtration_simplex_iterator;
+  typedef typename std::conditional< Options::is_zigzag, 
+                      Flagzigzag_simplex_iterator,
+                      typename std::vector<Simplex_handle>::const_iterator >::type 
+                                                        Filtration_simplex_iterator;
+
 
   /* @} */  // end name range and iterator types
   /** \name Range and iterator methods
@@ -425,7 +441,7 @@ public:
    * The filtration must be valid. If the filtration has not been initialized yet, the
    * method initializes it (i.e. order the simplices). If the complex has changed since the last time the filtration
    * was initialized, please call `initialize_filtration()` to recompute it. */
-  Filtration_simplex_range const& filtration_simplex_range(Indexing_tag = Indexing_tag()) {
+  Filtration_simplex_range const& filtration_simplex_range(linear_indexing_tag) {
     if (filtration_vect_.empty()) {
       initialize_filtration();
     }
@@ -467,7 +483,7 @@ public:
    * @{ */
 
   /** \brief Constructs an empty simplex tree. */
-  Simplex_tree() : null_vertex_(-1), root_(nullptr, null_vertex_), filtration_vect_(), dimension_(-1) {//explicit value for null_simplex_;
+  Simplex_tree() : flag_zigzag_simplex_range_initialized_(false), null_vertex_(-1), root_(nullptr, null_vertex_), filtration_vect_(), dimension_(-1) {//explicit value for null_simplex_;
     null_simplex_ = null_dictionary_.emplace(null_vertex(),Node()).first;
   }
 
@@ -1195,7 +1211,7 @@ public:
     } else {
       dimension_ = 1;
     }
-    if(!Options::simplex_handle_strong_validity) {//flat_map
+    if constexpr(!Options::simplex_handle_strong_validity) {//flat_map
       root_.members_.reserve(boost::num_vertices(skel_graph));
     }
 
@@ -1330,17 +1346,7 @@ public:
   /* Type of edges for representing implicetely the flag zigzag filtration.*/
   typedef Zigzag_edge< Simplex_tree >                                Edge_type;
 
-  /** Forward iterator on the simplices (insertion and deletion) of the zigzag 
-  * filtration.
-  *
-  * 'value_type' is Simplex_handle.
-  */ 
-  typedef Flagzigzag_simplex_iterator< Simplex_tree > 
-                                                   Flagzigzag_simplex_iterator;
-/** Range for the flag zigzag filtration.*/
-  typedef boost::iterator_range< Flagzigzag_simplex_iterator > 
-                                                      Flagzigzag_simplex_range;
-
+private:
  /**
   * Returns a range over the simplices of the flag zigzag filtration encoded
   * for a vector of insertion and deletion of edges.
@@ -1374,16 +1380,34 @@ public:
                     , Flagzigzag_simplex_iterator()  );
   }
 
-
+public:
 //Initialize a Flag_zigzag_simplex_range
+  template< class ZigzagEdgeRange >
   void initialize_filtration( ZigzagEdgeRange & zz_edge_fil, int dim_max )
-  { flagzigzag_simplex_range_ = zigzag_simplex_range(zz_edge_fil, dim_max); }
+  { //empty complex
+    //todo
+    flag_zigzag_simplex_range_ = zigzag_simplex_range(zz_edge_fil, dim_max); 
+    flag_zigzag_simplex_range_initialized_ = true;
+  }
 
-//must call initialize_filtration before hand
-  Flagzigzag_simplex_range const& filtration_simplex_range(Indexing_tag = Indexing_tag()) //must be zigzag, cannot differ by return type
-  { return flag_zigzag_simplex_range_; }
+//must call initialize_filtration beforehand
+  Flagzigzag_simplex_range const& filtration_simplex_range(zigzag_indexing_tag)
+  { 
+    assert(flag_zigzag_simplex_range_initialized_);
+    flag_zigzag_simplex_range_initialized_ = false;
+    return flag_zigzag_simplex_range_; 
+  }
 
+
+  Filtration_simplex_range const& filtration_simplex_range() 
+  { return filtration_simplex_range(Indexing_tag()); }
+
+private:
   Flagzigzag_simplex_range flag_zigzag_simplex_range_;
+  bool                     flag_zigzag_simplex_range_initialized_;
+
+
+public:
 
 /* 
   * Add an edge in the complex, its two vertices (if missing) 
@@ -2066,6 +2090,7 @@ std::istream& operator>>(std::istream& is, Simplex_tree<T...>& st) {
  * (about 4 billions of simplices). */
 struct Simplex_tree_options_full_featured {
   typedef linear_indexing_tag Indexing_tag;
+  static const bool is_zigzag = false;
   typedef int Vertex_handle;
   typedef double Filtration_value;
   typedef std::uint32_t Simplex_key;
@@ -2086,6 +2111,7 @@ struct Simplex_tree_options_full_featured {
 
 struct Simplex_tree_options_fast_persistence {
   typedef linear_indexing_tag Indexing_tag;
+  static const bool is_zigzag = false;
   typedef int Vertex_handle;
   typedef float Filtration_value;
   typedef std::uint32_t Simplex_key;
@@ -2110,6 +2136,7 @@ struct Simplex_tree_options_fast_persistence {
  */
 struct Simplex_tree_options_zigzag_persistence {
   typedef zigzag_indexing_tag Indexing_tag;
+  static const bool is_zigzag = true;
   typedef int Vertex_handle;
   typedef float Filtration_value;
   typedef int Simplex_key;

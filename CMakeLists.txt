@@ -36,6 +36,7 @@ add_gudhi_module(Subsampling)
 add_gudhi_module(Tangential_complex)
 add_gudhi_module(Witness_complex)
 add_gudhi_module(Nerve_GIC)
+add_gudhi_module(Zigzag_filtration)
 
 add_subdirectory(src/Simplex_tree/example)
 
