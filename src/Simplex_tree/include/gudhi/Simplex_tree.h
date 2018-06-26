@@ -899,8 +899,7 @@ public:
   }
   // To insert {1,2,3,4}, we insert {2,3,4} twice, once at the root, and once below 1.
   template <class ForwardVertexIterator>
-  std::pair<Simplex_handle, bool> rec_insert_simplex_and_subfaces_sorted(Siblings* sib, ForwardVertexIterator first,
-                                                                         ForwardVertexIterator last,
+  std::pair<Simplex_handle, bool> rec_insert_simplex_and_subfaces_sorted(Siblings* sib, ForwardVertexIterator first, ForwardVertexIterator last,
                                                                          Filtration_value filt) {
     // An alternative strategy would be:
     // - try to find the complete simplex, if found (and low filtration) exit
@@ -909,6 +908,11 @@ public:
     Vertex_handle vertex_one = *first;
     auto&& dict = sib->members();
     auto insertion_result = dict.emplace(vertex_one, Node(sib, filt));
+
+    if (insertion_result.second) {
+      update_simplex_tree_after_node_insertion(insertion_result.first);
+    }
+
     Simplex_handle simplex_one = insertion_result.first;
     bool one_is_new = insertion_result.second;
     if (!one_is_new) {
