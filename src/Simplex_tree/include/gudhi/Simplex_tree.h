@@ -99,6 +99,7 @@ class Simplex_tree {
   typedef typename boost::container::flat_map<Vertex_handle, Node> flat_map;
   //Dictionary::iterator remain valid under insertions and deletions
   typedef typename boost::container::map<Vertex_handle, Node> map;
+  // typedef typename std::map<Vertex_handle, Node> map;
 
   typedef typename std::conditional<Options::simplex_handle_strong_validity, map, flat_map>::type Dictionary;
 
@@ -306,8 +307,8 @@ public:
   * Both Simplex_handles must be valid, distinct from null_simplex() handles.
   */
   void assign_morse_pairing(Simplex_handle sh_t, Simplex_handle sh_s) {
-    sh_t.second->assign_morse_pairing(sh_s);
-    sh_s.second->assign_morse_pairing(sh_t);
+    sh_t->second.assign_morse_pairing(sh_s);
+    sh_s->second.assign_morse_pairing(sh_t);
   }
 /**
   * Assign its own Simplex_handle as paired simplex to sh, making sh critical.
@@ -441,8 +442,7 @@ public:
    * The filtration must be valid. If the filtration has not been initialized yet, the
    * method initializes it (i.e. order the simplices). If the complex has changed since the last time the filtration
    * was initialized, please call `initialize_filtration()` to recompute it. */
-  Filtration_simplex_range const& filtration_simplex_range(linear_indexing_tag) {
-    std::cout << "linear_indexing_tag \n";
+  Filtration_simplex_range & filtration_simplex_range(linear_indexing_tag) {
     if (filtration_vect_.empty()) {
       initialize_filtration();
     }
@@ -1092,6 +1092,7 @@ public:
    */
 
   Cofaces_simplex_range cofaces_simplex_range(const Simplex_handle simplex, int codimension) {
+    std::cout << "C\n";
     return impl_cofaces_simplex_range(simplex, codimension,
                                       std::integral_constant<bool, Options::link_simplices_through_max_vertex>{});
   }
@@ -1101,6 +1102,9 @@ public:
    * Return Vector of Simplex_handle, empty vector if no cofaces found.*/
   Brute_force_cofaces_simplex_range impl_cofaces_simplex_range(const Simplex_handle simplex, int codimension,
                                                                std::false_type) {
+
+    std::cout << "B\n";
+
     Brute_force_cofaces_simplex_range cofaces;
     // codimension must be positive or null integer
     assert(codimension >= 0);
@@ -1122,6 +1126,8 @@ public:
    */
   Optimized_cofaces_simplex_range impl_cofaces_simplex_range(const Simplex_handle simplex, int codimension,
                                                              std::true_type) {
+    
+    std::cout << "A\n";
     assert(codimension >= 0);
     Simplex_vertex_range rg = simplex_vertex_range(simplex);
     std::vector<Vertex_handle> copy(rg.begin(), rg.end());
@@ -1373,39 +1379,36 @@ private:
 public:
   template< class ZigzagEdgeRange >
   Zigzag_simplex_range 
-  zigzag_simplex_range( ZigzagEdgeRange * zz_edge_fil
+  zigzag_simplex_range( ZigzagEdgeRange & zz_edge_fil
                       , int dim_max )
   { 
     return 
         Zigzag_simplex_range( 
-                      Zigzag_simplex_iterator(this, zz_edge_fil, dim_max)
+                      Zigzag_simplex_iterator(this, &zz_edge_fil, dim_max)
                     , Zigzag_simplex_iterator()  );
   }
 
 public:
 //Initialize a Flag_zigzag_simplex_range
   template< class ZigzagEdgeRange >
-  void initialize_filtration( ZigzagEdgeRange * zz_edge_fil, int dim_max )
+  void initialize_filtration( ZigzagEdgeRange & zz_edge_fil, int dim_max )
   { //empty complex
     //todo
-    std::cout << "initialize filtration zigzag \n";
     zigzag_simplex_range_ = zigzag_simplex_range(zz_edge_fil, dim_max); 
     zigzag_simplex_range_initialized_ = true;
   }
 
 //must call initialize_filtration beforehand
-  Zigzag_simplex_range const& filtration_simplex_range(zigzag_indexing_tag)
+  Zigzag_simplex_range & filtration_simplex_range(zigzag_indexing_tag)
   { 
-    std::cout << "zigzag_indexing_tag \n";
     assert(zigzag_simplex_range_initialized_);
     zigzag_simplex_range_initialized_ = false;
     return zigzag_simplex_range_; 
   }
 
 
-  Filtration_simplex_range const& filtration_simplex_range() 
-  { std::cout << "AAA\n";
-    return filtration_simplex_range(Indexing_tag()); }
+  Filtration_simplex_range & filtration_simplex_range() 
+  { return filtration_simplex_range(Indexing_tag()); }
 
 private:
   Zigzag_simplex_range zigzag_simplex_range_;
@@ -1457,7 +1460,6 @@ public:
         update_simplex_tree_after_node_insertion(res_ins.first);
         zz_filtration.push_back(res_ins.first); //no more insert in root_.members()
       }
-      std::cout << "done.\n";
       return; //because the vertex is isolated, no more insertions.
     }
     // else, we are inserting an edge: ensure that u < v 
@@ -1740,7 +1742,6 @@ public:
       //Simplex_handle for edge {u,v}
       Simplex_handle sh_uv = root_it_u->second.children()->members().find(v);
       if(sh_uv == root_it_u->second.children()->members().end()) { return; }//edge not here
-    // std::cout << filtration(sh_uv) << "\n"; 
       //keep track of all cofaces of the simplex removed, including simplex itself
       for(auto sh : star_simplex_range(sh_uv)) {zz_filtration.push_back(sh);}
       return;
@@ -2143,6 +2144,31 @@ struct Simplex_tree_options_fast_persistence {
 struct Simplex_tree_options_zigzag_persistence {
   typedef zigzag_indexing_tag Indexing_tag;
   static const bool is_zigzag = true;
+  typedef int Vertex_handle;
+  typedef float Filtration_value;
+  typedef int Simplex_key;
+  static const bool store_key = true;
+  static const bool store_filtration = true;
+  static const bool contiguous_vertices = false;
+  static const bool link_simplices_through_max_vertex = true;
+  static const bool store_annotation_vector = false; //for zigzag cohomology
+  static const bool store_morse_matching = true;
+  static const bool simplex_handle_strong_validity = true;//Dictionary::iterators remain valid even after insertions and deletions
+};
+
+/** Model of SimplexTreeOptions, with a zigzag_indexing_tag.
+    Note the unsafe `contiguous_vertices` option.
+ *
+ * Maximum number of simplices to compute persistence is <CODE>
+ * std::numeric_limits<std::uint32_t>::max()</CODE>
+ * (about 4 billions of simplices).
+ *
+ * The link_simplices_through_max_vertex = true option allows fast computation
+ * of the cofaces of a simplex.
+ */
+struct Simplex_tree_options_morse {
+  typedef linear_indexing_tag Indexing_tag;
+  static const bool is_zigzag = false;
   typedef int Vertex_handle;
   typedef float Filtration_value;
   typedef int Simplex_key;

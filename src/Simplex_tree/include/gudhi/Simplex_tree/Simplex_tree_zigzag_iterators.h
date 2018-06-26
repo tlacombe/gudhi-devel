@@ -26,6 +26,11 @@ public:
 /* Returns true if insertion of the edge, false if removal. */
   bool                                       type() { return type_; }
 
+  bool operator==(const Zigzag_edge &e) const {
+    return ( (e.u_ == u_) && (e.v_ == v_) && 
+             (e.fil_ == fil_) && (e.type_ == type_) );
+  }
+
 private:
   typename FilteredComplex::Vertex_handle    u_;
   typename FilteredComplex::Vertex_handle    v_;
@@ -198,7 +203,7 @@ class Flagzigzag_simplex_iterator
        //partial_zzfil_ contains at least the new edge
         sh_it_ = partial_zzfil_.begin(); 
         ++edge_it_;
-      } 
+      }
     }
   
 

@@ -8,7 +8,9 @@
 #include <gudhi/choose_n_farthest_points.h>
 #include <gudhi/Points_off_io.h>
 #include <boost/program_options.hpp>
-
+#include <CGAL/Epick_d.h>
+#include <gudhi/choose_n_farthest_points.h>
+#include <gudhi/pick_n_random_points.h>
 
 
 // Types definition
@@ -16,8 +18,10 @@ using Simplex_tree = Gudhi::Simplex_tree<Gudhi::Simplex_tree_options_zigzag_pers
 using Zz_edge = Zigzag_edge<Simplex_tree>;
 using Filtration_value = Simplex_tree::Filtration_value;
 // using Zigzag_persistence = Gudhi::zigzag_persistence::Zigzag_persistence<Simplex_tree >;
-using Point = std::vector<double>;
-using Points_off_reader = Gudhi::Points_off_reader<Point>;
+// using Point = std::vector<double>;
+using K = CGAL::Epick_d<CGAL::Dynamic_dimension_tag>;
+using Point_d = typename K::Point_d;
+using Points_off_reader = Gudhi::Points_off_reader<Point_d>;
 
 void program_options( int argc, char* argv[]
                     , std::string& off_file_points
@@ -27,6 +31,9 @@ void program_options( int argc, char* argv[]
 
 int main(int argc, char* argv[])
 {
+  std::chrono::time_point<std::chrono::system_clock> start, end;
+  int enlapsed_sec;
+
   std::string off_file_points;
   Filtration_value nu, mu;
   int dim_max;
@@ -35,11 +42,50 @@ int main(int argc, char* argv[])
 
   std::vector< Zz_edge >        edge_filtration;
   std::vector<Filtration_value> filtration_values;
-
+  //extract points from file
   Points_off_reader off_reader(off_file_points); //read points
-	points_to_edge_filtration( off_reader.get_point_cloud(), 
+
+  //sort points
+  start = std::chrono::system_clock::now();
+  std::vector<Point_d> sorted_points;
+  Gudhi::subsampling::choose_n_farthest_points( K(), off_reader.get_point_cloud() 
+    , off_reader.get_point_cloud().size() //all points
+    , 0//start with point [0]//Gudhi::subsampling::random_starting_point
+    , std::back_inserter(sorted_points));
+  end = std::chrono::system_clock::now();
+  enlapsed_sec =std::chrono::duration_cast<std::chrono::seconds>(end-start).count();
+
+  std::cout << "Furthest point sort: " << enlapsed_sec << " sec.\n";
+
+  //Compute edge filtration
+  start = std::chrono::system_clock::now();
+	fast_points_to_edge_filtration( sorted_points, 
                              Gudhi::Euclidean_distance(),
                              nu, mu, filtration_values, edge_filtration );
+  end = std::chrono::system_clock::now();
+  enlapsed_sec =std::chrono::duration_cast<std::chrono::seconds>(end-start).count();
+
+  std::cout << "Edge filtration computation (fast): " << enlapsed_sec << " sec.\n";
+  
+
+  //second opinion 
+  std::vector< Zz_edge >        edge_filtration_2;
+  std::vector<Filtration_value> filtration_values_2;
+
+  start = std::chrono::system_clock::now();
+  points_to_edge_filtration( sorted_points, 
+                             Gudhi::Euclidean_distance(),
+                             nu, mu, filtration_values_2, edge_filtration_2 );
+  end = std::chrono::system_clock::now();
+  enlapsed_sec =std::chrono::duration_cast<std::chrono::seconds>(end-start).count();
+
+  std::cout << "Edge filtration computation (slow): " << enlapsed_sec << " sec.\n";
+
+
+
+  std::cout << (filtration_values == filtration_values_2) << "\n";
+  std::cout << (edge_filtration == edge_filtration_2) << "\n";
+
 
 //sort points
   // typedef CGAL::Epick_d< CGAL::Dynamic_dimension_tag > K;
@@ -63,21 +109,29 @@ int main(int argc, char* argv[])
 
   std::cout << "Epsilon filtration values: \n";
   for(size_t i = 0; i < filtration_values.size(); ++i) {
-    std::cout << "eps_" << i << " : " << filtration_values[i] << std::endl;
+    std::cout << "eps_" << i << " : " << filtration_values[i] << 
+    "  --  " << filtration_values_2[i] << 
+    std::endl;
   }
   std::cout << std::endl;
 
   std::cout << "Edge filtration: \n";
+  size_t i=0;
   for(auto edg : edge_filtration) 
   { 
    if(edg.type()) { std::cout << "+ "; } else { std::cout << "- "; }
-    std::cout <<  " " << edg.u() << " " << edg.v() << "    " << edg.fil() << std::endl;
+    std::cout <<  " " << edg.u() << " " << edg.v() << "  " << edg.fil() << 
+    "  --  ";
+    if(edge_filtration_2[i].type()) { std::cout << "+ "; } else { std::cout << "- "; }
+    std::cout << " " << edge_filtration_2[i].u() << " " << edge_filtration_2[i].v() << "  " << edge_filtration_2[i].fil() << 
+    std::endl;
+    ++i;
   }
   std::cout << std::endl;
-
+ 
   // traverse the filtration
   Simplex_tree st;
-  st.initialize_filtration(&edge_filtration, dim_max); 
+  st.initialize_filtration(edge_filtration, dim_max); 
   auto zz_rg = st.filtration_simplex_range();
   
   // auto zz_rg = st.zigzag_simplex_range(edge_filtration, dim_max);
