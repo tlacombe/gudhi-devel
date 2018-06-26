@@ -1004,6 +1004,10 @@ public:
 #else
     std::stable_sort(filtration_vect_.begin(), filtration_vect_.end(), is_before_in_filtration(this));
 #endif
+    if constexpr(Options::store_key) {
+      Simplex_key key = 0;
+      for(auto sh : filtration_vect_) { assign_key(sh, key++); } 
+    }
   }
 
  private:
@@ -2149,7 +2153,7 @@ struct Simplex_tree_options_zigzag_persistence {
   typedef zigzag_indexing_tag Indexing_tag;
   static const bool is_zigzag = true;
   typedef int Vertex_handle;
-  typedef float Filtration_value;
+  typedef double Filtration_value;
   typedef int Simplex_key;
   static const bool store_key = true;
   static const bool store_filtration = true;

@@ -45,10 +45,12 @@ int main(int argc, char* argv[])
   //extract points from file
   Points_off_reader off_reader(off_file_points); //read points
 
+  K k_d;
+
   //sort points
   start = std::chrono::system_clock::now();
   std::vector<Point_d> sorted_points;
-  Gudhi::subsampling::choose_n_farthest_points( K(), off_reader.get_point_cloud() 
+  Gudhi::subsampling::choose_n_farthest_points( k_d, off_reader.get_point_cloud() 
     , off_reader.get_point_cloud().size() //all points
     , 0//start with point [0]//Gudhi::subsampling::random_starting_point
     , std::back_inserter(sorted_points));
@@ -57,10 +59,13 @@ int main(int argc, char* argv[])
 
   std::cout << "Furthest point sort: " << enlapsed_sec << " sec.\n";
 
+  auto sqdist = k_d.squared_distance_d_object();
+
   //Compute edge filtration
   start = std::chrono::system_clock::now();
 	fast_points_to_edge_filtration( sorted_points, 
-                             Gudhi::Euclidean_distance(),
+                             sqdist,
+                             //Gudhi::Euclidean_distance(),
                              nu, mu, filtration_values, edge_filtration );
   end = std::chrono::system_clock::now();
   enlapsed_sec =std::chrono::duration_cast<std::chrono::seconds>(end-start).count();
@@ -74,7 +79,8 @@ int main(int argc, char* argv[])
 
   start = std::chrono::system_clock::now();
   points_to_edge_filtration( sorted_points, 
-                             Gudhi::Euclidean_distance(),
+                             sqdist,
+                             // Gudhi::Euclidean_distance(),
                              nu, mu, filtration_values_2, edge_filtration_2 );
   end = std::chrono::system_clock::now();
   enlapsed_sec =std::chrono::duration_cast<std::chrono::seconds>(end-start).count();
@@ -86,26 +92,19 @@ int main(int argc, char* argv[])
   std::cout << (filtration_values == filtration_values_2) << "\n";
   std::cout << (edge_filtration == edge_filtration_2) << "\n";
 
+// return 0;
 
 //sort points
-  // typedef CGAL::Epick_d< CGAL::Dynamic_dimension_tag > K;
-  // typedef typename K::Point_d Point_d;
-
-  // K k;
-  // std::vector<Point_d> results;
-  // Gudhi::subsampling::choose_n_farthest_points(
-  //     k //kernel
-  //   , input_pts //input points
-  //   , final_size //final size
-  //   , 0 //starting point 
-  //   , back_inserter(results) );
 
   std::cout << "Point cloud : \n";
-  for(auto point : off_reader.get_point_cloud()) {
+  for(auto point : sorted_points) {
     for(auto x : point) { std::cout << x << " "; }
     std::cout << std::endl;
   }
+
   std::cout << std::endl;
+
+
 
   std::cout << "Epsilon filtration values: \n";
   for(size_t i = 0; i < filtration_values.size(); ++i) {
@@ -114,6 +113,13 @@ int main(int argc, char* argv[])
     std::endl;
   }
   std::cout << std::endl;
+
+
+  std::cout << "\n";
+  std::cout << sqdist(sorted_points[0], sorted_points[1]) << " " << sqdist(sorted_points[0], sorted_points[2]) << " " << sqdist(sorted_points[1], sorted_points[2]) << " \n"; 
+  std::cout << "\n";
+  
+
 
   std::cout << "Edge filtration: \n";
   size_t i=0;
@@ -129,9 +135,12 @@ int main(int argc, char* argv[])
   }
   std::cout << std::endl;
  
+
+return 0;
+
   // traverse the filtration
   Simplex_tree st;
-  st.initialize_filtration(edge_filtration, dim_max); 
+  st.initialize_filtration(edge_filtration_2, dim_max); 
   auto zz_rg = st.filtration_simplex_range();
   
   // auto zz_rg = st.zigzag_simplex_range(edge_filtration, dim_max);
@@ -140,7 +149,7 @@ int main(int argc, char* argv[])
   for(auto it = zz_rg.begin(); it != zz_rg.end(); ++it ) {
     if(it.arrow_direction()) {std::cout << "+ ";} else {std::cout << "- ";}
     for(auto u : st.simplex_vertex_range(*it)) { std::cout << u << " "; }
-      std::cout << "    " << st.filtration(*it) << "\n";
+      std::cout << "    " << st.filtration(*it) << "  " << st.key(*it) << "\n";
   }
   std::cout << std::endl;
 
