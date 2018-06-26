@@ -105,14 +105,14 @@ class Simplex_tree_boundary_simplex_iterator
     next_ = sib->parent();
     sib_ = sib->oncles();
     if (sib_ != nullptr) {
-      if constexpr (SimplexTree::Options::contiguous_vertices && sib_->oncles() == nullptr)
-        // Only relevant for edges
-        sh_ = sib_->members_.begin() + next_;
-      else
-        sh_ = sib_->find(next_);
+      // Only relevant for edges
+      if constexpr (SimplexTree::Options::contiguous_vertices) {
+        if(sib_->oncles() == nullptr) { sh_ = sib_->members_.begin() + next_; }
+        else { sh_ = sib_->find(next_); }
+      } else { sh_ = sib_->find(next_); }
     } else {
       sh_ = st->null_simplex();
-    }  // vertex: == end()
+      }  // vertex: == end()
   }
 
  private:
@@ -134,18 +134,20 @@ class Simplex_tree_boundary_simplex_iterator
     Siblings* for_sib = sib_;
     Siblings* new_sib = sib_->oncles();
     auto rit = suffix_.rbegin();
-    if constexpr (SimplexTree::Options::contiguous_vertices && new_sib == nullptr) {
-      // We reached the root, use a short-cut to find a vertex.
-      if (rit == suffix_.rend()) {
-        // Segment, this vertex is the last boundary simplex
-        sh_ = for_sib->members_.begin() + last_;
-        sib_ = nullptr;
-        return;
-      } else {
-        // Dim >= 2, initial step of the descent
-        sh_ = for_sib->members_.begin() + *rit;
-        for_sib = sh_->second.children();
-        ++rit;
+    if constexpr (SimplexTree::Options::contiguous_vertices) {
+      if(new_sib == nullptr) {
+        // We reached the root, use a short-cut to find a vertex.
+        if (rit == suffix_.rend()) {
+          // Segment, this vertex is the last boundary simplex
+          sh_ = for_sib->members_.begin() + last_;
+          sib_ = nullptr;
+          return;
+        } else {
+          // Dim >= 2, initial step of the descent
+          sh_ = for_sib->members_.begin() + *rit;
+          for_sib = sh_->second.children();
+          ++rit;
+        }
       }
     }
     for (; rit != suffix_.rend(); ++rit) {

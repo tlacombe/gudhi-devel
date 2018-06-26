@@ -31,6 +31,8 @@ public:
              (e.fil_ == fil_) && (e.type_ == type_) );
   }
 
+  void assign_fil(typename FilteredComplex::Filtration_value fil) { fil_ = fil; }
+
 private:
   typename FilteredComplex::Vertex_handle    u_;
   typename FilteredComplex::Vertex_handle    v_;

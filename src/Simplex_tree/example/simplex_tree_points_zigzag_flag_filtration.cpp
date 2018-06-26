@@ -72,25 +72,10 @@ int main(int argc, char* argv[])
 
   std::cout << "Edge filtration computation (fast): " << enlapsed_sec << " sec.\n";
   
+  //apply sqrt to correct the use of sqrt distance
+  for(auto & f : filtration_values) { f = std::sqrt(f); }
+  for(auto & e : edge_filtration) { e.assign_fil(std::sqrt(e.fil())); }
 
-  //second opinion 
-  std::vector< Zz_edge >        edge_filtration_2;
-  std::vector<Filtration_value> filtration_values_2;
-
-  start = std::chrono::system_clock::now();
-  points_to_edge_filtration( sorted_points, 
-                             sqdist,
-                             // Gudhi::Euclidean_distance(),
-                             nu, mu, filtration_values_2, edge_filtration_2 );
-  end = std::chrono::system_clock::now();
-  enlapsed_sec =std::chrono::duration_cast<std::chrono::seconds>(end-start).count();
-
-  std::cout << "Edge filtration computation (slow): " << enlapsed_sec << " sec.\n";
-
-
-
-  std::cout << (filtration_values == filtration_values_2) << "\n";
-  std::cout << (edge_filtration == edge_filtration_2) << "\n";
 
 // return 0;
 
@@ -104,43 +89,25 @@ int main(int argc, char* argv[])
 
   std::cout << std::endl;
 
-
-
   std::cout << "Epsilon filtration values: \n";
   for(size_t i = 0; i < filtration_values.size(); ++i) {
-    std::cout << "eps_" << i << " : " << filtration_values[i] << 
-    "  --  " << filtration_values_2[i] << 
-    std::endl;
+    std::cout << "eps_" << i << " : " << filtration_values[i] << std::endl;
   }
   std::cout << std::endl;
 
-
-  std::cout << "\n";
-  std::cout << sqdist(sorted_points[0], sorted_points[1]) << " " << sqdist(sorted_points[0], sorted_points[2]) << " " << sqdist(sorted_points[1], sorted_points[2]) << " \n"; 
-  std::cout << "\n";
-  
-
-
   std::cout << "Edge filtration: \n";
-  size_t i=0;
   for(auto edg : edge_filtration) 
   { 
    if(edg.type()) { std::cout << "+ "; } else { std::cout << "- "; }
-    std::cout <<  " " << edg.u() << " " << edg.v() << "  " << edg.fil() << 
-    "  --  ";
-    if(edge_filtration_2[i].type()) { std::cout << "+ "; } else { std::cout << "- "; }
-    std::cout << " " << edge_filtration_2[i].u() << " " << edge_filtration_2[i].v() << "  " << edge_filtration_2[i].fil() << 
-    std::endl;
-    ++i;
+    std::cout <<  " " << edg.u() << " " << edg.v() << " " << edg.fil() << std::endl;
   }
   std::cout << std::endl;
  
-
 return 0;
 
   // traverse the filtration
   Simplex_tree st;
-  st.initialize_filtration(edge_filtration_2, dim_max); 
+  st.initialize_filtration(edge_filtration, dim_max); 
   auto zz_rg = st.filtration_simplex_range();
   
   // auto zz_rg = st.zigzag_simplex_range(edge_filtration, dim_max);

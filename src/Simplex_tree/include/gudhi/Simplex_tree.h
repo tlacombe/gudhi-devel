@@ -1100,7 +1100,6 @@ public:
    */
 
   Cofaces_simplex_range cofaces_simplex_range(const Simplex_handle simplex, int codimension) {
-    std::cout << "C\n";
     return impl_cofaces_simplex_range(simplex, codimension,
                                       std::integral_constant<bool, Options::link_simplices_through_max_vertex>{});
   }
@@ -1110,9 +1109,6 @@ public:
    * Return Vector of Simplex_handle, empty vector if no cofaces found.*/
   Brute_force_cofaces_simplex_range impl_cofaces_simplex_range(const Simplex_handle simplex, int codimension,
                                                                std::false_type) {
-
-    std::cout << "B\n";
-
     Brute_force_cofaces_simplex_range cofaces;
     // codimension must be positive or null integer
     assert(codimension >= 0);
@@ -1134,8 +1130,6 @@ public:
    */
   Optimized_cofaces_simplex_range impl_cofaces_simplex_range(const Simplex_handle simplex, int codimension,
                                                              std::true_type) {
-    
-    std::cout << "A\n";
     assert(codimension >= 0);
     Simplex_vertex_range rg = simplex_vertex_range(simplex);
     std::vector<Vertex_handle> copy(rg.begin(), rg.end());
