@@ -2,6 +2,7 @@
 #include <fstream>
 #include <chrono>
 #include <gudhi/Simplex_tree.h>
+#include <gudhi/Zigzag_persistence.h>
 #include "gudhi/reader_utils.h"
 #include <gudhi/distance_functions.h>
 #include <gudhi/Zigzag_filtration.h>
@@ -13,6 +14,7 @@
 
 // Types definition
 using Simplex_tree = Gudhi::Simplex_tree<Gudhi::Simplex_tree_options_zigzag_persistence>;
+using Zz_persistence = Gudhi::zigzag_persistence::Zigzag_persistence<Simplex_tree> ;
 using Zz_edge = Zigzag_edge<Simplex_tree>;
 using Filtration_value = Simplex_tree::Filtration_value;
 // using Zigzag_persistence = Gudhi::zigzag_persistence::Zigzag_persistence<Simplex_tree >;
@@ -61,7 +63,7 @@ int main(int argc, char* argv[])
 
   //Compute edge filtration
   start = std::chrono::system_clock::now();
-	fast_points_to_edge_filtration( sorted_points, 
+  fast_points_to_edge_filtration( sorted_points, 
                              sqdist,
                              //Gudhi::Euclidean_distance(),
                              nu, mu, filtration_values, edge_filtration );
@@ -74,37 +76,48 @@ int main(int argc, char* argv[])
   for(auto & f : filtration_values) { f = std::sqrt(f); }
   for(auto & e : edge_filtration) { e.assign_fil(std::sqrt(e.fil())); }
 
-  std::cout << "Point cloud : \n";
-  for(auto point : sorted_points) {
-    for(auto x : point) { std::cout << x << " "; }
-    std::cout << std::endl;
-  }
-  std::cout << std::endl;
-  std::cout << "Epsilon filtration values: \n";
-  for(size_t i = 0; i < filtration_values.size(); ++i) {
-    std::cout << "eps_" << i << " : " << filtration_values[i] << std::endl;
-  }
-  std::cout << std::endl;
-  std::cout << "Edge filtration: \n";
-  for(auto edg : edge_filtration) 
-  { 
-   if(edg.type()) { std::cout << "+ "; } else { std::cout << "- "; }
-    std::cout <<  " " << edg.u() << " " << edg.v() << " " << edg.fil() << std::endl;
-  }
-  std::cout << std::endl;
- 
-  // traverse the filtration
-  Simplex_tree st;
-  st.initialize_filtration(edge_filtration, dim_max); 
-  auto zz_rg = st.filtration_simplex_range();
-  
-  // std::cout << "Simplex filtration: \n";
-  // for(auto it = zz_rg.begin(); it != zz_rg.end(); ++it ) {
-  //   if(it.arrow_direction()) {std::cout << "+ ";} else {std::cout << "- ";}
-  //   for(auto u : st.simplex_vertex_range(*it)) { std::cout << u << " "; }
-  //     std::cout << "    " << st.filtration(*it) << "  " << st.key(*it) << "\n";
+
+  // std::cout << "Point cloud : \n";
+  // for(auto point : sorted_points) {
+  //   for(auto x : point) { std::cout << x << " "; }
+  //   std::cout << std::endl;
   // }
   // std::cout << std::endl;
+  // std::cout << "Epsilon filtration values: \n";
+  // for(size_t i = 0; i < filtration_values.size(); ++i) {
+  //   std::cout << "eps_" << i << " : " << filtration_values[i] << std::endl;
+  // }
+  // std::cout << std::endl;
+  // std::cout << "Edge filtration: \n";
+  // for(auto edg : edge_filtration) 
+  // { 
+  //  if(edg.type()) { std::cout << "+ "; } else { std::cout << "- "; }
+  //   std::cout <<  " " << edg.u() << " " << edg.v() << " " << edg.fil() << std::endl;
+  // }
+  // std::cout << std::endl;
+ 
+  // traverse the filtration
+  {
+    Simplex_tree st;
+    st.initialize_filtration(edge_filtration, dim_max); 
+    auto zz_rg = st.filtration_simplex_range();
+    for(auto it = zz_rg.begin(); it != zz_rg.end(); ++it ) {
+      if(it.arrow_direction()) {std::cout << "+ ";} else {std::cout << "- ";}
+      for(auto u : st.simplex_vertex_range(*it)) { std::cout << u << " "; }
+        std::cout << "  " << st.key(*it) << " " << st.filtration(*it) << "\n";
+    }
+    std::cout << std::endl;
+
+  }
+
+  {
+    Simplex_tree st;
+    st.initialize_filtration(edge_filtration, dim_max); 
+    // auto zz_rg = st.filtration_simplex_range();
+    
+    Zz_persistence zz(st);
+    zz.compute_zigzag_persistence();
+  }
 
   return 0;
 }
