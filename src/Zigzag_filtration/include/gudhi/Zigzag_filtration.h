@@ -143,8 +143,6 @@ void fast_points_to_edge_filtration(Point_container         &points,
   point_distance_cmp<FiltrationValue> cmp;
   size_t number_of_arrows = 0;
 
-std::cout << "1\n";
-
   //syntax tbb
   // for( size_t i=0; i!=n; ++i ) {Foo(a[i]);}
   // tbb::parallel_for( size_t(0), n, [&]( size_t i ) {Foo(a[i]);} );

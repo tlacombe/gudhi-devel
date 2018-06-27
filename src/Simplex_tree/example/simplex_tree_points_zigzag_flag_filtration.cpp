@@ -5,13 +5,11 @@
 #include "gudhi/reader_utils.h"
 #include <gudhi/distance_functions.h>
 #include <gudhi/Zigzag_filtration.h>
-#include <gudhi/choose_n_farthest_points.h>
 #include <gudhi/Points_off_io.h>
 #include <boost/program_options.hpp>
 #include <CGAL/Epick_d.h>
 #include <gudhi/choose_n_farthest_points.h>
 #include <gudhi/pick_n_random_points.h>
-
 
 // Types definition
 using Simplex_tree = Gudhi::Simplex_tree<Gudhi::Simplex_tree_options_zigzag_persistence>;
@@ -77,10 +75,6 @@ int main(int argc, char* argv[])
   for(auto & e : edge_filtration) { e.assign_fil(std::sqrt(e.fil())); }
 
 
-// return 0;
-
-//sort points
-
   std::cout << "Point cloud : \n";
   for(auto point : sorted_points) {
     for(auto x : point) { std::cout << x << " "; }
@@ -103,22 +97,21 @@ int main(int argc, char* argv[])
   }
   std::cout << std::endl;
  
-return 0;
-
   // traverse the filtration
   Simplex_tree st;
   st.initialize_filtration(edge_filtration, dim_max); 
   auto zz_rg = st.filtration_simplex_range();
   
-  // auto zz_rg = st.zigzag_simplex_range(edge_filtration, dim_max);
-
+  size_t num_arrows = 0;
   std::cout << "Simplex filtration: \n";
   for(auto it = zz_rg.begin(); it != zz_rg.end(); ++it ) {
+    ++num_arrows;
     if(it.arrow_direction()) {std::cout << "+ ";} else {std::cout << "- ";}
     for(auto u : st.simplex_vertex_range(*it)) { std::cout << u << " "; }
       std::cout << "    " << st.filtration(*it) << "  " << st.key(*it) << "\n";
   }
-  std::cout << std::endl;
+  std::cout << std::endl << std::endl;
+  std::cout << "Number of arrows : " << num_arrows << std::endl;
 
   return 0;
 }

@@ -97,26 +97,33 @@ int main(int argc, char* argv[])
   // std::cout << std::endl;
  
   // traverse the filtration
-  {
-    Simplex_tree st;
-    st.initialize_filtration(edge_filtration, dim_max); 
-    auto zz_rg = st.filtration_simplex_range();
-    for(auto it = zz_rg.begin(); it != zz_rg.end(); ++it ) {
-      if(it.arrow_direction()) {std::cout << "+ ";} else {std::cout << "- ";}
-      for(auto u : st.simplex_vertex_range(*it)) { std::cout << u << " "; }
-        std::cout << "  " << st.key(*it) << " " << st.filtration(*it) << "\n";
-    }
-    std::cout << std::endl;
-
-  }
+  // {
+  //   Simplex_tree st;
+  //   st.initialize_filtration(edge_filtration, dim_max); 
+  //   auto zz_rg = st.filtration_simplex_range();
+  //   for(auto it = zz_rg.begin(); it != zz_rg.end(); ++it ) {
+  //     if(it.arrow_direction()) {std::cout << "+ ";} else {std::cout << "- ";}
+  //     for(auto u : st.simplex_vertex_range(*it)) { std::cout << u << " "; }
+  //       std::cout << "  " << st.key(*it) << " " << st.filtration(*it) << "\n";
+  //   }
+  //   std::cout << std::endl;
+  // }
 
   {
     Simplex_tree st;
     st.initialize_filtration(edge_filtration, dim_max); 
     // auto zz_rg = st.filtration_simplex_range();
-    
+
+    start = std::chrono::system_clock::now();
     Zz_persistence zz(st);
     zz.compute_zigzag_persistence();
+    end = std::chrono::system_clock::now();
+    enlapsed_sec =std::chrono::duration_cast<std::chrono::seconds>(end-start).count();
+
+    std::cout << "Compute zigzag persistence in: " << enlapsed_sec << " sec.\n";
+
+    zz.output_log2_diagram();
+
   }
 
   return 0;

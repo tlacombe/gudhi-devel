@@ -278,13 +278,18 @@ private:
     // Simplex_handle morse_pairing() {return this->null_simplex();}
     void assign_morse_pairing(Simplex_handle sh) {}
     bool is_critical() { return true; }
+    bool is_paired_with(Simplex_handle sh) { return false; }
   };
   struct Pairing_simplex_base_morse {
     Pairing_simplex_base_morse() {}
     Pairing_simplex_base_morse(Simplex_handle sh) : sh_(sh) {}
     Simplex_handle morse_pairing() {return sh_;}
     void assign_morse_pairing(Simplex_handle sh) {sh_ = sh;}
-    bool is_critical() { return &(sh_.second) == &(static_cast<Node&>(*this)); }//true iff critical
+    bool is_critical() { return &(sh_->second) == &(static_cast<Node&>(*this)); }//true iff critical
+    //true iff the simplex is paired with sh
+    bool is_paired_with(Simplex_handle sh) {
+      return &(sh_->second) == &(sh->second);
+    }
     //sh_ points to itself if critical, paired simplex otherwise
     Simplex_handle sh_;
   };
@@ -315,6 +320,11 @@ public:
   */
   void assign_morse_pairing(Simplex_handle sh) {
     sh->second.assign_morse_pairing(sh);
+  }
+/**
+  */
+  bool is_pair(Simplex_handle sh_t, Simplex_handle sh_s) {
+    return (sh_t->second.is_paired_with(sh_s) && sh_s->second.is_paired_with(sh_t));
   }
 
 
@@ -2154,7 +2164,7 @@ struct Simplex_tree_options_zigzag_persistence {
   static const bool contiguous_vertices = false;
   static const bool link_simplices_through_max_vertex = true;
   static const bool store_annotation_vector = false; //for zigzag cohomology
-  static const bool store_morse_matching = true;
+  static const bool store_morse_matching = false;
   static const bool simplex_handle_strong_validity = true;//Dictionary::iterators remain valid even after insertions and deletions
 };
 

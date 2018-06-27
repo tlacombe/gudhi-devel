@@ -132,6 +132,8 @@ class Flagzigzag_simplex_iterator
           //effectively remove all simplices from partial_zzfil_; must be sorted 
           cpx_->remove_maximal_simplices(partial_zzfil_);
 
+          counter_insert += partial_zzfil_.size();
+
           //The simplices in partial_zzfil_ come by decreasing keys, hence 
           //are all maximal when removing from left to right. 
           //FlagZigzagFilteredComplex::Dictionary must not invalidate iterators
@@ -155,8 +157,6 @@ class Flagzigzag_simplex_iterator
         //     cpx_->remove_maximal_simplex(*sh_it); //modify the complex 
         //   } 
         // }
-
-
         }
 
 
