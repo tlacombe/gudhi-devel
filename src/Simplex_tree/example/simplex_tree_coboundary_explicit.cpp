@@ -36,7 +36,7 @@ typedef int Vertex_handle;
 typedef double Filtration_value;
 using Rips_complex = Gudhi::rips_complex::Rips_complex<Filtration_value>;
 using Point = std::vector<double>;
-typedef Simplex_tree<Simplex_tree_options_zigzag_persistence> opt_ST;
+typedef Simplex_tree<Simplex_tree_options_morse> opt_ST;
 typedef Simplex_tree<> brut_ST;
 
 /* 
@@ -81,6 +81,17 @@ int main(int argc, char* argv[]) {
       }  // traverse the coboundary
     }
    
+    for (auto f_simplex : opt_st.filtration_simplex_range()) {  // for every simplex
+      for(auto v : opt_st.simplex_vertex_range(f_simplex)) {std::cout << v <<" ";}
+      std::cout << std::endl;
+      for (auto c_simplex : opt_st.boundary_simplex_range(f_simplex)) {
+        std::cout << "     ";
+        for(auto v : opt_st.simplex_vertex_range(c_simplex)) {std::cout << v <<" ";}
+        std::cout << std::endl;
+      }  // traverse the boundary
+    }
+
+
     std::vector<int> simp;
     simp.push_back(4);
     simp.push_back(2);

@@ -1,10 +1,13 @@
 project(Simplex_tree_examples)
 
+#SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+
 add_executable ( Simplex_tree_example_points_zigzag_flag_filtration simplex_tree_points_zigzag_flag_filtration.cpp )
-target_link_libraries(Simplex_tree_example_points_zigzag_flag_filtration ${Boost_PROGRAM_OPTIONS_LIBRARY})
-# if (TBB_FOUND)
-#   target_link_libraries(Simplex_tree_example_points_zigzag_flag_filtration ${TBB_LIBRARIES})
-# endif()
+if (TBB_FOUND)
+  target_link_libraries(Simplex_tree_example_points_zigzag_flag_filtration ${TBB_LIBRARIES} ${Boost_PROGRAM_OPTIONS_LIBRARY})
+else()
+  target_link_libraries(Simplex_tree_example_points_zigzag_flag_filtration ${Boost_PROGRAM_OPTIONS_LIBRARY})
+endif()
 
 add_executable ( Simplex_tree_example_simple_zigzag_flag_filtration simple_simplex_tree_zigzag_flag_filtration.cpp )
 if (TBB_FOUND)

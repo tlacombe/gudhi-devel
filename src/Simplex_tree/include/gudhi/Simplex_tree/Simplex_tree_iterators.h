@@ -105,9 +105,13 @@ class Simplex_tree_boundary_simplex_iterator
     next_ = sib->parent();
     sib_ = sib->oncles();
     if (sib_ != nullptr) {
-      if (SimplexTree::Options::contiguous_vertices && sib_->oncles() == nullptr)
+      if (SimplexTree::Options::contiguous_vertices && sib_->oncles() == nullptr){
         // Only relevant for edges
-        sh_ = sib_->members_.begin() + next_;
+          sh_ = sib_->members_.begin();
+          for (int i = 0; i < next_; i++){
+              sh_++;
+          }
+      }
       else
         sh_ = sib_->find(next_);
     } else {
@@ -138,12 +142,20 @@ class Simplex_tree_boundary_simplex_iterator
       // We reached the root, use a short-cut to find a vertex.
       if (rit == suffix_.rend()) {
         // Segment, this vertex is the last boundary simplex
-        sh_ = for_sib->members_.begin() + last_;
+          sh_ = for_sib->members_.begin();
+          for (int i = 0; i < last_; i++){
+              sh_++;
+          }
+        //sh_ = for_sib->members_.begin() + last_;
         sib_ = nullptr;
         return;
       } else {
         // Dim >= 2, initial step of the descent
-        sh_ = for_sib->members_.begin() + *rit;
+          sh_ = for_sib->members_.begin();
+          for (int i = 0; i < *rit; i++){
+              sh_++;
+          }
+        //sh_ = for_sib->members_.begin() + *rit;
         for_sib = sh_->second.children();
         ++rit;
       }
