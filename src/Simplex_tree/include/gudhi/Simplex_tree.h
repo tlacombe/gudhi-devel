@@ -238,6 +238,43 @@ class Simplex_tree {
 
   Cofaces_data_structure cofaces_data_structure_;
 
+
+  struct cmp_sh_by_vh {
+    bool operator()(Simplex_handle sh1, Simplex_handle sh2) {
+      return sh1->first < sh2->first;
+    } 
+  };
+
+//to precompute coboundary, store a map of cofaces in each node
+  struct Store_coboundary_in_nodes {
+    Store_coboundary_in_nodes() { coboundary_ = new std::set< Simplex_handle, cmp_sh_by_vh >(); }
+    ~Store_coboundary_in_nodes() {coboundary_->clear(); delete coboundary_;}
+
+    void insert_coboundary(Simplex_handle sh) { coboundary_->insert(sh); }
+    void erase_coboundary(Simplex_handle sh) { coboundary_->erase(sh); }
+    std::set< Simplex_handle, cmp_sh_by_vh > * coboundary() { return coboundary_; }
+
+    std::set< Simplex_handle, cmp_sh_by_vh > * coboundary_;
+  };
+  struct Store_coboundary_in_nodes_dummy {
+    Store_coboundary_in_nodes_dummy() {}
+    void insert_coboundary(Simplex_handle sh) { }
+    void erase_coboundary(Simplex_handle sh) { }
+    std::set<Simplex_handle, cmp_sh_by_vh> * coboundary() { return &std::set<Simplex_handle>(); }
+  };
+
+ public:
+  typedef typename std::conditional<Options::precompute_cofaces, 
+                                    Store_coboundary_in_nodes,
+                                    Store_coboundary_in_nodes_dummy>::type 
+                                                 Precompute_coboundary_simplex_base;
+
+  std::set<Simplex_handle, cmp_sh_by_vh> * coboundary_simplex_range_precomputed(Simplex_handle sh)
+  {
+    return (sh->second.coboundary());
+  }
+
+private:
   // the zigzag persistence cohomology algorithm requires to store a
   // void * in each simplex.
   struct Annotation_simplex_base_zzpersistence {
@@ -331,7 +368,20 @@ public:
  private:
   // update all extra data structures in the Simplex_tree, include fast
   // cofaces locator, after the successful insertion of a simplex.
-  void update_simplex_tree_after_node_insertion(Simplex_handle sh) { cofaces_data_structure_.insert(sh); }
+  void update_simplex_tree_after_node_insertion(Simplex_handle sh) { cofaces_data_structure_.insert(sh); 
+    // for(auto b_sh : boundary_simplex_range(sh)) {
+    //   b_sh->second.insert_coboundary(sh);
+    // }
+  }
+
+  // update all extra data structures in the Simplex_tree, include fast
+  // cofaces locator, after the successful insertion of a simplex.
+  void update_simplex_tree_after_node_removal(Simplex_handle sh) { 
+    // cofaces_data_structure_.insert(sh); 
+    // for(auto b_sh : boundary_simplex_range(sh)) {
+    //   b_sh->second.erase_coboundary(sh);
+    // }
+  }
 
   typedef typename Dictionary::iterator Dictionary_it;
   typedef typename Dictionary_it::value_type Dit_value_t;
@@ -2036,6 +2086,8 @@ public:
     GUDHI_CHECK(!has_children(sh),
                 std::invalid_argument("Simplex_tree::remove_maximal_simplex - argument has children"));
 
+
+
     // Simplex is a leaf, it means the child is the Siblings owning the leaf
     Siblings* child = sh->second.children();
 
@@ -2120,6 +2172,7 @@ struct Simplex_tree_options_full_featured {
   static const bool store_annotation_vector = false;
   static const bool store_morse_matching = false;
   static const bool simplex_handle_strong_validity = false;
+  static const bool precompute_cofaces = false;
 };
 
 /** Model of SimplexTreeOptions, faster than `Simplex_tree_options_full_featured` but note the unsafe
@@ -2141,6 +2194,7 @@ struct Simplex_tree_options_fast_persistence {
   static const bool store_annotation_vector = false;
   static const bool store_morse_matching = false;
   static const bool simplex_handle_strong_validity = false;
+  static const bool precompute_cofaces = false;
 };
 
 /** Model of SimplexTreeOptions, with a zigzag_indexing_tag.
@@ -2166,6 +2220,7 @@ struct Simplex_tree_options_zigzag_persistence {
   static const bool store_annotation_vector = false; //for zigzag cohomology
   static const bool store_morse_matching = false;
   static const bool simplex_handle_strong_validity = true;//Dictionary::iterators remain valid even after insertions and deletions
+  static const bool precompute_cofaces = false;
 };
 
 /** Model of SimplexTreeOptions, with a zigzag_indexing_tag.
@@ -2191,6 +2246,23 @@ struct Simplex_tree_options_morse {
   static const bool store_annotation_vector = false; //for zigzag cohomology
   static const bool store_morse_matching = true;
   static const bool simplex_handle_strong_validity = true;//Dictionary::iterators remain valid even after insertions and deletions
+  static const bool precompute_cofaces = false;
+};
+
+struct Simplex_tree_options_morse_zigzag_persistence {
+  typedef zigzag_indexing_tag Indexing_tag;
+  static const bool is_zigzag = true;
+  typedef int Vertex_handle;
+  typedef double Filtration_value;
+  typedef int Simplex_key;
+  static const bool store_key = true;
+  static const bool store_filtration = true;
+  static const bool contiguous_vertices = false;
+  static const bool link_simplices_through_max_vertex = true;
+  static const bool store_annotation_vector = false; //for zigzag cohomology
+  static const bool store_morse_matching = true;
+  static const bool simplex_handle_strong_validity = true;//Dictionary::iterators remain valid even after insertions and deletions
+  static const bool precompute_cofaces = true;
 };
 
 /** @} */  // end defgroup simplex_tree

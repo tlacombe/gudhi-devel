@@ -277,6 +277,80 @@ void plus_equal_column(matrix_chain * self1, Column * c1, Column * c2)
   }
 }
 
+
+/*
+ * Set c1 <- c1 + c2, assuming canonical order of indices induced by the order in 
+ * the vertical lists. self1 is the matrix_chain whose column is c1, for self 
+ * reference of the new cells.
+ */
+// void plus_equal_column(matrix_chain * self1, Column * c1, std::set<Simplex_key> &c2)
+// {
+  // auto it1 = c1->begin();   auto it2 = c2->begin();
+  // while(it1 != c1->end() && it2 != c2->end())
+  // {
+  //   if(it1->key_ < it2->key_) { ++it1; }
+  //   else {
+  //     if(it1->key_ > it2->key_) {
+  //       Cell * new_cell = new Cell(it2->key_, self1);
+  //       c1->insert(it1, *new_cell); //col link, in order
+  //       lowidx_to_matidx_[it2->key_]->row_->push_back(*new_cell);//row link,no order
+  //       ++it2;
+  //     }
+  //     else { //it1->key_ == it2->key_
+  //       auto tmp_it = it1;    ++it1; ++it2;
+  //       Cell * tmp_ptr = &(*tmp_it); 
+  //       tmp_it->base_hook_zzmat_h::unlink(); //unlink from row
+  //       c1->erase(tmp_it); //remove from col
+  //       delete tmp_ptr;
+  //     }
+  //   }
+  // }
+  // while(it2 != c2->end()) { //if it1 reached the end of its column, but not it2
+  //   Cell * new_cell = new Cell(it2->key_,self1);
+  //   lowidx_to_matidx_[it2->key_]->row_->push_back(*new_cell); //row links
+  //   c1->push_back(*new_cell); 
+  //   ++it2; 
+  // }
+// }
+
+/*
+ * Set c1 <- c1 + c2, assuming canonical order of indices induced by the order in 
+ * the vertical lists. self1 is the matrix_chain whose column is c1, for self 
+ * reference of the new cells.
+ */
+// void plus_equal_setcol(matrix_chain * self1, Column * c1, std::set<Simplex_key> & c2) 
+// {
+  // auto it1 = c1->begin();   auto it2 = c2->begin();
+  // while(it1 != c1->end() && it2 != c2->end())
+  // {
+  //   if(it1->key_ < it2->key_) { ++it1; }
+  //   else {
+  //     if(it1->key_ > it2->key_) {
+  //       Cell * new_cell = new Cell(it2->key_, self1);
+  //       c1->insert(it1, *new_cell); //col link, in order
+  //       lowidx_to_matidx_[it2->key_]->row_->push_back(*new_cell);//row link,no order
+  //       ++it2;
+  //     }
+  //     else { //it1->key_ == it2->key_
+  //       auto tmp_it = it1;    ++it1; ++it2;
+  //       Cell * tmp_ptr = &(*tmp_it); 
+  //       tmp_it->base_hook_zzmat_h::unlink(); //unlink from row
+  //       c1->erase(tmp_it); //remove from col
+  //       delete tmp_ptr;
+  //     }
+  //   }
+  // }
+  // while(it2 != c2->end()) { //if it1 reached the end of its column, but not it2
+  //   Cell * new_cell = new Cell(it2->key_,self1);
+  //   lowidx_to_matidx_[it2->key_]->row_->push_back(*new_cell); //row links
+  //   c1->push_back(*new_cell); 
+  //   ++it2; 
+  // }
+// }
+
+
+
+
 /* Maintains the <=b order of indices.*/
 // struct birth_vector {
 //   birth_vector() : inv_b_vec(), maxb(0), minb(0) {}
@@ -368,6 +442,7 @@ void compute_zigzag_persistence()
   while( zzit != zzrg.end() )
   { 
 
+    if(num_arrow_ % 100000 == 0) std::cout << num_arrow_ << "\n";
     // display_mat();
     // std::cout << std::endl;
     // if(zzit.arrow_direction()) std::cout << "+ ";
@@ -447,13 +522,40 @@ void compute_zigzag_persistence()
    * feature exists in homology with Z/piZ coefficients.
    */
   void output_diagram(std::ostream& ostream = std::cout) {
-    // std::map< std::pair< Simplex_key, Filtration_value > > fil_map(filtration_values_.begin(), filtration_values.end());
+    
+    int num_intervals = 5;
+
+    std::vector< interval_t > tmp_diag; 
+    tmp_diag.reserve(persistence_diagram_.size());
     for(auto bar : persistence_diagram_) {
-      std::cout << bar.dim_ << "   " << index_to_filtration(bar.b_) << " " << index_to_filtration(bar.d_) << " \n"; 
+      tmp_diag.emplace_back(bar.dim_,index_to_filtration(bar.b_),index_to_filtration(bar.d_));
+    }
+    cmp_intervals_by_length cmp;
+    std::stable_sort(tmp_diag.begin(), tmp_diag.end(), cmp);
+
+    if(tmp_diag.empty()) {return;}
+
+    int curr_dim = tmp_diag.begin()->dim_;
+    int curr_num_intervals = num_intervals;
+
+    for(auto bar : tmp_diag) {
+      if(curr_dim != bar.dim_) {
+        std::cout << "----------------------------------------- dim " << bar.dim_ 
+        << " \n";
+        curr_num_intervals = num_intervals; curr_dim = bar.dim_;
+      }
+      if(curr_num_intervals > 0) {
+        --curr_num_intervals;
+        std::cout << bar.dim_ << "   " << bar.b_ << " " << bar.d_ << 
+                                                "      " << bar.length() << " \n";
+      }
     }
   }
 
   void output_log2_diagram(std::ostream& ostream = std::cout) {
+
+    int num_intervals = 5;
+
     std::vector< interval_t > tmp_diag; 
     tmp_diag.reserve(persistence_diagram_.size());
     for(auto bar : persistence_diagram_) {
@@ -462,12 +564,23 @@ void compute_zigzag_persistence()
     cmp_intervals_by_length cmp;
     std::stable_sort(tmp_diag.begin(), tmp_diag.end(), cmp);
 
+    if(tmp_diag.empty()) {return;}
+
+    int curr_dim = tmp_diag.begin()->dim_;
+    int curr_num_intervals = num_intervals;
+
     for(auto bar : tmp_diag) {
-      if(bar.length() > 0.0001) { 
-        std::cout << bar.dim_ << "   " << bar.b_ << " " << bar.d_ << " \n"; 
+      if(curr_dim != bar.dim_) {
+        std::cout << "----------------------------------------- dim " << bar.dim_ 
+        << " \n";
+        curr_num_intervals = num_intervals; curr_dim = bar.dim_;
+      }
+      if(curr_num_intervals > 0) {
+        --curr_num_intervals;
+        std::cout << bar.dim_ << "   " << bar.b_ << " " << bar.d_ << 
+                                                "      " << bar.length() << " \n";
       }
     }
-
   }
 
 
@@ -482,8 +595,18 @@ void compute_zigzag_persistence()
    * feature exists in homology with Z/piZ coefficients.
    */
   void output_index_diagram(std::ostream& ostream = std::cout) {
+    std::vector< interval_t > tmp_diag; 
+    tmp_diag.reserve(persistence_diagram_.size());
     for(auto bar : persistence_diagram_) {
-      std::cout << bar.dim_ << "   " << bar.b_ << " " << bar.d_ << " \n"; 
+      tmp_diag.emplace_back(bar.dim_,bar.b_,bar.d_);
+    }
+    cmp_intervals_by_length cmp;
+    std::stable_sort(tmp_diag.begin(), tmp_diag.end(), cmp);
+
+    for(auto bar : tmp_diag) {
+      if(bar.length() > 0.0001) { 
+        std::cout << bar.dim_ << "   " << bar.b_ << " " << bar.d_ << "      " << bar.length() << " \n"; 
+      }
     }
   }
 
@@ -704,7 +827,8 @@ void injective_reflection_diamond ( Simplex_handle                  zzsh
 /**
  * The vector chains_in_F is sorted by decreasing lowest index values in the 
  * columns corresponding to the chains, due to its computation in the reduction of 
- * \partial zzsh in forward_arrow(...).
+ * \partial zzsh in forward_arrow(...). It is equivalent to decreasing death index 
+ * order w.r.t. the <d ordering.
  */
 inline
 void surjective_reflection_diamond( Simplex_handle zzsh 
@@ -740,56 +864,63 @@ void surjective_reflection_diamond( Simplex_handle zzsh
 
   //fp is the largest death index for <=d
   //Set col_fp: col_fp <- col_f1+...+col_fp (now in G); preserves lowest idx
-  auto  chain_fp  =  *(chains_in_F.begin()); //col_fp, with largest death <d index.
-
-  // auto maxb = chain_fp->birth();//for persistent interval
-
-  // std::cout << "maxd cycle = " << chain_fp->lowest_idx_ << "\n";
+  auto chain_fp = *(chains_in_F.begin()); //col_fp, with largest death <d index.
 
   for(auto other_col_it = chains_in_F.begin()+1;
            other_col_it != chains_in_F.end(); ++other_col_it) 
   { plus_equal_column(chain_fp, chain_fp->column_, (*other_col_it)->column_); }
 
-
-  // display_mat();
-  // std::cout <<"\n\n\n\n";
-
   //Pair the col_fi, i = 1 ... p-1, according to the reflection diamond principle
-  //Order the fi by reverse birth ordering <=_b //true iff b(k1) > b(k2)
+  //Order the fi by reverse birth ordering <=_b           //true iff b(k1) > b(k2)
   auto cmp_birth = [this](Simplex_key k1, Simplex_key k2)->bool 
                          { return birth_ordering_.reverse_birth_order(k1,k2); };
-  std::map< Simplex_key, matrix_chain * 
-          , decltype(cmp_birth) > available_birth_to_fidx(cmp_birth); //available birth
-  //for f1 to f_{p} (fi increasing by <=d), insertion in available_birth_to_fidx sorts by >=b
-  for(auto chain_f : chains_in_F) { available_birth_to_fidx[ chain_f->birth() ] = chain_f; } 
+  
+
+  // //i by >d value, contains at step i all b_j, j > i, and maybe b_i if not stolen
+  // std::map< Simplex_key, matrix_chain * //available birth
+  //         , decltype(cmp_birth) > available_birth_to_fidx(cmp_birth); 
+  // //for f1 to f_{p} (i by <=d), insertion in available_birth_to_fidx sorts by >=b
+  // for(auto chain_f : chains_in_F) 
+  // { available_birth_to_fidx[ chain_f->birth() ] = chain_f; } 
+
+
+  //i by >d value, contains at step i all b_j, j > i, and maybe b_i if not stolen
+  std::set< Simplex_key //available birth
+          , decltype(cmp_birth) > available_birth(cmp_birth); 
+  //for f1 to f_{p} (i by <=d), insertion in available_birth_to_fidx sorts by >=b
+  for(auto chain_f : chains_in_F) { available_birth.insert(chain_f->birth()); } 
+
   // available_birth_to_fidx[ chain_fp->birth() ] = chain_fp; //contains p elements, the birth of fp must be available to others
   //test if line above is necessary
-  if(available_birth_to_fidx.find(chain_fp->birth()) == available_birth_to_fidx.end()) {
-    std::cout << "Miss chain_fp in available_birth_to_fidx when performing surjective_diamond \n"; }
+  if(available_birth.find(chain_fp->birth()) == available_birth.end()) {
+    std::cout << "Miss chain_fp in available_birth when performing surjective_diamond \n"; }
+  // if(available_birth_to_fidx.empty()) {std::cout << "available_birth_to_fidx empty.\n";}
 
-  if(available_birth_to_fidx.empty()) {std::cout << "available_birth_to_fidx empty.\n";}
+  auto maxb_it = available_birth.begin();//max birth cycle
+  auto maxb = *maxb_it; //max birth value, for persistence diagram
+  available_birth.erase(maxb_it); //remove max birth cycle (stolen)
 
-  // Filtration_value max_birth_fil_ = available_birth_to_fidx.begin()->second->birth_fil_;//for diag
-
-  auto max_b_chain_it = available_birth_to_fidx.begin();
-  auto maxb = max_b_chain_it->first; //for persistence diagram
-  available_birth_to_fidx.erase(max_b_chain_it); //remove max birth.
-
-  for(auto chain_f_it = chains_in_F.rbegin(); //by increasing death
+  for(auto chain_f_it  = chains_in_F.rbegin(); //by increasing death
           *chain_f_it != chain_fp; ++chain_f_it ) //chain_fp = begin() has max death
   { //find which reduced col has this birth
-    auto birth_it = available_birth_to_fidx.find((*chain_f_it)->birth());  
-    if(birth_it == available_birth_to_fidx.end()) { //birth not available anymore
-      auto max_available_birth_col = available_birth_to_fidx.begin(); //max available birth
-      //curr_col <- curr_col + max_birth_col  TODO necessary? for the right side?
-      // plus_equal_column( (*chain_f_it), (*chain_f_it)->column_, 
-      //                     max_available_birth_col->second->column_); 
-      (*chain_f_it)->assign_birth(max_available_birth_col->second); //give new birth
-      available_birth_to_fidx.erase(max_available_birth_col); //remove birth from availability
+    auto birth_it = available_birth.find((*chain_f_it)->birth());  
+    if(birth_it == available_birth.end()) { //birth not available anymore
+      auto max_avail_b_it = available_birth.begin(); 
+      Simplex_key max_avail_b = *max_avail_b_it;//max available birth
+      //add all chains with smaller <d death and larger <b birth than max_avail_b  
+      for(auto chain_passed_it =  chains_in_F.rbegin();//all with smaller <d death
+               chain_passed_it != chain_f_it; ++chain_passed_it) {//but
+        if(cmp_birth((*chain_passed_it)->birth(), max_avail_b)) {//larger <b birth
+          plus_equal_column( (*chain_f_it), (*chain_f_it)->column_, 
+                             (*chain_passed_it)->column_ ); 
+          std::cout << "X";
+        }
+      }
+      (*chain_f_it)->assign_birth(max_avail_b); //give new birth
+      available_birth.erase(max_avail_b_it); //remove birth from availability
     }
-    else { available_birth_to_fidx.erase(birth_it); } //birth not available anymore
+    else { available_birth.erase(birth_it); } //birth not available anymore
   }
-
 
   //Compute the new column zzsh + \sum col_h, for col_h in chains_in_H
   std::set< Simplex_key > col_bsh;

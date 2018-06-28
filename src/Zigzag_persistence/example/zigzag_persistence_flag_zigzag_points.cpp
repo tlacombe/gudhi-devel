@@ -46,8 +46,8 @@ int main(int argc, char* argv[])
   Points_off_reader off_reader(off_file_points); //read points
 
   K k_d;
-
-  //sort points
+ 
+  //sort points 
   start = std::chrono::system_clock::now();
   std::vector<Point_d> sorted_points;
   Gudhi::subsampling::choose_n_farthest_points( k_d, off_reader.get_point_cloud() 
@@ -130,7 +130,7 @@ int main(int argc, char* argv[])
 }
 
  
-//program options
+//program options 
 void program_options(int argc, char* argv[], std::string& off_file_points, Filtration_value& nu, Filtration_value &mu, int& dim_max) {
   namespace po = boost::program_options;
   po::options_description hidden("Hidden options");
@@ -139,10 +139,10 @@ void program_options(int argc, char* argv[], std::string& off_file_points, Filtr
 
   po::options_description visible("Allowed options", 100);
   visible.add_options()("help,h", "produce help message")
-  ( "nu",
+  ( "nu-factor,nu",
     po::value<Filtration_value>(&nu)->default_value(3.0),
     "Lower multiplicative factor in the oscillating Rips zigzag filtration.")
-  ( "mu",
+  ( "mu-factor,mu",
     po::value<Filtration_value>(&mu)->default_value(3.2),
     "Upper multiplicative factor in the oscillating Rips zigzag filtration.")
   ( "cpx-dimension,d", po::value<int>(&dim_max)->default_value(1),
