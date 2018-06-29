@@ -164,6 +164,19 @@ public:
 
 };
 
+// Print a Simplex_tree in os.
+template <typename... T>
+std::ostream& operator<<(std::ostream& os, matrix_chain<T...>& chain) {
+  os << " : [k=" << chain.lowest_idx_ <<"] ";
+  os << "[b=" << chain.birth_ <<"] ";
+  if(chain.paired_col_ != NULL) { os << "[pc=" << chain.paired_col_->lowest_idx_ <<"]     ";}
+  else { os << "[pc=" << "F" <<"]     ";}
+  os <<"| ";
+  for(auto &cell : *(chain.column_)) { os << cell.key_ << " "; }
+  os << " | ";
+  return os;
+}
+
 //----------------------------------------------------------------------------------
 /**
  * \class Zigzag_persistence Zigzag_persistence gudhi/Zigzag_persistence.h
@@ -195,7 +208,10 @@ private:
   struct interval_t {
     interval_t() {}
     interval_t(int dim, double b, double d) : dim_(dim), b_(b), d_(d) {}
-    double length() { return abs(b_ - d_); }
+    double length() { 
+      if(b_ == d_) return 0; //o.w. inf - inf would return nan.
+      return abs(b_ - d_); 
+    }
     int    dim_; //dimension
     double b_; //birth index
     double d_; //death index
@@ -443,15 +459,15 @@ void compute_zigzag_persistence()
   { 
 
     if(num_arrow_ % 100000 == 0) std::cout << num_arrow_ << "\n";
-    display_mat();
-    std::cout << std::endl;
-    if(zzit.arrow_direction()) std::cout << "+ ";
-    else std::cout << "- ";
-    for(auto v : cpx_->simplex_vertex_range(*zzit)) {
-      std::cout << v << " ";
-    } 
-    std::cout << "      k" << cpx_->key(*zzit)  << "  f" << cpx_->filtration(*zzit) <<  "\n";
-    std::cout << std::endl;
+    // display_mat();
+    // std::cout << std::endl;
+    // if(zzit.arrow_direction()) std::cout << "+ ";
+    // else std::cout << "- ";
+    // for(auto v : cpx_->simplex_vertex_range(*zzit)) {
+    //   std::cout << v << " ";
+    // } 
+    // std::cout << "      k" << cpx_->key(*zzit)  << "  f" << cpx_->filtration(*zzit) <<  "\n";
+    // std::cout << std::endl;
 
     //keys must be assigned by the filtration_simplex_iterator
     if(cpx_->critical(*zzit)) { //if the simplex is critical
@@ -870,6 +886,14 @@ void surjective_reflection_diamond( Simplex_handle zzsh
   // }
 
 
+  // if(chains_in_F.size() > 3) {
+  //   std::cout << "chains_in_F\n";
+  //   for(auto chain : chains_in_F) {
+  //     std::cout << *chain << std::endl;
+  //   }
+  //   std::cout << "-----end chains_in_F \n";
+  // }
+
   //fp is the largest death index for <=d
   //Set col_fp: col_fp <- col_f1+...+col_fp (now in G); preserves lowest idx
   auto chain_fp = *(chains_in_F.begin()); //col_fp, with largest death <d index.
@@ -877,6 +901,13 @@ void surjective_reflection_diamond( Simplex_handle zzsh
   for(auto other_col_it = chains_in_F.begin()+1;
            other_col_it != chains_in_F.end(); ++other_col_it) 
   { plus_equal_column(chain_fp, chain_fp->column_, (*other_col_it)->column_); }
+
+  // if(chains_in_F.size() > 3) {
+  //   std::cout << "kernel = sum of all chains_in_F\n";
+  //   std::cout << *chain_fp << std::endl;
+  // }
+
+
 
   //Pair the col_fi, i = 1 ... p-1, according to the reflection diamond principle
   //Order the fi by reverse birth ordering <=_b           //true iff b(k1) > b(k2)
@@ -898,6 +929,13 @@ void surjective_reflection_diamond( Simplex_handle zzsh
   //for f1 to f_{p} (i by <=d), insertion in available_birth_to_fidx sorts by >=b
   for(auto chain_f : chains_in_F) { available_birth.insert(chain_f->birth()); } 
 
+  // if(chains_in_F.size() > 1) {
+  //   std::cout << "all birth by decreasing <b order\n";
+  //   for(auto bb : available_birth) { std:: cout << bb << " ";}
+  //   std::cout << std::endl;    
+  // }
+
+
   // available_birth_to_fidx[ chain_fp->birth() ] = chain_fp; //contains p elements, the birth of fp must be available to others
   //test if line above is necessary
   if(available_birth.find(chain_fp->birth()) == available_birth.end()) {
@@ -908,11 +946,19 @@ void surjective_reflection_diamond( Simplex_handle zzsh
   auto maxb = *maxb_it; //max birth value, for persistence diagram
   available_birth.erase(maxb_it); //remove max birth cycle (stolen)
 
+
+
   for(auto chain_f_it  = chains_in_F.rbegin(); //by increasing death
           *chain_f_it != chain_fp; ++chain_f_it ) //chain_fp = begin() has max death
   { //find which reduced col has this birth
+    
+    // std::cout << "   current before: " << *(*chain_f_it) << std::endl;
+
     auto birth_it = available_birth.find((*chain_f_it)->birth());  
     if(birth_it == available_birth.end()) { //birth not available anymore
+      
+      // std::cout << "birth stolen\n";
+
       auto max_avail_b_it = available_birth.begin(); 
       Simplex_key max_avail_b = *max_avail_b_it;//max available birth
       //add all chains with smaller <d death and larger <b birth than max_avail_b  
@@ -921,13 +967,15 @@ void surjective_reflection_diamond( Simplex_handle zzsh
         if(cmp_birth((*chain_passed_it)->birth(), max_avail_b)) {//larger <b birth
           plus_equal_column( (*chain_f_it), (*chain_f_it)->column_, 
                              (*chain_passed_it)->column_ ); 
-          std::cout << "X";
+          // std::cout << "X\n";
         }
       }
       (*chain_f_it)->assign_birth(max_avail_b); //give new birth
       available_birth.erase(max_avail_b_it); //remove birth from availability
     }
     else { available_birth.erase(birth_it); } //birth not available anymore
+  
+    // std::cout << "   current after:  " << *(*chain_f_it) << std::endl;
   }
 
   //Compute the new column zzsh + \sum col_h, for col_h in chains_in_H

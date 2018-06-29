@@ -95,7 +95,7 @@ int main(int argc, char* argv[])
   //   std::cout <<  " " << edg.u() << " " << edg.v() << " " << edg.fil() << std::endl;
   // }
   // std::cout << std::endl;
- 
+  
   // traverse the filtration
   // {
   //   Simplex_tree st;
