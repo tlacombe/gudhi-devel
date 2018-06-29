@@ -443,15 +443,15 @@ void compute_zigzag_persistence()
   { 
 
     if(num_arrow_ % 100000 == 0) std::cout << num_arrow_ << "\n";
-    // display_mat();
-    // std::cout << std::endl;
-    // if(zzit.arrow_direction()) std::cout << "+ ";
-    // else std::cout << "- ";
-    // for(auto v : cpx_->simplex_vertex_range(*zzit)) {
-    //   std::cout << v << " ";
-    // } 
-    // std::cout << "  f" << cpx_->filtration(*zzit) << " k" << cpx_->key(*zzit) << "\n";
-    // std::cout << std::endl;
+    display_mat();
+    std::cout << std::endl;
+    if(zzit.arrow_direction()) std::cout << "+ ";
+    else std::cout << "- ";
+    for(auto v : cpx_->simplex_vertex_range(*zzit)) {
+      std::cout << v << " ";
+    } 
+    std::cout << "      k" << cpx_->key(*zzit)  << "  f" << cpx_->filtration(*zzit) <<  "\n";
+    std::cout << std::endl;
 
     //keys must be assigned by the filtration_simplex_iterator
     if(cpx_->critical(*zzit)) { //if the simplex is critical
@@ -525,6 +525,11 @@ void compute_zigzag_persistence()
     
     int num_intervals = 5;
 
+    std::cout << "Filtration values: ";
+    for(auto pp : filtration_values_) {
+      std::cout << "[ " << pp.first << " ; " << pp.second << " ]  ";
+    } std::cout << std::endl;
+
     std::vector< interval_t > tmp_diag; 
     tmp_diag.reserve(persistence_diagram_.size());
     for(auto bar : persistence_diagram_) {
@@ -555,6 +560,11 @@ void compute_zigzag_persistence()
   void output_log2_diagram(std::ostream& ostream = std::cout) {
 
     int num_intervals = 5;
+
+    // std::cout << "Filtration values: ";
+    // for(auto pp : filtration_values_) {
+    //   std::cout << "[ " << pp.first << " ; " << pp.second << " ]  ";
+    // } std::cout << std::endl;
 
     std::vector< interval_t > tmp_diag; 
     tmp_diag.reserve(persistence_diagram_.size());
@@ -600,13 +610,11 @@ void compute_zigzag_persistence()
     for(auto bar : persistence_diagram_) {
       tmp_diag.emplace_back(bar.dim_,bar.b_,bar.d_);
     }
-    cmp_intervals_by_length cmp;
-    std::stable_sort(tmp_diag.begin(), tmp_diag.end(), cmp);
+    // cmp_intervals_by_length cmp;
+    // std::stable_sort(tmp_diag.begin(), tmp_diag.end(), cmp);
 
     for(auto bar : tmp_diag) {
-      if(bar.length() > 0.0001) { 
         std::cout << bar.dim_ << "   " << bar.b_ << " " << bar.d_ << "      " << bar.length() << " \n"; 
-      }
     }
   }
 
@@ -647,12 +655,12 @@ void display_mat() {
     for(auto &cell : *(col.column_)) { std::cout << cell.key_ << " "; }
     std::cout << " |" << std::endl;
   }
-  // std::cout << "----------- \n";
+  std::cout << "----------- \n";
   // std::cout << "Bv: "; for(auto b : birth_vector_.inv_b_vec) { std::cout << b << " "; } std::cout << "\n";
   // std::cout << "Bv: "; for(auto pp : birth_ordering_.birth_to_pos_) { std::cout << "("<<pp.first<<";"<<pp.second<<") ";}
   // std::cout << "    maxb = " << birth_ordering_.max_birth_pos_ << " , minb = " << birth_ordering_.min_birth_pos_ << "\n";
-  // std::cout << "Pd: "; for(auto bd: persistence_diagram_) 
-  //                       { std::cout << "["<<bd.b_<<";"<<bd.d_<< "  d" << bd.dim_ << "] "; } std::cout << "\n";
+  std::cout << "Pd: "; for(auto bd: persistence_diagram_) 
+                        { std::cout << "["<<bd.b_<<";"<<bd.d_<< "  d" << bd.dim_ << "] "; } std::cout << "\n";
   // std::cout << "l_to_m: "; for(auto ltm : lowidx_to_matidx_) 
   //                       { std::cout << ltm.first << "->" << ltm.second->lowest_idx_ << " ";} std::cout << "\n";
   for(auto ltm : lowidx_to_matidx_) {
@@ -965,7 +973,7 @@ void surjective_reflection_diamond( Simplex_handle zzsh
   // // }
   persistence_diagram_.emplace_back( cpx_->dimension(zzsh)-1
                                    , maxb//cpx_->filtration(max_birth)
-                                   , num_arrow_-1);//cpx_->filtration(zzsh)); 
+                                   , num_arrow_);//-1);//cpx_->filtration(zzsh)); 
 
 }
 
