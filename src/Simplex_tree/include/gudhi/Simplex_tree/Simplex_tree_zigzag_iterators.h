@@ -31,6 +31,8 @@ public:
              (e.fil_ == fil_) && (e.type_ == type_) );
   }
 
+  void assign_fil(typename FilteredComplex::Filtration_value fil) { fil_ = fil; }
+
 private:
   typename FilteredComplex::Vertex_handle    u_;
   typename FilteredComplex::Vertex_handle    v_;
@@ -130,6 +132,8 @@ class Flagzigzag_simplex_iterator
           //effectively remove all simplices from partial_zzfil_; must be sorted 
           cpx_->remove_maximal_simplices(partial_zzfil_);
 
+          counter_insert += partial_zzfil_.size();
+
           //The simplices in partial_zzfil_ come by decreasing keys, hence 
           //are all maximal when removing from left to right. 
           //FlagZigzagFilteredComplex::Dictionary must not invalidate iterators
@@ -153,8 +157,6 @@ class Flagzigzag_simplex_iterator
         //     cpx_->remove_maximal_simplex(*sh_it); //modify the complex 
         //   } 
         // }
-
-
         }
 
 

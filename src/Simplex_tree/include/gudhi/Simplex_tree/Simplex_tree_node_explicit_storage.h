@@ -43,7 +43,8 @@ struct Simplex_tree_node_explicit_storage : SimplexTree::Filtration_simplex_base
                                             SimplexTree::Key_simplex_base,
                                             SimplexTree::Hooks_simplex_base,
                                             SimplexTree::Annotation_simplex_base,
-                                            SimplexTree::Pairing_simplex_base {
+                                            SimplexTree::Pairing_simplex_base,
+                                            SimplexTree::Precompute_coboundary_simplex_base {
   typedef typename SimplexTree::Siblings Siblings;
   typedef typename SimplexTree::Filtration_value Filtration_value;
   typedef typename SimplexTree::Simplex_key Simplex_key;

@@ -143,8 +143,6 @@ void fast_points_to_edge_filtration(Point_container         &points,
   point_distance_cmp<FiltrationValue> cmp;
   size_t number_of_arrows = 0;
 
-std::cout << "1\n";
-
   //syntax tbb
   // for( size_t i=0; i!=n; ++i ) {Foo(a[i]);}
   // tbb::parallel_for( size_t(0), n, [&]( size_t i ) {Foo(a[i]);} );
@@ -158,8 +156,6 @@ std::cout << "1\n";
     }
     filtration_values[i] = dist; //d(P_{i-1}, p_i)
   });
-
-std::cout << "2\n";
 
   //turn filtration_value[i] into sparsity of {p_0, ... , p_i}
   for(size_t i = 1; i < n; ++i) {
@@ -176,8 +172,6 @@ std::cout << "2\n";
     dist_matrix[i].resize(i);
   }
 
-std::cout << "3\n";
-
   // for(size_t i = 0; i < n; ++i) {//all vertices
   tbb::parallel_for(size_t(0), n, [&](size_t i) {
     for(size_t j = 0; j < i; ++j) {
@@ -186,8 +180,6 @@ std::cout << "3\n";
     }
     std::stable_sort(dist_matrix[i].begin(), dist_matrix[i].end(), cmp);
   } );
-
-std::cout << "4\n";
 
   typename std::vector< std::pair<int, FiltrationValue> >::iterator it;
 
@@ -200,8 +192,6 @@ std::cout << "4\n";
   // for(size_t i=0; i<n; ++i) {
   //   edges_added[i].reserve(m);     edges_removed[i].reserve(m);
   // }
-
-std::cout << "5\n";
 
   for(size_t i = 0; i < n-1; ++i) {//all ascending arrows eps_i
   // tbb::parallel_for(size_t(0), n-1, [&](size_t i) {
@@ -242,8 +232,6 @@ std::cout << "5\n";
     }
   } 
   // );
-
-  std::cout << "6\n";
 
 //sort insertions and deletion by edge length
   edge_cmp<Point_container, Distance, FiltrationValue, Edge_t > e_cmp(points, distance);

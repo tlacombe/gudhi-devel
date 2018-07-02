@@ -238,13 +238,50 @@ public:
 
     Cofaces_data_structure cofaces_data_structure_;
 
-    // the zigzag persistence cohomology algorithm requires to store a
-    // void * in each simplex.
-    struct Annotation_simplex_base_zzpersistence {
-        Annotation_simplex_base_zzpersistence() : ann_(NULL) {}
-        Annotation_simplex_base_zzpersistence(void* ann) : ann_(ann) {}
-        void* annotation() { return ann_; }
-        void assign_annotation(void* ann) { ann_ = ann; }
+
+  struct cmp_sh_by_vh {
+    bool operator()(Simplex_handle sh1, Simplex_handle sh2) {
+      return sh1->first < sh2->first;
+    } 
+  };
+
+//to precompute coboundary, store a map of cofaces in each node
+  struct Store_coboundary_in_nodes {
+    Store_coboundary_in_nodes() { coboundary_ = new std::set< Simplex_handle, cmp_sh_by_vh >(); }
+    ~Store_coboundary_in_nodes() {coboundary_->clear(); delete coboundary_;}
+
+    void insert_coboundary(Simplex_handle sh) { coboundary_->insert(sh); }
+    void erase_coboundary(Simplex_handle sh) { coboundary_->erase(sh); }
+    std::set< Simplex_handle, cmp_sh_by_vh > * coboundary() { return coboundary_; }
+
+    std::set< Simplex_handle, cmp_sh_by_vh > * coboundary_;
+  };
+  struct Store_coboundary_in_nodes_dummy {
+    Store_coboundary_in_nodes_dummy() {}
+    void insert_coboundary(Simplex_handle sh) { }
+    void erase_coboundary(Simplex_handle sh) { }
+    std::set<Simplex_handle, cmp_sh_by_vh> * coboundary() { return &std::set<Simplex_handle>(); }
+  };
+
+ public:
+  typedef typename std::conditional<Options::precompute_cofaces, 
+                                    Store_coboundary_in_nodes,
+                                    Store_coboundary_in_nodes_dummy>::type 
+                                                 Precompute_coboundary_simplex_base;
+
+  std::set<Simplex_handle, cmp_sh_by_vh> * coboundary_simplex_range_precomputed(Simplex_handle sh)
+  {
+    return (sh->second.coboundary());
+  }
+
+private:
+  // the zigzag persistence cohomology algorithm requires to store a
+  // void * in each simplex.
+  struct Annotation_simplex_base_zzpersistence {
+    Annotation_simplex_base_zzpersistence() : ann_(NULL) {}
+    Annotation_simplex_base_zzpersistence(void* ann) : ann_(ann) {}
+    void* annotation() { return ann_; }
+    void assign_annotation(void* ann) { ann_ = ann; }
 
         void* ann_;
     };
@@ -271,23 +308,28 @@ public:
     void assign_simplex_annotation(Simplex_handle sh, void* ann) { sh->second.assign_annotation(ann); }
 
 private:
-    /* Allows to pair simplices, in particular in a Morse matching.*/
-    struct Pairing_simplex_base_dummy {
-        Pairing_simplex_base_dummy() {}
-        Pairing_simplex_base_dummy(Simplex_handle sh) {}
-        // Simplex_handle morse_pairing() {return this->null_simplex();}
-        void assign_morse_pairing(Simplex_handle sh) {}
-        bool is_critical() { return true; }
-    };
-    struct Pairing_simplex_base_morse {
-        Pairing_simplex_base_morse() {}
-        Pairing_simplex_base_morse(Simplex_handle sh) : sh_(sh) {}
-        Simplex_handle morse_pairing() {return sh_;}
-        void assign_morse_pairing(Simplex_handle sh) {sh_ = sh;}
-        bool is_critical() { return &(sh_.second) == &(static_cast<Node&>(*this)); }//true iff critical
-        //sh_ points to itself if critical, paired simplex otherwise
-        Simplex_handle sh_;
-    };
+  /* Allows to pair simplices, in particular in a Morse matching.*/
+  struct Pairing_simplex_base_dummy {
+    Pairing_simplex_base_dummy() {}
+    Pairing_simplex_base_dummy(Simplex_handle sh) {}
+    // Simplex_handle morse_pairing() {return this->null_simplex();}
+    void assign_morse_pairing(Simplex_handle sh) {}
+    bool is_critical() { return true; }
+    bool is_paired_with(Simplex_handle sh) { return false; }
+  };
+  struct Pairing_simplex_base_morse {
+    Pairing_simplex_base_morse() {}
+    Pairing_simplex_base_morse(Simplex_handle sh) : sh_(sh) {}
+    Simplex_handle morse_pairing() {return sh_;}
+    void assign_morse_pairing(Simplex_handle sh) {sh_ = sh;}
+    bool is_critical() { return &(sh_->second) == &(static_cast<Node&>(*this)); }//true iff critical
+    //true iff the simplex is paired with sh
+    bool is_paired_with(Simplex_handle sh) {
+      return &(sh_->second) == &(sh->second);
+    }
+    //sh_ points to itself if critical, paired simplex otherwise
+    Simplex_handle sh_;
+  };
 public:
     typedef typename std::conditional<Options::store_morse_matching,
     Pairing_simplex_base_morse, Pairing_simplex_base_dummy>::type
@@ -318,15 +360,33 @@ public:
     void assign_morse_pairing(Simplex_handle sh) {
         sh->second.assign_morse_pairing(sh);
     }
+/**
+  */
+  bool is_pair(Simplex_handle sh_t, Simplex_handle sh_s) {
+    return (sh_t->second.is_paired_with(sh_s) && sh_s->second.is_paired_with(sh_t));
+  }
 
 
-private:
-    // update all extra data structures in the Simplex_tree, include fast
-    // cofaces locator, after the successful insertion of a simplex.
-    void update_simplex_tree_after_node_insertion(Simplex_handle sh) { cofaces_data_structure_.insert(sh); }
+ private:
+  // update all extra data structures in the Simplex_tree, include fast
+  // cofaces locator, after the successful insertion of a simplex.
+  void update_simplex_tree_after_node_insertion(Simplex_handle sh) { cofaces_data_structure_.insert(sh); 
+    // for(auto b_sh : boundary_simplex_range(sh)) {
+    //   b_sh->second.insert_coboundary(sh);
+    // }
+  }
 
-    typedef typename Dictionary::iterator Dictionary_it;
-    typedef typename Dictionary_it::value_type Dit_value_t;
+  // update all extra data structures in the Simplex_tree, include fast
+  // cofaces locator, after the successful insertion of a simplex.
+  void update_simplex_tree_after_node_removal(Simplex_handle sh) { 
+    // cofaces_data_structure_.insert(sh); 
+    // for(auto b_sh : boundary_simplex_range(sh)) {
+    //   b_sh->second.erase_coboundary(sh);
+    // }
+  }
+
+  typedef typename Dictionary::iterator Dictionary_it;
+  typedef typename Dictionary_it::value_type Dit_value_t;
 
     struct return_first {
         Vertex_handle operator()(const Dit_value_t& p_sh) const { return p_sh.first; }
@@ -1103,10 +1163,10 @@ public:
    * \return Vector of Simplex_handle, empty vector if no cofaces found.
    */
 
-    Cofaces_simplex_range cofaces_simplex_range(const Simplex_handle simplex, int codimension) {
-        return impl_cofaces_simplex_range(simplex, codimension,
-                                          std::integral_constant<bool, Options::link_simplices_through_max_vertex>{});
-    }
+  Cofaces_simplex_range cofaces_simplex_range(const Simplex_handle simplex, int codimension) {
+    return impl_cofaces_simplex_range(simplex, codimension,
+                                      std::integral_constant<bool, Options::link_simplices_through_max_vertex>{});
+  }
 
 private:
     /* Brute force computation of cofaces.
@@ -1126,15 +1186,14 @@ private:
         bool star = codimension == 0;
         rec_coface(copy, &root_, 1, cofaces, star, codimension + static_cast<int>(copy.size()));
         return cofaces;
-    }
+  }
 
-    /* Fast search of cofaces
+  /* Fast search of cofaces
    * This function uses the hooks stored in the Nodes of the simplex tree,
    * if link_simplices_through_max_vertex = true.
    */
     Optimized_cofaces_simplex_range impl_cofaces_simplex_range(const Simplex_handle simplex, int codimension,
                                                                std::true_type) {
-
         assert(codimension >= 0);
         Simplex_vertex_range rg = simplex_vertex_range(simplex);
         std::vector<Vertex_handle> copy(rg.begin(), rg.end());
@@ -2031,8 +2090,10 @@ public:
         GUDHI_CHECK(!has_children(sh),
                     std::invalid_argument("Simplex_tree::remove_maximal_simplex - argument has children"));
 
-        // Simplex is a leaf, it means the child is the Siblings owning the leaf
-        Siblings* child = sh->second.children();
+
+
+    // Simplex is a leaf, it means the child is the Siblings owning the leaf
+    Siblings* child = sh->second.children();
 
         if ((child->size() > 1) || (child == root())) {
             // Not alone, just remove it from members
@@ -2115,6 +2176,7 @@ struct Simplex_tree_options_full_featured {
     static const bool store_annotation_vector = false;
     static const bool store_morse_matching = false;
     static const bool simplex_handle_strong_validity = false;
+  static const bool precompute_cofaces = false;
 };
 
 /** Model of SimplexTreeOptions, faster than `Simplex_tree_options_full_featured` but note the unsafe
@@ -2136,6 +2198,7 @@ struct Simplex_tree_options_fast_persistence {
     static const bool store_annotation_vector = false;
     static const bool store_morse_matching = false;
     static const bool simplex_handle_strong_validity = false;
+  static const bool precompute_cofaces = false;
 };
 
 /** Model of SimplexTreeOptions, with a zigzag_indexing_tag.
@@ -2159,8 +2222,9 @@ struct Simplex_tree_options_zigzag_persistence {
   static const bool contiguous_vertices = false;
   static const bool link_simplices_through_max_vertex = true;
   static const bool store_annotation_vector = false; //for zigzag cohomology
-  static const bool store_morse_matching = true;
+  static const bool store_morse_matching = false;
   static const bool simplex_handle_strong_validity = true;//Dictionary::iterators remain valid even after insertions and deletions
+  static const bool precompute_cofaces = false;
 };
 
 /** Model of SimplexTreeOptions, with a zigzag_indexing_tag.
@@ -2186,6 +2250,23 @@ struct Simplex_tree_options_morse {
     static const bool store_annotation_vector = false; //for zigzag cohomology
     static const bool store_morse_matching = true;
     static const bool simplex_handle_strong_validity = true;//Dictionary::iterators remain valid even after insertions and deletions
+  static const bool precompute_cofaces = false;
+};
+
+struct Simplex_tree_options_morse_zigzag_persistence {
+  typedef zigzag_indexing_tag Indexing_tag;
+  static const bool is_zigzag = true;
+  typedef int Vertex_handle;
+  typedef double Filtration_value;
+  typedef int Simplex_key;
+  static const bool store_key = true;
+  static const bool store_filtration = true;
+  static const bool contiguous_vertices = false;
+  static const bool link_simplices_through_max_vertex = true;
+  static const bool store_annotation_vector = false; //for zigzag cohomology
+  static const bool store_morse_matching = true;
+  static const bool simplex_handle_strong_validity = true;//Dictionary::iterators remain valid even after insertions and deletions
+  static const bool precompute_cofaces = true;
 };
 
 /** @} */  // end defgroup simplex_tree

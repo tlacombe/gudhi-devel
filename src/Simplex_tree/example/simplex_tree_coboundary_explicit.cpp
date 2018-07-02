@@ -52,61 +52,42 @@ int main(int argc, char* argv[]) {
   int dim_max = atoi(argv[3]);
 
   clock_t start, end;
-  {
-    // Construct the Simplex Tree
-    std::cout << "---- Simplex tree with FAST cofaces option: \n";
-    Gudhi::Points_off_reader<Point> off_reader(off_file_points);
-    Rips_complex rips_complex_from_file(off_reader.get_point_cloud(), threshold, Euclidean_distance());
+  // Construct the Simplex Tree
+  std::cout << "---- Simplex tree with FAST cofaces option: \n";
+  Gudhi::Points_off_reader<Point> off_reader(off_file_points);
+  Rips_complex rips_complex_from_file(off_reader.get_point_cloud(), threshold, Euclidean_distance());
 
-    start = clock();
-    opt_ST opt_st;
-    rips_complex_from_file.create_complex(opt_st, dim_max);
-    end = clock();
-    std::cout << "     Construct Rips complex in " << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
+  start = clock();
+  opt_ST opt_st;
+  rips_complex_from_file.create_complex(opt_st, dim_max);
+  end = clock();
+  std::cout << "     Construct Rips complex in " << static_cast<double>(end - start) / CLOCKS_PER_SEC << " s. \n";
 
-    std::cout << "     Information of the Simplex Tree: " << std::endl;
-    std::cout << "        Number of vertices = " << opt_st.num_vertices() << "\n";
-    std::cout << "        Number of simplices = " << opt_st.num_simplices() << std::endl;
+  std::cout << "     Information of the Simplex Tree: " << std::endl;
+  std::cout << "        Number of vertices = " << opt_st.num_vertices() << "\n";
+  std::cout << "        Number of simplices = " << opt_st.num_simplices() << std::endl;
 
-    std::cout << "     Compute the coboundary of every simplex in the Simplex_tree:" << std::endl;
-    start = clock();  
+  std::cout << "     Compute the coboundary of every simplex in the Simplex_tree:" << std::endl;
+  start = clock();  
 
-    for (auto f_simplex : opt_st.filtration_simplex_range()) {  // for every simplex
-      for(auto v : opt_st.simplex_vertex_range(f_simplex)) {std::cout << v <<" ";}
-      std::cout << std::endl;
-      for (auto c_simplex : opt_st.coboundary_simplex_range(f_simplex)) {
-        std::cout << "     ";
-        for(auto v : opt_st.simplex_vertex_range(c_simplex)) {std::cout << v <<" ";}
-        std::cout << std::endl;
-      }  // traverse the coboundary
-    }
-   
-    for (auto f_simplex : opt_st.filtration_simplex_range()) {  // for every simplex
-      for(auto v : opt_st.simplex_vertex_range(f_simplex)) {std::cout << v <<" ";}
-      std::cout << std::endl;
-      for (auto c_simplex : opt_st.boundary_simplex_range(f_simplex)) {
-        std::cout << "     ";
-        for(auto v : opt_st.simplex_vertex_range(c_simplex)) {std::cout << v <<" ";}
-        std::cout << std::endl;
-      }  // traverse the boundary
-    }
-
-
-    std::vector<int> simp;
-    simp.push_back(4);
-    simp.push_back(2);
-    simp.push_back(0);
-
-    auto sh = opt_st.find(simp);
-
-    std::cout << "\n\n\n";
-    for(auto v : opt_st.simplex_vertex_range(sh)) {std::cout << v <<" ";}
+  for (auto f_simplex : opt_st.filtration_simplex_range()) {  // for every simplex
+    for(auto v : opt_st.simplex_vertex_range(f_simplex)) {std::cout << v <<" ";}
     std::cout << std::endl;
-    for(auto cof : opt_st.star_simplex_range(sh)) {
-      std::cout << "    ";
-      for(auto v : opt_st.simplex_vertex_range(cof)) {std::cout << v <<" ";}
+    for (auto c_simplex : opt_st.coboundary_simplex_range(f_simplex)) {
+      std::cout << "     ";
+      for(auto v : opt_st.simplex_vertex_range(c_simplex)) {std::cout << v <<" ";}
       std::cout << std::endl;
-    }
+    }  // traverse the coboundary
+  }
+ 
+  for (auto f_simplex : opt_st.filtration_simplex_range()) {  // for every simplex
+    for(auto v : opt_st.simplex_vertex_range(f_simplex)) {std::cout << v <<" ";}
+    std::cout << std::endl;
+    for (auto c_simplex : opt_st.boundary_simplex_range(f_simplex)) {
+      std::cout << "     ";
+      for(auto v : opt_st.simplex_vertex_range(c_simplex)) {std::cout << v <<" ";}
+      std::cout << std::endl;
+    }  // traverse the boundary
   }
   return 0;
 }
