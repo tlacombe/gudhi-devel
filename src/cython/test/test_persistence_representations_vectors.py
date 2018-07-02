@@ -1,5 +1,6 @@
 import gudhi	
 import math
+import sys
 
 """
     This file is part of the Gudhi Library. The Gudhi library
@@ -66,7 +67,7 @@ def test_distance_computations():
 	p = gudhi.PersistenceVectors(file_with_intervals="data/file_with_diagram", where_to_cut=100)  
 	intervals = [(1, 2) , (3, 4), (5, 6), (7, 8), (9, 10), (11, 12), (13, 14), (15, 16), (17, 18), (19, 20)]
 	p_bis = gudhi.PersistenceVectors(vector_of_intervals=intervals, where_to_cut=10)  
-	assert math.fabs(p_prime.distance(p_bis, 1)- 1.8642816632842099) < epsilon
+	assert math.fabs(p.distance(p_bis, 1)- 30.676373638271652) < epsilon
 
 
 def test_default_parameters_of_distances():

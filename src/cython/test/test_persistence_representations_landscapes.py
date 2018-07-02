@@ -1,5 +1,6 @@
 import gudhi	
 import math
+import sys
 
 """
     This file is part of the Gudhi Library. The Gudhi library

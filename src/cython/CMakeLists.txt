@@ -265,6 +265,7 @@ if(CYTHON_FOUND)
   add_gudhi_py_test(test_reader_utils)
 
   #persistence representation tests:
+  file(COPY test/data DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
   add_gudhi_py_test(test_persistence_representations_landscapes)
   add_gudhi_py_test(test_persistence_representations_landscapes_on_grid)
   add_gudhi_py_test(test_persistence_representations_heat_maps)

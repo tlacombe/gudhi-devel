@@ -35,7 +35,7 @@ def test_check_construction_of_PSSK():
 	p = gudhi.PSSK(file_with_intervals="data/file_with_diagram", how_many_pixels_raidus_of_Gausian_kernel=100, min_=0, max_=1)
 	p.print_to_file("data/pssk_from_file_with_diagram")
 	q = gudhi.PSSK()
-	q.load_from_file("data/persistence_heat_map_from_file_with_diagram")
+	q.load_from_file("data/pssk_from_file_with_diagram")
 	assert p.compare(q)
 
 
