@@ -1448,6 +1448,7 @@ public:
     zigzag_simplex_range( ZigzagEdgeRange & zz_edge_fil
                           , int dim_max )
     {
+        Zigzag_simplex_iterator();
         return
                 Zigzag_simplex_range(
                     Zigzag_simplex_iterator(this, &zz_edge_fil, dim_max)
@@ -1518,13 +1519,13 @@ public:
                         , Vertex_handle                   v
                         , Filtration_value                fil
                         , int                             dim_max
-                        , std::vector< Simplex_handle > & zz_filtration )
+                        , std::vector< Simplex_handle > * zz_filtration )
     {
         if(u == v) { // Are we inserting a vertex?
             auto res_ins = root_.members().emplace(u,Node(&root_,fil));
             if(res_ins.second) { //if the vertex was not in the complex
                 update_simplex_tree_after_node_insertion(res_ins.first);
-                zz_filtration.push_back(res_ins.first); //no more insert in root_.members()
+                zz_filtration->push_back(res_ins.first); //no more insert in root_.members()
             }
             return; //because the vertex is isolated, no more insertions.
         }
@@ -1541,11 +1542,11 @@ public:
         auto res_ins_u = root_.members().emplace(u,Node(&root_,fil));
         if(res_ins_v.second) {
             update_simplex_tree_after_node_insertion(res_ins_v.first);
-            zz_filtration.push_back(res_ins_v.first); //no more inserts in root_.members()
+            zz_filtration->push_back(res_ins_v.first); //no more inserts in root_.members()
         }
         if(res_ins_u.second) {
             update_simplex_tree_after_node_insertion(res_ins_u.first);
-            zz_filtration.push_back(res_ins_u.first); //no more inserts in root_.members()
+            zz_filtration->push_back(res_ins_u.first); //no more inserts in root_.members()
         } //check if the edge {u,v} is already in the complex, if true, nothing to do.
         if(has_children(res_ins_u.first) && res_ins_u.first->second.children()->members().find(v) != res_ins_u.first->second.children()->members().end()) {return;}
 
@@ -1575,7 +1576,7 @@ public:
             }
         }
         //todo sort zz_filtration appropriately
-        sort( zz_filtration.begin(), zz_filtration.end(),
+        sort( zz_filtration->begin(), zz_filtration->end(),
               is_before_in_filtration(this)
               );
     }
@@ -1595,11 +1596,11 @@ private:
                                 , Siblings *       sib
                                 , Filtration_value fil
                                 , int              k //k == dim_max - dimension simplices in sib
-                                , std::vector<Simplex_handle> & zz_filtration )
+                                , std::vector<Simplex_handle> * zz_filtration )
     { //insertion always succeeds because the edge {u,v} used to not be here.
         auto res_ins_v = sib->members().emplace(v, Node(sib,fil));
         update_simplex_tree_after_node_insertion(res_ins_v.first);//for cofaces hooks
-        zz_filtration.push_back(res_ins_v.first); //no more insertion in sib
+        zz_filtration->push_back(res_ins_v.first); //no more insertion in sib
 
         if(k == 0) { return; } //reached the maximal dimension
 
@@ -1641,7 +1642,7 @@ private:
             , Siblings       * curr_sib //Siblings containing the node sh_v
             , Filtration_value fil_uv //Fil value of the edge uv in the zz filtration
             , int              k //Stopping condition for recursion based on max dim
-            , std::vector<Simplex_handle> &zz_filtration) //range of all new simplices
+            , std::vector<Simplex_handle> *zz_filtration) //range of all new simplices
     { //pick N^+(v)
         Simplex_handle root_sh_v = find_vertex(sh_v->first);
         if(!has_children(root_sh_v)) { return; }
@@ -1665,7 +1666,7 @@ private:
                  new_sh != new_sib->members().end(); ++new_sh )
             {
                 update_simplex_tree_after_node_insertion(new_sh);
-                zz_filtration.push_back(new_sh);//new_sib does not change anymore
+                zz_filtration->push_back(new_sh);//new_sib does not change anymore
             }
             inter.clear();
             //recursive standard expansion for the rest of the subtree
@@ -1687,7 +1688,7 @@ private:
             Siblings       * siblings  // must contain elements
             , Filtration_value fil
             , int              k  //==max_dim expansion - dimension curr siblings
-            , std::vector<Simplex_handle> & zz_filtration )
+            , std::vector<Simplex_handle> * zz_filtration )
     {
         if (k == 0) { return; } //max dimension
         Dictionary_it next = ++(siblings->members().begin());
@@ -1716,7 +1717,7 @@ private:
                          new_sh != new_sib->members().end(); ++new_sh )
                     {
                         update_simplex_tree_after_node_insertion(new_sh);//cofaces hooks
-                        zz_filtration.push_back(new_sh); //new_sib does not change anymore
+                        zz_filtration->push_back(new_sh); //new_sib does not change anymore
                     }
                     inter.clear();
                     //recursive standard expansion for the rest of the subtree
@@ -1788,7 +1789,7 @@ public:
     void flag_lazy_remove_edge(
             Vertex_handle u
             , Vertex_handle v
-            , std::vector< Simplex_handle > & zz_filtration )
+            , std::vector< Simplex_handle > * zz_filtration )
     {
         Simplex_handle sh_uv; //The simplex that get removed (edge or vertex)
 
@@ -1800,7 +1801,7 @@ public:
         if( u == v ) {
             sh_uv = root_it_u;
             //keep track of all cofaces of the simplex removed, including simplex itself
-            for(auto sh : star_simplex_range(sh_uv)) {zz_filtration.push_back(sh);}
+            for(auto sh : star_simplex_range(sh_uv)) {zz_filtration->push_back(sh);}
             return;
         } //vertex u
         else { //edge {u,v}, u < v
@@ -1809,7 +1810,7 @@ public:
             Simplex_handle sh_uv = root_it_u->second.children()->members().find(v);
             if(sh_uv == root_it_u->second.children()->members().end()) { return; }//edge not here
             //keep track of all cofaces of the simplex removed, including simplex itself
-            for(auto sh : star_simplex_range(sh_uv)) {zz_filtration.push_back(sh);}
+            for(auto sh : star_simplex_range(sh_uv)) {zz_filtration->push_back(sh);}
             return;
         }
     }
@@ -1817,13 +1818,13 @@ public:
    * empty it. Does NOT modify the complex.
    */
     void flag_lazy_empty_complex(
-            std::vector< Simplex_handle > & zz_filtration)
-    { for(auto sh : complex_simplex_range()) { zz_filtration.push_back(sh); }  }
+            std::vector< Simplex_handle > * zz_filtration)
+    { for(auto sh : complex_simplex_range()) { zz_filtration->push_back(sh); }  }
     /* SimplexHandleRange is a range of Simplex_handles such that simplices are
  * ordered in a reverse inclusion order.*/
     template<class SimplexHandleRange>
-    void remove_maximal_simplices(SimplexHandleRange &rg) {
-        for( auto sh : rg) {
+    void remove_maximal_simplices(SimplexHandleRange *rg) {
+        for( auto sh : *rg) {
             sh->second.unlink_hooks(); //<--- put in hook destructor instead
             remove_maximal_simplex(sh);} //modify the complex
     }
