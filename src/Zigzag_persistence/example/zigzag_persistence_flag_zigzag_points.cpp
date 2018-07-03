@@ -106,10 +106,11 @@ int main(int argc, char* argv[])
   //     for(auto u : st.simplex_vertex_range(*it)) { std::cout << u << " "; }
   //       std::cout << "  " << st.key(*it) << " " << st.filtration(*it) << "\n";
   //   }
-  //   std::cout << std::endl;
+  //   std::cout << std::endl; 
   // }
 
   {
+
     Simplex_tree st;
     st.initialize_filtration(edge_filtration, dim_max); 
     // auto zz_rg = st.filtration_simplex_range();

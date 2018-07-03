@@ -113,6 +113,10 @@ int main(int argc, char* argv[])
   std::cout << std::endl << std::endl;
   std::cout << "Number of arrows : " << num_arrows << std::endl;
 
+
+    if(std::numeric_limits<double>::max() < std::numeric_limits<double>::infinity())
+      { std::cout << "max < limit\n";}
+
   return 0;
 }
 
