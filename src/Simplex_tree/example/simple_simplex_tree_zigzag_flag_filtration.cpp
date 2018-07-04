@@ -46,6 +46,7 @@ int main()
   edge_filtration.emplace_back(0,2, 0.4,true);  //insert {0,2}
   edge_filtration.emplace_back(2,3, 0.5,true);  //insert {2,3}
   edge_filtration.emplace_back(1,3, 0.6,true);  //insert {1,3}
+
   edge_filtration.emplace_back(0,2,  -1,false); //remove {0,2}
   edge_filtration.emplace_back(1,3,  -1,false); //remove {1,3}
   edge_filtration.emplace_back(0,2,  1.15,true);  //insert {0,2}

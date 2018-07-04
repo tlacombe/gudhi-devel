@@ -63,15 +63,15 @@ class Zigzag_persistence_cell
 : public base_hook_zzmat_h, public base_hook_zzmat_v {
   public:
   typedef typename FilteredComplex::Simplex_key              Simplex_key;   
-  typedef matrix_chain< FilteredComplex >                    matrix_chain;
+  typedef matrix_chain< FilteredComplex >                    Matrix_chain;
 
   Zigzag_persistence_cell( Simplex_key     key
-                         , matrix_chain * self_chain ) 
+                         , Matrix_chain * self_chain )
   : key_(key)
   , self_chain_(self_chain) {}
 
   Simplex_key     key_;
-  matrix_chain * self_chain_;
+  Matrix_chain * self_chain_;
 };
 
 //----------------------------------------------------------------------------------
@@ -196,10 +196,10 @@ public:
   typedef typename Complex_ds::Simplex_key              Simplex_key;//must be signed
   typedef typename Complex_ds::Simplex_handle           Simplex_handle;
   typedef typename Complex_ds::Filtration_value         Filtration_value;
-  typedef matrix_chain< Complex_ds >                    matrix_chain;
-  typedef typename matrix_chain::Cell                   Cell;
-  typedef typename matrix_chain::Column                 Column;
-  typedef typename matrix_chain::Row                    Row;
+  typedef matrix_chain< Complex_ds >                    Matrix_chain;
+  typedef typename Matrix_chain::Cell                   Cell;
+  typedef typename Matrix_chain::Column                 Column;
+  typedef typename Matrix_chain::Row                    Row;
 
 private:
 /*Structure to store persistence intervals. By convention, interval [b;d] are 
@@ -263,7 +263,7 @@ private:
  * the vertical lists. self1 is the matrix_chain whose column is c1, for self 
  * reference of the new cells.
  */
-void plus_equal_column(matrix_chain * self1, Column * c1, Column * c2) 
+void plus_equal_column(Matrix_chain * self1, Column * c1, Column * c2)
 {
   auto it1 = c1->begin();   auto it2 = c2->begin();
   while(it1 != c1->end() && it2 != c2->end())
@@ -721,7 +721,7 @@ void forward_arrow( Simplex_handle zzsh )
     Row    * new_row  = new Row();
     matrix_.emplace_front( new_col
                          , new_row
-                         , (matrix_chain *)0 //in F, paired with NULL
+                         , (Matrix_chain *)0 //in F, paired with NULL
                          , cpx_->key(zzsh)
                          // , curr_fil_
                          , cpx_->key(zzsh) );
@@ -735,14 +735,14 @@ void forward_arrow( Simplex_handle zzsh )
   }
 
   // col_bsh.rbegin()) is idx of lowest element in col_bsh, because it is a set.
-  matrix_chain * col_low = &(*lowidx_to_matidx_[*(col_bsh.rbegin())]);
+  Matrix_chain * col_low = &(*lowidx_to_matidx_[*(col_bsh.rbegin())]);
 
   // std::cout << "7=" << *(col_bsh.rbegin()) << " " << "7=" << col_low->lowest_idx_ <<"\n";
 
   // auto col_low   =  &(*lowidx_to_matidx_[*(col_bsh.rbegin())]); //<-- prob here
   auto paired_idx = col_low->paired_col(); //col with which col_low is paired
-  std::vector< matrix_chain * > chains_in_H; //for corresponding indices in H
-  std::vector< matrix_chain * > chains_in_G; 
+  std::vector< Matrix_chain * > chains_in_H; //for corresponding indices in H
+  std::vector< Matrix_chain * > chains_in_G;
   
   //Reduce col_bsh with boundary cycles, i.e., indices in G.
   std::pair< typename std::set< Simplex_key >::iterator, bool > res_insert;
@@ -781,7 +781,7 @@ void forward_arrow( Simplex_handle zzsh )
 
 
   //Continue reducing with boundary and 'live' cycles, i.e., indices in G U F.
-  std::vector< matrix_chain * > chains_in_F;
+  std::vector< Matrix_chain * > chains_in_F;
   while(true) 
   {
     if(paired_idx == NULL) { chains_in_F.push_back(col_low); } //col_low \in F
@@ -809,7 +809,7 @@ void forward_arrow( Simplex_handle zzsh )
  */
 inline
 void injective_reflection_diamond ( Simplex_handle                  zzsh 
-                            , std::vector< matrix_chain * > & chains_in_H
+                            , std::vector< Matrix_chain * > & chains_in_H
                             )//, int dim_sh)
 {
   // std::cout << "     --inj\n";
@@ -817,7 +817,7 @@ void injective_reflection_diamond ( Simplex_handle                  zzsh
   std::set< Simplex_key > col_bsh;
   std::pair< typename std::set< Simplex_key >::iterator, bool > res_insert;
   //produce the sum of all col_h in chains_in_H
-  for( matrix_chain * idx_h : chains_in_H ) { 
+  for( Matrix_chain * idx_h : chains_in_H ) {
     for(auto &cell : *(idx_h->column_) ) {
       res_insert = col_bsh.insert(cell.key_);
       if( !res_insert.second ) { col_bsh.erase(res_insert.first); }
@@ -828,7 +828,7 @@ void injective_reflection_diamond ( Simplex_handle                  zzsh
   Row  * new_row   = new Row();
   matrix_.emplace_front( new_col
                        , new_row
-                       , (matrix_chain *)0 //in F
+                       , (Matrix_chain *)0 //in F
                        , cpx_->key(zzsh)
                        // , curr_fil_
                        , cpx_->key(zzsh) );
@@ -856,8 +856,8 @@ void injective_reflection_diamond ( Simplex_handle                  zzsh
  */
 inline
 void surjective_reflection_diamond( Simplex_handle zzsh 
-                            , std::vector< matrix_chain * > & chains_in_F
-                            , std::vector< matrix_chain * > & chains_in_H )
+                            , std::vector< Matrix_chain * > & chains_in_F
+                            , std::vector< Matrix_chain * > & chains_in_H )
 {
   // std::cout << "     --surj\n";
 
@@ -1041,16 +1041,16 @@ void backward_arrow( Simplex_handle zzsh )
     return; //case we didn't insert because IWD in max dim
   }
 
-  matrix_chain * curr_col    = &(*(curr_col_it->second));
+  Matrix_chain * curr_col    = &(*(curr_col_it->second));
 
 //Record all columns that get affected by the transpositions
-  std::vector<matrix_chain *> modified_columns;
+  std::vector<Matrix_chain *> modified_columns;
   for(auto & hcell : *(curr_col->row_)) { 
     modified_columns.push_back(hcell.self_chain_); 
   }
 //Sort by left-to-right order in the matrix_ (no order maintained in rows)
   std::stable_sort( modified_columns.begin(),modified_columns.end()
-                  , [](matrix_chain *mc1, matrix_chain *mc2) 
+                  , [](Matrix_chain *mc1, Matrix_chain *mc2)
                   { return mc1->lowest_idx_ < mc2->lowest_idx_;} );
 
   // std::cout << "A\n";
@@ -1169,8 +1169,8 @@ void backward_arrow( Simplex_handle zzsh )
  * Consequently, exchanging columns would require to update all such pointers. That 
  * is why we avoid doing it, and prefer exchanging all other attributes.
  */
-void exchange_lowest_indices_chains( matrix_chain * curr_col
-                                   , matrix_chain * other_col )
+void exchange_lowest_indices_chains( Matrix_chain * curr_col
+                                   , Matrix_chain * other_col )
 { //exchange lowest_idx, update lowidx_to_matidx structure
   auto it_s = lowidx_to_matidx_.find(curr_col->lowest_idx_);
   auto it_t = lowidx_to_matidx_.find(other_col->lowest_idx_);
@@ -1178,8 +1178,8 @@ void exchange_lowest_indices_chains( matrix_chain * curr_col
   std::swap(curr_col->row_, other_col->row_);
   std::swap(curr_col->lowest_idx_, other_col->lowest_idx_);
 }
-void exchange_pairings_chains( matrix_chain * curr_col
-                             , matrix_chain * other_col )
+void exchange_pairings_chains( Matrix_chain * curr_col
+                             , Matrix_chain * other_col )
 { //exchange birth and pairing.
   std::swap(curr_col->birth_, other_col->birth_);
   std::swap(curr_col->paired_col_, other_col->paired_col_);
@@ -1196,8 +1196,8 @@ void exchange_pairings_chains( matrix_chain * curr_col
  *
  */
 //return the new value of curr_col we continue with
-matrix_chain * arrow_transposition_case_study( matrix_chain * curr_col
-                                             , matrix_chain * other_col )
+Matrix_chain * arrow_transposition_case_study( Matrix_chain * curr_col
+                                             , Matrix_chain * other_col )
 {
   // std::cout << "      arr_transp\n";
   switch( curr_col->birth() ) {
@@ -1315,9 +1315,9 @@ matrix_chain * arrow_transposition_case_study( matrix_chain * curr_col
 //Class members
   Complex_ds                                           * cpx_; // complex
   std::map< Simplex_key //idx -> chain with lowest element at index idx in matrix_
-          , typename std::list<matrix_chain>::iterator > lowidx_to_matidx_; 
+          , typename std::list<Matrix_chain>::iterator > lowidx_to_matidx_;
   //arbitrary order for the matrix chains
-  std::list< matrix_chain >                              matrix_; // 0 ... m-1
+  std::list< Matrix_chain >                              matrix_; // 0 ... m-1
 // birth_vector                                           birth_vector_; //<=b order
   birth_ordering                                         birth_ordering_;
   std::list< interval_t >                                persistence_diagram_;
