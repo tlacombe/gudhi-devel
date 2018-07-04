@@ -435,6 +435,7 @@ void fast_points_to_edge_filtration(Point_container         &points,
   double smallest_dist = filtration_values[n-1];
   std::cout << "Smallest pairwise distance = " << smallest_dist << std::endl;
   double small_val = 0.01 * smallest_dist / ((double) n+1);
+  std::cout << "Smallest value             = " << smallest_dist << std::endl;
 
   //initialize distance matrix
   //dist_matrix[i] contains all pairs (j, d(p_i,p_j)) for j < i
@@ -579,6 +580,7 @@ void fast_points_to_edge_filtration(Point_container         &points,
   double smallest_dist = filtration_values[n-1];
   std::cout << "Smallest pairwise distance = " << smallest_dist << std::endl;
   double small_val = 0.01 * smallest_dist / ((double) n+1);
+  std::cout << "Smallest value             = " << smallest_dist << std::endl;
 
   //dist_matrix[i] contains all pairs (j, d(p_i,p_j)) for j < i
   std::vector< std::vector< std::pair<int, FiltrationValue> > > dist_matrix;
