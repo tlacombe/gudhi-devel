@@ -48,10 +48,13 @@ int main(int argc, char* argv[])
   //sort points
   start = std::chrono::system_clock::now();
   std::vector<Point_d> sorted_points;
-  Gudhi::subsampling::choose_n_farthest_points( k_d, off_reader.get_point_cloud() 
-    , off_reader.get_point_cloud().size() //all points
-    , 0//start with point [0]//Gudhi::subsampling::random_starting_point
-    , std::back_inserter(sorted_points));
+  // Gudhi::subsampling::choose_n_farthest_points( k_d, off_reader.get_point_cloud() 
+  //   , off_reader.get_point_cloud().size() //all points
+  //   , 0//start with point [0]//Gudhi::subsampling::random_starting_point
+  //   , std::back_inserter(sorted_points));
+
+  Gudhi::subsampling::pick_n_random_points(off_reader.get_point_cloud(), off_reader.get_point_cloud().size(), std::back_inserter(sorted_points));
+
   end = std::chrono::system_clock::now();
   enlapsed_sec =std::chrono::duration_cast<std::chrono::seconds>(end-start).count();
 
