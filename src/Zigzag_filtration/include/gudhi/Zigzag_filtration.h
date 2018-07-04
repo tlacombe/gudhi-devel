@@ -384,6 +384,15 @@ void real_fast_points_to_edge_filtration(Point_container         &points,
 
 
 //puts all vertices first, with distinct filtration value <-- to eventually remove
+//fake filtration values: group blocks of edges that get removed in the next slope.
+// forward arrow ->
+//R({p_0, ... , p_{i}}, nu * eps_i) -> R({p_0, ... , p_i, p_{i+1}}, mu * eps_i)
+// first add all edges of length <= nu * eps_i+1 between p_i+1 and p_j, j < i+1
+//these are exactly the dges that do not get remove in the next backward arrow
+//then add all other edges, between all vertices p0 ... p_i+1, of length l, 
+//   nu * eps_i < l <= mu * eps_i
+// these are all the edges that get removed in the next backward arrow.
+// sort them by increasing length + lexicographic ordering for ties
 #ifdef GUDHI_USE_TBB //parallel version
 template<typename Point_container,
          typename Distance, //furnish()
@@ -423,6 +432,11 @@ void fast_points_to_edge_filtration(Point_container         &points,
     {  filtration_values[i] = filtration_values[i-1];  }
   }
 
+  double smallest_dist = filtration_values[n-1];
+  std::cout << "Smallest pairwise distance = " << smallest_dist << std::endl;
+  double small_val = 0.5 * smallest_dist / ((double) n+1);
+  std::cout << "Smallest value             = " << small_val << std::endl;
+
   //initialize distance matrix
   //dist_matrix[i] contains all pairs (j, d(p_i,p_j)) for j < i
   std::vector< std::vector< std::pair<int, FiltrationValue> > > dist_matrix;
@@ -446,7 +460,7 @@ void fast_points_to_edge_filtration(Point_container         &points,
 //edges[i]==list of edges added and removed at eps_i
   std::vector< std::vector< Edge_t > > edges_added; 
   std::vector< std::vector< Edge_t > > edges_removed;
-  edges_added.resize(n);  edges_removed.resize(n);
+  edges_added.resize(n); edges_removed.resize(n);
 
   // size_t m = n*(n-1);
   // for(size_t i=0; i<n; ++i) {
@@ -471,10 +485,17 @@ void fast_points_to_edge_filtration(Point_container         &points,
     // edge_filtration.emplace_back(i+1, i+1, filtration_values[i], true);//add p_{i+1}
     it = std::upper_bound(dist_matrix[i+1].begin(), dist_matrix[i+1].end(), 
             std::pair<int, FiltrationValue>(n, mu * filtration_values[i]), cmp); //first striclty longer edge
+    double small_val_tmp = small_val;
     while(it != dist_matrix[i+1].begin()) {
       --it;
-      // edge_filtration.emplace_back(it->first, i+1, filtration_values[i], true);
-      edges_added[i].emplace_back(it->first, i+1, filtration_values[i], true);
+      if(it->second <= nu * filtration_values[i+1]) { //doesn't get removed next
+        edges_added[i].emplace_back(it->first, i+1, 
+                                    small_val_tmp + filtration_values[i], true);
+        small_val_tmp += small_val;
+      }
+      else { 
+        edges_added[i].emplace_back(it->first, i+1, filtration_values[i], true); 
+      }
       ++number_of_arrows;
     }
 
@@ -555,6 +576,12 @@ void fast_points_to_edge_filtration(Point_container         &points,
     if(filtration_values[i] > filtration_values[i-1]) //make decreasing
     {  filtration_values[i] = filtration_values[i-1];  }
   }
+
+  double smallest_dist = filtration_values[n-1];
+  std::cout << "Smallest pairwise distance = " << smallest_dist << std::endl;
+  double small_val = 0.5 * smallest_dist / ((double) n+1);
+  std::cout << "Smallest value             = " << small_val << std::endl;
+
   //dist_matrix[i] contains all pairs (j, d(p_i,p_j)) for j < i
   std::vector< std::vector< std::pair<int, FiltrationValue> > > dist_matrix;
   dist_matrix.resize(n);
@@ -595,12 +622,26 @@ void fast_points_to_edge_filtration(Point_container         &points,
     // edge_filtration.emplace_back(i+1, i+1, filtration_values[i], true);//add p_{i+1}
     it = std::upper_bound(dist_matrix[i+1].begin(), dist_matrix[i+1].end(), 
             std::pair<int, FiltrationValue>(n, mu * filtration_values[i]), cmp); //first striclty longer edge
+
+    double small_val_tmp = small_val;
     while(it != dist_matrix[i+1].begin()) {
       --it;
-      // edge_filtration.emplace_back(it->first, i+1, filtration_values[i], true);
-      edges_added[i].emplace_back(it->first, i+1, filtration_values[i], true);
+      if(it->second <= nu * filtration_values[i+1]) { //doesn't get removed next
+        edges_added[i].emplace_back(it->first, i+1, 
+                                    small_val_tmp + filtration_values[i], true);
+        small_val_tmp += small_val;
+      }
+      else { 
+        edges_added[i].emplace_back(it->first, i+1, filtration_values[i], true); 
+      }
       ++number_of_arrows;
     }
+
+    // while(it != dist_matrix[i+1].begin()) {
+    //   --it;
+    //   edges_added[i].emplace_back(it->first, i+1, filtration_values[i], true);
+    //   ++number_of_arrows;
+    // }
 
     //R({p_0, ... , p_{i+1}}, mu * eps_i) <- R({p_0, ... , p_{i+1}}, nu * eps_{i+1})
     for(size_t j = 1; j <= i+1; ++j) {//nu eps_i+1 < length(p_j, p_k) <= mu eps_i
