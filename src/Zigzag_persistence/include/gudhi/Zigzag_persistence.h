@@ -66,7 +66,7 @@ class Zigzag_persistence_cell
   typedef matrix_chain< FilteredComplex >                    Matrix_chain;
 
   Zigzag_persistence_cell( Simplex_key     key
-                         , Matrix_chain * self_chain )
+                         , Matrix_chain * self_chain ) 
   : key_(key)
   , self_chain_(self_chain) {}
 
@@ -263,7 +263,7 @@ private:
  * the vertical lists. self1 is the matrix_chain whose column is c1, for self 
  * reference of the new cells.
  */
-void plus_equal_column(Matrix_chain * self1, Column * c1, Column * c2)
+void plus_equal_column(Matrix_chain * self1, Column * c1, Column * c2) 
 {
   auto it1 = c1->begin();   auto it2 = c2->begin();
   while(it1 != c1->end() && it2 != c2->end())
@@ -742,7 +742,7 @@ void forward_arrow( Simplex_handle zzsh )
   // auto col_low   =  &(*lowidx_to_matidx_[*(col_bsh.rbegin())]); //<-- prob here
   auto paired_idx = col_low->paired_col(); //col with which col_low is paired
   std::vector< Matrix_chain * > chains_in_H; //for corresponding indices in H
-  std::vector< Matrix_chain * > chains_in_G;
+  std::vector< Matrix_chain * > chains_in_G; 
   
   //Reduce col_bsh with boundary cycles, i.e., indices in G.
   std::pair< typename std::set< Simplex_key >::iterator, bool > res_insert;
@@ -817,7 +817,7 @@ void injective_reflection_diamond ( Simplex_handle                  zzsh
   std::set< Simplex_key > col_bsh;
   std::pair< typename std::set< Simplex_key >::iterator, bool > res_insert;
   //produce the sum of all col_h in chains_in_H
-  for( Matrix_chain * idx_h : chains_in_H ) {
+  for( Matrix_chain * idx_h : chains_in_H ) { 
     for(auto &cell : *(idx_h->column_) ) {
       res_insert = col_bsh.insert(cell.key_);
       if( !res_insert.second ) { col_bsh.erase(res_insert.first); }
@@ -1050,7 +1050,7 @@ void backward_arrow( Simplex_handle zzsh )
   }
 //Sort by left-to-right order in the matrix_ (no order maintained in rows)
   std::stable_sort( modified_columns.begin(),modified_columns.end()
-                  , [](Matrix_chain *mc1, Matrix_chain *mc2)
+                  , [](Matrix_chain *mc1, Matrix_chain *mc2) 
                   { return mc1->lowest_idx_ < mc2->lowest_idx_;} );
 
   // std::cout << "A\n";
@@ -1315,7 +1315,7 @@ Matrix_chain * arrow_transposition_case_study( Matrix_chain * curr_col
 //Class members
   Complex_ds                                           * cpx_; // complex
   std::map< Simplex_key //idx -> chain with lowest element at index idx in matrix_
-          , typename std::list<Matrix_chain>::iterator > lowidx_to_matidx_;
+          , typename std::list<Matrix_chain>::iterator > lowidx_to_matidx_; 
   //arbitrary order for the matrix chains
   std::list< Matrix_chain >                              matrix_; // 0 ... m-1
 // birth_vector                                           birth_vector_; //<=b order
