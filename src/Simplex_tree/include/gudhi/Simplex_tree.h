@@ -239,29 +239,39 @@ class Simplex_tree {
   Cofaces_data_structure cofaces_data_structure_;
 
 
-  struct cmp_sh_by_vh {
-    bool operator()(Simplex_handle sh1, Simplex_handle sh2) {
-      return sh1->first < sh2->first;
-    } 
-  };
+    struct cmp_sh_by_vh {
+        bool operator()(Simplex_handle sh1, Simplex_handle sh2) {
+            std::cout << key(sh1) << " sh1\n";
+            std::cout << key(sh2) << " sh2\n";
+            return sh1->first < sh2->first;
+        }
+    };
 
-//to precompute coboundary, store a map of cofaces in each node
-  struct Store_coboundary_in_nodes {
-    Store_coboundary_in_nodes() { coboundary_ = new std::set< Simplex_handle, cmp_sh_by_vh >(); }
-    ~Store_coboundary_in_nodes() {coboundary_->clear(); delete coboundary_;}
+    typedef typename std::set< Simplex_handle, cmp_sh_by_vh > Precomputed_cofaces_simplex_range;
 
-    void insert_coboundary(Simplex_handle sh) { coboundary_->insert(sh); }
-    void erase_coboundary(Simplex_handle sh) { coboundary_->erase(sh); }
-    std::set< Simplex_handle, cmp_sh_by_vh > * coboundary() { return coboundary_; }
+    //to precompute coboundary, store a map of cofaces in each node
+    struct Store_coboundary_in_nodes {
+        Store_coboundary_in_nodes() { coboundary_ = new Precomputed_cofaces_simplex_range(); }
+        ~Store_coboundary_in_nodes() { /*coboundary_->clear(); delete coboundary_;*/ }
 
-    std::set< Simplex_handle, cmp_sh_by_vh > * coboundary_;
-  };
-  struct Store_coboundary_in_nodes_dummy {
-    Store_coboundary_in_nodes_dummy() {}
-    void insert_coboundary(Simplex_handle sh) { }
-    void erase_coboundary(Simplex_handle sh) { }
-    std::set<Simplex_handle, cmp_sh_by_vh> * coboundary() { return &std::set<Simplex_handle>(); }
-  };
+        void insert_coboundary(Simplex_handle sh) {
+            std::cout << key(sh) << " inserted\n";
+            coboundary_->insert(sh);
+        }
+        void erase_coboundary(Simplex_handle sh) {
+            std::cout << key(sh) << " removed\n";
+            coboundary_->erase(sh);
+        }
+        Precomputed_cofaces_simplex_range *coboundary() { return coboundary_; }
+
+        Precomputed_cofaces_simplex_range *coboundary_;
+    };
+    struct Store_coboundary_in_nodes_dummy {
+        Store_coboundary_in_nodes_dummy() {}
+        void insert_coboundary(Simplex_handle sh) { }
+        void erase_coboundary(Simplex_handle sh) { }
+        Precomputed_cofaces_simplex_range *coboundary() { return NULL; }
+    };
 
  public:
   typedef typename std::conditional<Options::precompute_cofaces, 
@@ -269,10 +279,10 @@ class Simplex_tree {
                                     Store_coboundary_in_nodes_dummy>::type 
                                                  Precompute_coboundary_simplex_base;
 
-  std::set<Simplex_handle, cmp_sh_by_vh> * coboundary_simplex_range_precomputed(Simplex_handle sh)
-  {
-    return (sh->second.coboundary());
-  }
+    Precomputed_cofaces_simplex_range * coboundary_simplex_range_precomputed(Simplex_handle sh)
+    {
+        return (sh->second.coboundary());
+    }
 
 private:
   // the zigzag persistence cohomology algorithm requires to store a
@@ -365,23 +375,24 @@ public:
   }
 
 
- private:
-  // update all extra data structures in the Simplex_tree, include fast
-  // cofaces locator, after the successful insertion of a simplex.
-  void update_simplex_tree_after_node_insertion(Simplex_handle sh) { cofaces_data_structure_.insert(sh); 
-    // for(auto b_sh : boundary_simplex_range(sh)) {
-    //   b_sh->second.insert_coboundary(sh);
-    // }
-  }
+private:
+    // update all extra data structures in the Simplex_tree, include fast
+    // cofaces locator, after the successful insertion of a simplex.
+    void update_simplex_tree_after_node_insertion(Simplex_handle &sh) {
+        cofaces_data_structure_.insert(sh);
+        /*for(auto b_sh : boundary_simplex_range(sh)) {
+            b_sh->second.insert_coboundary(sh);
+        }*/
+    }
 
-  // update all extra data structures in the Simplex_tree, include fast
-  // cofaces locator, after the successful insertion of a simplex.
-  void update_simplex_tree_after_node_removal(Simplex_handle sh) { 
-    // cofaces_data_structure_.insert(sh); 
-    // for(auto b_sh : boundary_simplex_range(sh)) {
-    //   b_sh->second.erase_coboundary(sh);
-    // }
-  }
+    // update all extra data structures in the Simplex_tree, include fast
+    // cofaces locator, after the successful insertion of a simplex.
+    void update_simplex_tree_after_node_removal(Simplex_handle &sh) {
+        // cofaces_data_structure_.insert(sh);
+        /*for(auto b_sh : boundary_simplex_range(sh)) {
+            b_sh->second.erase_coboundary(sh);
+        }*/
+    }
 
   typedef typename Dictionary::iterator Dictionary_it;
   typedef typename Dictionary_it::value_type Dit_value_t;
@@ -2090,6 +2101,7 @@ public:
 
     // Simplex is a leaf, it means the child is the Siblings owning the leaf
     Siblings* child = sh->second.children();
+        update_simplex_tree_after_node_removal(sh);
 
     if ((child->size() > 1) || (child == root())) {
       // Not alone, just remove it from members
