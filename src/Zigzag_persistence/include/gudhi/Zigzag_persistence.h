@@ -457,7 +457,6 @@ void compute_zigzag_persistence()
 
   while( zzit != zzrg.end() )
   { 
-
     if(num_arrow_ % 100000 == 0) std::cout << num_arrow_ << "\n";
     // display_mat();
     // std::cout << std::endl;
@@ -469,22 +468,33 @@ void compute_zigzag_persistence()
     // std::cout << "      k" << cpx_->key(*zzit)  << "  f" << cpx_->filtration(*zzit) <<  "\n";
     // std::cout << std::endl;
 
-    //keys must be assigned by the filtration_simplex_iterator
-    if(cpx_->critical(*zzit)) { //if the simplex is critical
-      if(zzit.arrow_direction()) { //forward arrow
 
+
+    //gives only critical simplices for insertion, and potentially maximal non-critical (i.e., paired) simplices at deletion.
+    //keys must be already assigned by the filtration_simplex_iterator
+      if(zzit.arrow_direction()) //forward arrow
+      {
         curr_fil_ = cpx_->filtration(*zzit);//check whether the filt val has changed
         if(curr_fil_ != prev_fil_) 
         { prev_fil_ = curr_fil_;
           filtration_values_.emplace_back(num_arrow_, prev_fil_);}
 
         forward_arrow(*zzit); 
-      } else { backward_arrow(*zzit); }
-    }
-    else {      
-      auto tmpsh = *zzit; ++zzit;
-      if(!cpx_->is_pair(tmpsh,*zzit)) {std::cout << "Error \n"; return; }
-    }
+      }
+      else //backward arrow 
+      {
+        if(!cpx_->critical(*zzit)) { //if the simplex is critical
+          //matrix A becomes matrix A U \{\tau,sigma\}
+          make_pair_critical(*zzit);
+        }
+        backward_arrow(*zzit); 
+      }
+    // }
+    // else {      
+    //   auto tmpsh = *zzit; ++zzit;
+    //   if(!cpx_->is_pair(tmpsh,*zzit)) {std::cout << "Error \n"; return; }
+    // }
+
     ++zzit;
     ++num_arrow_; //same as simplex index, count all simplices, even non criticals
   }
@@ -513,6 +523,104 @@ void compute_zigzag_persistence()
   std::cout << "Total number of arrows: " << num_arrow_+1 << std::endl;
 
 }
+
+/* sh is a maximal simplex paired with a simplex tsh
+ * Morse pair (tau,sigma)
+ *
+ * sh must be paired with tsh, i.e., tsh = cpx_->morse_pair(zzsh); return the 
+ * handle for tau, and cpx_->is_critical(zzsh) is false. The Morse iterator is in 
+ * charge of modifying this (make the simplices critical) after the 
+ * Zigzag_persistence update has been done.
+ *
+ *
+ * key(tsh) < key(sh) must be true.
+ *
+ * cpx_->boundary_simplex_range(zzsh) must iterate along the boundary of sigma in 
+ * the Morse complex A' where sigma and tau have become critical
+ *
+ * cpx_->coboundary_simplex_range(tsh) must iterate along the cofaces of tsh in the 
+ * Morse complex A' where sigma and tau have become critical, i.e., those critical 
+ * faces \nu such that [\nu : \tau]^{A'} != 0.
+ *
+ */
+void make_pair_critical(Simplex_handle zzsh)
+{
+  auto tsh = cpx_->morse_pair(zzsh);//Morse pair (*tsh, *sh)
+  //new column and row for sigma
+  Column * new_col_s = new Column();
+  Row  * new_row_s   = new Row();
+  matrix_.emplace_front( new_col_s
+                       , new_row_s
+                       , (matrix_chain *)0 
+                       , -2 //in H, paired w/ the new column for tau
+                       // , curr_fil_
+                       , cpx_->key(zzsh) );
+  auto chain_it_s = matrix_.begin();
+ //Add the bottom coefficient for zzsh
+  Cell * new_cell_s = new Cell(cpx_->key(zzsh), &(*chain_it_s));
+  new_col_s->push_back( *new_cell_s ); //zzsh has largest idx of all
+  new_row_s->push_back( *new_cell_s );
+  //Update the map 'index idx -> chain with lowest index idx' in matrix_
+  lowidx_to_matidx_[cpx_->key(zzsh)] = chain_it_s;
+
+  //new column and row for tau
+  Column * new_col_t = new Column();
+  Row *  new_row_t   = new Row();
+  matrix_.emplace_front( new_col_t
+                       , new_row_t
+                       , (matrix_chain *)0 
+                       , -1 //in G, paired w/ the new column for sigma
+                       // , curr_fil_
+                       , cpx_->key(tsh) );
+  auto chain_it_t = matrix_.begin();
+  //Update the map 'index idx -> chain with lowest index idx' in matrix_
+  lowidx_to_matidx_[cpx_->key(tsh)] = chain_it_t;
+
+  //pair the two new columns
+  chain_it_t->assign_paired_col(&(*chain_it_s));
+  chain_it_s->assign_paired_col(&(*chain_it_t));
+
+
+
+  if(chain_it_s->lowest_idx_ != cpx_->key(zzsh)) {std::cout << "Error lowest key\n";}
+
+
+  //fill up col_tau with \partial \sigma in new Morse complex
+  std::set< Simplex_key > col_bsh; //set maintains the order on indices
+  for( auto b_sh : cpx_->boundary_simplex_range(zzsh) )//<-\partial in Morse complex
+  { col_bsh.insert(cpx_->key(b_sh)); }
+  //copy \partial sigma in the new row&column
+  for( auto idx : col_bsh ) //in increasing idx order
+  { //add all indices in col_tau with canonical order enforced by set col_bsh
+    Cell * new_cell = new Cell(idx, &(*chain_it_t));
+    new_col_t->push_back( *new_cell ); //insertion in column 
+    lowidx_to_matidx_[idx]->row_->push_back( *new_cell ); //insertion in row
+  } 
+
+  //update the row for sigma. First record all possible modified columns
+  std::map<matrix_chain *, int> modif_chain;
+  for(auto c_sh : cpx_->coboundary_simplex_range(tsh)) {//[*c_sh:*t_sh]^{A'} != 0
+    //all chains with != 0 index at c_sh
+    for(auto cell : *(lowidx_to_matidx_[cpx_->key(c_sh)]->row_)) {
+      auto res_insert = modif_chain.emplace(cell.self_chain_,1);
+      if(!res_insert.second) {//already there
+        ++(res_insert.first->second); //one more occurrence of the chain
+      }
+    }
+  }
+  //all chains appearing an odd number of times
+  for(auto modif : modif_chain) {
+    if((modif.second % 2) == 1) { //sum_{nu \in chain} [nu:tau]^{A'} = 1
+      //Add the bottom coefficient for zzsh to rectify new boundary
+      Cell * new_cell = new Cell(cpx_->key(zzsh), modif.first);
+      modif.first->column_->push_back( *new_cell ); //zzsh has largest idx of all
+      new_row_s->push_back( *new_cell );//row for sigma
+    }//else sum == 0
+  }
+}
+
+
+
 
 
   Filtration_value index_to_filtration(Simplex_key k) {

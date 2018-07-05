@@ -316,6 +316,9 @@ private:
     void assign_morse_pairing(Simplex_handle sh) {}
     bool is_critical() { return true; }
     bool is_paired_with(Simplex_handle sh) { return false; }
+    Simplex_handle morse_pairing() { return sh_; }
+
+    Simplex_handle sh_; //todo remove!
   };
   struct Pairing_simplex_base_morse {
     Pairing_simplex_base_morse() {}
