@@ -318,28 +318,31 @@ public:
     void assign_simplex_annotation(Simplex_handle sh, void* ann) { sh->second.assign_annotation(ann); }
 
 private:
-    /* Allows to pair simplices, in particular in a Morse matching.*/
-    struct Pairing_simplex_base_dummy {
-        Pairing_simplex_base_dummy() {}
-        Pairing_simplex_base_dummy(Simplex_handle sh) {}
-        // Simplex_handle morse_pairing() {return this->null_simplex();}
-        void assign_morse_pairing(Simplex_handle sh) {}
-        bool is_critical() { return true; }
-        bool is_paired_with(Simplex_handle sh) { return false; }
-    };
-    struct Pairing_simplex_base_morse {
-        Pairing_simplex_base_morse() {}
-        Pairing_simplex_base_morse(Simplex_handle sh) : sh_(sh) {}
-        Simplex_handle morse_pairing() {return sh_;}
-        void assign_morse_pairing(Simplex_handle sh) {sh_ = sh;}
-        bool is_critical() { return &(sh_->second) == &(static_cast<Node&>(*this)); }//true iff critical
-        //true iff the simplex is paired with sh
-        bool is_paired_with(Simplex_handle sh) {
-            return &(sh_->second) == &(sh->second);
-        }
-        //sh_ points to itself if critical, paired simplex otherwise
-        Simplex_handle sh_;
-    };
+  /* Allows to pair simplices, in particular in a Morse matching.*/
+  struct Pairing_simplex_base_dummy {
+    Pairing_simplex_base_dummy() {}
+    Pairing_simplex_base_dummy(Simplex_handle sh) {}
+    // Simplex_handle morse_pairing() {return this->null_simplex();}
+    void assign_morse_pairing(Simplex_handle sh) {}
+    bool is_critical() { return true; }
+    bool is_paired_with(Simplex_handle sh) { return false; }
+    Simplex_handle morse_pairing() { return sh_; }
+
+    Simplex_handle sh_; //todo remove!
+  };
+  struct Pairing_simplex_base_morse {
+    Pairing_simplex_base_morse() {}
+    Pairing_simplex_base_morse(Simplex_handle sh) : sh_(sh) {}
+    Simplex_handle morse_pairing() {return sh_;}
+    void assign_morse_pairing(Simplex_handle sh) {sh_ = sh;}
+    bool is_critical() { return &(sh_->second) == &(static_cast<Node&>(*this)); }//true iff critical
+    //true iff the simplex is paired with sh
+    bool is_paired_with(Simplex_handle sh) {
+      return &(sh_->second) == &(sh->second);
+    }
+    //sh_ points to itself if critical, paired simplex otherwise
+    Simplex_handle sh_;
+  };
 public:
     typedef typename std::conditional<Options::store_morse_matching,
     Pairing_simplex_base_morse, Pairing_simplex_base_dummy>::type
@@ -380,9 +383,9 @@ private:
     // cofaces locator, after the successful insertion of a simplex.
     void update_simplex_tree_after_node_insertion(Simplex_handle &sh) {
         cofaces_data_structure_.insert(sh);
-        /*for(auto b_sh : boundary_simplex_range(sh)) {
+	for (auto b_sh : boundary_simplex_range(sh)) {
             b_sh->second.insert_coboundary(sh);
-        }*/
+	}
     }
 
     // update all extra data structures in the Simplex_tree, include fast
@@ -856,24 +859,33 @@ private:
         Siblings* curr_sib = &root_;
         std::pair<Simplex_handle, bool> res_insert;
         auto vi = simplex.begin();
+	std::list<Simplex_handle> l;
         for (; vi != simplex.end() - 1; ++vi) {
             GUDHI_CHECK(*vi != null_vertex(), "cannot use the dummy null_vertex() as a real vertex");
             res_insert = curr_sib->members_.emplace(*vi, Node(curr_sib, filtration));
             if (res_insert.second) {
-                update_simplex_tree_after_node_insertion(res_insert.first);
+		l.push_back(res_insert.first);
+		//update_simplex_tree_after_node_insertion(res_insert.first);
             }
             if (!(has_children(res_insert.first))) {
                 res_insert.first->second.assign_children(new Siblings(curr_sib, *vi));
             }
             curr_sib = res_insert.first->second.children();
         }
+
         GUDHI_CHECK(*vi != null_vertex(), "cannot use the dummy null_vertex() as a real vertex");
         res_insert = curr_sib->members_.emplace(*vi, Node(curr_sib, filtration));
         if (res_insert.second) {
-            update_simplex_tree_after_node_insertion(res_insert.first);
+	    l.push_back(res_insert.first);
+	    //update_simplex_tree_after_node_insertion(res_insert.first);
         }
         if (!res_insert.second) {
             // if already in the complex
+
+	    for (Simplex_handle sh : l){
+		update_simplex_tree_after_node_insertion(sh);
+	    }
+
             if (res_insert.first->second.filtration() > filtration) {
                 // if filtration value modified
                 res_insert.first->second.assign_filtration(filtration);
@@ -887,6 +899,11 @@ private:
             // Update dimension if needed
             dimension_ = static_cast<int>(simplex.size()) - 1;
         }
+
+	for (Simplex_handle sh : l){
+	    update_simplex_tree_after_node_insertion(sh);
+	}
+
         return res_insert;
     }
 
