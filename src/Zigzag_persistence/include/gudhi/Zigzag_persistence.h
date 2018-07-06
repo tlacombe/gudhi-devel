@@ -587,7 +587,7 @@ void make_pair_critical(Simplex_handle zzsh)
 
   //fill up col_tau with \partial \sigma in new Morse complex
   std::set< Simplex_key > col_bsh; //set maintains the order on indices
-  for( auto b_sh : cpx_->boundary_simplex_range(zzsh) )//<-\partial in Morse complex
+  for( auto b_sh : cpx_->paired_simplex_boundary_simplex_range(zzsh) )//<-\partial in Morse complex
   { col_bsh.insert(cpx_->key(b_sh)); }
   //copy \partial sigma in the new row&column
   for( auto idx : col_bsh ) //in increasing idx order
@@ -599,7 +599,7 @@ void make_pair_critical(Simplex_handle zzsh)
 
   //update the row for sigma. First record all possible modified columns
   std::map<matrix_chain *, int> modif_chain;
-  for(auto c_sh : cpx_->coboundary_simplex_range(tsh)) {//[*c_sh:*t_sh]^{A'} != 0
+  for(auto c_sh : cpx_->paired_simplex_coboundary_simplex_range(tsh)) {//[*c_sh:*t_sh]^{A'} != 0
     //all chains with != 0 index at c_sh
     for(auto cell : *(lowidx_to_matidx_[cpx_->key(c_sh)]->row_)) {
       auto res_insert = modif_chain.emplace(cell.self_chain_,1);
