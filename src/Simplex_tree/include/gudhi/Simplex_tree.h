@@ -575,6 +575,11 @@ public:
         return Boundary_simplex_range(Boundary_simplex_iterator(this, sh), Boundary_simplex_iterator(this));
     }
 
+    template <class SimplexHandle>
+    Boundary_simplex_range paired_simplex_boundary_simplex_range(SimplexHandle sh) {
+        return Boundary_simplex_range(Boundary_simplex_iterator(this, sh), Boundary_simplex_iterator(this));
+    }
+
     /** @} */  // end range and iterator methods
     /** \name Constructor/Destructor
    * @{ */
@@ -1212,6 +1217,7 @@ public:
    * \return Vector of Simplex_handle, empty vector if no cofaces found.
    */
     Cofaces_simplex_range coboundary_simplex_range(const Simplex_handle simplex) { return cofaces_simplex_range(simplex, 1); }
+    Cofaces_simplex_range paired_simplex_coboundary_simplex_range(const Simplex_handle simplex) { return cofaces_simplex_range(simplex, 1); }
 
     /** \brief Compute the cofaces of a n simplex
    * \param simplex represent the n-simplex of which we search the n+codimension cofaces
@@ -1927,7 +1933,7 @@ public:
     template<class SimplexHandleRange>
     void remove_maximal_simplices(SimplexHandleRange &rg) {
         for( auto sh : rg) {
-            sh->second.unlink_hooks(); //<--- put in hook destructor instead
+            //sh->second.unlink_hooks(); //<--- put in hook destructor instead
             remove_maximal_simplex(sh);} //modify the complex
     }
 
@@ -2190,6 +2196,8 @@ public:
    */
     void remove_maximal_simplex(Simplex_handle sh) {
         // Guarantee the simplex has no children
+        sh->second.unlink_hooks();
+
         GUDHI_CHECK(!has_children(sh),
                     std::invalid_argument("Simplex_tree::remove_maximal_simplex - argument has children"));
 
