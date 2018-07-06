@@ -110,6 +110,8 @@ public:
     /* \brief Set of nodes sharing a same parent in the simplex tree. */
     typedef Simplex_tree_siblings<Simplex_tree, Dictionary> Siblings;
 
+    Simplex_key maxConstKey_ = 0;
+
     struct Key_simplex_base_real {
         Key_simplex_base_real() : key_(-1) {}
         void assign_key(Simplex_key k) { key_ = k; }
@@ -241,30 +243,46 @@ public:
 
     struct cmp_sh_by_vh {
         bool operator()(Simplex_handle sh1, Simplex_handle sh2) {
-            std::cout << key(sh1) << " sh1\n";
-            std::cout << key(sh2) << " sh2\n";
-            return sh1->first < sh2->first;
+            //std::cout << key(sh1) << " sh1\n";
+            //std::cout << key(sh2) << " sh2\n";
+            //return sh1->first < sh2->first;
+            return key(sh1) < key(sh2);
         }
     };
 
-    typedef typename std::set< Simplex_handle, cmp_sh_by_vh > Precomputed_cofaces_simplex_range;
+    struct Simplex_handle_Hasher {
+        std::size_t operator()(const Simplex_handle &sh) const
+        {
+            return std::hash<int>()(sh->second.const_key());
+        }
+    };
+
+    struct Simplex_handle_Equals : std::binary_function<const Simplex_handle &, const Simplex_handle &, bool> {
+        bool operator()(const Simplex_handle &sh1, const Simplex_handle &sh2) const
+        {
+            return sh1->second.const_key() == sh2->second.const_key();
+        }
+    };
+
+    //typedef typename std::set< Simplex_handle, cmp_sh_by_vh > Precomputed_cofaces_simplex_range;
+    typedef typename std::unordered_set< Simplex_handle, Simplex_handle_Hasher, Simplex_handle_Equals > Precomputed_cofaces_simplex_range;
 
     //to precompute coboundary, store a map of cofaces in each node
     struct Store_coboundary_in_nodes {
-        Store_coboundary_in_nodes() { coboundary_ = new Precomputed_cofaces_simplex_range(); }
+        Store_coboundary_in_nodes() { /*coboundary_ = new Precomputed_cofaces_simplex_range();*/ }
         ~Store_coboundary_in_nodes() { /*coboundary_->clear(); delete coboundary_;*/ }
 
         void insert_coboundary(Simplex_handle sh) {
-            std::cout << key(sh) << " inserted\n";
-            coboundary_->insert(sh);
+            //std::cout << key(sh) << " inserted\n";
+            coboundary_.insert(sh);
         }
         void erase_coboundary(Simplex_handle sh) {
-            std::cout << key(sh) << " removed\n";
-            coboundary_->erase(sh);
+            //std::cout << key(sh) << " removed\n";
+            coboundary_.erase(sh);
         }
-        Precomputed_cofaces_simplex_range *coboundary() { return coboundary_; }
+        Precomputed_cofaces_simplex_range *coboundary() { return &coboundary_; }
 
-        Precomputed_cofaces_simplex_range *coboundary_;
+        Precomputed_cofaces_simplex_range coboundary_;
     };
     struct Store_coboundary_in_nodes_dummy {
         Store_coboundary_in_nodes_dummy() {}
@@ -383,15 +401,21 @@ private:
     // cofaces locator, after the successful insertion of a simplex.
     void update_simplex_tree_after_node_insertion(Simplex_handle &sh) {
         cofaces_data_structure_.insert(sh);
-	for (auto b_sh : boundary_simplex_range(sh)) {
+    }
+
+    void update_precomputed_coboundaries_after_insertion(Simplex_handle &sh){
+        for (auto b_sh : boundary_simplex_range(sh)) {
             b_sh->second.insert_coboundary(sh);
-	}
+        }
     }
 
     // update all extra data structures in the Simplex_tree, include fast
     // cofaces locator, after the successful insertion of a simplex.
     void update_simplex_tree_after_node_removal(Simplex_handle &sh) {
-        // cofaces_data_structure_.insert(sh);
+        //
+    }
+
+    void update_precomputed_coboundaries_after_removal(Simplex_handle &sh){
         for(auto b_sh : boundary_simplex_range(sh)) {
             b_sh->second.erase_coboundary(sh);
         }
@@ -559,7 +583,7 @@ public:
 
     /** \brief Constructs an empty simplex tree. */
     Simplex_tree() : zigzag_simplex_range_initialized_(false), null_vertex_(-1), root_(nullptr, null_vertex_), filtration_vect_(), dimension_(-1) {//explicit value for null_simplex_;
-        null_simplex_ = null_dictionary_.emplace(null_vertex(),Node()).first;
+        null_simplex_ = null_dictionary_.emplace(null_vertex(),Node(maxConstKey_++)).first;
     }
 
     /** \brief User-defined copy constructor reproduces the whole tree structure. */
@@ -586,15 +610,15 @@ public:
                 for (auto& child : sh_source->second.children()->members()) {
                     Simplex_handle new_sh = newsib->members_.emplace_hint(newsib->members_.end(), child.first,
                                                                           Node(newsib, child.second.filtration()));
-                    //update_simplex_tree_after_node_insertion(new_sh);
+                    update_simplex_tree_after_node_insertion(new_sh);
                     l.push_back(new_sh);
                 }
                 rec_copy(newsib, sh_source->second.children());
                 sh->second.assign_children(newsib);
             }
-            for (auto it = l.begin(); it != l.end(); ++it){
-                update_simplex_tree_after_node_insertion(*it);
-            }
+        }
+        for (Simplex_handle sh : l){
+            update_precomputed_coboundaries_after_insertion(sh);
         }
     }
 
@@ -859,13 +883,13 @@ private:
         Siblings* curr_sib = &root_;
         std::pair<Simplex_handle, bool> res_insert;
         auto vi = simplex.begin();
-	std::list<Simplex_handle> l;
+        std::list<Simplex_handle> l;
         for (; vi != simplex.end() - 1; ++vi) {
             GUDHI_CHECK(*vi != null_vertex(), "cannot use the dummy null_vertex() as a real vertex");
-            res_insert = curr_sib->members_.emplace(*vi, Node(curr_sib, filtration));
+            res_insert = curr_sib->members_.emplace(*vi, Node(maxConstKey_++, curr_sib, filtration));
             if (res_insert.second) {
-		l.push_back(res_insert.first);
-		//update_simplex_tree_after_node_insertion(res_insert.first);
+                l.push_back(res_insert.first);
+                update_simplex_tree_after_node_insertion(res_insert.first);
             }
             if (!(has_children(res_insert.first))) {
                 res_insert.first->second.assign_children(new Siblings(curr_sib, *vi));
@@ -874,17 +898,17 @@ private:
         }
 
         GUDHI_CHECK(*vi != null_vertex(), "cannot use the dummy null_vertex() as a real vertex");
-        res_insert = curr_sib->members_.emplace(*vi, Node(curr_sib, filtration));
+        res_insert = curr_sib->members_.emplace(*vi, Node(maxConstKey_++, curr_sib, filtration));
         if (res_insert.second) {
-	    l.push_back(res_insert.first);
-	    //update_simplex_tree_after_node_insertion(res_insert.first);
+            l.push_back(res_insert.first);
+            update_simplex_tree_after_node_insertion(res_insert.first);
         }
         if (!res_insert.second) {
             // if already in the complex
 
-	    for (Simplex_handle sh : l){
-		update_simplex_tree_after_node_insertion(sh);
-	    }
+            for (Simplex_handle sh : l){
+                update_precomputed_coboundaries_after_insertion(sh);
+            }
 
             if (res_insert.first->second.filtration() > filtration) {
                 // if filtration value modified
@@ -900,9 +924,9 @@ private:
             dimension_ = static_cast<int>(simplex.size()) - 1;
         }
 
-	for (Simplex_handle sh : l){
-	    update_simplex_tree_after_node_insertion(sh);
-	}
+        for (Simplex_handle sh : l){
+            update_precomputed_coboundaries_after_insertion(sh);
+        }
 
         return res_insert;
     }
@@ -1001,7 +1025,7 @@ private:
         // - loop over those (new or not) simplices, with a recursive call(++first, last)
         Vertex_handle vertex_one = *first;
         auto&& dict = sib->members();
-        auto insertion_result = dict.emplace(vertex_one, Node(sib, filt));
+        auto insertion_result = dict.emplace(vertex_one, Node(maxConstKey_++, sib, filt));
 
         if (insertion_result.second) {
             update_simplex_tree_after_node_insertion(insertion_result.first);
@@ -1017,13 +1041,19 @@ private:
                 insertion_result.first = null_simplex();
             }
         }
-        if (++first == last) return insertion_result;
+        if (++first == last) {
+            if (one_is_new) update_precomputed_coboundaries_after_insertion(insertion_result.first);
+            return insertion_result;
+        }
         if (!has_children(simplex_one))
             // TODO: have special code here, we know we are building the whole subtree from scratch.
             simplex_one->second.assign_children(new Siblings(sib, vertex_one));
         auto res = rec_insert_simplex_and_subfaces_sorted(simplex_one->second.children(), first, last, filt);
         // No need to continue if the full simplex was already there with a low enough filtration value.
         if (!is_null(res.first)) rec_insert_simplex_and_subfaces_sorted(sib, first, last, filt);
+
+        if (one_is_new) update_precomputed_coboundaries_after_insertion(insertion_result.first);
+
         return res;
     }
 
@@ -1318,11 +1348,14 @@ public:
             root_.members_.reserve(boost::num_vertices(skel_graph));
         }
 
+        std::list<Simplex_handle> l;
+
         typename boost::graph_traits<OneSkeletonGraph>::vertex_iterator v_it, v_it_end;
         for (std::tie(v_it, v_it_end) = boost::vertices(skel_graph); v_it != v_it_end; ++v_it) {
             Simplex_handle new_sh = root_.members_.emplace_hint(
                         root_.members_.end(), *v_it, Node(&root_, boost::get(vertex_filtration_t(), skel_graph, *v_it)));
             update_simplex_tree_after_node_insertion(new_sh);  // insertion must not fail
+            l.push_back(new_sh);
         }
         typename boost::graph_traits<OneSkeletonGraph>::edge_iterator e_it, e_it_end;
         for (std::tie(e_it, e_it_end) = boost::edges(skel_graph); e_it != e_it_end; ++e_it) {
@@ -1346,7 +1379,11 @@ public:
                         v, Node(sh->second.children(), boost::get(edge_filtration_t(), skel_graph, *e_it)));
             if (res_insert.second) {
                 update_simplex_tree_after_node_insertion(res_insert.first);
+                l.push_back(res_insert.first);
             }
+        }
+        for (Simplex_handle sh : l){
+            update_precomputed_coboundaries_after_insertion(sh);
         }
     }
 
@@ -1382,6 +1419,7 @@ private:
         Dictionary_it next = siblings->members().begin();
         ++next;
 
+        std::list<Simplex_handle> l;
         thread_local std::vector<std::pair<Vertex_handle, Node>> inter;
         for (Dictionary_it s_h = siblings->members().begin(); s_h != siblings->members().end(); ++s_h, ++next) {
             Simplex_handle root_sh = find_vertex(s_h->first);
@@ -1397,6 +1435,7 @@ private:
                                                      inter);      // boost::container::ordered_unique_range_t
                     for (auto sh = new_sib->members().begin(); sh != new_sib->members().end(); ++sh) {
                         update_simplex_tree_after_node_insertion(sh);
+                        l.push_back(sh);
                     }
                     inter.clear();
                     s_h->second.assign_children(new_sib);
@@ -1407,6 +1446,9 @@ private:
                     inter.clear();
                 }
             }
+        }
+        for (Simplex_handle sh : l){
+            update_precomputed_coboundaries_after_insertion(sh);
         }
     }
 
@@ -1550,10 +1592,12 @@ public:
                         , int                             dim_max
                         , std::vector< Simplex_handle > & zz_filtration )
     {
+        std::list<Simplex_handle> l;
         if(u == v) { // Are we inserting a vertex?
-            auto res_ins = root_.members().emplace(u,Node(&root_,fil));
+            auto res_ins = root_.members().emplace(u,Node(maxConstKey_++, &root_,fil));
             if(res_ins.second) { //if the vertex was not in the complex
                 update_simplex_tree_after_node_insertion(res_ins.first);
+                update_precomputed_coboundaries_after_insertion(res_ins.first);
                 zz_filtration.push_back(res_ins.first); //no more insert in root_.members()
             }
             return; //because the vertex is isolated, no more insertions.
@@ -1567,17 +1611,24 @@ public:
         //insertion in a Sibling, then inserting all handles in zz_filtration.
 
         //check whether vertices u and v are in the tree, insert them if necessary
-        auto res_ins_v = root_.members().emplace(v,Node(&root_,fil));
-        auto res_ins_u = root_.members().emplace(u,Node(&root_,fil));
+        auto res_ins_v = root_.members().emplace(v,Node(maxConstKey_++, &root_,fil));
+        auto res_ins_u = root_.members().emplace(u,Node(maxConstKey_++, &root_,fil));
         if(res_ins_v.second) {
             update_simplex_tree_after_node_insertion(res_ins_v.first);
+            l.push_back(res_ins_v.first);
             zz_filtration.push_back(res_ins_v.first); //no more inserts in root_.members()
         }
         if(res_ins_u.second) {
             update_simplex_tree_after_node_insertion(res_ins_u.first);
+            l.push_back(res_ins_u.first);
             zz_filtration.push_back(res_ins_u.first); //no more inserts in root_.members()
         } //check if the edge {u,v} is already in the complex, if true, nothing to do.
-        if(has_children(res_ins_u.first) && res_ins_u.first->second.children()->members().find(v) != res_ins_u.first->second.children()->members().end()) {return;}
+        if (has_children(res_ins_u.first) && res_ins_u.first->second.children()->members().find(v) != res_ins_u.first->second.children()->members().end()) {
+            for (Simplex_handle sh : l){
+                update_precomputed_coboundaries_after_insertion(sh);
+            }
+            return;
+        }
 
         //upper bound on dimension
         dimension_ = dim_max; dimension_to_be_lowered_ = true;
@@ -1600,7 +1651,8 @@ public:
                                            , node_u.children()
                                            , fil
                                            , dim_max - curr_dim -1 //>= 0
-                                           , zz_filtration ); //u on top
+                                           , zz_filtration
+                                           , &l); //u on top
                 }
             }
         }
@@ -1608,6 +1660,10 @@ public:
         sort( zz_filtration.begin(), zz_filtration.end(),
               is_before_in_filtration(this)
               );
+
+        for (Simplex_handle sh : l){
+            update_precomputed_coboundaries_after_insertion(sh);
+        }
     }
 
 private:
@@ -1625,10 +1681,12 @@ private:
                                 , Siblings *       sib
                                 , Filtration_value fil
                                 , int              k //k == dim_max - dimension simplices in sib
-                                , std::vector<Simplex_handle> & zz_filtration )
+                                , std::vector<Simplex_handle> & zz_filtration
+                                , std::list<Simplex_handle> *l)
     { //insertion always succeeds because the edge {u,v} used to not be here.
-        auto res_ins_v = sib->members().emplace(v, Node(sib,fil));
+        auto res_ins_v = sib->members().emplace(v, Node(maxConstKey_++, sib,fil));
         update_simplex_tree_after_node_insertion(res_ins_v.first);//for cofaces hooks
+        l->push_back(res_ins_v.first);
         zz_filtration.push_back(res_ins_v.first); //no more insertion in sib
 
         if(k == 0) { return; } //reached the maximal dimension
@@ -1638,7 +1696,8 @@ private:
                             , sib
                             , fil
                             , k
-                            , zz_filtration );
+                            , zz_filtration
+                            , l);
 
         //punctual expansion in nodes on the left of v, i.e. with label x < v
         for( auto sh = sib->members().begin(); sh != res_ins_v.first; ++sh )
@@ -1655,9 +1714,12 @@ private:
                                        , sh->second.children()
                                        , fil
                                        , k-1
-                                       , zz_filtration );
+                                       , zz_filtration
+                                       , l);
             }
         }
+
+        //update_precomputed_coboundaries_after_insertion(res_ins_v.first);
     }
 
     /* After the insertion of edge {u,v}, expansion of a subtree rooted at v, where the
@@ -1671,13 +1733,15 @@ private:
             , Siblings       * curr_sib //Siblings containing the node sh_v
             , Filtration_value fil_uv //Fil value of the edge uv in the zz filtration
             , int              k //Stopping condition for recursion based on max dim
-            , std::vector<Simplex_handle> &zz_filtration) //range of all new simplices
+            , std::vector<Simplex_handle> &zz_filtration
+            , std::list<Simplex_handle> *l) //range of all new simplices
     { //pick N^+(v)
         Simplex_handle root_sh_v = find_vertex(sh_v->first);
         if(!has_children(root_sh_v)) { return; }
         //intersect N^+(v) with labels y > v in curr_sib
         Simplex_handle next_it = sh_v;    ++next_it;
         thread_local std::vector< std::pair<Vertex_handle, Node> > inter;
+        //std::list<Simplex_handle> l;
 
         zz_intersection( inter
                          , next_it
@@ -1695,13 +1759,18 @@ private:
                  new_sh != new_sib->members().end(); ++new_sh )
             {
                 update_simplex_tree_after_node_insertion(new_sh);
+                l->push_back(new_sh);
                 zz_filtration.push_back(new_sh);//new_sib does not change anymore
             }
             inter.clear();
             //recursive standard expansion for the rest of the subtree
-            zz_siblings_expansion(new_sib, fil_uv, k-1, zz_filtration );
+            zz_siblings_expansion(new_sib, fil_uv, k-1, zz_filtration, l );
         }
         else { sh_v->second.assign_children(curr_sib); inter.clear(); }
+
+        /*for (Simplex_handle sh : l){
+            update_precomputed_coboundaries_after_insertion(sh);
+        }*/
     }
 
 
@@ -1717,11 +1786,13 @@ private:
             Siblings       * siblings  // must contain elements
             , Filtration_value fil
             , int              k  //==max_dim expansion - dimension curr siblings
-            , std::vector<Simplex_handle> & zz_filtration )
+            , std::vector<Simplex_handle> & zz_filtration
+            , std::list<Simplex_handle> *l)
     {
         if (k == 0) { return; } //max dimension
         Dictionary_it next = ++(siblings->members().begin());
 
+        //std::list<Simplex_handle> l;
         thread_local std::vector< std::pair<Vertex_handle, Node> > inter;
         for( Dictionary_it s_h = siblings->members().begin();
              next != siblings->members().end(); ++s_h, ++next)
@@ -1746,15 +1817,19 @@ private:
                          new_sh != new_sib->members().end(); ++new_sh )
                     {
                         update_simplex_tree_after_node_insertion(new_sh);//cofaces hooks
+                        l->push_back(new_sh);
                         zz_filtration.push_back(new_sh); //new_sib does not change anymore
                     }
                     inter.clear();
                     //recursive standard expansion for the rest of the subtree
-                    zz_siblings_expansion(new_sib, fil, k - 1, zz_filtration);
+                    zz_siblings_expansion(new_sib, fil, k - 1, zz_filtration, l);
                 }     // ensure the children property
                 else { s_h->second.assign_children(siblings); inter.clear();}
             }
         }
+        /*for (Simplex_handle sh : l){
+            update_precomputed_coboundaries_after_insertion(sh);
+        }*/
     }
 
     /* \brief Intersects Dictionary 1 [begin1;end1) with Dictionary 2 [begin2,end2)
@@ -1766,7 +1841,7 @@ private:
    * todo merge zz_intersection and intersection with a
    * "filtration_strategy predicate".
    */
-    static void zz_intersection(
+    /*static*/ void zz_intersection(
             std::vector<std::pair<Vertex_handle, Node> > & intersection
             , Dictionary_it                                  begin1
             , Dictionary_it                                  end1
@@ -1782,7 +1857,7 @@ private:
                 if (begin1->first > begin2->first) {++begin2; if(begin2 == end2) {return;} }
                 else // begin1->first == begin2->first
                 {
-                    intersection.emplace_back( begin1->first, Node( nullptr, fil ) );
+                    intersection.emplace_back( begin1->first, Node( maxConstKey_++, nullptr, fil ) );
                     ++begin1; ++begin2;
                     if (begin1 == end1 || begin2 == end2) { return; }
                 }
@@ -2124,6 +2199,7 @@ public:
 
         // Simplex is a leaf, it means the child is the Siblings owning the leaf
         Siblings* child = sh->second.children();
+        update_precomputed_coboundaries_after_removal(sh);
         update_simplex_tree_after_node_removal(sh);
 
         if ((child->size() > 1) || (child == root())) {
