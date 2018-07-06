@@ -110,8 +110,6 @@ public:
     /* \brief Set of nodes sharing a same parent in the simplex tree. */
     typedef Simplex_tree_siblings<Simplex_tree, Dictionary> Siblings;
 
-    Simplex_key maxConstKey_ = 0;
-
     struct Key_simplex_base_real {
         Key_simplex_base_real() : key_(-1) {}
         void assign_key(Simplex_key k) { key_ = k; }
@@ -245,22 +243,22 @@ public:
         bool operator()(Simplex_handle sh1, Simplex_handle sh2) {
             //std::cout << key(sh1) << " sh1\n";
             //std::cout << key(sh2) << " sh2\n";
-            //return sh1->first < sh2->first;
-            return key(sh1) < key(sh2);
+            return sh1->first < sh2->first;
+            //return key(sh1) < key(sh2);
         }
     };
 
     struct Simplex_handle_Hasher {
         std::size_t operator()(const Simplex_handle &sh) const
         {
-            return std::hash<int>()(sh->second.const_key());
+            return std::hash<Node*>()(&(sh->second));
         }
     };
 
     struct Simplex_handle_Equals : std::binary_function<const Simplex_handle &, const Simplex_handle &, bool> {
         bool operator()(const Simplex_handle &sh1, const Simplex_handle &sh2) const
         {
-            return sh1->second.const_key() == sh2->second.const_key();
+            return &(sh1->second) == &(sh2->second);
         }
     };
 
@@ -374,7 +372,7 @@ public:
     /**
   * Return true iff the simplex is critical.
   */
-    bool critical(Simplex_handle sh) { return sh->second.is_critical(); }
+    bool is_critical(Simplex_handle sh) { return sh->second.is_critical(); }
     /**
   * Pair sh_t with sh_s and sh_s with sh_t.
   * Both Simplex_handles must be valid, distinct from null_simplex() handles.
@@ -583,7 +581,7 @@ public:
 
     /** \brief Constructs an empty simplex tree. */
     Simplex_tree() : zigzag_simplex_range_initialized_(false), null_vertex_(-1), root_(nullptr, null_vertex_), filtration_vect_(), dimension_(-1) {//explicit value for null_simplex_;
-        null_simplex_ = null_dictionary_.emplace(null_vertex(),Node(maxConstKey_++)).first;
+        null_simplex_ = null_dictionary_.emplace(null_vertex(),Node()).first;
     }
 
     /** \brief User-defined copy constructor reproduces the whole tree structure. */
@@ -886,7 +884,7 @@ private:
         std::list<Simplex_handle> l;
         for (; vi != simplex.end() - 1; ++vi) {
             GUDHI_CHECK(*vi != null_vertex(), "cannot use the dummy null_vertex() as a real vertex");
-            res_insert = curr_sib->members_.emplace(*vi, Node(maxConstKey_++, curr_sib, filtration));
+            res_insert = curr_sib->members_.emplace(*vi, Node(curr_sib, filtration));
             if (res_insert.second) {
                 l.push_back(res_insert.first);
                 update_simplex_tree_after_node_insertion(res_insert.first);
@@ -898,7 +896,7 @@ private:
         }
 
         GUDHI_CHECK(*vi != null_vertex(), "cannot use the dummy null_vertex() as a real vertex");
-        res_insert = curr_sib->members_.emplace(*vi, Node(maxConstKey_++, curr_sib, filtration));
+        res_insert = curr_sib->members_.emplace(*vi, Node(curr_sib, filtration));
         if (res_insert.second) {
             l.push_back(res_insert.first);
             update_simplex_tree_after_node_insertion(res_insert.first);
@@ -1025,7 +1023,7 @@ private:
         // - loop over those (new or not) simplices, with a recursive call(++first, last)
         Vertex_handle vertex_one = *first;
         auto&& dict = sib->members();
-        auto insertion_result = dict.emplace(vertex_one, Node(maxConstKey_++, sib, filt));
+        auto insertion_result = dict.emplace(vertex_one, Node(sib, filt));
 
         if (insertion_result.second) {
             update_simplex_tree_after_node_insertion(insertion_result.first);
@@ -1594,7 +1592,7 @@ public:
     {
         std::list<Simplex_handle> l;
         if(u == v) { // Are we inserting a vertex?
-            auto res_ins = root_.members().emplace(u,Node(maxConstKey_++, &root_,fil));
+            auto res_ins = root_.members().emplace(u,Node(&root_,fil));
             if(res_ins.second) { //if the vertex was not in the complex
                 update_simplex_tree_after_node_insertion(res_ins.first);
                 update_precomputed_coboundaries_after_insertion(res_ins.first);
@@ -1611,8 +1609,8 @@ public:
         //insertion in a Sibling, then inserting all handles in zz_filtration.
 
         //check whether vertices u and v are in the tree, insert them if necessary
-        auto res_ins_v = root_.members().emplace(v,Node(maxConstKey_++, &root_,fil));
-        auto res_ins_u = root_.members().emplace(u,Node(maxConstKey_++, &root_,fil));
+        auto res_ins_v = root_.members().emplace(v,Node(&root_,fil));
+        auto res_ins_u = root_.members().emplace(u,Node(&root_,fil));
         if(res_ins_v.second) {
             update_simplex_tree_after_node_insertion(res_ins_v.first);
             l.push_back(res_ins_v.first);
@@ -1684,7 +1682,7 @@ private:
                                 , std::vector<Simplex_handle> & zz_filtration
                                 , std::list<Simplex_handle> *l)
     { //insertion always succeeds because the edge {u,v} used to not be here.
-        auto res_ins_v = sib->members().emplace(v, Node(maxConstKey_++, sib,fil));
+        auto res_ins_v = sib->members().emplace(v, Node(sib,fil));
         update_simplex_tree_after_node_insertion(res_ins_v.first);//for cofaces hooks
         l->push_back(res_ins_v.first);
         zz_filtration.push_back(res_ins_v.first); //no more insertion in sib
@@ -1841,7 +1839,7 @@ private:
    * todo merge zz_intersection and intersection with a
    * "filtration_strategy predicate".
    */
-    /*static*/ void zz_intersection(
+    static void zz_intersection(
             std::vector<std::pair<Vertex_handle, Node> > & intersection
             , Dictionary_it                                  begin1
             , Dictionary_it                                  end1
@@ -1857,7 +1855,7 @@ private:
                 if (begin1->first > begin2->first) {++begin2; if(begin2 == end2) {return;} }
                 else // begin1->first == begin2->first
                 {
-                    intersection.emplace_back( begin1->first, Node( maxConstKey_++, nullptr, fil ) );
+                    intersection.emplace_back( begin1->first, Node( nullptr, fil ) );
                     ++begin1; ++begin2;
                     if (begin1 == end1 || begin2 == end2) { return; }
                 }

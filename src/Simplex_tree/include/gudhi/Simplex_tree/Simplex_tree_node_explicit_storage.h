@@ -49,7 +49,7 @@ struct Simplex_tree_node_explicit_storage : SimplexTree::Filtration_simplex_base
   typedef typename SimplexTree::Filtration_value Filtration_value;
   typedef typename SimplexTree::Simplex_key Simplex_key;
 
-  Simplex_tree_node_explicit_storage(Simplex_key const_key, Siblings *sib = nullptr, Filtration_value filtration = 0) : children_(sib), const_key_(const_key) {
+  Simplex_tree_node_explicit_storage(Siblings *sib = nullptr, Filtration_value filtration = 0) : children_(sib) {
     this->assign_filtration(filtration);
   }
 
@@ -70,12 +70,8 @@ struct Simplex_tree_node_explicit_storage : SimplexTree::Filtration_simplex_base
   /* Careful -> children_ can be NULL*/
   Siblings *children() { return children_; }
 
-public:
-  Simplex_key const_key() const { return const_key_; }
-
 private:
   Siblings *children_;
-  Simplex_key const_key_;
 };
 
 /* @} */  // end addtogroup simplex_tree

@@ -483,7 +483,7 @@ void compute_zigzag_persistence()
       }
       else //backward arrow 
       {
-        if(!cpx_->critical(*zzit)) { //if the simplex is critical
+        if(!cpx_->is_critical(*zzit)) { //if the simplex is critical
           //matrix A becomes matrix A U \{\tau,sigma\}
           make_pair_critical(*zzit);
         }
