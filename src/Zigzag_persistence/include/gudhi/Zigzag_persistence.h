@@ -449,15 +449,12 @@ void compute_zigzag_persistence()
   // std::vector< std::pair< Simplex_key, Filtration_value > > filtration_values;
   Filtration_value                                          prev_fil_, curr_fil_;
 
-  assert(num_arrow_ == 0); //start with an 'empty' complex.
+  assert(num_arrow_ == 0); 
   auto zzrg = cpx_->filtration_simplex_range();
   auto zzit = zzrg.begin();
 
-/* TO DO num_arrows must be == cpx_->key(zzsh) for non-contiguous keys! */
-
-
   prev_fil_ = cpx_->filtration(*zzit);
-  filtration_values_.emplace_back(num_arrow_, prev_fil_);
+  filtration_values_.emplace_back(cpx_->key(*zzit), prev_fil_);
 
   while( zzit != zzrg.end() )
   { 
@@ -472,35 +469,31 @@ void compute_zigzag_persistence()
     // std::cout << "      k" << cpx_->key(*zzit)  << "  f" << cpx_->filtration(*zzit) <<  "\n";
     // std::cout << std::endl;
 
-
-
     //gives only critical simplices for insertion, and potentially maximal non-critical (i.e., paired) simplices at deletion.
     //keys must be already assigned by the filtration_simplex_iterator
       if(zzit.arrow_direction()) //forward arrow
       {
         curr_fil_ = cpx_->filtration(*zzit);//check whether the filt val has changed
         if(curr_fil_ != prev_fil_) 
-        { prev_fil_ = curr_fil_;
-          filtration_values_.emplace_back(num_arrow_, prev_fil_);}
+        { 
+          prev_fil_ = curr_fil_;
+          filtration_values_.emplace_back(cpx_->key(*zzit), prev_fil_);
+        }
 
         forward_arrow(*zzit); 
       }
       else //backward arrow 
       {
-        if(!cpx_->critical(*zzit)) { //if the simplex is critical
-          //matrix A becomes matrix A U \{\tau,sigma\}
+        if(!cpx_->critical(*zzit)) //if the simplex is paired, make it critical
+        { //matrix A becomes matrix A U \{\tau,sigma\}
           make_pair_critical(*zzit);
         }
+
         backward_arrow(*zzit); 
       }
-    // }
-    // else {      
-    //   auto tmpsh = *zzit; ++zzit;
-    //   if(!cpx_->is_pair(tmpsh,*zzit)) {std::cout << "Error \n"; return; }
-    // }
 
     ++zzit;
-    ++num_arrow_; //same as simplex index, count all simplices, even non criticals
+    ++num_arrow_; //count total number of arrows
   }
   if(!matrix_.empty()) {std::cout << "Remains " << matrix_.size() << " columns.\n";}
 
@@ -605,10 +598,12 @@ void make_pair_critical(Simplex_handle zzsh)
   std::map<matrix_chain *, int> modif_chain;
   for(auto c_sh : cpx_->paired_simplex_coboundary_simplex_range(tsh)) {//[*c_sh:*t_sh]^{A'} != 0
     //all chains with != 0 index at c_sh
-    for(auto cell : *(lowidx_to_matidx_[cpx_->key(c_sh)]->row_)) {
-      auto res_insert = modif_chain.emplace(cell.self_chain_,1);
-      if(!res_insert.second) {//already there
-        ++(res_insert.first->second); //one more occurrence of the chain
+    if(cpx_->key(c_sh) != cpx_->key(zzsh)) {//don't take into account col_sigma
+      for(auto cell : *(lowidx_to_matidx_[cpx_->key(c_sh)]->row_)) {
+        auto res_insert = modif_chain.emplace(cell.self_chain_,1);
+        if(!res_insert.second) {//already there
+          ++(res_insert.first->second); //one more occurrence of the chain
+        }
       }
     }
   }
@@ -1143,7 +1138,7 @@ void surjective_reflection_diamond( Simplex_handle zzsh
   // // }
   persistence_diagram_.emplace_back( cpx_->dimension(zzsh)-1
                                    , maxb//cpx_->filtration(max_birth)
-                                   , num_arrow_);//-1);//cpx_->filtration(zzsh)); 
+                                   , cpx_->key(zzsh));//-1);//cpx_->filtration(zzsh)); 
 
 }
 
@@ -1201,7 +1196,7 @@ void backward_arrow( Simplex_handle zzsh )
     // // }
     persistence_diagram_.emplace_back( cpx_->dimension(zzsh)
                                      , curr_col->birth()
-                                     , num_arrow_); 
+                                     , cpx_->key(zzsh)); 
 
   }
   else { //in H    -> paired c_g belongs to F now
