@@ -407,6 +407,7 @@ struct birth_ordering {
   }
   //decreasing birth order <=b, true iff b1 >b b2
   bool reverse_birth_order(Simplex_key k1, Simplex_key k2) {
+    // std::cout << "X\n";
     return birth_to_pos_[k1] > birth_to_pos_[k2];
   }
 
@@ -451,6 +452,9 @@ void compute_zigzag_persistence()
   assert(num_arrow_ == 0); //start with an 'empty' complex.
   auto zzrg = cpx_->filtration_simplex_range();
   auto zzit = zzrg.begin();
+
+/* TO DO num_arrows must be == cpx_->key(zzsh) for non-contiguous keys! */
+
 
   prev_fil_ = cpx_->filtration(*zzit);
   filtration_values_.emplace_back(num_arrow_, prev_fil_);
@@ -613,14 +617,19 @@ void make_pair_critical(Simplex_handle zzsh)
     if((modif.second % 2) == 1) { //sum_{nu \in chain} [nu:tau]^{A'} = 1
       //Add the bottom coefficient for zzsh to rectify new boundary
       Cell * new_cell = new Cell(cpx_->key(zzsh), modif.first);
-      modif.first->column_->push_back( *new_cell ); //zzsh has largest idx of all
+      // modif.first->column_->push_back( *new_cell ); //zzsh doesn't have largest idx of all
+      insert_cell(modif.first->column_, new_cell);
       new_row_s->push_back( *new_cell );//row for sigma
     }//else sum == 0
   }
 }
 
-
-
+//insert a cell in the middle of a column
+  void insert_cell(Column *c, Cell *cell) {
+    auto it = c->begin();
+    while(it != c->end() && it->key_ < cell->key_) {++it;}
+    c->insert(it,*cell);
+  }
 
 
   Filtration_value index_to_filtration(Simplex_key k) {
@@ -1055,6 +1064,9 @@ void surjective_reflection_diamond( Simplex_handle zzsh
   available_birth.erase(maxb_it); //remove max birth cycle (stolen)
 
 
+  // auto it_stop = chains_in_F.rend(); --it_stop;
+  // for(auto chain_f_it  = chains_in_F.rbegin(); //by increasing death
+  //         chain_f_it != it_stop; ++chain_f_it ) //chain_fp = begin() has max death
 
   for(auto chain_f_it  = chains_in_F.rbegin(); //by increasing death
           *chain_f_it != chain_fp; ++chain_f_it ) //chain_fp = begin() has max death
@@ -1066,6 +1078,8 @@ void surjective_reflection_diamond( Simplex_handle zzsh
     if(birth_it == available_birth.end()) { //birth not available anymore
       
       // std::cout << "birth stolen\n";
+
+      if(available_birth.empty()) {std::cout << "Should not be empty\n";}
 
       auto max_avail_b_it = available_birth.begin(); 
       Simplex_key max_avail_b = *max_avail_b_it;//max available birth
