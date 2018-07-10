@@ -402,7 +402,7 @@ private:
     }
 
     void update_precomputed_coboundaries_after_insertion(Simplex_handle &sh){
-        for (auto b_sh : boundary_simplex_range(sh)) {
+	for (auto b_sh : boundary_simplex_range(sh)) {
             b_sh->second.insert_coboundary(sh);
         }
     }
@@ -414,8 +414,8 @@ private:
     }
 
     void update_precomputed_coboundaries_after_removal(Simplex_handle &sh){
-        for(auto b_sh : boundary_simplex_range(sh)) {
-            b_sh->second.erase_coboundary(sh);
+	for(auto b_sh : boundary_simplex_range(sh)) {
+	    b_sh->second.erase_coboundary(sh);
         }
     }
 
@@ -572,12 +572,12 @@ public:
    * @param[in] sh Simplex for which the boundary is computed. */
     template <class SimplexHandle>
     Boundary_simplex_range boundary_simplex_range(SimplexHandle sh) {
-        return Boundary_simplex_range(Boundary_simplex_iterator(this, sh), Boundary_simplex_iterator(this));
+	return Boundary_simplex_range(Boundary_simplex_iterator(this, sh), Boundary_simplex_iterator(this));
     }
 
     template <class SimplexHandle>
     Boundary_simplex_range paired_simplex_boundary_simplex_range(SimplexHandle sh) {
-        return Boundary_simplex_range(Boundary_simplex_iterator(this, sh), Boundary_simplex_iterator(this));
+	return Boundary_simplex_range(Boundary_simplex_iterator(this, sh), Boundary_simplex_iterator(this));
     }
 
     /** @} */  // end range and iterator methods
@@ -1668,6 +1668,8 @@ public:
         for (Simplex_handle sh : l){
             update_precomputed_coboundaries_after_insertion(sh);
         }
+
+	//std::cout << zz_filtration.size() << " size\n";
     }
 
 private:
