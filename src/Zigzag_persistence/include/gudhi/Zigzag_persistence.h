@@ -483,10 +483,12 @@ public:
 	double nber_forward = 0;
 	double nber_backward = 0;
 	double nber_halfpair = 0;
-	std::chrono::time_point<std::chrono::system_clock> start, end;
-	std::chrono::time_point<std::chrono::system_clock> start2, end2;
-	std::chrono::duration<double> enlapsed_sec;
-	double enlapsed_total = 0.0;
+#ifdef GUDHI_COMPLEX_TIME
+//	std::chrono::time_point<std::chrono::system_clock> start, end;
+//	std::chrono::time_point<std::chrono::system_clock> start2, end2;
+//	std::chrono::duration<double> enlapsed_sec;
+//	double enlapsed_total = 0.0;
+#endif
 
 	/* TO DO num_arrows must be == cpx_->key(zzsh) for non-contiguous keys! */
 
@@ -495,7 +497,9 @@ public:
 
 	while( zzit != zzrg.end() )
 	{
-	    start2 = std::chrono::system_clock::now();
+#ifdef GUDHI_COMPLEX_TIME
+//	    start2 = std::chrono::system_clock::now();
+#endif
 	    //std::cout << cpx_->key(*zzit) << " key\n";
 
 	    /*for (Matrix_chain mc : matrix_){
@@ -526,7 +530,9 @@ public:
 	    if(zzit.arrow_direction()) //forward arrow
 	    {
 		//std::cout << "forward arrow\n";
-		start = std::chrono::system_clock::now();
+#ifdef GUDHI_COMPLEX_TIME
+//		start = std::chrono::system_clock::now();
+#endif
 		++nber_forward;
 		curr_fil_ = cpx_->filtration(*zzit);//check whether the filt val has changed
 		if(curr_fil_ != prev_fil_)
@@ -534,9 +540,11 @@ public:
 		    filtration_values_.emplace_back(cpx_->key(*zzit), prev_fil_);}
 
 		forward_arrow(*zzit);
-		end = std::chrono::system_clock::now();
-		enlapsed_sec = end-start;
-		//std::cout << "forward arrow: " << enlapsed_sec.count() << " sec.\n";
+#ifdef GUDHI_COMPLEX_TIME
+//		end = std::chrono::system_clock::now();
+//		enlapsed_sec = end-start;
+//		std::cout << "forward arrow: " << enlapsed_sec.count() << " sec.\n";
+#endif
 	    }
 	    else //backward arrow
 	    {
@@ -545,32 +553,44 @@ public:
 		if(!cpx_->is_critical(*zzit)) { //if the simplex is critical
 		    //matrix A becomes matrix A U \{\tau,sigma\}
 		    ++nber_halfpair;
-		    start = std::chrono::system_clock::now();
+#ifdef GUDHI_COMPLEX_TIME
+//		    start = std::chrono::system_clock::now();
+#endif
 		    make_pair_critical(*zzit);
-		    end = std::chrono::system_clock::now();
-		    enlapsed_sec = end-start;
-		    //std::cout << "halfpair arrow: " << enlapsed_sec.count() << " sec.\n";
+#ifdef GUDHI_COMPLEX_TIME
+//		    end = std::chrono::system_clock::now();
+//		    enlapsed_sec = end-start;
+//		    std::cout << "halfpair arrow: " << enlapsed_sec.count() << " sec.\n";
+#endif
 		}
-		start = std::chrono::system_clock::now();
+#ifdef GUDHI_COMPLEX_TIME
+//		start = std::chrono::system_clock::now();
+#endif
 		backward_arrow(*zzit);
-		end = std::chrono::system_clock::now();
-		enlapsed_sec = end-start;
-		//std::cout << "backward arrow: " << enlapsed_sec.count() << " sec.\n";
+#ifdef GUDHI_COMPLEX_TIME
+//		end = std::chrono::system_clock::now();
+//		enlapsed_sec = end-start;
+//		std::cout << "backward arrow: " << enlapsed_sec.count() << " sec.\n";
+#endif
 	    }
 	    // }
 	    // else {
 	    //   auto tmpsh = *zzit; ++zzit;
 	    //   if(!cpx_->is_pair(tmpsh,*zzit)) {std::cout << "Error \n"; return; }
 	    // }
-	    end2 = std::chrono::system_clock::now();
-	    enlapsed_sec = end2-start2;
-	    enlapsed_total += enlapsed_sec.count();
+#ifdef GUDHI_COMPLEX_TIME
+//	    end2 = std::chrono::system_clock::now();
+//	    enlapsed_sec = end2-start2;
+//	    enlapsed_total += enlapsed_sec.count();
+#endif
 
 	    ++zzit;
 	    ++num_arrow_; //same as simplex index, count all simplices, even non criticals
 	}
 	if(!matrix_.empty()) {std::cout << "Remains " << matrix_.size() << " columns.\n";}
-	std::cout << "total: " << enlapsed_total << " sec.\n";
+#ifdef GUDHI_COMPLEX_TIME
+//	std::cout << "total: " << enlapsed_total << " sec.\n";
+#endif
 
 	//Compute the right-open intervals, for the remaining columns in the matrix.
 	// for(auto & col : matrix_)

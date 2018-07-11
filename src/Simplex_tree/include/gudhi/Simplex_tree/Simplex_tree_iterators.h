@@ -127,16 +127,20 @@ private:
     }
 
     void increment() {
+#ifdef GUDHI_COMPLEX_TIME
 	std::chrono::time_point<std::chrono::system_clock> start, end;
 	std::chrono::duration<double> enlapsed_sec;
 
 	start = std::chrono::system_clock::now();
+#endif
 
         if (sib_ == nullptr) {
             sh_ = st_->null_simplex();
+#ifdef GUDHI_COMPLEX_TIME
 	    end = std::chrono::system_clock::now();
 	    enlapsed_sec = end - start;
 	    st_->add_to_complex_operation_time(enlapsed_sec.count());
+#endif
             return;
         }
 
@@ -151,9 +155,11 @@ private:
                     sh_ = for_sib->members_.begin() + last_;
                     sib_ = nullptr;
 
+#ifdef GUDHI_COMPLEX_TIME
 		    end = std::chrono::system_clock::now();
 		    enlapsed_sec = end - start;
 		    st_->add_to_complex_operation_time(enlapsed_sec.count());
+#endif
 
                     return;
                 } else {
@@ -173,9 +179,11 @@ private:
         next_ = sib_->parent();
         sib_ = new_sib;
 
+#ifdef GUDHI_COMPLEX_TIME
 	end = std::chrono::system_clock::now();
 	enlapsed_sec = end - start;
 	st_->add_to_complex_operation_time(enlapsed_sec.count());
+#endif
     }
 
     // Most of the storage should be moved to the range, iterators should be light.
