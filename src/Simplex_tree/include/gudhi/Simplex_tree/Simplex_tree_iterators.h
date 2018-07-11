@@ -32,6 +32,7 @@
 #endif
 
 #include <vector>
+#include <chrono>
 #include <boost/iterator/filter_iterator.hpp>
 
 namespace Gudhi {
@@ -126,8 +127,16 @@ private:
     }
 
     void increment() {
+	std::chrono::time_point<std::chrono::system_clock> start, end;
+	std::chrono::duration<double> enlapsed_sec;
+
+	start = std::chrono::system_clock::now();
+
         if (sib_ == nullptr) {
             sh_ = st_->null_simplex();
+	    end = std::chrono::system_clock::now();
+	    enlapsed_sec = end - start;
+	    st_->add_to_complex_operation_time(enlapsed_sec.count());
             return;
         }
 
@@ -141,6 +150,11 @@ private:
                     // Segment, this vertex is the last boundary simplex
                     sh_ = for_sib->members_.begin() + last_;
                     sib_ = nullptr;
+
+		    end = std::chrono::system_clock::now();
+		    enlapsed_sec = end - start;
+		    st_->add_to_complex_operation_time(enlapsed_sec.count());
+
                     return;
                 } else {
                     // Dim >= 2, initial step of the descent
@@ -158,6 +172,10 @@ private:
         suffix_.push_back(next_);
         next_ = sib_->parent();
         sib_ = new_sib;
+
+	end = std::chrono::system_clock::now();
+	enlapsed_sec = end - start;
+	st_->add_to_complex_operation_time(enlapsed_sec.count());
     }
 
     // Most of the storage should be moved to the range, iterators should be light.

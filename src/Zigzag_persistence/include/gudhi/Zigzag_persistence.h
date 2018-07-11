@@ -669,11 +669,18 @@ public:
 
 	if(chain_it_s->lowest_idx_ != cpx_->key(zzsh)) {std::cout << "Error lowest key\n";}
 
+//	std::chrono::time_point<std::chrono::system_clock> start, end;
+//	std::chrono::duration<double> enlapsed_sec;
 
 	//fill up col_tau with \partial \sigma in new Morse complex
 	std::set< Simplex_key > col_bsh; //set maintains the order on indices
+//	start = std::chrono::system_clock::now();
 	for( auto b_sh : cpx_->paired_simplex_boundary_simplex_range(zzsh) )//<-\partial in Morse complex
 	{ col_bsh.insert(cpx_->key(b_sh)); }
+//	end = std::chrono::system_clock::now();
+//	enlapsed_sec = end-start;
+//	std::cout << "paired_simplex_boundary_simplex_range: " << enlapsed_sec.count() << " sec.\n";
+
 	//copy \partial sigma in the new row&column
 	for( auto idx : col_bsh ) //in increasing idx order
 	{ //add all indices in col_tau with canonical order enforced by set col_bsh
@@ -684,6 +691,7 @@ public:
 
 	//update the row for sigma. First record all possible modified columns
 	std::map<Matrix_chain *, int> modif_chain;
+//	start = std::chrono::system_clock::now();
 	for(auto c_sh : cpx_->paired_simplex_coboundary_simplex_range(tsh)) {//[*c_sh:*t_sh]^{A'} != 0
 	    //all chains with != 0 index at c_sh
 	    /*if(lowidx_to_matidx_.find(cpx_->key(c_sh)) == lowidx_to_matidx_.end()) {
@@ -699,6 +707,10 @@ public:
 		}
 	    }
 	}
+//	end = std::chrono::system_clock::now();
+//	enlapsed_sec = end-start;
+//	std::cout << "paired_simplex_coboundary_simplex_range + loop: " << enlapsed_sec.count() << " sec.\n";
+
 	//all chains appearing an odd number of times
 	for(auto modif : modif_chain) {
 	    if((modif.second % 2) == 1) { //sum_{nu \in chain} [nu:tau]^{A'} = 1
@@ -924,8 +936,15 @@ private:
 	//Reduce the boundary of zzsh in the basis of cycles.
 	//Compute the simplex keys of the simplices of the boundary of zzsh.
 	std::set< Simplex_key > col_bsh; //set maintains the order on indices
+//	std::chrono::time_point<std::chrono::system_clock> start, end;
+//	std::chrono::duration<double> enlapsed_sec;
+
+//	start = std::chrono::system_clock::now();
 	for( auto b_sh : cpx_->boundary_simplex_range(zzsh) )
 	{ col_bsh.insert(cpx_->key(b_sh)); }
+//	end = std::chrono::system_clock::now();
+//	enlapsed_sec = end-start;
+//	std::cout << "boundary_simplex_range: " << enlapsed_sec.count() << " sec.\n";
 	// {  col_bsh.insert( b_sh ); } //todo prob here!
 
 	// std::cout << "col_bsh : ";
