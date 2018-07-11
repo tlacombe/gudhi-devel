@@ -613,9 +613,9 @@ public:
 	// }
 
 	//std::cout << "Total number of arrows: " << num_arrow_+1 << std::endl;
-	std::cout << std::setprecision(std::numeric_limits<double>::digits10 + 1) << "Number of forward arrows: " << nber_forward << std::endl;
-	std::cout << "Number of backward arrows: " << nber_backward << std::endl;
-	std::cout << "Number of halfpair arrows: " << nber_halfpair << std::setprecision(5) << std::endl;
+	std::cout << std::setprecision(std::numeric_limits<double>::digits10 + 1) /*<< "Number of forward arrows: "*/ << nber_forward << std::endl;
+	std::cout /*<< "Number of backward arrows: "*/ << nber_backward << std::endl;
+	std::cout /*<< "Number of halfpair arrows: "*/ << nber_halfpair << std::setprecision(5) << std::endl;
 
     }
 
