@@ -31,6 +31,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <sstream>
 #include <vector>
 #include <unordered_map>
 #include <algorithm>
@@ -66,6 +67,7 @@ public:
     };
 
     Tower_converter();
+    Tower_converter(std::stringstream *outputStream, streamingType type = VERTICES);
     Tower_converter(std::string outputFileName, streamingType type = VERTICES);
     ~Tower_converter();
 
@@ -81,7 +83,8 @@ public:
 private:
     ComplexStructure *complex_;                     /**< Current complex. */
     std::unordered_map<double, vertex> *vertices_;  /**< Current vertices in the complex. Keeps the coherence between vertex identifiers outside and inside the class. */
-    std::ofstream *outputStream_;                   /**< Output file. */
+    std::stringstream *outputStream_;               /**< Output stream. */
+    std::ofstream *outputFile_;                     /**< Output file. */
     streamingType streamingType_;                   /**< Output format. See Enumeration `streamingType`. */
     double filtrationSize_;                         /**< Current filtration size. */
     double towerWidth_;                             /**< Current tower width. */
@@ -96,25 +99,43 @@ template<class ComplexStructure>
  *
  * Initializes the members. The output option is set as "no output".
  */
-Tower_converter<ComplexStructure>::Tower_converter() : streamingType_(VERTICES), filtrationSize_(0), towerWidth_(0)
+Tower_converter<ComplexStructure>::Tower_converter() : outputStream_(NULL), outputFile_(NULL), streamingType_(VERTICES), filtrationSize_(0), towerWidth_(0)
 {
-    outputStream_ = NULL;
     vertices_ = new std::unordered_map<double, vertex>();
     complex_ = new ComplexStructure();
 }
 
 template<class ComplexStructure>
 /**
- * @brief Full constructor.
+ * @brief Full constructor (1).
+ *
+ * Initializes the members. The output stream will be redirected to @p outputStream with the output format @p type.
+ *
+ * @param outputStream Pointer to a std::stringstream.
+ * @param type Output format. By default it is #VERTICES. See Enumeration #streamingType.
+ */
+Tower_converter<ComplexStructure>::Tower_converter(std::stringstream *outputStream, streamingType type) : outputStream_(outputStream), outputFile_(NULL), streamingType_(type), filtrationSize_(0), towerWidth_(0)
+{
+    vertices_ = new std::unordered_map<double, vertex>();
+    complex_ = new ComplexStructure();
+}
+
+template<class ComplexStructure>
+/**
+ * @brief Full constructor (2).
  *
  * Initializes the members. The output stream will be redirected to @p outputFileName with the output format @p type.
  *
  * @param outputFileName File name for the output.
  * @param type Output format. By default it is #VERTICES. See Enumeration #streamingType.
  */
-Tower_converter<ComplexStructure>::Tower_converter(std::string outputFileName, streamingType type) : streamingType_(type), filtrationSize_(0), towerWidth_(0)
+Tower_converter<ComplexStructure>::Tower_converter(std::string outputFileName, streamingType type) : outputStream_(NULL), streamingType_(type), filtrationSize_(0), towerWidth_(0)
 {
-    outputStream_ = new std::ofstream(outputFileName);
+    outputFile_ = new std::ofstream(outputFileName);
+    if (!outputFile_->is_open()){
+        std::cout << "Output File could not be open.\n";
+        exit(0);
+    }
     vertices_ = new std::unordered_map<double, vertex>();
     complex_ = new ComplexStructure();
 }
@@ -125,7 +146,10 @@ template<class ComplexStructure>
  */
 Tower_converter<ComplexStructure>::~Tower_converter()
 {
-    if (outputStream_ != NULL) delete outputStream_;
+    if (outputFile_ != NULL){
+        outputFile_->close();
+        delete outputFile_;
+    }
     delete vertices_;
     delete complex_;
 }
@@ -293,23 +317,32 @@ template<class ComplexStructure>
 void Tower_converter<ComplexStructure>::stream_simplex(simplex_base *simplex, double timestamp)
 {
     filtrationSize_++;
-    if (outputStream_ == NULL) return;
+
+    std::ostream *stream;
+    if (outputStream_ == NULL && outputFile_ == NULL) return;
+    else if (outputStream_ != NULL) stream = outputStream_;
+    else stream = outputFile_;
+
     simplex_base::size_type size = simplex->size();
-    *outputStream_ << std::setprecision(std::numeric_limits<double>::digits10 + 1) << (size - 1) << " ";
+    *stream << std::setprecision(std::numeric_limits<double>::digits10 + 1) << (size - 1) << " ";
+    //std::cout << std::setprecision(std::numeric_limits<double>::digits10 + 1) << (size - 1) << " ";
     if (streamingType_ == FACES){
         if (size > 1){
             std::vector<index> boundary;
             complex_->get_boundary(simplex, &boundary);
             for (std::vector<index>::size_type i = 0; i < size; i++){
-                *outputStream_ << boundary.at(i) << " ";
+                *stream << boundary.at(i) << " ";
+                //std::cout << boundary.at(i) << " ";
             }
         }
     } else {
         for (simplex_base::size_type i = 0; i < size; i++){
-            *outputStream_ << simplex->at(i) << " ";
+            *stream << simplex->at(i) << " ";
+            //std::cout << simplex->at(i) << " ";
         }
     }
-    *outputStream_ << timestamp << "\n";
+    *stream << timestamp << "\n";
+    //std::cout << timestamp << "\n";
 }
 
 }
