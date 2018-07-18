@@ -639,7 +639,7 @@ public:
 		}
 	}
 	 
-	template <typename Input_vertex_range>
+	template <typename Input_vertex_range >
 	void insert_maximal_simplex_and_subfaces(const Input_vertex_range & vertex_range)
 	{
 		if( not membership(vertex_range))
