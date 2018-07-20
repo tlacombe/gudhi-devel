@@ -15,13 +15,46 @@ using Distance_matrix     = std::vector<std::vector<Filtration_value>>;
 
 using Vector_of_points = std::vector<Point>;
 
+
+template<class edge_list, class edge_filt_list >
+size_t extract_sub_rips_complex(double threshold, Fake_simplex_tree & currentComplex, edge_list & edges, edge_filt_list & edge_f, size_t end_idx) {
+    size_t idx = find_index(edge_f, threshold, 0, end_idx);
+    for( idx; idx <= edge_f.size_t(); idx++)
+        currentComplex.filtration_simplex_range();
+    return idx;    
+}
+
+template<class edge_filt >
+double find_index(const edge_filt & edge_f, double threshold, size_t begin_idx, size_t end_idx) {
+size_t mid_idx = (end_idx - begin_idx)/2;
+if( mid_idx <= edge_f.size()){
+    if(edge_f.at(mid_idx -1) < threshold and edge_f.at(mid_idx) >= threshold)
+        return mid_idx;
+    if( edge_f.at(mid_idx) < threshold) 
+       find_index(edge_f, threshold, mid_idx, end_idx);
+    else
+       find_index(edge_f, threshold, begin_idx, mid_idx);
+    }
+else 
+ return -1;    
+}
+
 int main(int argc, char * const argv[]) {
 	
     PointSetGen point_generator;
     std::string out_file_name   = "default";
     std::string in_file_name    = "default";
     std::size_t number_of_points;
+    typedef int Vertex_handle;
+    typedef std::vector< std::pair< Vertex_handle, Vertex_handle > > edge_list;
+    typedef std::vector< Filtration_value > edge_filt_list;
+    typedef typename boost::adjacency_list < boost::vecS, boost::vecS, boost::undirectedS
+      , boost::property < vertex_filtration_t, Filtration_value >
+      , boost::property < edge_filtration_t, Filtration_value >> OneSkeletonGraph;
     
+    edge_list edges;
+    edge_filt_list edge_f;
+
     int     dimension;
     double  begin_thresold;
     double  end_thresold;
@@ -70,7 +103,7 @@ int main(int argc, char * const argv[]) {
     double totCollapseTime = 0.0;
     double maxCollapseTime = 0.0;
     double totPrintTime = 0.0;
-    double creationAndcollapseTime = 0.0;
+    double maxCreationAndcollapseTime = 0.0;
    
     point_vector = new Vector_of_points();
     Distance_matrix distances;
@@ -134,15 +167,12 @@ int main(int argc, char * const argv[]) {
     }
     // for(int i = 0; i < number_of_points; i++ )
     //     point_generator.print_point(point_vector->at(i));
-    Fake_simplex_tree * subComplex ; 
-    Simplex_tree * subComplexST = new Simplex_tree() ; 
 
+    Fake_simplex_tree * subComplex ; 
     SparseMsMatrix * mat_coll       = new SparseMsMatrix(); 
-    //SparseMsMatrix * mat_prev       = new SparseMsMatrix(number_of_points, 100*number_of_points); 
     SparseMsMatrix * mat_prev_coll  = new SparseMsMatrix(number_of_points, 100*number_of_points); 
 
     FormatTower towerFormater(number_of_points) ;
-    FormatTower origTowerFormater(number_of_points); 
 
     auto threshold =  begin_thresold;
     int iterations = (end_thresold - begin_thresold)/steps;
@@ -150,50 +180,36 @@ int main(int argc, char * const argv[]) {
     std::cout << "Total number of iterations to be run are: " << iterations << std::endl;
     
     while(threshold <= end_thresold) {
-	 	subComplex = new Fake_simplex_tree();
-         auto begin_rips = std::chrono::high_resolution_clock::now();
-        //auto without_toplex = std::chrono::high_resolution_clock::now();
+	 	auto begin1 = std::chrono::high_resolution_clock::now();
+        subComplex = new Fake_simplex_tree();
+    
         if(manifold == 'm'){
             Rips_complex rips_complex_from_file(distances, threshold);
-            auto without_toplex = std::chrono::high_resolution_clock::now();
             rips_complex_from_file.create_complex(*subComplex, dim_max);
-            auto with_toplex = std::chrono::high_resolution_clock::now();
-            rips_complex_from_file.create_complex(*subComplexST, dim_max);
-            auto with_st = std::chrono::high_resolution_clock::now();
-            auto ripsCompTimeWOComplex = std::chrono::duration<double, std::milli>(without_toplex- begin_rips).count();
-            auto ripsCompTimeUsingTop = std::chrono::duration<double, std::milli>(with_toplex- begin_rips).count();
-            auto ripsCompTimeUsingST = std::chrono::duration<double, std::milli>(with_st- with_toplex).count();      
-             std::cout << "Complex for parameter " << threshold << " is created in time. " << ripsCompTimeWOComplex << ", " << ripsCompTimeUsingTop << ", " << ripsCompTimeUsingST <<" ms.\n";       
         }
         else{
             Rips_complex rips_complex_from_points(*point_vector, threshold, Gudhi::Euclidean_distance());
             rips_complex_from_points.create_complex(*subComplex, dim_max);
         }
-        
-        //Rips_complex rips_complex_from_file(distances, threshold);
-       
-         
-        auto begin1 = std::chrono::high_resolution_clock::now();
+        auto inter1 = std::chrono::high_resolution_clock::now();
         mat_coll = new SparseMsMatrix(*subComplex);
-        auto end1 = std::chrono::high_resolution_clock::now();
-        auto creationTime = std::chrono::duration<double, std::milli>(end1- begin1).count();
-        //mat_coll = new SparseMsMatrix(*subComplex);
-    
-        std::cout << "Printing the uncollapsed filtration: " << std::endl;
-        //origTowerFormater.print_tower_for_two_cmplxs(*mat_prev, *mat_coll, map_empty, threshold, origFile);
-        std::cout << "Original Tower updated" << std::endl;
-        //delete mat_prev;
-        //mat_prev = new SparseMsMatrix(*subComplex);
-
-        currentCollapseTime = mat_coll->strong_collapse();
         
-        if( creationAndcollapseTime < (currentCollapseTime + creationTime))
-        	creationAndcollapseTime = currentCollapseTime + creationTime;
+        auto end1 = std::chrono::high_resolution_clock::now();
+        auto matrixForm = std::chrono::duration<double, std::milli>(end1- inter1).count();
+        auto creationTime = std::chrono::duration<double, std::milli>(end1- begin1).count();
+
+        std::cout << " SparseMsMatrix using ToplexMap is created in time: (" << creationTime << ", " << matrixForm <<") ms.\n";
+        
+        currentCollapseTime = mat_coll->strong_collapse();
+        std::cout << " Subcomplex #" << i << " Collapsed" << std::endl;
+        
+        if( maxCreationAndcollapseTime < (currentCollapseTime + creationTime))
+        	maxCreationAndcollapseTime = currentCollapseTime + creationTime;
         
         totCollapseTime += currentCollapseTime ;
         if( maxCollapseTime < currentCollapseTime)
             maxCollapseTime = currentCollapseTime;
-        std::cout << "Subcomplex #" << i << " Collapsed" << std::endl;
+        
         
         Map redmap = mat_coll->reduction_map();     
         std::cout << "Uncollapsed Rips complex is of dimension " << mat_coll->initial_dimension() << " with " << subComplex->num_simplices() << " maximal simplices " << std::endl;
@@ -210,7 +226,6 @@ int main(int argc, char * const argv[]) {
         totPrintTime += towerFormater.print_tower_for_two_cmplxs(*mat_prev_coll, *mat_coll, redmap, threshold, collFile);
         std::cout << "Tower updated for subcomplex #" << i << std::endl; 
         std::cout << "** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** " << std::endl;
-        delete mat_prev_coll;
         delete subComplex;
         mat_prev_coll = mat_coll; 
         threshold = threshold+steps;
@@ -233,7 +248,8 @@ int main(int argc, char * const argv[]) {
         std::cerr << "Unable to open file";
         exit(-1) ;
     }
-     std::cout << "Maximum of (Creation + Collapse) TIME : " << creationAndcollapseTime << " ms.\n";
+    
+    std::cout << "Maximum of (Creation + Collapse) TIME : " << maxCreationAndcollapseTime << " ms.\n";
     std::cout << "# Maximum time taken of all collapses is: " << maxCollapseTime << " ms" << std::endl;
     std::cout << "Total time taken in all collapses is: " << totCollapseTime << " ms." <<std::endl;
     std::cout << "Total time taken to print the tower format: " <<   totPrintTime << " ms." <<std::endl;
