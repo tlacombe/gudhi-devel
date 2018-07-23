@@ -1,43 +1,56 @@
 #include <gudhi/FormatTower.h>
 
 #include <gudhi/Rips_complex.h>
+#include <gudhi/Rips_edge_list.h>
+
 #include <gudhi/distance_functions.h>
 #include <gudhi/reader_utils.h>
 
 #include <gudhi/PointSetGen.h>
-//#include "gudhi/Simplex_tree.h"
 
 using Fake_simplex_tree   = Gudhi::Fake_simplex_tree ;
 using Simplex_tree        = Gudhi::Simplex_tree<>;
 using Filtration_value    = Fake_simplex_tree::Filtration_value;
 using Rips_complex        = Gudhi::rips_complex::Rips_complex<Filtration_value>;
+using Rips_edge_list      = Gudhi::rips_edge_list::Rips_edge_list<Filtration_value>;
 using Distance_matrix     = std::vector<std::vector<Filtration_value>>;
 
 using Vector_of_points = std::vector<Point>;
+using Vector_of_SM_pointers    = std::vector<SparseMsMatrix>;
+class extract_sub_rips_complex
+{
+    public:
+       
+        template<class Filtered_sorted_edge_tuple >
+        size_t find_index(const Filtered_sorted_edge_tuple & edge_t, double threshold, size_t begin_idx, size_t end_idx) {
+        size_t mid_idx = (end_idx - begin_idx)/2;
+        if( begin_idx <= end_idx  and end_idx <= edge_t.size()){
+            if (std::get<0>(edge_t.at(begin_idx)) >= threshold)
+                return begin_idx;
+            else if(std::get<0>(edge_t.at(end_idx)) < threshold)
+                return -1;
+            else if( std::get<0>(edge_t.at(mid_idx -1)) < threshold and std::get<0>(edge_t.at(mid_idx)) >= threshold)
+                return mid_idx;
+            else if( std::get<0>(edge_t.at(mid_idx)) < threshold) 
+               find_index(edge_t, threshold, mid_idx, end_idx);
+            else
+               find_index(edge_t, threshold, begin_idx, mid_idx);
+            }
+         return -1;    
+        }
 
+        template<class Filtered_sorted_edge_tuple, class Simplicial_complex >
+        extract_sub_rips_complex(double threshold, Simplicial_complex & currentComplex, Filtered_sorted_edge_tuple & edge_t) {
+            size_t end_idx =  edge_t.size()-1;
+            size_t bgn_idx = find_index(edge_t, threshold, 0, end_idx);
+            for( ;end_idx >= bgn_idx; --end_idx){
+               std::vector<size_t>  s = {std::get<1>(edge_t.at(end_idx)), std::get<2>(edge_t.at(end_idx))};
+               currentComplex.remove_simplex(s);
+               edge_t.erase(edge_t.begin()+end_idx);
+            }
+        }
+};
 
-template<class edge_list, class edge_filt_list >
-size_t extract_sub_rips_complex(double threshold, Fake_simplex_tree & currentComplex, edge_list & edges, edge_filt_list & edge_f, size_t end_idx) {
-    size_t idx = find_index(edge_f, threshold, 0, end_idx);
-    for( idx; idx <= edge_f.size_t(); idx++)
-        currentComplex.filtration_simplex_range();
-    return idx;    
-}
-
-template<class edge_filt >
-double find_index(const edge_filt & edge_f, double threshold, size_t begin_idx, size_t end_idx) {
-size_t mid_idx = (end_idx - begin_idx)/2;
-if( mid_idx <= edge_f.size()){
-    if(edge_f.at(mid_idx -1) < threshold and edge_f.at(mid_idx) >= threshold)
-        return mid_idx;
-    if( edge_f.at(mid_idx) < threshold) 
-       find_index(edge_f, threshold, mid_idx, end_idx);
-    else
-       find_index(edge_f, threshold, begin_idx, mid_idx);
-    }
-else 
- return -1;    
-}
 
 int main(int argc, char * const argv[]) {
 	
@@ -45,15 +58,9 @@ int main(int argc, char * const argv[]) {
     std::string out_file_name   = "default";
     std::string in_file_name    = "default";
     std::size_t number_of_points;
-    typedef int Vertex_handle;
-    typedef std::vector< std::pair< Vertex_handle, Vertex_handle > > edge_list;
-    typedef std::vector< Filtration_value > edge_filt_list;
-    typedef typename boost::adjacency_list < boost::vecS, boost::vecS, boost::undirectedS
-      , boost::property < vertex_filtration_t, Filtration_value >
-      , boost::property < edge_filtration_t, Filtration_value >> OneSkeletonGraph;
-    
-    edge_list edges;
-    edge_filt_list edge_f;
+    typedef size_t Vertex_handle;
+    typedef std::vector< std::tuple<Filtration_value, Vertex_handle, Vertex_handle > > Filtered_sorted_edge_list;
+
 
     int     dimension;
     double  begin_thresold;
@@ -64,6 +71,8 @@ int main(int argc, char * const argv[]) {
 
     Vector_of_points * point_vector;
     Vector_of_points file_all_points;
+
+    Vector_of_SM_pointers allSparseMatrices;
     
     int dim_max = 20000; // pseudo variable... of no use
     std::string manifold_full = "sphere";
@@ -168,66 +177,86 @@ int main(int argc, char * const argv[]) {
     // for(int i = 0; i < number_of_points; i++ )
     //     point_generator.print_point(point_vector->at(i));
 
-    Fake_simplex_tree * subComplex ; 
-    SparseMsMatrix * mat_coll       = new SparseMsMatrix(); 
-    SparseMsMatrix * mat_prev_coll  = new SparseMsMatrix(number_of_points, 100*number_of_points); 
-
+    Fake_simplex_tree * subComplex  = new Fake_simplex_tree();  
+    Filtered_sorted_edge_list * edge_t = new Filtered_sorted_edge_list();
     FormatTower towerFormater(number_of_points) ;
 
-    auto threshold =  begin_thresold;
     int iterations = (end_thresold - begin_thresold)/steps;
-    int i = 1;
     std::cout << "Total number of iterations to be run are: " << iterations << std::endl;
-    
-    while(threshold <= end_thresold) {
-	 	auto begin1 = std::chrono::high_resolution_clock::now();
-        subComplex = new Fake_simplex_tree();
-    
-        if(manifold == 'm'){
-            Rips_complex rips_complex_from_file(distances, threshold);
-            rips_complex_from_file.create_complex(*subComplex, dim_max);
-        }
-        else{
-            Rips_complex rips_complex_from_points(*point_vector, threshold, Gudhi::Euclidean_distance());
-            rips_complex_from_points.create_complex(*subComplex, dim_max);
-        }
-        auto inter1 = std::chrono::high_resolution_clock::now();
-        mat_coll = new SparseMsMatrix(*subComplex);
-        
-        auto end1 = std::chrono::high_resolution_clock::now();
-        auto matrixForm = std::chrono::duration<double, std::milli>(end1- inter1).count();
-        auto creationTime = std::chrono::duration<double, std::milli>(end1- begin1).count();
+    std::cout << "Computing the one-skeleton and the rips complex for threshold: " << end_thresold << std::endl; 
 
-        std::cout << " SparseMsMatrix using ToplexMap is created in time: (" << creationTime << ", " << matrixForm <<") ms.\n";
+    if(manifold == 'm'){
+        Rips_complex rips_complex_from_file(distances, end_thresold);
+        rips_complex_from_file.create_complex(*subComplex, dim_max);
+        Rips_edge_list Rips_edge_list_from_file(distances, end_thresold);
+        Rips_edge_list_from_file.create_edges(*edge_t);
+        allSparseMatrices.emplace_back(SparseMsMatrix(*subComplex));
+
+    }
+    else{
+        Rips_complex rips_complex_from_points(*point_vector, end_thresold, Gudhi::Euclidean_distance());
+        rips_complex_from_points.create_complex(*subComplex, dim_max);
+
+        Rips_edge_list Rips_edge_list_from_points(distances, end_thresold);
+        Rips_edge_list_from_points.create_edges(*edge_t);
+        allSparseMatrices.emplace_back(SparseMsMatrix(*subComplex));
+    }
+    //extracting all the subcomplexes starting from the end_threshold-step till begin_thresold
+    std::cout << "Extracting all the subcomplexes" << std::endl;
+    auto threshold =  end_thresold-steps;
+    while(threshold >= begin_thresold) {
+        std::cout << "Extraction for threshold: " << threshold << " begins now. "<< std::endl;
+        extract_sub_rips_complex(threshold, *subComplex, *edge_t);
+        std::cout << "Extraction completed. " << std::endl;
+        allSparseMatrices.emplace_back(SparseMsMatrix(*subComplex));
+        std::cout << "Subcomplex converted to Sparsematrix and pushed into the vector. " << std::endl;
+        threshold = threshold-steps;
+    }
+    
+    //Adding one additional empty sparse_matrix at the end for tower assmebler
+    allSparseMatrices.emplace_back(SparseMsMatrix(number_of_points, 100*number_of_points));
+
+    threshold = begin_thresold;
+    int i = 1;
+    size_t num_max_simp_unclp;
+    int dim_unclp;
+    for (auto it = allSparseMatrices.end()-1; it != allSparseMatrices.begin(); --it)  {
+	 	// auto begin1 = std::chrono::high_resolution_clock::now();
+
         
-        currentCollapseTime = mat_coll->strong_collapse();
+        
+   //      auto end1 = std::chrono::high_resolution_clock::now();
+   //      auto matrixForm = std::chrono::duration<double, std::milli>(end1- inter1).count();
+   //      auto creationTime = std::chrono::duration<double, std::milli>(end1- begin1).count();
+
+   //      std::cout << " SparseMsMatrix using ToplexMap is created in time: (" << creationTime << ", " << matrixForm <<") ms.\n";
+        num_max_simp_unclp = it->number_max_simplices();
+        dim_unclp          = it->initial_dimension();
+        std::cout << "Uncollapsed Rips complex is of dimension " << dim_unclp << " with " << num_max_simp_unclp << " maximal simplices " << std::endl;
+        
+        currentCollapseTime = it->strong_collapse();
+        Map redmap = it->reduction_map(); 
         std::cout << " Subcomplex #" << i << " Collapsed" << std::endl;
+        std::cout << "Collapsed Rips complex is of dimension " << it->collapsed_dimension() << " with " <<  it->number_max_simplices() << " maximal simplices" << std::endl;
         
-        if( maxCreationAndcollapseTime < (currentCollapseTime + creationTime))
-        	maxCreationAndcollapseTime = currentCollapseTime + creationTime;
+        // if( maxCreationAndcollapseTime < (currentCollapseTime + creationTime))
+        // 	maxCreationAndcollapseTime = currentCollapseTime + creationTime;
         
-        totCollapseTime += currentCollapseTime ;
-        if( maxCollapseTime < currentCollapseTime)
-            maxCollapseTime = currentCollapseTime;
+        // totCollapseTime += currentCollapseTime ;
+        // if( maxCollapseTime < currentCollapseTime)
+        //     maxCollapseTime = currentCollapseTime;
         
+        //      if(statsfile.is_open()){
+        //     statsfile << num_max_simp_unclp << "," << it->initial_dimension() << "," << it->number_max_simplices() << "," << it->collapsed_dimension() << std::endl;
+        // }
+        // else {
+        //     std::cerr << "Unable to open stats file";
+        //     exit(-1) ;
+        // }
         
-        Map redmap = mat_coll->reduction_map();     
-        std::cout << "Uncollapsed Rips complex is of dimension " << mat_coll->initial_dimension() << " with " << subComplex->num_simplices() << " maximal simplices " << std::endl;
-        std::cout << "Collapsed Rips complex is of dimension " << mat_coll->collapsed_dimension() << " with " <<  mat_coll->number_max_simplices() << " maximal simplices" << std::endl;
-
-        if(statsfile.is_open()){
-            statsfile << subComplex->num_simplices() << "," << mat_coll->initial_dimension() << "," << mat_coll->number_max_simplices() << "," << mat_coll->collapsed_dimension() << std::endl;
-        }
-        else {
-            std::cerr << "Unable to open stats file";
-            exit(-1) ;
-        }
-        
-        totPrintTime += towerFormater.print_tower_for_two_cmplxs(*mat_prev_coll, *mat_coll, redmap, threshold, collFile);
+        totPrintTime += towerFormater.print_tower_for_two_cmplxs(*(it+1), *it, redmap, threshold, collFile);
         std::cout << "Tower updated for subcomplex #" << i << std::endl; 
         std::cout << "** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** " << std::endl;
-        delete subComplex;
-        mat_prev_coll = mat_coll; 
         threshold = threshold+steps;
         i++;
     }
@@ -254,7 +283,8 @@ int main(int argc, char * const argv[]) {
     std::cout << "Total time taken in all collapses is: " << totCollapseTime << " ms." <<std::endl;
     std::cout << "Total time taken to print the tower format: " <<   totPrintTime << " ms." <<std::endl;
     std::cout << "** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** " << std::endl;
-    delete mat_prev_coll;
+    //delete mat_prev_coll;
     //delete mat_prev;
     return 0;
 }
+  
