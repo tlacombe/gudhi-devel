@@ -21,33 +21,43 @@ class extract_sub_rips_complex
 {
     public:
        
-        template<class Filtered_sorted_edge_tuple >
-        size_t find_index(const Filtered_sorted_edge_tuple & edge_t, double threshold, size_t begin_idx, size_t end_idx) {
-        size_t mid_idx = (end_idx - begin_idx)/2;
-        if( begin_idx <= end_idx  and end_idx <= edge_t.size()){
-            if (std::get<0>(edge_t.at(begin_idx)) >= threshold)
-                return begin_idx;
-            else if(std::get<0>(edge_t.at(end_idx)) < threshold)
-                return -1;
-            else if( std::get<0>(edge_t.at(mid_idx -1)) < threshold and std::get<0>(edge_t.at(mid_idx)) >= threshold)
-                return mid_idx;
-            else if( std::get<0>(edge_t.at(mid_idx)) < threshold) 
-               find_index(edge_t, threshold, mid_idx, end_idx);
-            else
-               find_index(edge_t, threshold, begin_idx, mid_idx);
-            }
-         return -1;    
-        }
+        // template<class Filtered_sorted_edge_list >
+        // size_t find_index(const Filtered_sorted_edge_list & edge_t, double threshold, size_t begin_idx, size_t end_idx) {
+        // std::cout<< "Going to find the index for values: (" << begin_idx << ", " << end_idx << ") "<< std::endl;
+        // size_t mid_idx = (end_idx + begin_idx)/2;
+        // std::cout<< "The mid index is: " << mid_idx << " with value " << std::get<0>(edge_t.at(mid_idx)) << std::endl;
+        // if( begin_idx > end_idx )
+        //    return edge_t.size();
+        // if (std::get<0>(edge_t.at(0)) >= threshold)
+        //     return 0;
+        // if(std::get<0>(edge_t.at(edge_t.size()-1)) < threshold)
+        //     return edge_t.size();
+        
+        // if( std::get<0>(edge_t.at(mid_idx)) < threshold) 
+        //    find_index(edge_t, threshold, mid_idx+1, end_idx);
+        // else if( std::get<0>(edge_t.at(mid_idx)) > threshold) 
+        //    find_index(edge_t, threshold, begin_idx, mid_idx);
+        // // else if( std::get<0>(edge_t.at(mid_idx -1)) < threshold and std::get<0>(edge_t.at(mid_idx)) >= threshold)
+        //     // return mid_idx;
+        // else
+        //     return  mid_idx;
+        // }
 
-        template<class Filtered_sorted_edge_tuple, class Simplicial_complex >
-        extract_sub_rips_complex(double threshold, Simplicial_complex & currentComplex, Filtered_sorted_edge_tuple & edge_t) {
-            size_t end_idx =  edge_t.size()-1;
-            size_t bgn_idx = find_index(edge_t, threshold, 0, end_idx);
-            for( ;end_idx >= bgn_idx; --end_idx){
-               std::vector<size_t>  s = {std::get<1>(edge_t.at(end_idx)), std::get<2>(edge_t.at(end_idx))};
-               currentComplex.remove_simplex(s);
-               edge_t.erase(edge_t.begin()+end_idx);
-            }
+        template<class Filtered_sorted_edge_list, class Simplicial_complex, class Fil_vector >
+        extract_sub_rips_complex(double threshold, Simplicial_complex & currentComplex, Filtered_sorted_edge_list & edge_t, Fil_vector & edge_filt ) {
+            size_t end_idx =  (edge_t.size()-1);
+            std::cout << "The size of the edge list is " << end_idx << std::endl;
+            std::cout << "With filtration value range (" << std::get<0>(edge_t.at(0)) << ", " <<std::get<0>(edge_t.at(end_idx)) << ") " <<std::endl;
+            auto bgn_it = std::lower_bound(edge_filt.begin(), edge_filt.end(), threshold); // find_index(edge_t, threshold, 0, end_idx);
+            size_t bgn_idx = std::distance(edge_filt.begin(),bgn_it);
+            std::cout<< "The returned begin index is " << bgn_idx << std::endl;
+            if(bgn_idx < edge_filt.size())
+                for( ;end_idx >= bgn_idx; --end_idx){
+                   std::vector<size_t>  s = {std::get<1>(edge_t.at(end_idx)), std::get<2>(edge_t.at(end_idx))};
+                   currentComplex.remove_simplex(s);
+                   edge_t.erase(edge_t.begin()+end_idx);
+                   edge_filt.erase(edge_filt.begin()+end_idx);
+                }
         }
 };
 
@@ -60,6 +70,7 @@ int main(int argc, char * const argv[]) {
     std::size_t number_of_points;
     typedef size_t Vertex_handle;
     typedef std::vector< std::tuple<Filtration_value, Vertex_handle, Vertex_handle > > Filtered_sorted_edge_list;
+    std::vector<Filtration_value> * edge_filt = new std::vector<Filtration_value>() ;
 
 
     int     dimension;
@@ -188,8 +199,10 @@ int main(int argc, char * const argv[]) {
     if(manifold == 'm'){
         Rips_complex rips_complex_from_file(distances, end_thresold);
         rips_complex_from_file.create_complex(*subComplex, dim_max);
+
         Rips_edge_list Rips_edge_list_from_file(distances, end_thresold);
         Rips_edge_list_from_file.create_edges(*edge_t);
+
         allSparseMatrices.emplace_back(SparseMsMatrix(*subComplex));
 
     }
@@ -197,24 +210,36 @@ int main(int argc, char * const argv[]) {
         Rips_complex rips_complex_from_points(*point_vector, end_thresold, Gudhi::Euclidean_distance());
         rips_complex_from_points.create_complex(*subComplex, dim_max);
 
-        Rips_edge_list Rips_edge_list_from_points(distances, end_thresold);
+        Rips_edge_list Rips_edge_list_from_points(*point_vector, end_thresold, Gudhi::Euclidean_distance());
         Rips_edge_list_from_points.create_edges(*edge_t);
+        
         allSparseMatrices.emplace_back(SparseMsMatrix(*subComplex));
     }
+    edge_filt->clear();
+    // std::cout<< "Edges in increasing order of filtration value: " << std::endl;
+    // std::cout << "(" ;
+    for(auto edIt = edge_t->begin(); edIt != edge_t->end(); edIt++) {
+        edge_filt->emplace_back(std::get<0>(*edIt));
+        // std::cout << std::get<0>(*edIt) <<", " ;
+    }
+    // std::cout << ") " <<std::endl;
     //extracting all the subcomplexes starting from the end_threshold-step till begin_thresold
     std::cout << "Extracting all the subcomplexes" << std::endl;
     auto threshold =  end_thresold-steps;
     while(threshold >= begin_thresold) {
         std::cout << "Extraction for threshold: " << threshold << " begins now. "<< std::endl;
-        extract_sub_rips_complex(threshold, *subComplex, *edge_t);
+        // std::cout << "The size of the edge list is " << edge_t->size() << std::endl;
+        extract_sub_rips_complex(threshold, *subComplex, *edge_t, *edge_filt);
         std::cout << "Extraction completed. " << std::endl;
-        allSparseMatrices.emplace_back(SparseMsMatrix(*subComplex));
+        allSparseMatrices.push_back(SparseMsMatrix(*subComplex));
         std::cout << "Subcomplex converted to Sparsematrix and pushed into the vector. " << std::endl;
         threshold = threshold-steps;
+        std::cout << " " << std::endl;
     }
-    
+     
+
     //Adding one additional empty sparse_matrix at the end for tower assmebler
-    allSparseMatrices.emplace_back(SparseMsMatrix(number_of_points, 100*number_of_points));
+    allSparseMatrices.push_back(SparseMsMatrix(number_of_points, 100*number_of_points));
 
     threshold = begin_thresold;
     int i = 1;
@@ -254,7 +279,7 @@ int main(int argc, char * const argv[]) {
         //     exit(-1) ;
         // }
         
-        totPrintTime += towerFormater.print_tower_for_two_cmplxs(*(it+1), *it, redmap, threshold, collFile);
+        // totPrintTime += towerFormater.print_tower_for_two_cmplxs(*(it+1), *it, redmap, threshold, collFile);
         std::cout << "Tower updated for subcomplex #" << i << std::endl; 
         std::cout << "** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** " << std::endl;
         threshold = threshold+steps;
