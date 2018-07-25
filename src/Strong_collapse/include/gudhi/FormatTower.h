@@ -23,7 +23,7 @@ using simplexVector         = std::vector<Simplex>;
 // |       |
 // K1c ->  K2c   [Strongly Collapsed Simplicial Complexes]
 
-class FormatTower
+class TowerAssembler
 {
   private:
 	Map renamedVertices; 
@@ -68,7 +68,7 @@ class FormatTower
 
   public:
     
-    FormatTower(std::size_t numVert)
+    TowerAssembler(std::size_t numVert)
     {
     	for (std::size_t i = 0; i < numVert; ++i){
     		renamedVertices[i] = i;
@@ -76,7 +76,7 @@ class FormatTower
     	current_rename_counter = numVert;
     }
     
-    ~FormatTower(){};
+    ~TowerAssembler(){};
 
     double print_tower_for_two_cmplxs(SparseMsMatrix mat_1, const SparseMsMatrix & mat_2,  Map redmap_2,  double filtration_value, std::string outFile) // mat_1 and mat_2 are simplex_trees of K1c and K2c (the collapsed ones), redmap_2 is the map of K2 -> K2c
     {

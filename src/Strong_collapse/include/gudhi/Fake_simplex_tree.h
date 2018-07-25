@@ -85,7 +85,12 @@ public:
     std::vector<Toplex_map::Simplex> skeleton_simplex_range(int d) const;
 
     Toplex_map::Vertex contraction(const Toplex_map::Vertex x, const Toplex_map::Vertex y);
-
+    
+   /** \brief Removes the given simplex and its cofaces from the complex.
+     * Its faces are kept inside.
+     * \ingroup toplex_map   */
+    template <typename Input_vertex_range>
+    void remove_simplex(const Input_vertex_range &vertex_range);
 
 protected:
 
@@ -182,7 +187,11 @@ Toplex_map::Vertex Fake_simplex_tree::contraction(const Toplex_map::Vertex x, co
         kv.second->contraction(x,y,true);
     return y;
 }
-
+template <typename Input_vertex_range>
+void Fake_simplex_tree::remove_simplex(const Input_vertex_range &vertex_range){
+    for(auto kv: toplex_maps)
+        kv.second->remove_simplex(vertex_range);
+}
 } //namespace Gudhi
 
 #endif /* FAKE_SIMPLEX_TREE_H */

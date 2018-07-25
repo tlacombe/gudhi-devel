@@ -24,8 +24,9 @@
 
 #include "gudhi/Fake_simplex_tree.h"
 #include "gudhi/Simplex_tree.h"
-// #include <boost/graph/adjacency_list.hpp>
-// #include <boost/graph/bron_kerbosch_all_cliques.hpp>
+#include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/bron_kerbosch_all_cliques.hpp>
+
 #include <iostream>
 #include <utility>
 #include <vector>
@@ -206,6 +207,19 @@ class SparseMsMatrix
 	bool already_collapsed;
 	int expansion_limit;
 
+	struct Visitor {
+	    SparseMsMatrix* sm;
+
+	    Visitor(SparseMsMatrix* sm)
+	        :sm(sm)
+	    {}
+
+	    template <typename Clique, typename Graph>
+	    void clique(const Clique& c, const Graph& g)
+	    {
+	        sm->insert_maximal_simplex_and_subfaces(c);
+	    }
+	};
 
 	void init()
 	{
@@ -511,6 +525,7 @@ public:
 		sparseMxSimplices     = sparseMatrix(expansion_limit*vertices.size(),expansion_limit*numMaxSimplices); 			// Initializing sparseMxSimplices, This is a column-major sparse matrix.  
 		sparseRowMxSimplices  = sparseRowMatrix(expansion_limit*vertices.size(),expansion_limit*numMaxSimplices);    	// Initializing sparseRowMxSimplices, This is a row-major sparse matrix.  
 		// There are two sparse matrices, it gives the flexibility of iteratating through non-zero rows and columns efficiently.
+		
 		numMaxSimplices = 0; // reset to zero, and then increment or decremented accordingly.
    	
 		for(auto &simplex: maximal_simplices) 						// Adding each maximal simplices iteratively.
@@ -683,6 +698,28 @@ public:
 		// 	std::cout << "Already a member simplex,  skipping..." << std::endl;
        		
 	}
+	
+	template<class OneSkeletonGraph>
+	void insert_graph(const OneSkeletonGraph& skel_graph){
+		using vertex_iterator = typename boost::graph_traits<OneSkeletonGraph>::vertex_iterator;
+	    vertex_iterator vi, vi_end;
+	    for (std::tie(vi, vi_end) = boost::vertices(skel_graph); vi != vi_end; ++vi) {
+	        Simplex s; s.insert(*vi);
+	        insert_maximal_simplex_and_subfaces(s);
+	    }
+	    bron_kerbosch_all_cliques(skel_graph, Visitor(this));
+	}
+
+        /**  Dummy function **/
+    void expansion(int max_dim)
+    {}
+
+    std::size_t num_vertices() const 
+    {
+       return vertices.size();
+	}
+
+
 	//!	Function for returning the ReductionMap.
     /*!
       This is the (stl's unordered) map that stores all the collapses of vertices. <br>
@@ -734,6 +771,7 @@ public:
     {
     	return maximal_simplices;
     }
+
 
 
 };
