@@ -1,4 +1,4 @@
-#include <gudhi/FormatTower.h>
+#include <gudhi/TowerAssembler.h>
 
 #include <gudhi/Rips_complex.h>
 #include <gudhi/Rips_edge_list.h>
@@ -20,29 +20,6 @@ using Vector_of_SM_pointers    = std::vector<SparseMsMatrix>;
 class extract_sub_rips_complex
 {
     public:
-       
-        // template<class Filtered_sorted_edge_list >
-        // size_t find_index(const Filtered_sorted_edge_list & edge_t, double threshold, size_t begin_idx, size_t end_idx) {
-        // std::cout<< "Going to find the index for values: (" << begin_idx << ", " << end_idx << ") "<< std::endl;
-        // size_t mid_idx = (end_idx + begin_idx)/2;
-        // std::cout<< "The mid index is: " << mid_idx << " with value " << std::get<0>(edge_t.at(mid_idx)) << std::endl;
-        // if( begin_idx > end_idx )
-        //    return edge_t.size();
-        // if (std::get<0>(edge_t.at(0)) >= threshold)
-        //     return 0;
-        // if(std::get<0>(edge_t.at(edge_t.size()-1)) < threshold)
-        //     return edge_t.size();
-        
-        // if( std::get<0>(edge_t.at(mid_idx)) < threshold) 
-        //    find_index(edge_t, threshold, mid_idx+1, end_idx);
-        // else if( std::get<0>(edge_t.at(mid_idx)) > threshold) 
-        //    find_index(edge_t, threshold, begin_idx, mid_idx);
-        // // else if( std::get<0>(edge_t.at(mid_idx -1)) < threshold and std::get<0>(edge_t.at(mid_idx)) >= threshold)
-        //     // return mid_idx;
-        // else
-        //     return  mid_idx;
-        // }
-
         template<class Filtered_sorted_edge_list, class Simplicial_complex, class Fil_vector >
         extract_sub_rips_complex(double threshold, Simplicial_complex & currentComplex, Filtered_sorted_edge_list & edge_t, Fil_vector & edge_filt ) {
             size_t end_idx =  (edge_t.size()-1);
@@ -68,10 +45,10 @@ int main(int argc, char * const argv[]) {
     std::string out_file_name   = "default";
     std::string in_file_name    = "default";
     std::size_t number_of_points;
+    
     typedef size_t Vertex_handle;
     typedef std::vector< std::tuple<Filtration_value, Vertex_handle, Vertex_handle > > Filtered_sorted_edge_list;
     std::vector<Filtration_value> * edge_filt = new std::vector<Filtration_value>() ;
-
 
     int     dimension;
     double  begin_thresold;
@@ -185,12 +162,13 @@ int main(int argc, char * const argv[]) {
         std::cerr << "Unable to open stats file";
         exit(-1) ;
     }
+    
     // for(int i = 0; i < number_of_points; i++ )
     //     point_generator.print_point(point_vector->at(i));
 
     Fake_simplex_tree * subComplex  = new Fake_simplex_tree();  
     Filtered_sorted_edge_list * edge_t = new Filtered_sorted_edge_list();
-    FormatTower towerFormater(number_of_points) ;
+    TowerAssembler twr_assembler(number_of_points) ;
 
     int iterations = (end_thresold - begin_thresold)/steps;
     std::cout << "Total number of iterations to be run are: " << iterations << std::endl;
@@ -216,36 +194,34 @@ int main(int argc, char * const argv[]) {
         allSparseMatrices.emplace_back(SparseMsMatrix(*subComplex));
     }
     edge_filt->clear();
-    // std::cout<< "Edges in increasing order of filtration value: " << std::endl;
-    // std::cout << "(" ;
+
     for(auto edIt = edge_t->begin(); edIt != edge_t->end(); edIt++) {
-        edge_filt->emplace_back(std::get<0>(*edIt));
-        // std::cout << std::get<0>(*edIt) <<", " ;
+        edge_filt->push_back(std::get<0>(*edIt));
     }
-    // std::cout << ") " <<std::endl;
+  
+
     //extracting all the subcomplexes starting from the end_threshold-step till begin_thresold
-    std::cout << "Extracting all the subcomplexes" << std::endl;
+    std::cout << "Extraction of all the subcomplexes begins. " << std::endl;
     auto threshold =  end_thresold-steps;
     while(threshold >= begin_thresold) {
-        std::cout << "Extraction for threshold: " << threshold << " begins now. "<< std::endl;
+        std::cout << "Extracting for threshold: " << threshold << std::endl;
         // std::cout << "The size of the edge list is " << edge_t->size() << std::endl;
         extract_sub_rips_complex(threshold, *subComplex, *edge_t, *edge_filt);
         std::cout << "Extraction completed. " << std::endl;
-        allSparseMatrices.push_back(SparseMsMatrix(*subComplex));
-        std::cout << "Subcomplex converted to Sparsematrix and pushed into the vector. " << std::endl;
+        allSparseMatrices.emplace_back(SparseMsMatrix(*subComplex));
         threshold = threshold-steps;
         std::cout << " " << std::endl;
     }
      
 
     //Adding one additional empty sparse_matrix at the end for tower assmebler
-    allSparseMatrices.push_back(SparseMsMatrix(number_of_points, 100*number_of_points));
+    allSparseMatrices.emplace_back(SparseMsMatrix(number_of_points, 100*number_of_points));
 
     threshold = begin_thresold;
     int i = 1;
     size_t num_max_simp_unclp;
     int dim_unclp;
-    for (auto it = allSparseMatrices.end()-1; it != allSparseMatrices.begin(); --it)  {
+    for (auto it = allSparseMatrices.rbegin()+1; it != allSparseMatrices.rend(); ++it) {
 	 	// auto begin1 = std::chrono::high_resolution_clock::now();
 
         
@@ -271,15 +247,15 @@ int main(int argc, char * const argv[]) {
         // if( maxCollapseTime < currentCollapseTime)
         //     maxCollapseTime = currentCollapseTime;
         
-        //      if(statsfile.is_open()){
-        //     statsfile << num_max_simp_unclp << "," << it->initial_dimension() << "," << it->number_max_simplices() << "," << it->collapsed_dimension() << std::endl;
-        // }
-        // else {
-        //     std::cerr << "Unable to open stats file";
-        //     exit(-1) ;
-        // }
+        if(statsfile.is_open()){
+            statsfile << num_max_simp_unclp << "," << it->initial_dimension() << "," << it->number_max_simplices() << "," << it->collapsed_dimension() << std::endl;
+        }
+        else {
+            std::cerr << "Unable to open stats file";
+            exit(-1) ;
+        }
         
-        // totPrintTime += towerFormater.print_tower_for_two_cmplxs(*(it+1), *it, redmap, threshold, collFile);
+        totPrintTime += twr_assembler.print_tower_for_two_cmplxs(*(it-1), *it, redmap, threshold, collFile);
         std::cout << "Tower updated for subcomplex #" << i << std::endl; 
         std::cout << "** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** " << std::endl;
         threshold = threshold+steps;
