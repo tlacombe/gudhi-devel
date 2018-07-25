@@ -41,6 +41,7 @@ class extract_sub_rips_complex
 
 int main(int argc, char * const argv[]) {
 	
+    auto the_begin = std::chrono::high_resolution_clock::now();
     PointSetGen point_generator;
     std::string out_file_name   = "default";
     std::string in_file_name    = "default";
@@ -100,6 +101,10 @@ int main(int argc, char * const argv[]) {
     double totCollapseTime = 0.0;
     double maxCollapseTime = 0.0;
     double totPrintTime = 0.0;
+
+    double currentCreationTime = 0.0;
+    // double totCreationTime = 0.0;
+    double maxCreationTime     = 0.0;
     double maxCreationAndcollapseTime = 0.0;
    
     point_vector = new Vector_of_points();
@@ -162,7 +167,7 @@ int main(int argc, char * const argv[]) {
         std::cerr << "Unable to open stats file";
         exit(-1) ;
     }
-    
+
     // for(int i = 0; i < number_of_points; i++ )
     //     point_generator.print_point(point_vector->at(i));
 
@@ -173,7 +178,8 @@ int main(int argc, char * const argv[]) {
     int iterations = (end_thresold - begin_thresold)/steps;
     std::cout << "Total number of iterations to be run are: " << iterations << std::endl;
     std::cout << "Computing the one-skeleton and the rips complex for threshold: " << end_thresold << std::endl; 
-
+    
+    auto begin_full_cmplx = std::chrono::high_resolution_clock::now();
     if(manifold == 'm'){
         Rips_complex rips_complex_from_file(distances, end_thresold);
         rips_complex_from_file.create_complex(*subComplex, dim_max);
@@ -198,21 +204,31 @@ int main(int argc, char * const argv[]) {
     for(auto edIt = edge_t->begin(); edIt != edge_t->end(); edIt++) {
         edge_filt->push_back(std::get<0>(*edIt));
     }
-  
-
+   
+   auto end_full_cmplx = std::chrono::high_resolution_clock::now();
+   currentCreationTime = std::chrono::duration<double, std::milli>(end_full_cmplx- begin_full_cmplx).count();
+   if(maxCreationTime < currentCreationTime)
+        maxCreationTime = currentCreationTime;
+   
     //extracting all the subcomplexes starting from the end_threshold-step till begin_thresold
     std::cout << "Extraction of all the subcomplexes begins. " << std::endl;
     auto threshold =  end_thresold-steps;
     while(threshold >= begin_thresold) {
         std::cout << "Extracting for threshold: " << threshold << std::endl;
-        // std::cout << "The size of the edge list is " << edge_t->size() << std::endl;
+        auto begin_sub_cmplx = std::chrono::high_resolution_clock::now();
         extract_sub_rips_complex(threshold, *subComplex, *edge_t, *edge_filt);
         std::cout << "Extraction completed. " << std::endl;
+        std::cout << "The new subcomplex has: " << subComplex->num_simplices() << " maximal simplices. " << std::endl;
         allSparseMatrices.emplace_back(SparseMsMatrix(*subComplex));
+        auto end_sub_cmplx = std::chrono::high_resolution_clock::now();
+        auto currentCreationTime = std::chrono::duration<double, std::milli>(end_sub_cmplx- begin_sub_cmplx).count();
+        if(maxCreationTime < currentCreationTime)
+            maxCreationTime = currentCreationTime;
         threshold = threshold-steps;
         std::cout << " " << std::endl;
     }
-     
+    auto end_all_cmplx = std::chrono::high_resolution_clock::now();
+    auto totCreationTime = std::chrono::duration<double, std::milli>(end_all_cmplx- begin_full_cmplx).count();
 
     //Adding one additional empty sparse_matrix at the end for tower assmebler
     allSparseMatrices.emplace_back(SparseMsMatrix(number_of_points, 100*number_of_points));
@@ -222,15 +238,7 @@ int main(int argc, char * const argv[]) {
     size_t num_max_simp_unclp;
     int dim_unclp;
     for (auto it = allSparseMatrices.rbegin()+1; it != allSparseMatrices.rend(); ++it) {
-	 	// auto begin1 = std::chrono::high_resolution_clock::now();
 
-        
-        
-   //      auto end1 = std::chrono::high_resolution_clock::now();
-   //      auto matrixForm = std::chrono::duration<double, std::milli>(end1- inter1).count();
-   //      auto creationTime = std::chrono::duration<double, std::milli>(end1- begin1).count();
-
-   //      std::cout << " SparseMsMatrix using ToplexMap is created in time: (" << creationTime << ", " << matrixForm <<") ms.\n";
         num_max_simp_unclp = it->number_max_simplices();
         dim_unclp          = it->initial_dimension();
         std::cout << "Uncollapsed Rips complex is of dimension " << dim_unclp << " with " << num_max_simp_unclp << " maximal simplices " << std::endl;
@@ -240,13 +248,10 @@ int main(int argc, char * const argv[]) {
         std::cout << " Subcomplex #" << i << " Collapsed" << std::endl;
         std::cout << "Collapsed Rips complex is of dimension " << it->collapsed_dimension() << " with " <<  it->number_max_simplices() << " maximal simplices" << std::endl;
         
-        // if( maxCreationAndcollapseTime < (currentCollapseTime + creationTime))
-        // 	maxCreationAndcollapseTime = currentCollapseTime + creationTime;
-        
-        // totCollapseTime += currentCollapseTime ;
-        // if( maxCollapseTime < currentCollapseTime)
-        //     maxCollapseTime = currentCollapseTime;
-        
+        if( maxCollapseTime < currentCollapseTime)
+         	maxCollapseTime = currentCollapseTime;
+        totCollapseTime += currentCollapseTime ;
+
         if(statsfile.is_open()){
             statsfile << num_max_simp_unclp << "," << it->initial_dimension() << "," << it->number_max_simplices() << "," << it->collapsed_dimension() << std::endl;
         }
@@ -269,6 +274,8 @@ int main(int argc, char * const argv[]) {
         myfile << "# The input parameter to run the experiment are: "<< std::endl;
         myfile << "# number_of_points, begin_thresold, steps, end_thresold, repetetions, manifold, dimension, in_file_name, out_file_name" << std::endl;
         myfile << "# "<< number_of_points << ", " << begin_thresold << ", " << steps << ", " << end_thresold << ", " << repetetions << ", " << manifold << ", " << dimension << ", " << in_file_name << ", " << out_file_name << std::endl;
+        myfile << "# Maximum time taken of all computation of subcomplexes is: " << maxCreationTime << " ms" << std::endl;
+        myfile << "# Total time taken in all subcomplex computation is: " << totCreationTime << " ms" << std::endl;
         myfile << "# Maximum time taken of all collapses is: " << maxCollapseTime << " ms" << std::endl;
         myfile << "# Total time taken in all collapses is: " << totCollapseTime << " ms" << std::endl;
         myfile  << "# Total time taken to print the tower format: " <<   totPrintTime  <<" ms" << std::endl;
@@ -278,14 +285,21 @@ int main(int argc, char * const argv[]) {
         std::cerr << "Unable to open file";
         exit(-1) ;
     }
-    
+    maxCreationAndcollapseTime = maxCollapseTime+maxCreationTime;
+
     std::cout << "Maximum of (Creation + Collapse) TIME : " << maxCreationAndcollapseTime << " ms.\n";
-    std::cout << "# Maximum time taken of all collapses is: " << maxCollapseTime << " ms" << std::endl;
+    std::cout << "Maximum time taken of all computation of subcomplexes is: " << maxCreationTime << " ms" << std::endl;
+    std::cout << "Total time taken in all subcomplex computation is: " << totCreationTime << " ms" << std::endl;
+    std::cout << "Maximum time taken of all collapses is: " << maxCollapseTime << " ms" << std::endl;
     std::cout << "Total time taken in all collapses is: " << totCollapseTime << " ms." <<std::endl;
     std::cout << "Total time taken to print the tower format: " <<   totPrintTime << " ms." <<std::endl;
     std::cout << "** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** " << std::endl;
     //delete mat_prev_coll;
     //delete mat_prev;
+    auto the_end = std::chrono::high_resolution_clock::now();
+    auto totComputationTime = std::chrono::duration<double, std::milli>(the_end- the_begin).count();
+    std::cout << "Total Computation time by rips_for_sophia is " <<   totComputationTime << " ms." <<std::endl;
     return 0;
+
 }
   
