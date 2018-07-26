@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
     } else {
 	std::cout << "Unable to open input file.\n";
 	file.setstate(std::ios::failbit);
-	return;
+	return 0;
     }
 }
 

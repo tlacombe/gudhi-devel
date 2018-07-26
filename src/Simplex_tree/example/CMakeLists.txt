@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.6)
 project(Simplex_tree_examples)
 
+INCLUDE_DIRECTORIES(BEFORE /home/hannah/Desktop/collapses_filtration/gudhi_integration/sophia_integration/src/Simplex_tree/include)
+
 add_executable ( Simplex_tree_example_from_cliques_of_graph simplex_tree_from_cliques_of_graph.cpp )
 if (TBB_FOUND)
   target_link_libraries(Simplex_tree_example_from_cliques_of_graph ${TBB_LIBRARIES})
