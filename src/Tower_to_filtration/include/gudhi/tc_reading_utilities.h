@@ -23,7 +23,7 @@
 #ifndef UTILITIES_H
 #define UTILITIES_H
 
-/** @file utilities.h
+/** @file tc_reading_utilities.h
  * @brief Contains file reading utilities.
  */
 
