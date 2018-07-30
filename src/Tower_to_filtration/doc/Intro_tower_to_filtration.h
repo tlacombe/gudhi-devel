@@ -63,40 +63,50 @@ namespace tower_to_filtration {
  * A tower is called a @a filtration if all @f$\phi_i@f$ are inclusion maps.
  *
  * The primary aim of this module is to compute a filtration @f$\mathcal{F}@f$ from a given tower @f$\mathcal{T}@f$,
- * such that @f$\mathcal{F}@f$ and @f$\mathcal{T}@f$ have the same barcode, using @ref Gudhi::tower_to_filtration::Tower_converter.
- * It can also compute the corresponding barcode using @ref Gudhi::tower_to_filtration::Persistence.
+ * such that @f$\mathcal{F}@f$ and @f$\mathcal{T}@f$ have the same barcode, using @ref Tower_converter.
+ * It can also compute the corresponding barcode using @ref Persistence.
  *
- * TODO: Definition of Complex and Barcode ?
+ * <span style="color:red;">TODO</span>: Definition of Complex and Barcode<span style="color:red;">?</span>
  *
  * @section usage Usage
  *
- * @ref Gudhi::tower_to_filtration::Tower_converter and @ref Gudhi::tower_to_filtration::Persistence can both be used
- * via two functions:
+ * @ref Tower_converter and @ref Persistence can both be used via two functions:
  *
- * TODO: make @ref Gudhi::tower_to_filtration::Persistence independent of @ref Gudhi::tower_to_filtration::Tower_converter
- * (i.e. @ref Gudhi::tower_to_filtration::Tower_converter has to be used externally).
+ * <span style="color:red;">TODO</span>: make @ref Persistence independent of @ref Tower_converter
+ * (i.e. @ref Tower_converter has to be used externally).
  *
- * - @ref Gudhi::tower_to_filtration::Tower_converter<ComplexStructure>::add_insertion /
- *	@ref Gudhi::tower_to_filtration::Persistence<ComplexStructure,ColumnType>::add_insertion
+ * - @ref Tower_converter<ComplexStructure>::add_insertion /
+ *	@ref Persistence<ComplexStructure,ColumnType>::add_insertion
  *
  * Add an elementary tower insertion operation, which is directly processed.
  * As result, the insertion is added to the output filtration.
  *
- * - @ref Gudhi::tower_to_filtration::Tower_converter<ComplexStructure>::add_contraction /
- *	@ref Gudhi::tower_to_filtration::Persistence<ComplexStructure,ColumnType>::add_contraction
+ * - @ref Tower_converter<ComplexStructure>::add_contraction /
+ *	@ref Persistence<ComplexStructure,ColumnType>::add_contraction
  *
  * Add an elementary tower contraction operation, which is directly processed.
  * As result, all the sequence of insertions equivalent to the given contraction  is added to the output filtration.
  *
- * - TODO
+ * - <span style="color:red;">TODO</span>
  *
  * Allowing sequence of edges as input to build flag complex
+ *
+ * @subsection temp Templates
+ *
+ * @ref Tower_converter uses one template @ref ComplexStructure as complex type.
+ * For now only Gudhi::tower_to_filtration::Hash_complex (hash_complex.h) and Gudhi::tower_to_filtration::Simplex_tree (simplex_tree.h)
+ * satisfy the concept. <span style="color:red;">(To be rectified)</span>
+ *
+ * @ref Persistence additionnaly uses a template @ref ColumnType
+ * for the columns of its internally stored boundary matrix.
+ * @ref Heap_column and @ref List_column satisfy the concept.
+ * The first one is based on a heap representation of the column, the second one on a list representation.
  *
  * @subsection formats Input file and output formats
  *
  * - Output format
  *
- * @ref Gudhi::tower_to_filtration::Tower_converter outputs its result either in a file,
+ * @ref Tower_converter outputs its result either in a file,
  * or in an output stream (std::stringstream). In both cases, it uses the same output format:
  *
  * Each new line corresponds to an inclusion of a @f$d@f$-simplex @f$s@f$:
@@ -104,18 +114,18 @@ namespace tower_to_filtration {
  * @f$d@f$ @f$v_1@f$ ... @f$v_{d+1}@f$ @f$ts@f$,
  *
  * where @f$(v_i)_{1 \leq i \leq d+1}@f$ is by default the set of vertices of @f$s@f$
- * (option @ref Gudhi::tower_to_filtration::Tower_converter::VERTICES)
- * or the set of facets of @f$s@f$ (option @ref Gudhi::tower_to_filtration::Tower_converter::FACES).
+ * (option @ref Tower_converter::VERTICES)
+ * or the set of facets of @f$s@f$ (option @ref Tower_converter::FACES).
  * For each @f$i < j \in \{1,...,d+1\}@f$, @f$v_i < v_j@f$.
  * And @f$ts@f$ corresponds to the filtration value of @f$s@f$.
  *
- * @ref Gudhi::tower_to_filtration::Persistence outputs the persistence barcode in a file,
+ * @ref Persistence outputs the persistence barcode in a file,
  * where each new line corresponds to a persistence pair @f$(b,d)@f$ of dimension @f$dim@f$:
  *
  * @f$dim@f$ @f$b@f$ @f$d@f$.
  *
  * Essential cycles (i.e. paired with infinity) are not printed.
- * (TODO : add "finilize function" to enable the printing of those paires?)
+ * (<span style="color:red;">TODO</span> : add "finilize function" to enable the printing of those paires<span style="color:red;">?</span>)
  *
  * - Input format
  *
@@ -188,14 +198,7 @@ namespace tower_to_filtration {
  * and writing the resulting filtration in a file.
  * See @ref formats for output format.
  *
- * - TODO: persistence
- *
- *
- * Here linking works:
- * - @subpage Spatial_searching/example_spatial_searching.cpp
- *
- * @subpage Spatial_searching/example_spatial_searching.cpp
- *
+ * - <span style="color:red;">TODO</span>: examples for persistence
  *
  * @}
  */
