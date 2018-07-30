@@ -1,7 +1,7 @@
 #include <iostream>
 #include "gudhi/tower_converter.h"
 #include "gudhi/hash_complex.h"
-#include "gudhi/utilities.h"
+#include "gudhi/tc_reading_utilities.h"
 
 using namespace Gudhi::tower_to_filtration;	//module namespace
 

@@ -1,7 +1,7 @@
 #include <iostream>
 #include "gudhi/tower_converter.h"
 #include "gudhi/hash_complex.h"
-#include "gudhi/utilities.h"
+#include "gudhi/tc_reading_utilities.h"
 
 using namespace Gudhi::tower_to_filtration;	//module namespace
 
@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 	double timestamp = -1;
 	double defaultTimestamp = 0;
 	while (getline(file, line, '\n')){
-	    Tower_converter<Hash_complex>::operationType type = read_operation<Hash_complex>(&line, &vertices, &timestamp); // read_operation() function in gudhi/utilities.h, see documentation for file format.
+	    Tower_converter<Hash_complex>::operationType type = read_operation<Hash_complex>(&line, &vertices, &timestamp); // read_operation() function in gudhi/tc_reading_utilities.h, see documentation for file format.
 	    if (timestamp != -1) defaultTimestamp = timestamp;
 
 	    if (type == Tower_converter<Hash_complex>::INCLUSION){

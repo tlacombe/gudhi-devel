@@ -26,15 +26,15 @@
 namespace Gudhi {
 namespace tower_to_filtration {
 
-/** \defgroup tower_to_filtration Tower to Filtration
+/** @defgroup tower_to_filtration Tower to Filtration
  *
- * \author    Hannah Schreiber
+ * @author    Hannah Schreiber
  *
  * @{
  *
  * The module is based on @cite KerberS17. It transforms a tower into a filtration with the same barcode.
  *
- * \section background Background
+ * @section background Background
  *
  * A @a tower of length @f$m@f$ is a collection of simplicial complexes @f$\mathbb{K}_0,\ldots,\mathbb{K}_m@f$
  * and simplicial maps @f$\phi_i:\mathbb{K}_i\rightarrow\mathbb{K}_{i+1}@f$ for @f$i=0,\ldots,m-1@f$:
@@ -62,20 +62,140 @@ namespace tower_to_filtration {
  *
  * A tower is called a @a filtration if all @f$\phi_i@f$ are inclusion maps.
  *
+ * The primary aim of this module is to compute a filtration @f$\mathcal{F}@f$ from a given tower @f$\mathcal{T}@f$,
+ * such that @f$\mathcal{F}@f$ and @f$\mathcal{T}@f$ have the same barcode, using @ref Gudhi::tower_to_filtration::Tower_converter.
+ * It can also compute the corresponding barcode using @ref Gudhi::tower_to_filtration::Persistence.
+ *
  * TODO: Definition of Complex and Barcode ?
  *
- * \section Usage
+ * @section usage Usage
  *
- * TODO
- * add_inclusion / add_contraction functions
- * >> and << functions
- * file format
+ * @ref Gudhi::tower_to_filtration::Tower_converter and @ref Gudhi::tower_to_filtration::Persistence can both be used
+ * via two functions:
  *
- * To come:
+ * TODO: make @ref Gudhi::tower_to_filtration::Persistence independent of @ref Gudhi::tower_to_filtration::Tower_converter
+ * (i.e. @ref Gudhi::tower_to_filtration::Tower_converter has to be used externally).
  *
- * \section Examples
+ * - @ref Gudhi::tower_to_filtration::Tower_converter<ComplexStructure>::add_insertion /
+ *	@ref Gudhi::tower_to_filtration::Persistence<ComplexStructure,ColumnType>::add_insertion
  *
- * TODO
+ * Add an elementary tower insertion operation, which is directly processed.
+ * As result, the insertion is added to the output filtration.
+ *
+ * - @ref Gudhi::tower_to_filtration::Tower_converter<ComplexStructure>::add_contraction /
+ *	@ref Gudhi::tower_to_filtration::Persistence<ComplexStructure,ColumnType>::add_contraction
+ *
+ * Add an elementary tower contraction operation, which is directly processed.
+ * As result, all the sequence of insertions equivalent to the given contraction  is added to the output filtration.
+ *
+ * - TODO
+ *
+ * Allowing sequence of edges as input to build flag complex
+ *
+ * @subsection formats Input file and output formats
+ *
+ * - Output format
+ *
+ * @ref Gudhi::tower_to_filtration::Tower_converter outputs its result either in a file,
+ * or in an output stream (std::stringstream). In both cases, it uses the same output format:
+ *
+ * Each new line corresponds to an inclusion of a @f$d@f$-simplex @f$s@f$:
+ *
+ * @f$d@f$ @f$v_1@f$ ... @f$v_{d+1}@f$ @f$ts@f$,
+ *
+ * where @f$(v_i)_{1 \leq i \leq d+1}@f$ is by default the set of vertices of @f$s@f$
+ * (option @ref Gudhi::tower_to_filtration::Tower_converter::VERTICES)
+ * or the set of facets of @f$s@f$ (option @ref Gudhi::tower_to_filtration::Tower_converter::FACES).
+ * For each @f$i < j \in \{1,...,d+1\}@f$, @f$v_i < v_j@f$.
+ * And @f$ts@f$ corresponds to the filtration value of @f$s@f$.
+ *
+ * @ref Gudhi::tower_to_filtration::Persistence outputs the persistence barcode in a file,
+ * where each new line corresponds to a persistence pair @f$(b,d)@f$ of dimension @f$dim@f$:
+ *
+ * @f$dim@f$ @f$b@f$ @f$d@f$.
+ *
+ * Essential cycles (i.e. paired with infinity) are not printed.
+ * (TODO : add "finilize function" to enable the printing of those paires?)
+ *
+ * - Input format
+ *
+ * The file tc_reading_utilities.h includes two reading functions
+ * `read_operation` and `>>`
+ * (see @subpage Tower_to_filtration/example_tower_from_file_write_filtration_into_file.cpp and
+ * @subpage Tower_to_filtration/example_tower_from_file_streamed_output.cpp
+ * for examples of use).
+ * The input format for both is the following.
+ *
+ * Each line is either a comment beginning with '#' or a tower operation:
+ *
+ * In a case of an inclusion of a @f$d@f$-simplex @f$s@f$:
+ *
+ * [@f$ts@f$] i @f$v_1@f$ ... @f$v_{d+1}@f$,
+ *
+ * where @f$(v_i)_{1 \leq i \leq d+1}@f$ is the set of vertices of @f$s@f$
+ * and for each @f$i < j \in \{1, ..., d+1\}@f$, @f$v_i < v_j@f$.
+ * And @f$ts@f$ is an optional time indicator.
+ * (If there is no time indication, time will start at 0 and increase by one at each insertion or contraction
+ * when using `>>`).
+ *
+ * In a case of a contraction:
+ *
+ * [@f$ts@f$] c @f$v_d@f$ @f$v_k@f$,
+ *
+ * where @f$v_d@f$ and @f$v_k@f$ are the vertices to be contracted.
+ * From here on, the remaining vertex needs to be refered by @f$v_k@f$ and **NOT** @f$v_d@f$.
+ * And @f$ts@f$ is again the optional time indicator.
+ *
+ * @section examples Examples
+ *
+ * Following examples are avaible in the 'example/Tower_to_filtration/' folder.
+ *
+ * - @subpage Tower_to_filtration/example_tower_from_file_write_filtration_into_file.cpp
+ *
+ * @code{.sh}
+ *	./Tower_to_filtration_example_tower_from_file_write_filtration_into_file input_file_name output_file_name
+ * @endcode
+ * Simple example of how to use the module when reading the tower from a file
+ * and writing the resulting filtration in a file.
+ * See @ref formats.
+ *
+ * - @subpage Tower_to_filtration/example_tower_from_file_streamed_output.cpp
+ *
+ * @code{.sh}
+ *	./Tower_to_filtration_example_tower_from_file_streamed_output input_file_name
+ * @endcode
+ * Simple example of how to use the module when reading the tower from a file and
+ * writing the resulting filtration in an output stream.
+ * See @ref formats.
+ * The output stream should be processed/emptied regularly to avoid memory consummption.
+ *
+ * - @subpage Tower_to_filtration/example_elementary_input_streamed_output.cpp
+ *
+ * @code{.sh}
+ *	./Tower_to_filtration_example_elementary_input_streamed_output
+ * @endcode
+ * Simple example of how to add tower operations to the module and
+ * writing the resulting filtration in an output stream.
+ * See @ref formats for stream output format.
+ * The output stream should be processed/emptied regularly to avoid memory consummption.
+ *
+ * - @subpage Tower_to_filtration/example_elementary_input_write_filtration_into_file.cpp
+ *
+ * @code{.sh}
+ *	./Tower_to_filtration_example_elementary_input_write_filtration_into_file output_file_name
+ * @endcode
+ * Simple example of how to add tower operations to the module
+ * and writing the resulting filtration in a file.
+ * See @ref formats for output format.
+ *
+ * - TODO: persistence
+ *
+ *
+ * Here linking works:
+ * - @subpage Spatial_searching/example_spatial_searching.cpp
+ *
+ * @subpage Spatial_searching/example_spatial_searching.cpp
+ *
  *
  * @}
  */

@@ -1,7 +1,7 @@
 #include <iostream>
 #include "gudhi/tower_converter.h"
 #include "gudhi/hash_complex.h"
-#include "gudhi/utilities.h"
+#include "gudhi/tc_reading_utilities.h"
 
 using namespace Gudhi::tower_to_filtration;	//module namespace
 
@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
 						    // see documentation for output file format.
 
     if (file.is_open()){
-	file >> tc;				    // >> function in gudhi/utilities.h, see documentation for input file format.
+	file >> tc;				    // >> function in gudhi/tc_reading_utilities.h, see documentation for input file format.
 	file.close();
     } else {
 	std::cout << "Unable to open input file\n";
