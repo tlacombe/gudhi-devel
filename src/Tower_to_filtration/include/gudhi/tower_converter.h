@@ -76,6 +76,7 @@ public:
     index add_contraction(double v, double u, double timestamp);
     index add_contraction(double v, double u, double timestamp, std::vector<std::vector<index>*> *addedBoundaries, std::vector<index> *removedIndices);
 
+    ComplexStructure *get_complex() const;
     double get_filtration_size() const;
     double get_tower_width() const;
     void print_filtration_data();
@@ -134,7 +135,7 @@ Tower_converter<ComplexStructure>::Tower_converter(std::string outputFileName, s
     outputFile_ = new std::ofstream(outputFileName);
     if (!outputFile_->is_open()){
         std::cout << "Output File could not be open.\n";
-        exit(0);
+	return;
     }
     vertices_ = new std::unordered_map<double, vertex>();
     complex_ = new ComplexStructure();
@@ -289,6 +290,16 @@ inline void Tower_converter<ComplexStructure>::print_filtration_data()
     std::cout << "Max Size: " << complex_->get_max_size() << "\n";
     std::cout << "Max Dimension: " << complex_->get_max_dimension() << "\n";
     std::cout << "Tower Width: " << towerWidth_ << "\n";
+}
+
+template<class ComplexStructure>
+/**
+ * @brief Return pointer to the stored complex.
+ * @return The pointer to the stored complex.
+ */
+inline ComplexStructure *Tower_converter::get_complex() const
+{
+    return complex_;
 }
 
 template<class ComplexStructure>

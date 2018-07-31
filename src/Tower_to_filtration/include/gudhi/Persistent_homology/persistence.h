@@ -55,33 +55,33 @@ public:
      * @brief Represents the boundary matrix from which the persistence barcode is computed.
      */
     class Boundary_matrix
-	{
-	public:
-        Boundary_matrix(std::string persistencePairsFileName);
-        ~Boundary_matrix();
+    {
+    public:
+	Boundary_matrix(std::string persistencePairsFileName);
+	~Boundary_matrix();
 
-        void insert_column(double insertionNumber, std::vector<double> *boundary, double timestamp);
-        void insert_vertex(double insertionNumber, double timestamp);
-        void reduce(double start);
-        void clear_out();
-        void mark_inactive(std::vector<double> *insertionNumbers);
-        void mark_inactive(double insertionNumber);
+	void insert_column(double insertionNumber, std::vector<double> *boundary, double timestamp);
+	void insert_vertex(double insertionNumber, double timestamp);
+	void reduce(double start);
+	void clear_out();
+	void mark_inactive(std::vector<double> *insertionNumbers);
+	void mark_inactive(double insertionNumber);
 
-        double get_last_insert_number() const;
-        int get_max_dim() const;
+	double get_last_insert_number() const;
+	int get_max_dim() const;
 
-	private:
-        std::unordered_map<double, ColumnType*> *columns_;                      /**< Columns of the matrix. The key is the column number. */
-        std::unordered_map<double, double> *latest_;                            /**< Pivot to column map. */
-        std::unordered_map<double, std::pair<bool, bool>*> *isActivePositive_;  /**< Indicates if a column is active (first value) and/or is positive. */
-        std::unordered_map<double, double> *timestamps_;                        /**< Column number to filtration value map. */
-        double lastInsertNumber_;                                               /**< Identifier of the latest inserted simplex (as column). */
-        int maxDim_;                                                            /**< Maximal dimension of an inserted simplex. */
-        std::ofstream *persistencePairsFile_;                                   /**< Output stream. */
+    private:
+	std::unordered_map<double, ColumnType*> *columns_;                      /**< Columns of the matrix. The key is the column number. */
+	std::unordered_map<double, double> *latest_;                            /**< Pivot to column map. */
+	std::unordered_map<double, std::pair<bool, bool>*> *isActivePositive_;  /**< Indicates if a column is active (first value) and/or is positive. */
+	std::unordered_map<double, double> *timestamps_;                        /**< Column number to filtration value map. */
+	double lastInsertNumber_;                                               /**< Identifier of the latest inserted simplex (as column). */
+	int maxDim_;                                                            /**< Maximal dimension of an inserted simplex. */
+	std::ofstream *persistencePairsFile_;                                   /**< Output stream. */
 
-        void clear_column(double columnIndex);
-        void print_persistence_pair(int dim, double birth, double death);
-	};
+	void clear_column(double columnIndex);
+	void print_persistence_pair(int dim, double birth, double death);
+    };
 
     bool add_insertion(std::vector<double> *simplex, double timestamp);
     void add_contraction(double v, double u, double timestamp);

@@ -64,7 +64,7 @@ namespace tower_to_filtration {
  *
  * The primary aim of this module is to compute a filtration @f$\mathcal{F}@f$ from a given tower @f$\mathcal{T}@f$,
  * such that @f$\mathcal{F}@f$ and @f$\mathcal{T}@f$ have the same barcode, using @ref Tower_converter.
- * It can also compute the corresponding barcode using @ref Persistence.
+ * It can also compute the corresponding barcode with coefficient in @f$\mathbb{Z}_2@f$ using @ref Persistence.
  *
  * <span style="color:red;">TODO</span>: Definition of Complex and Barcode<span style="color:red;">?</span>
  *
