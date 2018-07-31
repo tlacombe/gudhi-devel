@@ -96,11 +96,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(insertion_test, ComplexType, complex_types)
     BOOST_CHECK(tc.add_insertion(&simplex, 0, &simplexBoundary, &simplexInsertionNumber));
     BOOST_CHECK(simplexBoundary.size() == 0);
     BOOST_CHECK(complex->get_size() == 1);
-    test_output_stream_first_line(ss, &dim, &filtrationValue, &vertices);
+    test_output_stream_first_line(&ss, &dim, &filtrationValue, &vertices);
     BOOST_CHECK(dim == 0);
     BOOST_CHECK(vertices.size() == 1);
     BOOST_CHECK(filtrationValue == 0);
-    BOOST_CHECK(!test_output_stream_first_line(ss, &dim, &filtrationValue, &vertices));
+    BOOST_CHECK(!test_output_stream_first_line(&ss, &dim, &filtrationValue, &vertices));
     ss.clear();     //to enable rewriting in ss.
     BOOST_CHECK(tc.get_filtration_size() == 1);
     BOOST_CHECK(tc.get_tower_width() == 1);
@@ -110,11 +110,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(insertion_test, ComplexType, complex_types)
     BOOST_CHECK(tc.add_insertion(&simplex, 1, &simplexBoundary, &simplexInsertionNumber));
     BOOST_CHECK(simplexBoundary.size() == 0);
     BOOST_CHECK(complex->get_size() == 2);
-    test_output_stream_first_line(ss, &dim, &filtrationValue, &vertices);
+    test_output_stream_first_line(&ss, &dim, &filtrationValue, &vertices);
     BOOST_CHECK(dim == 0);
     BOOST_CHECK(vertices.size() == 1);
     BOOST_CHECK(filtrationValue == 1);
-    BOOST_CHECK(!test_output_stream_first_line(ss, &dim, &filtrationValue, &vertices));
+    BOOST_CHECK(!test_output_stream_first_line(&ss, &dim, &filtrationValue, &vertices));
     ss.clear();
     BOOST_CHECK(tc.get_filtration_size() == 2);
     BOOST_CHECK(tc.get_tower_width() == 2);
@@ -127,11 +127,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(insertion_test, ComplexType, complex_types)
     BOOST_CHECK(simplexBoundary.at(0) == 0);
     BOOST_CHECK(simplexBoundary.at(1) == 1);
     BOOST_CHECK(complex->get_size() == 3);
-    test_output_stream_first_line(ss, &dim, &filtrationValue, &vertices);
+    test_output_stream_first_line(&ss, &dim, &filtrationValue, &vertices);
     BOOST_CHECK(dim == 1);
     BOOST_CHECK(vertices.size() == 2);
     BOOST_CHECK(filtrationValue == 2);
-    BOOST_CHECK(!test_output_stream_first_line(ss, &dim, &filtrationValue, &vertices));
+    BOOST_CHECK(!test_output_stream_first_line(&ss, &dim, &filtrationValue, &vertices));
     ss.clear();
     BOOST_CHECK(tc.get_filtration_size() == 3);
     BOOST_CHECK(tc.get_tower_width() == 3);
@@ -141,24 +141,20 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(insertion_test, ComplexType, complex_types)
     simplexBoundary.clear();
     BOOST_CHECK(!tc.add_insertion(&simplex, 3));
 
-    //Simplex with missing faces
-    simplex.push_back(1);
-    simplex.push_back(2);
-    simplexBoundary.clear();
-    BOOST_CHECK(!tc.add_insertion(&simplex, 3));
-
     //Faces output
+    ss.str(std::string());
     ss.clear();
     simplexBoundary.clear();
     simplex.clear();
-    Tower_converter<ComplexType> tc_faces(&ss, Tower_converter::FACES);
+    Tower_converter<ComplexType> tc_faces(&ss, Tower_converter<ComplexType>::FACES);
     complex = tc_faces.get_complex();
 
     simplex.push_back(0);
     BOOST_CHECK(tc_faces.add_insertion(&simplex, 0));
-
     simplex.at(0) = 1;
     BOOST_CHECK(tc_faces.add_insertion(&simplex, 1));
+    ss.str(std::string());
+    ss.clear();
 
     simplex.at(0) = 0;
     simplex.push_back(1);
@@ -167,12 +163,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(insertion_test, ComplexType, complex_types)
     BOOST_CHECK(simplexBoundary.at(0) == 0);
     BOOST_CHECK(simplexBoundary.at(1) == 1);
     BOOST_CHECK(complex->get_size() == 3);
-    test_output_stream_first_line(ss, &dim, &filtrationValue, &vertices);
+    test_output_stream_first_line(&ss, &dim, &filtrationValue, &vertices);
     BOOST_CHECK(dim == 1);
     BOOST_CHECK(vertices.size() == 2);
     BOOST_CHECK(filtrationValue == 2);
-    BOOST_CHECK(!test_output_stream_first_line(ss, &dim, &filtrationValue, &vertices));
-    ss->clear();
+    BOOST_CHECK(!test_output_stream_first_line(&ss, &dim, &filtrationValue, &vertices));
+    ss.clear();
     BOOST_CHECK(tc_faces.get_filtration_size() == 3);
     BOOST_CHECK(tc_faces.get_tower_width() == 3);
 }
@@ -200,37 +196,37 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(contraction_test, ComplexType, complex_types)
     simplex.push_back(1);
     BOOST_CHECK(tc.add_insertion(&simplex, 3));
     simplex.at(0) = 0;
-    simplex.push_back(2);
+    simplex.at(1) = 2;
     BOOST_CHECK(tc.add_insertion(&simplex, 4));
+    ss.str(std::string());
+    ss.clear();
 
-    double first;
-    BOOST_TEST(first = tc.add_contraction(1, 2, 5, &addedBoundaries, &removedIndices));
+    double first = tc.add_contraction(1, 2, 5, &addedBoundaries, &removedIndices);
     BOOST_CHECK(first != -1);
     BOOST_CHECK(addedBoundaries.size() == 2);
     BOOST_CHECK(removedIndices.size() == 4);
     BOOST_CHECK(complex->get_size() == 3);
-    test_output_stream_first_line(ss, &dim, &filtrationValue, &vertices);
+    test_output_stream_first_line(&ss, &dim, &filtrationValue, &vertices);
     BOOST_CHECK(dim == 1);
     BOOST_CHECK(vertices.size() == 2);
     BOOST_CHECK(filtrationValue == 5);
-    test_output_stream_first_line(ss, &dim, &filtrationValue, &vertices);
+    test_output_stream_first_line(&ss, &dim, &filtrationValue, &vertices);
     BOOST_CHECK(dim == 2);
     BOOST_CHECK(vertices.size() == 3);
     BOOST_CHECK(filtrationValue == 5);
-    BOOST_CHECK(!test_output_stream_first_line(ss, &dim, &filtrationValue, &vertices));
+    BOOST_CHECK(!test_output_stream_first_line(&ss, &dim, &filtrationValue, &vertices));
     ss.clear();
     BOOST_CHECK(tc.get_filtration_size() == 7);
     BOOST_CHECK(tc.get_tower_width() == 5);
 
-    //Not existing vertices
-    std::cout << "********************* Next test has to fail: *********************\n";
-    BOOST_CHECK(tc.add_contraction(0, 3, 6));
-    std::cout << "**************************** End test ****************************\n";
-
     //Faces output
+    ss.str(std::string());
     ss.clear();
     simplex.clear();
-    Tower_converter<ComplexType> tc_faces(&ss, Tower_converter::FACES);
+    for (std::vector<double>* v : addedBoundaries) delete v;
+    addedBoundaries.clear();
+    removedIndices.clear();
+    Tower_converter<ComplexType> tc_faces(&ss, Tower_converter<ComplexType>::FACES);
     complex = tc_faces.get_complex();
 
     simplex.push_back(0);
@@ -243,23 +239,25 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(contraction_test, ComplexType, complex_types)
     simplex.push_back(1);
     BOOST_CHECK(tc_faces.add_insertion(&simplex, 3));
     simplex.at(0) = 0;
-    simplex.push_back(2);
+    simplex.at(1) = 2;
     BOOST_CHECK(tc_faces.add_insertion(&simplex, 4));
+    ss.str(std::string());
+    ss.clear();
 
-    BOOST_TEST(first = tc_faces.add_contraction(1, 2, 5, &addedBoundaries, &removedIndices));
+    first = tc_faces.add_contraction(1, 2, 5, &addedBoundaries, &removedIndices);
     BOOST_CHECK(first != -1);
     BOOST_CHECK(addedBoundaries.size() == 2);
     BOOST_CHECK(removedIndices.size() == 4);
     BOOST_CHECK(complex->get_size() == 3);
-    test_output_stream_first_line(ss, &dim, &filtrationValue, &vertices);
+    test_output_stream_first_line(&ss, &dim, &filtrationValue, &vertices);
     BOOST_CHECK(dim == 1);
     BOOST_CHECK(vertices.size() == 2);
     BOOST_CHECK(filtrationValue == 5);
-    test_output_stream_first_line(ss, &dim, &filtrationValue, &vertices);
+    test_output_stream_first_line(&ss, &dim, &filtrationValue, &vertices);
     BOOST_CHECK(dim == 2);
     BOOST_CHECK(vertices.size() == 3);
     BOOST_CHECK(filtrationValue == 5);
-    BOOST_CHECK(!test_output_stream_first_line(ss, &dim, &filtrationValue, &vertices));
+    BOOST_CHECK(!test_output_stream_first_line(&ss, &dim, &filtrationValue, &vertices));
     ss.clear();
     BOOST_CHECK(tc_faces.get_filtration_size() == 7);
     BOOST_CHECK(tc_faces.get_tower_width() == 5);

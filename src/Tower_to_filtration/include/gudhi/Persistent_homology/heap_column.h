@@ -59,6 +59,7 @@ public:
     void clean(std::unordered_map<double, double> *latest, std::unordered_map<double, std::pair<bool, bool> *> *isActivePositive,
                std::unordered_map<double, Heap_column*> *columns);
     void push_back(double value);
+    double at(double index);
 
 private:
     int dim_;                           /**< Dimension of the column. */
@@ -128,6 +129,20 @@ inline void Heap_column::push_back(double value)
 {
     column_->push_back(value);
     std::push_heap(column_->begin(), column_->end());
+}
+
+/**
+ * @brief Returns element at index @p index in the underlying vector.
+ *
+ * The vector being used at a heap, the indices do NOT correspond to the order of the element in the column!
+ * Usefull for traversal of the column, when the order does not matter.
+ *
+ * @param index desired index.
+ * @return Element at index @p index in the underlying vector.
+ */
+inline double Heap_column::at(double index)
+{
+    return column_->at(index);
 }
 
 /**

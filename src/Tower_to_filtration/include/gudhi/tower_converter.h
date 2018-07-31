@@ -297,7 +297,7 @@ template<class ComplexStructure>
  * @brief Return pointer to the stored complex.
  * @return The pointer to the stored complex.
  */
-inline ComplexStructure *Tower_converter::get_complex() const
+inline ComplexStructure *Tower_converter<ComplexStructure>::get_complex() const
 {
     return complex_;
 }

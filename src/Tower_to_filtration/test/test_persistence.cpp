@@ -74,7 +74,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(list_test, ComplexType, complex_types)
     } else {
 	std::cout << "Unable to open input file\n";
 	file.setstate(std::ios::failbit);
-	return 0;
     }
 
     BOOST_CHECK(verify_resulting_file());
@@ -91,7 +90,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(heap_test, ComplexType, complex_types)
     } else {
 	std::cout << "Unable to open input file\n";
 	file.setstate(std::ios::failbit);
-	return 0;
     }
 
     BOOST_CHECK(verify_resulting_file());
