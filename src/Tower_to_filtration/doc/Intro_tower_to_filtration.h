@@ -138,7 +138,7 @@ namespace tower_to_filtration {
  *
  * Each line is either a comment beginning with '#' or a tower operation:
  *
- * In a case of an inclusion of a @f$d@f$-simplex @f$s@f$:
+ * In the case of an inclusion of a @f$d@f$-simplex @f$s@f$:
  *
  * [@f$ts@f$] i @f$v_1@f$ ... @f$v_{d+1}@f$,
  *
@@ -148,7 +148,7 @@ namespace tower_to_filtration {
  * (If there is no time indication, time will start at 0 and increase by one at each insertion or contraction
  * when using `>>`).
  *
- * In a case of a contraction:
+ * In the case of a contraction:
  *
  * [@f$ts@f$] c @f$v_d@f$ @f$v_k@f$,
  *
