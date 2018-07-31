@@ -49,7 +49,7 @@ class Persistence
 {
 public:
     Persistence(double reductionInterval, std::string persistencePairsFileName);
-	~Persistence();
+    ~Persistence();
 
     /**
      * @brief Represents the boundary matrix from which the persistence barcode is computed.
