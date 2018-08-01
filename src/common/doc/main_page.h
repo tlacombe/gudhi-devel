@@ -1,7 +1,7 @@
 /*! \mainpage The C++ library
  *  \tableofcontents
  * \image html "Gudhi_banner.png" "" width=20cm
- * 
+ *
  * \section Introduction Introduction
  * The GUDHI library (Geometry Understanding in Higher Dimensions) is a generic open source
  * <a class="el" target="_blank" href="http://gudhi.gforge.inria.fr/doc/latest/">C++ library</a> for
@@ -10,38 +10,38 @@
  * The GUDHI library intends  to help the development of new algorithmic solutions in TDA and their transfer to
  * applications. It provides robust, efficient, flexible and easy to use implementations of state-of-the-art
  * algorithms and data structures.
- * 
+ *
  * The current release of the GUDHI library includes:
- * 
+ *
  * \li Data structures to represent, construct and manipulate simplicial complexes.
  * \li Simplification of simplicial complexes by edge contraction.
  * \li Algorithms to compute persistent homology and bottleneck distance.
- * 
+ *
  * All data-structures are generic and several of their aspects can be parameterized via template classes.
  * We refer to \cite gudhilibrary_ICMS14 for a detailed description of the design of the library.
  *
  \section DataStructures Data structures
  \subsection AlphaComplexDataStructure Alpha complex
  \image html "alpha_complex_representation.png" "Alpha complex representation"
-<table border="0">
-  <tr>
-    <td width="25%">
-      <b>Author:</b> Vincent Rouvreau<br>
-      <b>Introduced in:</b> GUDHI 1.3.0<br>
-      <b>Copyright:</b> GPL v3<br>
-      <b>Requires:</b> \ref cgal &ge; 4.7.0 and \ref eigen3
-    </td>
-    <td width="75%">
-    Alpha_complex is a simplicial complex constructed from the finite cells of a Delaunay Triangulation.<br>
-    The filtration value of each simplex is computed as the square of the circumradius of the simplex if the
-    circumsphere is empty (the simplex is then said to be Gabriel), and as the minimum of the filtration
-    values of the codimension 1 cofaces that make it not Gabriel otherwise.
-    All simplices that have a filtration value strictly greater than a given alpha squared value are not inserted into
-    the complex.<br>
-    <b>User manual:</b> \ref alpha_complex - <b>Reference manual:</b> Gudhi::alpha_complex::Alpha_complex
-    </td>
- </tr>
-</table>
+ <table border="0">
+    <tr>
+	<td width="25%">
+	    <b>Author:</b> Vincent Rouvreau<br>
+	    <b>Introduced in:</b> GUDHI 1.3.0<br>
+	    <b>Copyright:</b> GPL v3<br>
+	    <b>Requires:</b> \ref cgal &ge; 4.7.0 and \ref eigen3
+	</td>
+	<td width="75%">
+	    Alpha_complex is a simplicial complex constructed from the finite cells of a Delaunay Triangulation.<br>
+	    The filtration value of each simplex is computed as the square of the circumradius of the simplex if the
+	    circumsphere is empty (the simplex is then said to be Gabriel), and as the minimum of the filtration
+	    values of the codimension 1 cofaces that make it not Gabriel otherwise.
+	    All simplices that have a filtration value strictly greater than a given alpha squared value are not inserted into
+	    the complex.<br>
+	    <b>User manual:</b> \ref alpha_complex - <b>Reference manual:</b> Gudhi::alpha_complex::Alpha_complex
+	</td>
+    </tr>
+ </table>
  \subsection CubicalComplexDataStructure Cubical complex
  \image html "Cubical_complex_representation.png" "Cubical complex representation"
 <table border="0">
@@ -144,7 +144,7 @@
     </td>
     <td width="75%">
     A Tangential Delaunay complex is a <a target="_blank" href="https://en.wikipedia.org/wiki/Simplicial_complex">simplicial complex</a>
-    designed to reconstruct a \f$ k \f$-dimensional manifold embedded in \f$ d \f$-dimensional Euclidean space. 
+    designed to reconstruct a \f$ k \f$-dimensional manifold embedded in \f$ d \f$-dimensional Euclidean space.
     The input is a point sample coming from an unknown manifold.
     The running time depends only linearly on the extrinsic dimension \f$ d \f$
     and exponentially on the intrinsic dimension \f$ k \f$.<br>
@@ -169,7 +169,7 @@
     </td>
  </tr>
 </table>
- 
+
  \section Toolbox Toolbox
  
  \subsection BottleneckDistanceToolbox Bottleneck distance
@@ -183,9 +183,9 @@
       <b>Requires:</b> \ref cgal &ge; 4.8.1
     </td>
     <td width="75%">
-    Bottleneck distance measures the similarity between two persistence diagrams. 
-    It's the shortest distance b for which there exists a perfect matching between 
-    the points of the two diagrams (+ all the diagonal points) such that 
+    Bottleneck distance measures the similarity between two persistence diagrams.
+    It's the shortest distance b for which there exists a perfect matching between
+    the points of the two diagrams (+ all the diagonal points) such that
     any couple of matched points are at distance at most b.
     <br>
     <b>User manual:</b> \ref bottleneck_distance
@@ -239,7 +239,7 @@
     <td width="25%">
       <b>Author:</b> Pawel Dlotko<br>
       <b>Introduced in:</b> GUDHI 2.1.0<br>
-      <b>Copyright:</b> GPL v3<br>      
+      <b>Copyright:</b> GPL v3<br>
     </td>
     <td width="75%">
     It contains implementation of various representations of persistence diagrams; diagrams themselves, persistence
@@ -249,5 +249,25 @@
     </td>
  </tr>
 </table>
- 
+ \subsection TowerToFiltrationToolBox Conversion of Tower to equivalent Filtration
+<table border="0">
+  <tr>
+    <td width="25%">
+      <b>Author:</b> Hannah Schreiber<br>
+      <b>Introduced in:</b> GUDHI 2.x.x<br>
+      <b>Copyright:</b> GPL v3<br>
+    </td>
+    <td width="75%">
+    A @a tower of length @f$m@f$ is a collection of simplicial complexes @f$\mathbb{K}_0,\ldots,\mathbb{K}_m@f$
+    and simplicial maps @f$\phi_i:\mathbb{K}_i\rightarrow\mathbb{K}_{i+1}@f$ for @f$i=0,\ldots,m-1@f$:
+    @f[
+	\mathbb{K}_0 \xrightarrow{\phi_0} \mathbb{K}_1 \xrightarrow{\phi_1} \cdots \xrightarrow{\phi_{m-1}} \mathbb{K}_m.
+    @f]
+    A @a filtration is the special case where all simplicial maps are inclusions.
+    This toolbox convert a tower into a filtration such that the its persistence barcode does not change.<br>
+    <b>User manual:</b> \ref tower_to_filtration
+    </td>
+ </tr>
+</table>
+
 */

@@ -95,5 +95,9 @@
  * @example Persistence_representations/persistence_landscapes/create_landscapes.cpp
  * @example Persistence_representations/persistence_landscapes/compute_distance_of_landscapes.cpp
  * @example Persistence_representations/persistence_landscapes/plot_landscapes.cpp
+ * @example Tower_to_filtration/example_elementary_input_streamed_output.cpp
+ * @example Tower_to_filtration/example_elementary_input_write_filtration_into_file.cpp
+ * @example Tower_to_filtration/example_tower_from_file_streamed_output.cpp
+ * @example Tower_to_filtration/example_tower_from_file_write_filtration_into_file.cpp
  */
  
