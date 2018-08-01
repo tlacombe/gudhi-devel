@@ -131,8 +131,8 @@ namespace tower_to_filtration {
  *
  * The file tc_reading_utilities.h includes two reading functions
  * `read_operation` and `>>`
- * (see @subpage Tower_to_filtration/example_tower_from_file_write_filtration_into_file.cpp and
- * @subpage Tower_to_filtration/example_tower_from_file_streamed_output.cpp
+ * (see @link Tower_to_filtration/example_tower_from_file_write_filtration_into_file.cpp [1] @endlink and
+ * @link Tower_to_filtration/example_tower_from_file_streamed_output.cpp [2] @endlink
  * for examples of use).
  * The input format for both is the following.
  *
@@ -160,7 +160,7 @@ namespace tower_to_filtration {
  *
  * Following examples are avaible in the 'example/Tower_to_filtration/' folder.
  *
- * - @subpage Tower_to_filtration/example_tower_from_file_write_filtration_into_file.cpp
+ * - @link Tower_to_filtration/example_tower_from_file_write_filtration_into_file.cpp example_tower_from_file_write_filtration_into_file.cpp @endlink
  *
  * @code{.sh}
  *	./Tower_to_filtration_example_tower_from_file_write_filtration_into_file input_file_name output_file_name
@@ -169,7 +169,7 @@ namespace tower_to_filtration {
  * and writing the resulting filtration in a file.
  * See @ref formats.
  *
- * - @subpage Tower_to_filtration/example_tower_from_file_streamed_output.cpp
+ * - @link Tower_to_filtration/example_tower_from_file_streamed_output.cpp example_tower_from_file_streamed_output.cpp @endlink
  *
  * @code{.sh}
  *	./Tower_to_filtration_example_tower_from_file_streamed_output input_file_name
@@ -179,7 +179,7 @@ namespace tower_to_filtration {
  * See @ref formats.
  * The output stream should be processed/emptied regularly to avoid memory consummption.
  *
- * - @subpage Tower_to_filtration/example_elementary_input_streamed_output.cpp
+ * - @link Tower_to_filtration/example_elementary_input_streamed_output.cpp example_elementary_input_streamed_output.cpp @endlink
  *
  * @code{.sh}
  *	./Tower_to_filtration_example_elementary_input_streamed_output
@@ -189,7 +189,7 @@ namespace tower_to_filtration {
  * See @ref formats for stream output format.
  * The output stream should be processed/emptied regularly to avoid memory consummption.
  *
- * - @subpage Tower_to_filtration/example_elementary_input_write_filtration_into_file.cpp
+ * - @link Tower_to_filtration/example_elementary_input_write_filtration_into_file.cpp example_elementary_input_write_filtration_into_file.cpp @endlink
  *
  * @code{.sh}
  *	./Tower_to_filtration_example_elementary_input_write_filtration_into_file output_file_name
