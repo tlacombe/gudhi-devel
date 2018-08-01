@@ -111,7 +111,7 @@ namespace tower_to_filtration {
  *
  * Each new line corresponds to an inclusion of a @f$d@f$-simplex @f$s@f$:
  *
- * @f$d@f$ @f$v_1@f$ ... @f$v_{d+1}@f$ @f$ts@f$,
+ * @f$\quad\quad d@f$ @f$v_1@f$ ... @f$v_{d+1}@f$ @f$ts@f$,
  *
  * where @f$(v_i)_{1 \leq i \leq d+1}@f$ is by default the set of vertices of @f$s@f$
  * (option @ref Tower_converter::VERTICES)
@@ -122,7 +122,7 @@ namespace tower_to_filtration {
  * @ref Persistence outputs the persistence barcode in a file,
  * where each new line corresponds to a persistence pair @f$(b,d)@f$ of dimension @f$dim@f$:
  *
- * @f$dim@f$ @f$b@f$ @f$d@f$.
+ * @f$\quad\quad dim@f$ @f$b@f$ @f$d@f$.
  *
  * Essential cycles (i.e. paired with infinity) are not printed.
  * (<span style="color:red;">TODO</span> : add "finilize function" to enable the printing of those paires<span style="color:red;">?</span>)
@@ -140,7 +140,7 @@ namespace tower_to_filtration {
  *
  * In the case of an inclusion of a @f$d@f$-simplex @f$s@f$:
  *
- * [@f$ts@f$] i @f$v_1@f$ ... @f$v_{d+1}@f$,
+ * @f$\quad\quad [ts]@f$ i @f$v_1@f$ ... @f$v_{d+1}@f$,
  *
  * where @f$(v_i)_{1 \leq i \leq d+1}@f$ is the set of vertices of @f$s@f$
  * and for each @f$i < j \in \{1, ..., d+1\}@f$, @f$v_i < v_j@f$.
@@ -150,7 +150,7 @@ namespace tower_to_filtration {
  *
  * In the case of a contraction:
  *
- * [@f$ts@f$] c @f$v_d@f$ @f$v_k@f$,
+ * @f$\quad\quad [ts]@f$ c @f$v_d@f$ @f$v_k@f$,
  *
  * where @f$v_d@f$ and @f$v_k@f$ are the vertices to be contracted.
  * From here on, the remaining vertex needs to be refered by @f$v_k@f$ and **NOT** @f$v_d@f$.
