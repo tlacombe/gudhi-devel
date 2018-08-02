@@ -1,6 +1,6 @@
 # This files manage third party libraries required by GUDHI
 
-#set(BOOST_LIBRARYDIR /usr/local/lib/boost_stage64)
+set(BOOST_LIBRARYDIR /usr/local/lib/boost_stage64)
 find_package(Boost 1.48.0 REQUIRED COMPONENTS system filesystem unit_test_framework program_options thread)
 
 if(NOT Boost_FOUND)

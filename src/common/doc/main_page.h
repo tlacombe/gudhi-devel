@@ -250,6 +250,7 @@
  </tr>
 </table>
  \subsection TowerToFiltrationToolBox Conversion of Tower to equivalent Filtration
+ \image html "coning_strategy.png" "Conversion via Coning Strategy"
 <table border="0">
   <tr>
     <td width="25%">
