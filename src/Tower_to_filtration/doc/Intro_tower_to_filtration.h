@@ -66,7 +66,7 @@ namespace tower_to_filtration {
  * such that @f$\mathcal{F}@f$ and @f$\mathcal{T}@f$ have the same barcode, using @ref Tower_converter.
  * It can also compute the corresponding barcode with coefficient in @f$\mathbb{Z}_2@f$ using @ref Persistence.
  *
- * <span style="color:red;">TODO</span>: Definition of Complex and Barcode<span style="color:red;">?</span>
+ * <span style="color:red;">(Definition of Complex and Barcode?)</span>
  *
  * @section usage Usage
  *
@@ -95,7 +95,7 @@ namespace tower_to_filtration {
  *
  * @ref Tower_converter uses one template @ref ComplexStructure as complex type.
  * For now only Gudhi::tower_to_filtration::Hash_complex (hash_complex.h) and Gudhi::tower_to_filtration::Simplex_tree (simplex_tree.h)
- * satisfy the concept. <span style="color:red;">(To be rectified)</span>
+ * satisfy the concept. <span style="color:red;">(To be rectified --> making Gudhi::Simplex_tree and (?) Hasse_complex compatible.)</span>
  *
  * @ref Persistence additionnaly uses a template @ref ColumnType
  * for the columns of its internally stored boundary matrix.
@@ -125,7 +125,9 @@ namespace tower_to_filtration {
  * @f$\quad\quad dim@f$ @f$b@f$ @f$d@f$.
  *
  * Essential cycles (i.e. paired with infinity) are not printed.
- * (<span style="color:red;">TODO</span> : add "finilize function" to enable the printing of those paires<span style="color:red;">?</span>)
+ * <span style="color:red;">(Add "finalize function" to enable the printing of those paires?)</span>
+ *
+ * <span style="color:red;">(Other output kind of interest?)</span>
  *
  * - Input format
  *
