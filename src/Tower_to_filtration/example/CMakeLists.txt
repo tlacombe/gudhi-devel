@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 project(Tower_to_filtration_examples)
 
-INCLUDE_DIRECTORIES(BEFORE /home/hannah/Desktop/collapses_filtration/gudhi_integration/sophia_integration/src/Tower_to_filtration/include)
+#INCLUDE_DIRECTORIES(BEFORE /home/hannah/Desktop/collapses_filtration/gudhi_integration/sophia_integration/src/Tower_to_filtration/include)
 
 add_executable(Tower_to_filtration_example_elementary_input_streamed_output example_elementary_input_streamed_output.cpp)
 add_test(NAME Tower_to_filtration_example_elementary_input_streamed_output
