@@ -255,7 +255,7 @@
   <tr>
     <td width="25%">
       <b>Author:</b> Hannah Schreiber<br>
-      <b>Introduced in:</b> GUDHI 2.x.x<br>
+      <b>Introduced in:</b> GUDHI 2.3.0<br>
       <b>Copyright:</b> GPL v3<br>
     </td>
     <td width="75%">

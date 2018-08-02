@@ -95,7 +95,7 @@ namespace tower_to_filtration {
  *
  * @ref Tower_converter uses one template @ref ComplexStructure as complex type.
  * For now only Gudhi::tower_to_filtration::Hash_complex (hash_complex.h) and Gudhi::tower_to_filtration::Simplex_tree (simplex_tree.h)
- * satisfy the concept. <span style="color:red;">(To be rectified --> making Gudhi::Simplex_tree and (?) Hasse_complex compatible.)</span>
+ * satisfy the concept. <span style="color:red;">(To be rectified --> making Gudhi::Simplex_tree and (?) Hasse_diagram compatible.)</span>
  *
  * @ref Persistence additionnaly uses a template @ref ColumnType
  * for the columns of its internally stored boundary matrix.
