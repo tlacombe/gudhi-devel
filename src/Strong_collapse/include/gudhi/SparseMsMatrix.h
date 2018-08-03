@@ -513,7 +513,7 @@ public:
 	{
 		init();
 
-		auto begin = std::chrono::high_resolution_clock::now();
+		// auto begin = std::chrono::high_resolution_clock::now();
 	  	maximal_simplices = st.max_simplices();
 
 	    //Extracting the unique vertices using unordered set.
@@ -531,11 +531,11 @@ public:
 		for(auto &simplex: maximal_simplices) 						// Adding each maximal simplices iteratively.
 			insert_maximal_simplex_and_subfaces(simplex);
 
-        auto end = std::chrono::high_resolution_clock::now();
-		std::cout << "Sparse Matrix Created  " << std::endl;
-		std::cout << "Formation time : " <<  std::chrono::duration<double, std::milli>(end- begin).count()
-	              << " ms\n" << std::endl;
-		std::cout << "Total number of Initial maximal simplices are: " << cols << std::endl;		
+        // auto end = std::chrono::high_resolution_clock::now();
+		// std::cout << "Sparse Matrix Created  " << std::endl;
+		// std::cout << "Formation time : " <<  std::chrono::duration<double, std::milli>(end- begin).count()
+	              // << " ms\n" << std::endl;
+		// std::cout << "Total number of Initial maximal simplices are: " << cols << std::endl;		
 		
 		sparseMxSimplices.makeCompressed(); 	             //Optional for memory saving
 	  	sparseRowMxSimplices.makeCompressed(); 
@@ -564,7 +564,7 @@ public:
 			auto end_collapse  = std::chrono::high_resolution_clock::now();
 		
 			auto collapseTime = std::chrono::duration<double, std::milli>(end_collapse- begin_collapse).count();
-			std::cout << "Time of Collapse : " << collapseTime << " ms\n" << std::endl;
+			// std::cout << "Time of Collapse : " << collapseTime << " ms\n" << std::endl;
 			
 			// Now we complete the Reduction Map
 			fully_compact();

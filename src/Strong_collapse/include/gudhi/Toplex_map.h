@@ -145,8 +145,8 @@ void Toplex_map::remove_simplex(const Input_vertex_range &vertex_range){
             //Copy constructor needed because the set is modified
             if(included(vertex_range, *sptr)){
                 erase_maximal(sptr);
-                for(const Toplex_map::Simplex& f : facets(vertex_range))
-                    if(!membership(f)) insert_independent_simplex(f);
+                for(const Toplex_map::Simplex& f : facets(*sptr))
+                    if(!included(vertex_range,f) && !membership(f)) insert_independent_simplex(f);
                 // We add the facets which are new maximal simplices
             }
     }
