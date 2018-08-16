@@ -59,9 +59,9 @@ int main(int argc, char *argv[])
 	    operationType type = read_operation<Hash_complex>(&line, &vertices, &timestamp); // read_operation() function in gudhi/tc_reading_utilities.h, see documentation for file format.
 	    if (timestamp != -1) defaultTimestamp = timestamp;
 
-	    if (type == INCLUSION){
+	    if (type == INCLUSION){							    // see enumeration in gudhi/tc_reading_utilities.h
 		if (tc.add_insertion(&vertices, defaultTimestamp)) defaultTimestamp++;	    // add insertion.
-	    } else if (type == CONTRACTION) {
+	    } else if (type == CONTRACTION) {						    // see enumeration in gudhi/tc_reading_utilities.h
 		tc.add_contraction(vertices.at(0), vertices.at(1), defaultTimestamp);	    // add contraction.
 		defaultTimestamp++;
 	    }
