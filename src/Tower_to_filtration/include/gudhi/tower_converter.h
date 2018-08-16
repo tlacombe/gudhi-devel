@@ -51,14 +51,6 @@ public:
     using simplex_base = std::vector<vertex>;
 
     /**
-     * @brief Enumeration of the types of operations.
-     */
-    enum operationType : int {
-        INCLUSION,      /**< Elementary inclusion. */
-        CONTRACTION,    /**< Elementary contraction. */
-        COMMENT         /**< Comment or similar to be ignored (e.g. useful when reading a file). */
-    };
-    /**
      * @brief Enumeration for the streaming format.
      */
     enum streamingType : int {

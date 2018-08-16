@@ -127,7 +127,7 @@ namespace tower_to_filtration {
  * Essential cycles (i.e. paired with infinity) are not printed.
  * <span style="color:red;">(Add "finalize function" to enable the printing of those paires?)</span>
  *
- * <span style="color:red;">(Other output kind of interest?)</span>
+ * <span style="color:red;">(Other output kind of interest: callback to get tuple (dim,birth,death).)</span>
  *
  * - Input format
  *

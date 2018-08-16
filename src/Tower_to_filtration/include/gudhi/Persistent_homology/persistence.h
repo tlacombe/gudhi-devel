@@ -117,6 +117,7 @@ template<class ComplexStructure, class ColumnType>
  */
 Persistence<ComplexStructure, ColumnType>::~Persistence()
 {
+    finalize_reduction();
     delete converter_;
     delete matrix_;
 }

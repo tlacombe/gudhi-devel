@@ -56,12 +56,12 @@ int main(int argc, char *argv[])
 	double timestamp = -1;
 	double defaultTimestamp = 0;
 	while (getline(file, line, '\n')){
-	    Tower_converter<Hash_complex>::operationType type = read_operation<Hash_complex>(&line, &vertices, &timestamp); // read_operation() function in gudhi/tc_reading_utilities.h, see documentation for file format.
+	    operationType type = read_operation<Hash_complex>(&line, &vertices, &timestamp); // read_operation() function in gudhi/tc_reading_utilities.h, see documentation for file format.
 	    if (timestamp != -1) defaultTimestamp = timestamp;
 
-	    if (type == Tower_converter<Hash_complex>::INCLUSION){
+	    if (type == INCLUSION){
 		if (tc.add_insertion(&vertices, defaultTimestamp)) defaultTimestamp++;	    // add insertion.
-	    } else if (type == Tower_converter<Hash_complex>::CONTRACTION) {
+	    } else if (type == CONTRACTION) {
 		tc.add_contraction(vertices.at(0), vertices.at(1), defaultTimestamp);	    // add contraction.
 		defaultTimestamp++;
 	    }

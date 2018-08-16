@@ -41,24 +41,24 @@ public:
     ComplexStructure();
 
     /**
-     * @brief Insert a simplex in the complex.
+     * @brief Insert a simplex in the complex, whose facets were already inserted in the complex.
      * @param numVertices simplex to be inserted, described as the vector of its vertex identifiers in increasing order.
      * @return true if the simplex was not already inserted in the complex, false otherwise.
      */
     bool insert_simplex(std::vector<double> *numVertices);
     /**
      * @brief Remove a simplex and all its cofaces from the complex.
-     * @param simplex simplex to be removed, described as the vector of its vertex identifiers in increasing order.
+     * @param vertex simplex to be removed. This modules only needs to call the function on vertices.
      * @return true if removal was successful, false otherwise.
      */
-    bool remove_simplex(std::vector<double> *simplex);
+    bool remove_simplex(std::vector<double> *vertex);
     /**
      * @brief Remove a simplex and all its cofaces from the complex.
-     * @param simplex simplex to be removed, described as the vector of its vertex identifiers in increasing order.
+     * @param simplex simplex to be removed. This modules only needs to call the function on vertices.
      * @param removedIndices pointer to an (empty) vector of doubles ; if this parameter is given, the identifiers of all the removed simplices are stored in the vector.
      * @return true if removal was successful, false otherwise.
      */
-    bool remove_simplex(std::vector<double> *simplex, std::vector<double> *removedIndices);
+    bool remove_simplex(std::vector<double> *vertex, std::vector<double> *removedIndices);
     /**
      * @brief Compute the smallest closed star of the vertices v and u and returns the corresponding vertex.
      *
