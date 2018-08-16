@@ -93,7 +93,7 @@ private:
  * @brief Constructor
  * @param dim dimension to be stored as the column dimension.
  */
-List_column::List_column(int dim) : dim_(dim)
+inline List_column::List_column(int dim) : dim_(dim)
 {
     column_ = new std::list<double>();
 }
@@ -101,7 +101,7 @@ List_column::List_column(int dim) : dim_(dim)
 /**
  * @brief Destructor
  */
-List_column::~List_column()
+inline List_column::~List_column()
 {
     delete column_;
 }
@@ -110,7 +110,7 @@ List_column::~List_column()
  * @brief Replaces the column values by the sum of this column and @p columnToAdd.
  * @param columnToAdd column to sum with.
  */
-void List_column::add(List_column *columnToAdd)
+inline void List_column::add(List_column *columnToAdd)
 {
     std::list<double>::iterator itToAdd = columnToAdd->get_begin_iterator(), itTarget = column_->begin();
     while (itToAdd != columnToAdd->get_end_iterator() && itTarget != column_->end()){
@@ -145,7 +145,7 @@ inline double List_column::get_pivot(){
  * @param isActivePositive private member of @ref Gudhi::tower_to_filtration::Persistence<ComplexStructure,ColumnType>::Boundary_matrix.
  * @param columns private member of @ref Gudhi::tower_to_filtration::Persistence<ComplexStructure,ColumnType>::Boundary_matrix.
  */
-void List_column::clean(std::unordered_map<double, double> *latest, std::unordered_map<double, std::pair<bool, bool>*> *isActivePositive,
+inline void List_column::clean(std::unordered_map<double, double> *latest, std::unordered_map<double, std::pair<bool, bool>*> *isActivePositive,
                         std::unordered_map<double, List_column*> *columns)
 {
     std::list<double>::reverse_iterator it;
@@ -168,7 +168,7 @@ void List_column::clean(std::unordered_map<double, double> *latest, std::unorder
  * @brief Insert a cell at the end of the column.
  * @param cell value of the cell to be inserted.
  */
-void List_column::push_back(double cell)
+inline void List_column::push_back(double cell)
 {
     column_->push_back(cell);
 }

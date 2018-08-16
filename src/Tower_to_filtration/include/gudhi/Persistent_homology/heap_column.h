@@ -74,7 +74,7 @@ private:
  * @brief Constructor
  * @param dim dimension to be stored as the column dimension.
  */
-Heap_column::Heap_column(int dim) : dim_(dim), insertsSinceLastPrune_(0)
+inline Heap_column::Heap_column(int dim) : dim_(dim), insertsSinceLastPrune_(0)
 {
     column_ = new std::vector<double>();
     std::make_heap(this->column_->begin(), this->column_->end());
@@ -84,7 +84,7 @@ Heap_column::Heap_column(int dim) : dim_(dim), insertsSinceLastPrune_(0)
 /**
  * @brief Destructor
  */
-Heap_column::~Heap_column()
+inline Heap_column::~Heap_column()
 {
     delete column_;
     delete temp_column_;
@@ -98,7 +98,7 @@ Heap_column::~Heap_column()
  *
  * @param columnToAdd column to sum with.
  */
-void Heap_column::add(Heap_column *columnToAdd)
+inline void Heap_column::add(Heap_column *columnToAdd)
 {
     double size = columnToAdd->get_size();
     for (double i = 0; i < size; i++) {
@@ -149,7 +149,7 @@ inline double Heap_column::at(double index)
  * @brief Returns the pivot of the column, i.e. the index of the last nonzero value.
  * @return The pivot of the column.
  */
-double Heap_column::get_pivot()
+inline double Heap_column::get_pivot()
 {
     double pivot = pop_pivot();
     if (pivot != -1){
@@ -166,7 +166,7 @@ double Heap_column::get_pivot()
  *
  * @return The pivot of the column.
  */
-double Heap_column::pop_pivot()
+inline double Heap_column::pop_pivot()
 {
     if (column_->empty()) {
         return -1;
@@ -205,7 +205,7 @@ inline double Heap_column::get_size()
  * @param isActivePositive private member of @ref Gudhi::tower_to_filtration::Persistence<ComplexStructure,ColumnType>::Boundary_matrix.
  * @param columns private member of @ref Gudhi::tower_to_filtration::Persistence<ComplexStructure,ColumnType>::Boundary_matrix.
  */
-void Heap_column::clean(std::unordered_map<double, double> *latest, std::unordered_map<double, std::pair<bool, bool> *> *isActivePositive,
+inline void Heap_column::clean(std::unordered_map<double, double> *latest, std::unordered_map<double, std::pair<bool, bool> *> *isActivePositive,
                         std::unordered_map<double, Heap_column*> *columns)
 {
     std::vector<double> *tmp = new std::vector<double>();
@@ -229,7 +229,7 @@ void Heap_column::clean(std::unordered_map<double, double> *latest, std::unorder
 /**
  * @brief Prunes the heap representation of the column, i.e. removes duplications which appears when adding two columns.
  */
-void Heap_column::prune()
+inline void Heap_column::prune()
 {
     if (insertsSinceLastPrune_ == 0) return;
 
