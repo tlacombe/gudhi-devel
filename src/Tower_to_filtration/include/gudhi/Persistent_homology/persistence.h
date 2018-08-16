@@ -126,7 +126,7 @@ template<class ComplexStructure, class ColumnType>
  * @brief Add an elementary insertion as the next tower operation.
  * @param simplex simplex to be inserted, represented as a vector of its vertex identifiers in increasing order.
  * @param timestamp time value or filtration value which will be associated to the operation in the filtration. Has to be equal or higher to the precedent ones.
- * @return true if the insertion is successful, false otherwise.
+ * @return true if the simplex was not already inserted in the complex, false otherwise.
  */
 bool Persistence<ComplexStructure, ColumnType>::add_insertion(std::vector<double> *simplex, double timestamp)
 {

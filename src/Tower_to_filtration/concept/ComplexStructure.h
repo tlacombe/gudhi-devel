@@ -43,7 +43,7 @@ public:
     /**
      * @brief Insert a simplex in the complex.
      * @param numVertices simplex to be inserted, described as the vector of its vertex identifiers in increasing order.
-     * @return true if insertion was successful, false otherwise.
+     * @return true if the simplex was not already inserted in the complex, false otherwise.
      */
     bool insert_simplex(std::vector<double> *numVertices);
     /**

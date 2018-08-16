@@ -160,7 +160,7 @@ template<class ComplexStructure>
  * @brief Add an elementary insertion as the next tower operation and convert it into the output stream.
  * @param simplex simplex to be inserted, represented as a vector of its vertex identifiers in increasing order.
  * @param timestamp time value or filtration value which will be associated to the operation in the filtration. Has to be equal or higher to the precedent ones.
- * @return true if the insertion is successful, false otherwise.
+ * @return true if the simplex was not already inserted in the complex, false otherwise.
  */
 inline bool Tower_converter<ComplexStructure>::add_insertion(std::vector<double> *simplex, double timestamp)
 {
@@ -174,7 +174,7 @@ template<class ComplexStructure>
  * @param timestamp time value or filtration value which will be associated to the operation in the filtration. Has to be equal or higher to the precedent ones.
  * @param simplexBoundary pointer to an (empty) vector, where the identifiers of the boundary of the inserted simplex will be stored.
  * @param simplexInsertionNumber pointer to an identifier, which will be replaced by the one of the inserted simplex.
- * @return true if the insertion is successful, false otherwise.
+ * @return true if the simplex was not already inserted in the complex, false otherwise.
  */
 bool Tower_converter<ComplexStructure>::add_insertion(std::vector<double> *simplex, double timestamp, std::vector<index> *simplexBoundary, index *simplexInsertionNumber)
 {
