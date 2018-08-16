@@ -36,6 +36,7 @@ namespace tower_to_filtration {
 
 /**
  * @brief Column type which is based on `std::list<double>`. Fulfills the requirements of the @ref Gudhi::tower_to_filtration::ColumnType concept.
+ * Its coefficient are in @f$\mathbb{Z}_2@f$ only. Therefore the values of the list are the indices of non-zero cells in increasing order.
  */
 class List_column
 {

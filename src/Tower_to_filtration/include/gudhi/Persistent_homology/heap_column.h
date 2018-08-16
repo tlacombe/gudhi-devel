@@ -38,6 +38,7 @@ namespace tower_to_filtration {
 
 /**
  * @brief Column type which is based on `std::vector<double>` and `std::make_heap`. Fulfills the requirements of the @ref Gudhi::tower_to_filtration::ColumnType concept.
+ * Its coefficient are in @f$\mathbb{Z}_2@f$ only. Therefore the values of the vector are the indices of non-zero cells in increasing order.
  */
 class Heap_column
 {
@@ -112,7 +113,7 @@ inline void Heap_column::add(Heap_column *columnToAdd)
 
 /**
  * @brief Replaces the content of the column with the content of @p newColumn.
- * @param newColumn new column content.
+ * @param newColumn new column content. Its values represent the index of non-zero cells in increasing order (@f$\mathbb{Z}_2@f$ coefficients).
  */
 inline void Heap_column::set(std::vector<double> *newColumn)
 {

@@ -33,6 +33,7 @@ namespace tower_to_filtration {
 /**
  * @brief Data structure for the columns of the boundary matrix used by @ref Gudhi::tower_to_filtration::Persistence<ComplexStructure,ColumnType>.
  * This concept describes the methodes required by the module.
+ * The considered cofficients are in @f$\mathbb{Z}_2@f$ only. Therefore the values of the columns are the indices of non-zero cells in increasing order.
  */
 class ColumnType{
 public:
@@ -44,7 +45,7 @@ public:
 
     /**
      * @brief Insert a cell at the end of the column.
-     * @param cell value of the cell to be inserted.
+     * @param cell row index of the cell to be inserted.
      */
     void push_back(double cell);
     /**
