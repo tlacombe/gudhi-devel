@@ -46,13 +46,13 @@ int main(int argc, char *argv[])
     }
 
     std::stringstream ss;
-    Tower_converter<Hash_complex> tc(&ss);	    // by default: output with vertices of simplices, for faces use 'Tower_converter::FACES' as second argument.
+	Tower_converter<Hash_complex> tc(&ss);	    // by default: output with vertices of simplices, for faces use 'Tower_converter::FACES' as second argument.
 						    // see documentation for stream output format.
     std::vector<double> vertices;
 
     vertices.push_back(0);
 	tc.add_insertion(vertices, 0);		    // add vertex 0 at time 0
-    do_something_with_next_filtration_steps(&ss);   // use output stream
+	do_something_with_next_filtration_steps(&ss);   // use output stream
 
     vertices.at(0) = 1;
 	tc.add_insertion(vertices, 1);		    // add vertex 1 at time 1
@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
     do_something_with_next_filtration_steps(&ss);   // use output stream
 
     tc.add_contraction(8, 1, 18);		    // add contraction of 8 and 1 at time 18, 8 is not valid from now on.
-    do_something_with_next_filtration_steps(&ss);   // use output stream
+	do_something_with_next_filtration_steps(&ss);   // use output stream
 
     // ...
 }
