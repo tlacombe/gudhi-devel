@@ -92,7 +92,7 @@ template<class ComplexStructure>
  *
  * Initializes the members. The output option is set as "no output".
  */
-Tower_converter<ComplexStructure>::Tower_converter() : outputStream_(NULL), outputFile_(NULL), streamingType_(VERTICES), filtrationSize_(0), towerWidth_(0)
+Tower_converter<ComplexStructure>::Tower_converter() : outputStream_(nullptr), outputFile_(nullptr), streamingType_(VERTICES), filtrationSize_(0), towerWidth_(0)
 {
     vertices_ = new std::unordered_map<double, vertex>();
     complex_ = new ComplexStructure();
@@ -107,7 +107,7 @@ template<class ComplexStructure>
  * @param outputStream Pointer to a std::stringstream.
  * @param type Output format. By default it is #VERTICES. See Enumeration #streamingType.
  */
-Tower_converter<ComplexStructure>::Tower_converter(std::stringstream *outputStream, streamingType type) : outputStream_(outputStream), outputFile_(NULL), streamingType_(type), filtrationSize_(0), towerWidth_(0)
+Tower_converter<ComplexStructure>::Tower_converter(std::stringstream *outputStream, streamingType type) : outputStream_(outputStream), outputFile_(nullptr), streamingType_(type), filtrationSize_(0), towerWidth_(0)
 {
     vertices_ = new std::unordered_map<double, vertex>();
     complex_ = new ComplexStructure();
@@ -122,7 +122,7 @@ template<class ComplexStructure>
  * @param outputFileName File name for the output.
  * @param type Output format. By default it is #VERTICES. See Enumeration #streamingType.
  */
-Tower_converter<ComplexStructure>::Tower_converter(std::string outputFileName, streamingType type) : outputStream_(NULL), streamingType_(type), filtrationSize_(0), towerWidth_(0)
+Tower_converter<ComplexStructure>::Tower_converter(std::string outputFileName, streamingType type) : outputStream_(nullptr), streamingType_(type), filtrationSize_(0), towerWidth_(0)
 {
     outputFile_ = new std::ofstream(outputFileName);
     if (!outputFile_->is_open()){
@@ -139,7 +139,7 @@ template<class ComplexStructure>
  */
 Tower_converter<ComplexStructure>::~Tower_converter()
 {
-    if (outputFile_ != NULL){
+    if (outputFile_ != nullptr){
         outputFile_->close();
         delete outputFile_;
     }
@@ -156,7 +156,7 @@ template<class ComplexStructure>
  */
 inline bool Tower_converter<ComplexStructure>::add_insertion(std::vector<double> &simplex, double timestamp)
 {
-    return add_insertion(simplex, timestamp, NULL, NULL);
+    return add_insertion(simplex, timestamp, nullptr, nullptr);
 }
 
 template<class ComplexStructure>
@@ -185,7 +185,7 @@ bool Tower_converter<ComplexStructure>::add_insertion(std::vector<double> &simpl
     if (complex_->insert_simplex(transSimplex)) {
 	stream_simplex(transSimplex, timestamp);
         if (complex_->get_size() > towerWidth_) towerWidth_ = complex_->get_size();
-	if (simplexBoundary != NULL) *simplexInsertionNumber = complex_->get_boundary(transSimplex, simplexBoundary);
+	if (simplexBoundary != nullptr) *simplexInsertionNumber = complex_->get_boundary(transSimplex, simplexBoundary);
         return true;
     }
     return false;
@@ -201,7 +201,7 @@ template<class ComplexStructure>
  */
 inline typename Tower_converter<ComplexStructure>::index Tower_converter<ComplexStructure>::add_contraction(double v, double u, double timestamp)
 {
-    return add_contraction(v, u, timestamp, NULL, NULL);
+    return add_contraction(v, u, timestamp, nullptr, nullptr);
 }
 
 template<class ComplexStructure>
@@ -234,7 +234,7 @@ typename Tower_converter<ComplexStructure>::index Tower_converter<ComplexStructu
     for (auto it = closedStar.begin(); it != closedStar.end(); it++){
 	if (complex_->insert_simplex(**it)) {
 	    stream_simplex(**it, timestamp);
-            if (addedBoundaries != NULL){
+	    if (addedBoundaries != nullptr){
                 std::vector<index> *boundary = new std::vector<index>();
                 if (first == -1) first = complex_->get_max_index();
 		complex_->get_boundary(**it, boundary);
@@ -322,8 +322,8 @@ void Tower_converter<ComplexStructure>::stream_simplex(simplex_base &simplex, do
     filtrationSize_++;
 
     std::ostream *stream;
-    if (outputStream_ == NULL && outputFile_ == NULL) return;
-    else if (outputStream_ != NULL) stream = outputStream_;
+    if (outputStream_ == nullptr && outputFile_ == nullptr) return;
+    else if (outputStream_ != nullptr) stream = outputStream_;
     else stream = outputFile_;
 
     simplex_base::size_type size = simplex.size();

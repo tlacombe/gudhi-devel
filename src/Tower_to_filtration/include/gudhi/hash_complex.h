@@ -171,7 +171,7 @@ inline bool Hash_complex::insert_simplex(simplex_base &numVertices)
     Simplex *splx = new Simplex(maxIndex_ + 1, vs);
 
     if (simplices_->emplace(p, splx).second == false) {
-        p->first = NULL;
+	p->first = nullptr;
         delete splx;
         delete p;
         return false;
@@ -194,7 +194,7 @@ inline bool Hash_complex::insert_simplex(simplex_base &numVertices)
 
 inline bool Hash_complex::remove_simplex(simplex_base &simplex)
 {
-    return remove_simplex(simplex, NULL);
+    return remove_simplex(simplex, nullptr);
 }
 
 inline bool Hash_complex::remove_simplex(simplex_base &simplex, std::vector<index> *removedIndices)
@@ -215,7 +215,7 @@ inline bool Hash_complex::remove_simplex(simplex_base &simplex, std::vector<inde
     while (!cofacets->empty()) remove_simplex(*(cofacets->begin()->second->get_vertices()), removedIndices);
 
     std::pair<simplex_base*,int> *tmp = simplices_->find(&p)->first;
-    if (removedIndices != NULL) removedIndices->push_back(splx->get_insertion_num());
+    if (removedIndices != nullptr) removedIndices->push_back(splx->get_insertion_num());
     simplices_->erase(&p);
     delete tmp;
     delete splx;
