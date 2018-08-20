@@ -57,7 +57,7 @@ public:
      * @brief Sum this column and another column. The result replaces this column.
      * @param columnToAdd column to add up.
      */
-    void add(ColumnType *columnToAdd);
+    void add(ColumnType &columnToAdd);
     /**
      * @brief Erase useless cells from the column. See @cite KerberS17 for more details.
      * @param latest private member of @ref Gudhi::tower_to_filtration::Persistence::Boundary_matrix.
