@@ -102,7 +102,7 @@ operationType read_operation(std::string *line, std::vector<double> *vertices, d
 
 template<class ComplexStructure>
 /**
- * @brief Reads @p file containing a tower and feed it to @tc to construct the corresponding filtration.
+ * @brief Reads @p file containing a tower and feed it to @p tc to construct the corresponding filtration.
  * @param file file to be read. For the right file format, see @ref sophiafileformat.
  * @param tc instance of @ref Gudhi::tower_to_filtration::Tower_converter<ComplexStructure>.
  * @return @p file.

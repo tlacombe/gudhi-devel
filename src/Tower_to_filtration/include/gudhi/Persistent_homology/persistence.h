@@ -24,8 +24,8 @@
 #define PERSISTENCE_H
 
 /** @file persistence.h
- * @brief Contains @ref Gudhi::tower_to_filtration::Persistence<ComplexStructure,ColumnType>
- * and @ref Gudhi::tower_to_filtration::Persistence<ComplexStructure,ColumnType>::Boundary_matrix classes.
+ * @brief Contains @ref Gudhi::tower_to_filtration::Persistence
+ * and @ref Gudhi::tower_to_filtration::Persistence::Boundary_matrix classes.
  */
 
 #include <vector>

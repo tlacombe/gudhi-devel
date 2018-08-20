@@ -24,7 +24,7 @@
 #define TOWER_CONVERTER_H
 
 /** @file tower_converter.h
- * @brief Contains @ref Gudhi::tower_to_filtration::Tower_converter<ComplexStructure> class.
+ * @brief Contains @ref Gudhi::tower_to_filtration::Tower_converter class.
  */
 
 #include <string>

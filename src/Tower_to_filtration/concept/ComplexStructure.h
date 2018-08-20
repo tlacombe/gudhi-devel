@@ -54,7 +54,7 @@ public:
     bool remove_simplex(std::vector<double> *vertex);
     /**
      * @brief Remove a simplex and all its cofaces from the complex.
-     * @param simplex simplex to be removed. This modules only needs to call the function on vertices.
+     * @param vertex simplex to be removed. This modules only needs to call the function on vertices.
      * @param removedIndices pointer to an (empty) vector of doubles ; if this parameter is given, the identifiers of all the removed simplices are stored in the vector.
      * @return true if removal was successful, false otherwise.
      */

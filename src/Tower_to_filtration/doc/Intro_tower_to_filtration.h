@@ -102,7 +102,7 @@ namespace tower_to_filtration {
  * @ref Heap_column and @ref List_column satisfy the concept.
  * The first one is based on a heap representation of the column, the second one on a list representation.
  *
- * @subsection formats Input file and output formats
+ * @subsection sophiafileformat Input file and output formats
  *
  * - Output format
  *
@@ -169,7 +169,7 @@ namespace tower_to_filtration {
  * @endcode
  * Simple example of how to use the module when reading the tower from a file
  * and writing the resulting filtration in a file.
- * See @ref formats.
+ * See @ref sophiafileformat.
  *
  * - @link Tower_to_filtration/example_tower_from_file_streamed_output.cpp example_tower_from_file_streamed_output.cpp @endlink
  *
@@ -178,7 +178,7 @@ namespace tower_to_filtration {
  * @endcode
  * Simple example of how to use the module when reading the tower from a file and
  * writing the resulting filtration in an output stream.
- * See @ref formats.
+ * See @ref sophiafileformat.
  * The output stream should be processed/emptied regularly to avoid memory consummption.
  *
  * - @link Tower_to_filtration/example_elementary_input_streamed_output.cpp example_elementary_input_streamed_output.cpp @endlink
@@ -188,7 +188,7 @@ namespace tower_to_filtration {
  * @endcode
  * Simple example of how to add tower operations to the module and
  * writing the resulting filtration in an output stream.
- * See @ref formats for stream output format.
+ * See @ref sophiafileformat for stream output format.
  * The output stream should be processed/emptied regularly to avoid memory consummption.
  *
  * - @link Tower_to_filtration/example_elementary_input_write_filtration_into_file.cpp example_elementary_input_write_filtration_into_file.cpp @endlink
@@ -198,7 +198,7 @@ namespace tower_to_filtration {
  * @endcode
  * Simple example of how to add tower operations to the module
  * and writing the resulting filtration in a file.
- * See @ref formats for output format.
+ * See @ref sophiafileformat for output format.
  *
  * - <span style="color:red;">TODO</span>: examples for persistence
  *

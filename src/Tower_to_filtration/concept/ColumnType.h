@@ -31,7 +31,7 @@ namespace Gudhi {
 namespace tower_to_filtration {
 
 /**
- * @brief Data structure for the columns of the boundary matrix used by @ref Gudhi::tower_to_filtration::Persistence<ComplexStructure,ColumnType>.
+ * @brief Data structure for the columns of the boundary matrix used by @ref Persistence.
  * This concept describes the methodes required by the module.
  * The considered cofficients are in @f$\mathbb{Z}_2@f$ only. Therefore the values of the columns are the indices of non-zero cells in increasing order.
  */
@@ -60,9 +60,9 @@ public:
     void add(ColumnType *columnToAdd);
     /**
      * @brief Erase useless cells from the column. See @cite KerberS17 for more details.
-     * @param latest private member of @ref Gudhi::tower_to_filtration::Persistence<ComplexStructure,ColumnType>::Boundary_matrix.
-     * @param isActivePositive private member of @ref Gudhi::tower_to_filtration::Persistence<ComplexStructure,ColumnType>::Boundary_matrix.
-     * @param columns private member of @ref Gudhi::tower_to_filtration::Persistence<ComplexStructure,ColumnType>::Boundary_matrix.
+     * @param latest private member of @ref Gudhi::tower_to_filtration::Persistence::Boundary_matrix.
+     * @param isActivePositive private member of @ref Gudhi::tower_to_filtration::Persistence::Boundary_matrix.
+     * @param columns private member of @ref Gudhi::tower_to_filtration::Persistence::Boundary_matrix.
      */
     void clean(std::unordered_map<double, double> *latest, std::unordered_map<double, std::pair<bool, bool> *> *isActivePositive,
                std::unordered_map<double, List_column *> *columns);

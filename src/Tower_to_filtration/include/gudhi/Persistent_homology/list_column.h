@@ -142,9 +142,9 @@ inline double List_column::get_pivot(){
 
 /**
  * @brief Erase useless cells from the column. See @cite KerberS17 for more details.
- * @param latest private member of @ref Gudhi::tower_to_filtration::Persistence<ComplexStructure,ColumnType>::Boundary_matrix.
- * @param isActivePositive private member of @ref Gudhi::tower_to_filtration::Persistence<ComplexStructure,ColumnType>::Boundary_matrix.
- * @param columns private member of @ref Gudhi::tower_to_filtration::Persistence<ComplexStructure,ColumnType>::Boundary_matrix.
+ * @param latest private member of @ref Gudhi::tower_to_filtration::Persistence::Boundary_matrix.
+ * @param isActivePositive private member of @ref Gudhi::tower_to_filtration::Persistence::Boundary_matrix.
+ * @param columns private member of @ref Gudhi::tower_to_filtration::Persistence::Boundary_matrix.
  */
 inline void List_column::clean(std::unordered_map<double, double> *latest, std::unordered_map<double, std::pair<bool, bool>*> *isActivePositive,
                         std::unordered_map<double, List_column*> *columns)
