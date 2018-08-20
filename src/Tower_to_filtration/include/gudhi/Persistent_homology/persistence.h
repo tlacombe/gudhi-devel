@@ -60,11 +60,11 @@ public:
 	Boundary_matrix(std::string persistencePairsFileName);
 	~Boundary_matrix();
 
-	void insert_column(double insertionNumber, std::vector<double> *boundary, double timestamp);
+	void insert_column(double insertionNumber, std::vector<double> &boundary, double timestamp);
 	void insert_vertex(double insertionNumber, double timestamp);
 	void reduce(double start);
 	void clear_out();
-	void mark_inactive(std::vector<double> *insertionNumbers);
+	void mark_inactive(std::vector<double> &insertionNumbers);
 	void mark_inactive(double insertionNumber);
 
 	double get_last_insert_number() const;
@@ -83,7 +83,7 @@ public:
 	void print_persistence_pair(int dim, double birth, double death);
     };
 
-    bool add_insertion(std::vector<double> *simplex, double timestamp);
+    bool add_insertion(std::vector<double> &simplex, double timestamp);
     void add_contraction(double v, double u, double timestamp);
     void finalize_reduction();
 
@@ -129,13 +129,13 @@ template<class ComplexStructure, class ColumnType>
  * @param timestamp time value or filtration value which will be associated to the operation in the filtration. Has to be equal or higher to the precedent ones.
  * @return true if the simplex was not already inserted in the complex, false otherwise.
  */
-bool Persistence<ComplexStructure, ColumnType>::add_insertion(std::vector<double> *simplex, double timestamp)
+bool Persistence<ComplexStructure, ColumnType>::add_insertion(std::vector<double> &simplex, double timestamp)
 {
     std::vector<double> boundary;
     double insertionNum;
 
     if (!converter_->add_insertion(simplex, timestamp, &boundary, &insertionNum)) return false;
-    if (simplex->size() == 1) {
+    if (simplex.size() == 1) {
         matrix_->insert_vertex(insertionNum, timestamp);
         return true;
     }
@@ -250,19 +250,19 @@ template<class ComplexStructure, class ColumnType>
  * @param boundary column to be inserted ; has to represent a new nonzero boundary.
  * @param timestamp filtration value of the corresponding simplex.
  */
-void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::insert_column(double insertionNumber, std::vector<double> *boundary, double timestamp)
+void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::insert_column(double insertionNumber, std::vector<double> &boundary, double timestamp)
 {
-    ColumnType *col = new ColumnType(boundary->size() - 1);
+    ColumnType *col = new ColumnType(boundary.size() - 1);
     isActivePositive_->emplace(insertionNumber, new std::pair<bool, bool>(true, true));
 
-    for (int i = 0; i < (int)boundary->size(); i++){
-        col->push_back(boundary->at(i));
+    for (int i = 0; i < (int)boundary.size(); i++){
+	col->push_back(boundary.at(i));
     }
 
     columns_->emplace(insertionNumber, col);
 
     lastInsertNumber_ = insertionNumber;
-    if (maxDim_ < (int)boundary->size() - 1) maxDim_ = boundary->size() - 1;
+    if (maxDim_ < (int)boundary.size() - 1) maxDim_ = boundary.size() - 1;
     timestamps_->emplace(insertionNumber, timestamp);
 }
 
@@ -362,10 +362,10 @@ template<class ComplexStructure, class ColumnType>
  * @brief Marks columns as inactive.
  * @param insertionNumbers numbers of the columns to be marked.
  */
-inline void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::mark_inactive(std::vector<double> *insertionNumbers)
+inline void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::mark_inactive(std::vector<double> &insertionNumbers)
 {
-    for (std::vector<double>::size_type i = 0; i < insertionNumbers->size(); i++){
-        isActivePositive_->at(insertionNumbers->at(i))->first = false;
+    for (std::vector<double>::size_type i = 0; i < insertionNumbers.size(); i++){
+	isActivePositive_->at(insertionNumbers.at(i))->first = false;
     }
 }
 

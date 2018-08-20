@@ -63,8 +63,8 @@ public:
     Tower_converter(std::string outputFileName, streamingType type = VERTICES);
     ~Tower_converter();
 
-    bool add_insertion(std::vector<double> *simplex, double timestamp);
-    bool add_insertion(std::vector<double> *simplex, double timestamp, std::vector<index> *simplexBoundary, index *simplexInsertionNumber);
+    bool add_insertion(std::vector<double> &simplex, double timestamp);
+    bool add_insertion(std::vector<double> &simplex, double timestamp, std::vector<index> *simplexBoundary, index *simplexInsertionNumber);
     index add_contraction(double v, double u, double timestamp);
     index add_contraction(double v, double u, double timestamp, std::vector<std::vector<index>*> *addedBoundaries, std::vector<index> *removedIndices);
 
@@ -83,7 +83,7 @@ private:
     double towerWidth_;                             /**< Current tower width. */
 
     void get_union(vertex v, std::vector<simplex_base*> *simplices);
-    void stream_simplex(simplex_base *simplex, double timestamp);
+    void stream_simplex(simplex_base &simplex, double timestamp);
 };
 
 template<class ComplexStructure>
@@ -154,7 +154,7 @@ template<class ComplexStructure>
  * @param timestamp time value or filtration value which will be associated to the operation in the filtration. Has to be equal or higher to the precedent ones.
  * @return true if the simplex was not already inserted in the complex, false otherwise.
  */
-inline bool Tower_converter<ComplexStructure>::add_insertion(std::vector<double> *simplex, double timestamp)
+inline bool Tower_converter<ComplexStructure>::add_insertion(std::vector<double> &simplex, double timestamp)
 {
     return add_insertion(simplex, timestamp, NULL, NULL);
 }
@@ -168,24 +168,24 @@ template<class ComplexStructure>
  * @param simplexInsertionNumber pointer to an identifier, which will be replaced by the one of the inserted simplex.
  * @return true if the simplex was not already inserted in the complex, false otherwise.
  */
-bool Tower_converter<ComplexStructure>::add_insertion(std::vector<double> *simplex, double timestamp, std::vector<index> *simplexBoundary, index *simplexInsertionNumber)
+bool Tower_converter<ComplexStructure>::add_insertion(std::vector<double> &simplex, double timestamp, std::vector<index> *simplexBoundary, index *simplexInsertionNumber)
 {
     simplex_base transSimplex;
 
-    if (simplex->size() == 1){
-        vertices_->emplace(simplex->at(0), simplex->at(0));
-        transSimplex.push_back(simplex->at(0));
+    if (simplex.size() == 1){
+	vertices_->emplace(simplex.at(0), simplex.at(0));
+	transSimplex.push_back(simplex.at(0));
     } else {
-        for (simplex_base::size_type i = 0; i < simplex->size(); i++){
-            transSimplex.push_back(vertices_->at(simplex->at(i)));
+	for (simplex_base::size_type i = 0; i < simplex.size(); i++){
+	    transSimplex.push_back(vertices_->at(simplex.at(i)));
         }
         std::sort(transSimplex.begin(), transSimplex.end());
     }
 
-    if (complex_->insert_simplex(&transSimplex)) {
-        stream_simplex(&transSimplex, timestamp);
+    if (complex_->insert_simplex(transSimplex)) {
+	stream_simplex(transSimplex, timestamp);
         if (complex_->get_size() > towerWidth_) towerWidth_ = complex_->get_size();
-        if (simplexBoundary != NULL) *simplexInsertionNumber = complex_->get_boundary(&transSimplex, simplexBoundary);
+	if (simplexBoundary != NULL) *simplexInsertionNumber = complex_->get_boundary(transSimplex, simplexBoundary);
         return true;
     }
     return false;
@@ -232,18 +232,18 @@ typename Tower_converter<ComplexStructure>::index Tower_converter<ComplexStructu
     }
 
     for (auto it = closedStar.begin(); it != closedStar.end(); it++){
-        if (complex_->insert_simplex(*it)) {
-            stream_simplex(*it, timestamp);
+	if (complex_->insert_simplex(**it)) {
+	    stream_simplex(**it, timestamp);
             if (addedBoundaries != NULL){
                 std::vector<index> *boundary = new std::vector<index>();
                 if (first == -1) first = complex_->get_max_index();
-                complex_->get_boundary(*it, boundary);
+		complex_->get_boundary(**it, boundary);
                 addedBoundaries->push_back(boundary);
             }
         }
         delete *it;
     }
-    complex_->remove_simplex(&vdis, removedIndices);
+    complex_->remove_simplex(vdis, removedIndices);
 
     if (complex_->get_size() > towerWidth_) towerWidth_ = complex_->get_size();
 
@@ -317,7 +317,7 @@ template<class ComplexStructure>
  * @param simplex simplex to be inserted.
  * @param timestamp filtration value of the insertion.
  */
-void Tower_converter<ComplexStructure>::stream_simplex(simplex_base *simplex, double timestamp)
+void Tower_converter<ComplexStructure>::stream_simplex(simplex_base &simplex, double timestamp)
 {
     filtrationSize_++;
 
@@ -326,13 +326,13 @@ void Tower_converter<ComplexStructure>::stream_simplex(simplex_base *simplex, do
     else if (outputStream_ != NULL) stream = outputStream_;
     else stream = outputFile_;
 
-    simplex_base::size_type size = simplex->size();
+    simplex_base::size_type size = simplex.size();
     *stream << std::setprecision(std::numeric_limits<double>::digits10 + 1) << (size - 1) << " ";
     //std::cout << std::setprecision(std::numeric_limits<double>::digits10 + 1) << (size - 1) << " ";
     if (streamingType_ == FACES){
         if (size > 1){
             std::vector<index> boundary;
-            complex_->get_boundary(simplex, &boundary);
+	    complex_->get_boundary(simplex, &boundary);
             for (std::vector<index>::size_type i = 0; i < size; i++){
                 *stream << boundary.at(i) << " ";
                 //std::cout << boundary.at(i) << " ";
@@ -340,7 +340,7 @@ void Tower_converter<ComplexStructure>::stream_simplex(simplex_base *simplex, do
         }
     } else {
         for (simplex_base::size_type i = 0; i < size; i++){
-            *stream << simplex->at(i) << " ";
+	    *stream << simplex.at(i) << " ";
             //std::cout << simplex->at(i) << " ";
         }
     }

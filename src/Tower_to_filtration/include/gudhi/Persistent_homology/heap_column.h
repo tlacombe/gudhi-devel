@@ -47,8 +47,8 @@ public:
     ~Heap_column();
 
 public:
-    void add(Heap_column *columnToAdd);
-    void set(std::vector<double> *newColumn);
+    void add(Heap_column &columnToAdd);
+    void set(std::vector<double> &newColumn);
     double get_pivot();
     double pop_pivot();
     double get_size();
@@ -99,11 +99,11 @@ inline Heap_column::~Heap_column()
  *
  * @param columnToAdd column to sum with.
  */
-inline void Heap_column::add(Heap_column *columnToAdd)
+inline void Heap_column::add(Heap_column &columnToAdd)
 {
-    double size = columnToAdd->get_size();
+    double size = columnToAdd.get_size();
     for (double i = 0; i < size; i++) {
-        column_->push_back(columnToAdd->at(i));
+	column_->push_back(columnToAdd.at(i));
         std::push_heap(column_->begin(), column_->end());
     }
     insertsSinceLastPrune_ += size;
@@ -115,10 +115,10 @@ inline void Heap_column::add(Heap_column *columnToAdd)
  * @brief Replaces the content of the column with the content of @p newColumn.
  * @param newColumn new column content. Its values represent the index of non-zero cells in increasing order (@f$\mathbb{Z}_2@f$ coefficients).
  */
-inline void Heap_column::set(std::vector<double> *newColumn)
+inline void Heap_column::set(std::vector<double> &newColumn)
 {
     column_->clear();
-    column_->insert(column_->end(), newColumn->begin(), newColumn->end());
+    column_->insert(column_->end(), newColumn.begin(), newColumn.end());
     std::make_heap(column_->begin(), column_->end());
 }
 
@@ -209,7 +209,7 @@ inline double Heap_column::get_size()
 inline void Heap_column::clean(std::unordered_map<double, double> *latest, std::unordered_map<double, std::pair<bool, bool> *> *isActivePositive,
                         std::unordered_map<double, Heap_column*> *columns)
 {
-    std::vector<double> *tmp = new std::vector<double>();
+    std::vector<double> *tmp = temp_column_;
     tmp->push_back(pop_pivot());
     double max = pop_pivot();
     while (max != -1){
@@ -222,9 +222,10 @@ inline void Heap_column::clean(std::unordered_map<double, double> *latest, std::
         max = pop_pivot();
     }
     std::reverse(tmp->begin(), tmp->end());
-    delete column_;
+    temp_column_ = column_;
     column_ = tmp;
     std::make_heap(column_->begin(), column_->end());
+    temp_column_->clear();
 }
 
 /**
@@ -235,7 +236,6 @@ inline void Heap_column::prune()
     if (insertsSinceLastPrune_ == 0) return;
 
     std::vector<double> *tempCol = temp_column_;
-    tempCol->clear();
     double pivot = pop_pivot();
     while (pivot != -1) {
         tempCol->push_back(pivot);
@@ -243,6 +243,7 @@ inline void Heap_column::prune()
     }
     temp_column_ = column_;
     column_ = tempCol;
+    temp_column_->clear();
     std::reverse(column_->begin(), column_->end());
     std::make_heap(column_->begin(), column_->end());
 

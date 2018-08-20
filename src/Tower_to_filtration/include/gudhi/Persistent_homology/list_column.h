@@ -44,12 +44,12 @@ public:
     List_column(int dim);
     ~List_column();
 
-    void add(List_column *columnToAdd);
+    void add(List_column &columnToAdd);
     /**
      * @brief Erase a cell from the column.
      * @param pos position of the cell to be deleted.
      */
-    void erase(std::list<double>::iterator *pos){ column_->erase(*pos); }
+    void erase(std::list<double>::iterator &pos){ column_->erase(pos); }
     /**
      * @brief Return an iterator of the column pointing at the begining.
      * @return An iterator of the column pointing at the begining.
@@ -111,10 +111,10 @@ inline List_column::~List_column()
  * @brief Replaces the column values by the sum of this column and @p columnToAdd.
  * @param columnToAdd column to sum with.
  */
-inline void List_column::add(List_column *columnToAdd)
+inline void List_column::add(List_column &columnToAdd)
 {
-    std::list<double>::iterator itToAdd = columnToAdd->get_begin_iterator(), itTarget = column_->begin();
-    while (itToAdd != columnToAdd->get_end_iterator() && itTarget != column_->end()){
+    std::list<double>::iterator itToAdd = columnToAdd.get_begin_iterator(), itTarget = column_->begin();
+    while (itToAdd != columnToAdd.get_end_iterator() && itTarget != column_->end()){
         if (*itToAdd == *itTarget){
             column_->erase(itTarget++);
             itToAdd++;
@@ -125,7 +125,7 @@ inline void List_column::add(List_column *columnToAdd)
             itTarget++;
         }
     }
-    while (itToAdd != columnToAdd->get_end_iterator()){
+    while (itToAdd != columnToAdd.get_end_iterator()){
         column_->push_back(*itToAdd);
         itToAdd++;
     }
