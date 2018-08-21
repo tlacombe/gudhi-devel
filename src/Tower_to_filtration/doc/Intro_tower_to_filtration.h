@@ -4,7 +4,7 @@
  *
  *    Author(s):       Hannah Schreiber
  *
- *    Copyright (C) 2018  INRIA Sophia Antipolis-Méditerranée (France)
+ *    Copyright (C) 2018  TU Graz (Austria)
  *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -179,7 +179,7 @@ namespace tower_to_filtration {
  * Simple example of how to use the module when reading the tower from a file and
  * writing the resulting filtration in an output stream.
  * See @ref sophiafileformat.
- * The output stream should be processed/emptied regularly to avoid memory consummption.
+ * The output stream should be processed/emptied regularly to avoid memory consumption.
  *
  * - @link Tower_to_filtration/example_elementary_input_streamed_output.cpp example_elementary_input_streamed_output.cpp @endlink
  *
@@ -189,7 +189,7 @@ namespace tower_to_filtration {
  * Simple example of how to add tower operations to the module and
  * writing the resulting filtration in an output stream.
  * See @ref sophiafileformat for stream output format.
- * The output stream should be processed/emptied regularly to avoid memory consummption.
+ * The output stream should be processed/emptied regularly to avoid memory consumption.
  *
  * - @link Tower_to_filtration/example_elementary_input_write_filtration_into_file.cpp example_elementary_input_write_filtration_into_file.cpp @endlink
  *
