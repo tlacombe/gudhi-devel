@@ -35,6 +35,8 @@ void print_usage(){
     std::cout << "  ./example_elementary_input_write_filtration_into_file output_file_name\n";
 }
 
+using vertex = Hash_complex::vertex;
+
 int main(int argc, char *argv[])
 {
     if (argc != 2){
@@ -44,7 +46,7 @@ int main(int argc, char *argv[])
 
 	Tower_converter<Hash_complex> tc(argv[1]);	// by default: output with vertices of simplices, for faces use 'Tower_converter::FACES' as second argument.
 						// see documentation for output file format.
-    std::vector<double> vertices;
+	std::vector<vertex> vertices;
 
     vertices.push_back(0);
 	tc.add_insertion(vertices, 0);		// add vertex 0 at time 0

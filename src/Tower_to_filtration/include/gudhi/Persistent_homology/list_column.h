@@ -35,12 +35,14 @@ namespace Gudhi {
 namespace tower_to_filtration {
 
 /**
- * @brief Column type which is based on `std::list<double>`. Fulfills the requirements of the @ref Gudhi::tower_to_filtration::ColumnType concept.
+ * @brief Column type which is based on `std::list<coefficient_type>`. Fulfills the requirements of the @ref Gudhi::tower_to_filtration::ColumnType concept.
  * Its coefficient are in @f$\mathbb{Z}_2@f$ only. Therefore the values of the list are the indices of non-zero cells in increasing order.
  */
 class List_column
 {
 public:
+    using coefficient_type = long long;	/**< Type for cell content. Should correspond to @ref Gudhi::tower_to_filtration::Persistence::index, if used for @ref Gudhi::tower_to_filtration::Persistence. */
+
     List_column(int dim);
     ~List_column();
 
@@ -49,45 +51,45 @@ public:
      * @brief Erase a cell from the column.
      * @param pos position of the cell to be deleted.
      */
-    void erase(std::list<double>::iterator &pos){ column_->erase(pos); }
+    void erase(std::list<coefficient_type>::iterator &pos){ column_->erase(pos); }
     /**
      * @brief Return an iterator of the column pointing at the begining.
      * @return An iterator of the column pointing at the begining.
      */
-    std::list<double>::iterator get_begin_iterator(){ return column_->begin(); }
+    std::list<coefficient_type>::iterator get_begin_iterator(){ return column_->begin(); }
     /**
      * @brief Return an reverse iterator of the column pointing at the end.
      * @return An reverse iterator of the column pointing at the end.
      */
-    std::list<double>::reverse_iterator get_reverse_begin_iterator(){ return column_->rbegin(); }
+    std::list<coefficient_type>::reverse_iterator get_reverse_begin_iterator(){ return column_->rbegin(); }
     /**
      * @brief Return an iterator of the column pointing after the end.
      * @return An iterator of the column pointing after the end.
      */
-    std::list<double>::iterator get_end_iterator(){ return column_->end(); }
+    std::list<coefficient_type>::iterator get_end_iterator(){ return column_->end(); }
     /**
      * @brief Return an reverse iterator of the column pointing before the begining.
      * @return An reverse iterator of the column pointing before the begining.
      */
-    std::list<double>::reverse_iterator get_reverse_end_iterator(){ return column_->rend(); }
+    std::list<coefficient_type>::reverse_iterator get_reverse_end_iterator(){ return column_->rend(); }
     /**
      * @brief Returns the number of nonzero values in the column.
      * @return The number of nonzero values in the column.
      */
-    double get_size(){ return column_->size(); }
+    std::list<coefficient_type>::size_type get_size(){ return column_->size(); }
     /**
      * @brief Returns the stored dimension.
      * @return The dimension.
      */
     int get_dim() const{ return dim_; }
-    double get_pivot();
-    void clean(std::unordered_map<double, double> *latest, std::unordered_map<double, std::pair<bool, bool> *> *isActivePositive,
-               std::unordered_map<double, List_column *> *columns);
-    void push_back(double cell);
+    coefficient_type get_pivot();
+    void clean(std::unordered_map<coefficient_type, coefficient_type> *latest, std::unordered_map<coefficient_type, std::pair<bool, bool> *> *isActivePositive,
+	       std::unordered_map<coefficient_type, List_column *> *columns);
+    void push_back(coefficient_type cell);
 
 private:
     int dim_;                   /**< Dimension of the column. */
-    std::list<double> *column_; /**< Data container of the column. */
+    std::list<coefficient_type> *column_; /**< Data container of the column. */
 };
 
 /**
@@ -96,7 +98,7 @@ private:
  */
 inline List_column::List_column(int dim) : dim_(dim)
 {
-    column_ = new std::list<double>();
+    column_ = new std::list<coefficient_type>();
 }
 
 /**
@@ -113,7 +115,7 @@ inline List_column::~List_column()
  */
 inline void List_column::add(List_column &columnToAdd)
 {
-    std::list<double>::iterator itToAdd = columnToAdd.get_begin_iterator(), itTarget = column_->begin();
+    std::list<coefficient_type>::iterator itToAdd = columnToAdd.get_begin_iterator(), itTarget = column_->begin();
     while (itToAdd != columnToAdd.get_end_iterator() && itTarget != column_->end()){
         if (*itToAdd == *itTarget){
             column_->erase(itTarget++);
@@ -135,7 +137,7 @@ inline void List_column::add(List_column &columnToAdd)
  * @brief Returns the pivot of the column, i.e. the index of the last nonzero value.
  * @return The pivot of the column.
  */
-inline double List_column::get_pivot(){
+inline List_column::coefficient_type List_column::get_pivot(){
     if (column_->empty()) return -1;
     return column_->back();
 }
@@ -146,11 +148,11 @@ inline double List_column::get_pivot(){
  * @param isActivePositive private member of @ref Gudhi::tower_to_filtration::Persistence::Boundary_matrix.
  * @param columns private member of @ref Gudhi::tower_to_filtration::Persistence::Boundary_matrix.
  */
-inline void List_column::clean(std::unordered_map<double, double> *latest, std::unordered_map<double, std::pair<bool, bool>*> *isActivePositive,
-                        std::unordered_map<double, List_column*> *columns)
+inline void List_column::clean(std::unordered_map<coefficient_type, coefficient_type> *latest, std::unordered_map<coefficient_type, std::pair<bool, bool> *> *isActivePositive,
+			std::unordered_map<coefficient_type, List_column *> *columns)
 {
-    std::list<double>::reverse_iterator it;
-    std::list<double>::iterator it2;
+    std::list<coefficient_type>::reverse_iterator it;
+    std::list<coefficient_type>::iterator it2;
     it = column_->rbegin();
     it++;
     while (it != column_->rend()){
@@ -169,7 +171,7 @@ inline void List_column::clean(std::unordered_map<double, double> *latest, std::
  * @brief Insert a cell at the end of the column.
  * @param cell value of the cell to be inserted.
  */
-inline void List_column::push_back(double cell)
+inline void List_column::push_back(coefficient_type cell)
 {
     column_->push_back(cell);
 }

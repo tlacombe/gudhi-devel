@@ -46,9 +46,10 @@ template<class ComplexStructure>
 class Tower_converter
 {
 public:
-    using vertex = double;
-    using index = double;
-    using simplex_base = std::vector<vertex>;
+    using vertex = typename ComplexStructure::vertex;	    /**< Type for vertex identifiers. */
+    using index = typename ComplexStructure::index;	    /**< Type for simplex identifiers. */
+    using size_type = typename ComplexStructure::size_type; /**< Type for size mesure. */
+    using simplex_base = typename std::vector<vertex>;	    /**< Type for simplices. */
 
     /**
      * @brief Enumeration for the streaming format.
@@ -63,24 +64,24 @@ public:
     Tower_converter(std::string outputFileName, streamingType type = VERTICES);
     ~Tower_converter();
 
-    bool add_insertion(std::vector<double> &simplex, double timestamp);
-    bool add_insertion(std::vector<double> &simplex, double timestamp, std::vector<index> *simplexBoundary, index *simplexInsertionNumber);
-    index add_contraction(double v, double u, double timestamp);
-    index add_contraction(double v, double u, double timestamp, std::vector<std::vector<index>*> *addedBoundaries, std::vector<index> *removedIndices);
+    bool add_insertion(simplex_base &simplex, double timestamp);
+    bool add_insertion(simplex_base &simplex, double timestamp, std::vector<index> *simplexBoundary, index *simplexInsertionNumber);
+    index add_contraction(vertex v, vertex u, double timestamp);
+    index add_contraction(vertex v, vertex u, double timestamp, std::vector<std::vector<index>*> *addedBoundaries, std::vector<index> *removedIndices);
 
     ComplexStructure *get_complex() const;
-    double get_filtration_size() const;
-    double get_tower_width() const;
+    size_type get_filtration_size() const;
+    size_type get_tower_width() const;
     void print_filtration_data();
 
 private:
     ComplexStructure *complex_;                     /**< Current complex. */
-    std::unordered_map<double, vertex> *vertices_;  /**< Current vertices in the complex. Keeps the coherence between vertex identifiers outside and inside the class. */
+    std::unordered_map<vertex, vertex> *vertices_;  /**< Current vertices in the complex. Keeps the coherence between vertex identifiers outside and inside the class. */
     std::stringstream *outputStream_;               /**< Output stream. */
     std::ofstream *outputFile_;                     /**< Output file. */
     streamingType streamingType_;                   /**< Output format. See Enumeration `streamingType`. */
-    double filtrationSize_;                         /**< Current filtration size. */
-    double towerWidth_;                             /**< Current tower width. */
+    size_type filtrationSize_;                      /**< Current filtration size. */
+    size_type towerWidth_;                          /**< Current tower width. */
 
     void get_union(vertex v, std::vector<simplex_base*> *simplices);
     void stream_simplex(simplex_base &simplex, double timestamp);
@@ -94,7 +95,7 @@ template<class ComplexStructure>
  */
 Tower_converter<ComplexStructure>::Tower_converter() : outputStream_(nullptr), outputFile_(nullptr), streamingType_(VERTICES), filtrationSize_(0), towerWidth_(0)
 {
-    vertices_ = new std::unordered_map<double, vertex>();
+    vertices_ = new std::unordered_map<vertex, vertex>();
     complex_ = new ComplexStructure();
 }
 
@@ -109,7 +110,7 @@ template<class ComplexStructure>
  */
 Tower_converter<ComplexStructure>::Tower_converter(std::stringstream *outputStream, streamingType type) : outputStream_(outputStream), outputFile_(nullptr), streamingType_(type), filtrationSize_(0), towerWidth_(0)
 {
-    vertices_ = new std::unordered_map<double, vertex>();
+    vertices_ = new std::unordered_map<vertex, vertex>();
     complex_ = new ComplexStructure();
 }
 
@@ -129,7 +130,7 @@ Tower_converter<ComplexStructure>::Tower_converter(std::string outputFileName, s
         std::cout << "Output File could not be open.\n";
 	return;
     }
-    vertices_ = new std::unordered_map<double, vertex>();
+    vertices_ = new std::unordered_map<vertex, vertex>();
     complex_ = new ComplexStructure();
 }
 
@@ -154,7 +155,7 @@ template<class ComplexStructure>
  * @param timestamp time value or filtration value which will be associated to the operation in the filtration. Has to be equal or higher to the precedent ones.
  * @return true if the simplex was not already inserted in the complex, false otherwise.
  */
-inline bool Tower_converter<ComplexStructure>::add_insertion(std::vector<double> &simplex, double timestamp)
+inline bool Tower_converter<ComplexStructure>::add_insertion(simplex_base &simplex, double timestamp)
 {
     return add_insertion(simplex, timestamp, nullptr, nullptr);
 }
@@ -168,7 +169,7 @@ template<class ComplexStructure>
  * @param simplexInsertionNumber pointer to an identifier, which will be replaced by the one of the inserted simplex.
  * @return true if the simplex was not already inserted in the complex, false otherwise.
  */
-bool Tower_converter<ComplexStructure>::add_insertion(std::vector<double> &simplex, double timestamp, std::vector<index> *simplexBoundary, index *simplexInsertionNumber)
+bool Tower_converter<ComplexStructure>::add_insertion(simplex_base &simplex, double timestamp, std::vector<index> *simplexBoundary, index *simplexInsertionNumber)
 {
     simplex_base transSimplex;
 
@@ -176,7 +177,7 @@ bool Tower_converter<ComplexStructure>::add_insertion(std::vector<double> &simpl
 	vertices_->emplace(simplex.at(0), simplex.at(0));
 	transSimplex.push_back(simplex.at(0));
     } else {
-	for (simplex_base::size_type i = 0; i < simplex.size(); i++){
+	for (typename simplex_base::size_type i = 0; i < simplex.size(); i++){
 	    transSimplex.push_back(vertices_->at(simplex.at(i)));
         }
         std::sort(transSimplex.begin(), transSimplex.end());
@@ -201,7 +202,7 @@ template<class ComplexStructure>
  *	Therefore be careful with the order of @p v and @p u to keep coherence with futur contractions.
  * @return The identifier of the first new simplex in the equivalent insertion ; the remaining new simplices will take the identifiers which follows continuously.
  */
-inline typename Tower_converter<ComplexStructure>::index Tower_converter<ComplexStructure>::add_contraction(double v, double u, double timestamp)
+inline typename Tower_converter<ComplexStructure>::index Tower_converter<ComplexStructure>::add_contraction(vertex v, vertex u, double timestamp)
 {
     return add_contraction(v, u, timestamp, nullptr, nullptr);
 }
@@ -218,8 +219,8 @@ template<class ComplexStructure>
  *	Therefore be careful with the order of @p v and @p u to keep coherence with futur contractions.
  * @return The identifier of the first new simplex in the equivalent insertion ; the remaining new simplices will take the identifiers which follows continuously.
  */
-typename Tower_converter<ComplexStructure>::index Tower_converter<ComplexStructure>::add_contraction(double v, double u, double timestamp,
-                                                                          std::vector<std::vector<index>*> *addedBoundaries, std::vector<index> *removedIndices)
+typename Tower_converter<ComplexStructure>::index Tower_converter<ComplexStructure>::add_contraction(vertex v, vertex u, double timestamp,
+									  std::vector<std::vector<index>*> *addedBoundaries, std::vector<index> *removedIndices)
 {
     std::vector<simplex_base*> closedStar;
     vertex tv = vertices_->at(v), tu = vertices_->at(u);
@@ -259,7 +260,7 @@ template<class ComplexStructure>
  * @brief Returns the current size of the filtration.
  * @return The current size of the filtration.
  */
-inline double Tower_converter<ComplexStructure>::get_filtration_size() const
+inline typename Tower_converter<ComplexStructure>::size_type Tower_converter<ComplexStructure>::get_filtration_size() const
 {
     return filtrationSize_;
 }
@@ -269,7 +270,7 @@ template<class ComplexStructure>
  * @brief Returns the maximal size of the complex until now.
  * @return The maximal size of the complex until now.
  */
-inline double Tower_converter<ComplexStructure>::get_tower_width() const
+inline typename Tower_converter<ComplexStructure>::size_type Tower_converter<ComplexStructure>::get_tower_width() const
 {
     return towerWidth_;
 }
@@ -330,20 +331,20 @@ void Tower_converter<ComplexStructure>::stream_simplex(simplex_base &simplex, do
     else if (outputStream_ != nullptr) stream = outputStream_;
     else stream = outputFile_;
 
-    simplex_base::size_type size = simplex.size();
+    typename simplex_base::size_type size = simplex.size();
     *stream << std::setprecision(std::numeric_limits<double>::digits10 + 1) << (size - 1) << " ";
     //std::cout << std::setprecision(std::numeric_limits<double>::digits10 + 1) << (size - 1) << " ";
     if (streamingType_ == FACES){
         if (size > 1){
             std::vector<index> boundary;
 	    complex_->get_boundary(simplex, &boundary);
-            for (std::vector<index>::size_type i = 0; i < size; i++){
+	    for (typename std::vector<index>::size_type i = 0; i < size; i++){
                 *stream << boundary.at(i) << " ";
                 //std::cout << boundary.at(i) << " ";
             }
         }
     } else {
-        for (simplex_base::size_type i = 0; i < size; i++){
+	for (typename simplex_base::size_type i = 0; i < size; i++){
 	    *stream << simplex.at(i) << " ";
             //std::cout << simplex->at(i) << " ";
         }

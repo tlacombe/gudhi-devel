@@ -35,8 +35,10 @@ void print_usage(){
     std::cout << "  ./example_tower_from_file_streamed_output input_file_name\n";
 }
 
-bool get_next_filtration_step(std::stringstream *ss, int *dim, int *filtrationValue, std::vector<double> *vertices);	/**< Reads the filtration output stream. */
-void do_something_with_next_filtration_steps(std::stringstream *ss);							/**< Example of how to use the output stream. */
+using vertex = Hash_complex::vertex;
+
+bool get_next_filtration_step(std::stringstream *ss, int *dim, int *filtrationValue, std::vector<vertex> *vertices);	/**< Reads the filtration output stream. */
+void do_something_with_next_filtration_steps(std::stringstream *ss);													/**< Example of how to use the output stream. */
 
 int main(int argc, char *argv[])
 {
@@ -48,11 +50,11 @@ int main(int argc, char *argv[])
     std::ifstream file(argv[1]);
     std::stringstream ss;
     Tower_converter<Hash_complex> tc(&ss);  // by default: output with vertices of simplices, for faces use 'Tower_converter::FACES' as second argument.
-					    // see documentation for stream output format.
+											// see documentation for stream output format.
     std::string line;
 
     if (file.is_open()){
-	std::vector<double> vertices;
+	std::vector<vertex> vertices;
 	double timestamp = -1;
 	double defaultTimestamp = 0;
 	while (getline(file, line, '\n')){
@@ -82,7 +84,7 @@ int main(int argc, char *argv[])
 void do_something_with_next_filtration_steps(std::stringstream *ss){
     int dim;
     int filtrationValue;
-    std::vector<double> vertices;
+	std::vector<vertex> vertices;
 
     while (get_next_filtration_step(ss, &dim, &filtrationValue, &vertices)){	// reads the next filtration operation from output stream
 	// do something with result:
@@ -103,7 +105,7 @@ void do_something_with_next_filtration_steps(std::stringstream *ss){
     ss->clear();     //to enable rewriting in ss.
 }
 
-bool get_next_filtration_step(std::stringstream *ss, int *dim, int *filtrationValue, std::vector<double> *vertices){
+bool get_next_filtration_step(std::stringstream *ss, int *dim, int *filtrationValue, std::vector<vertex> *vertices){
     std::string line;
     if (getline(*ss, line, '\n')){
 	std::stringstream nss(line);

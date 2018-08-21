@@ -35,6 +35,10 @@ namespace tower_to_filtration {
  */
 class ComplexStructure{
 public:
+    typename vertex;	    /**< Type for vertex identifiers. */
+    typename index;	    /**< Type for simplex identifiers. */
+    typename size_type;	    /**< Type for size mesure. */
+
     /**
      * @brief Constructor with no parameters
      */
@@ -45,20 +49,20 @@ public:
      * @param numVertices simplex to be inserted, described as the vector of its vertex identifiers in increasing order.
      * @return true if the simplex was not already inserted in the complex, false otherwise.
      */
-    bool insert_simplex(std::vector<double> &numVertices);
+    bool insert_simplex(std::vector<vertex> &numVertices);
     /**
      * @brief Remove a simplex and all its cofaces from the complex.
      * @param vertex simplex to be removed. This modules only needs to call the function on vertices.
      * @return true if removal was successful, false otherwise.
      */
-    bool remove_simplex(std::vector<double> &vertex);
+    bool remove_simplex(std::vector<vertex> &vertex);
     /**
      * @brief Remove a simplex and all its cofaces from the complex.
      * @param vertex simplex to be removed. This modules only needs to call the function on vertices.
-     * @param removedIndices pointer to an (empty) vector of doubles ; if this parameter is given, the identifiers of all the removed simplices are stored in the vector.
+     * @param removedIndices pointer to an (empty) vector of simplex identifiers ; if this parameter is given, the identifiers of all the removed simplices are stored in the vector.
      * @return true if removal was successful, false otherwise.
      */
-    bool remove_simplex(std::vector<double> &vertex, std::vector<double> *removedIndices);
+    bool remove_simplex(std::vector<vertex> &vertex, std::vector<index> *removedIndices);
     /**
      * @brief Compute the smallest closed star of the vertices v and u and returns the corresponding vertex.
      *
@@ -72,29 +76,29 @@ public:
      * Simplices will be modified and deleted later on and therefore should not be the same than the one stored in the complex.
      * @return The identifier of the vertex which had the smallest closed star.
      */
-    double get_smallest_closed_star(double v, double u, std::vector<std::vector<double>*> *closedStar);
+    vertex get_smallest_closed_star(vertex v, vertex u, std::vector<std::vector<vertex>*> *closedStar);
     /**
      * @brief Computes the boundary of a simplex and returns the identifier of the simplex.
      * @param simplex simplex which boundary will be computed, described as the vector of its vertex identifiers in increasing order.
-     * @param boundary pointer to an (empty) vector of doubles ; the method stores here the simplices in the boundary in increasing order of insertion.
+     * @param boundary pointer to an (empty) vector of simplex identifiers ; the method stores here the simplices in the boundary in increasing order of insertion.
      * @return The identifier of the simplex.
      */
-    double get_boundary(std::vector<double> &simplex, std::vector<double> *boundary);
+    index get_boundary(std::vector<vertex> &simplex, std::vector<index> *boundary);
     /**
      * @brief Returns the current size if the complex.
      * @return Current size of the complex.
      */
-    double get_size() const;
+    size_type get_size() const;
     /**
      * @brief Returns the biggest identifier of a simplex currently in the complex.
      * @return Current biggest identifier of a simplex.
      */
-    double get_max_index() const;
+    index get_max_index() const;
     /**
      * @brief Returns the maximal size the complex had at some point until now.
      * @return The maximal size the complex had at some point until now.
      */
-    double get_max_size() const;
+    size_type get_max_size() const;
     /**
      * @brief Returns the maximal dimension of the simplices currently in the complex.
      * @return Maximal dimension of the simplices currently in the complex.

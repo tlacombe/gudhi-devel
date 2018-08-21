@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(constructor_test, ComplexType, complex_types)
     BOOST_CHECK(stream_tc.get_tower_width() == 0);
 }
 
-bool test_output_stream_first_line(std::stringstream *ss, int *dim, int *filtrationValue, std::vector<double> *vertices){
+bool test_output_stream_first_line(std::stringstream *ss, int *dim, int *filtrationValue, std::vector<Tower_converter::vertex> *vertices){
     std::string line;
     if (getline(*ss, line, '\n')){
 	std::stringstream nss(line);
@@ -85,12 +85,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(insertion_test, ComplexType, complex_types)
     Tower_converter<ComplexType> tc(&ss);
     ComplexType *complex = tc.get_complex();
 
-    std::vector<double> simplex;
-    std::vector<double> simplexBoundary;
-    double simplexInsertionNumber;
+    std::vector<Tower_converter::vertex> simplex;
+    std::vector<Tower_converter::index> simplexBoundary;
+    Tower_converter::index simplexInsertionNumber;
     int dim;
     int filtrationValue;
-    std::vector<double> vertices;
+    std::vector<Tower_converter::vertex> vertices;
 
     simplex.push_back(0);
     BOOST_CHECK(tc.add_insertion(&simplex, 0, &simplexBoundary, &simplexInsertionNumber));
@@ -179,12 +179,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(contraction_test, ComplexType, complex_types)
     Tower_converter<ComplexType> tc(&ss);
     ComplexType *complex = tc.get_complex();
 
-    std::vector<double> simplex;
+    std::vector<Tower_converter::vertex> simplex;
     int dim;
     int filtrationValue;
-    std::vector<double> vertices;
-    std::vector<std::vector<double>*> addedBoundaries;
-    std::vector<double> removedIndices;
+    std::vector<Tower_converter::vertex> vertices;
+    std::vector<std::vector<Tower_converter::index>*> addedBoundaries;
+    std::vector<Tower_converter::index> removedIndices;
 
     simplex.push_back(0);
     tc.add_insertion(&simplex, 0);
@@ -201,7 +201,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(contraction_test, ComplexType, complex_types)
     ss.str(std::string());
     ss.clear();
 
-    double first = tc.add_contraction(1, 2, 5, &addedBoundaries, &removedIndices);
+    Tower_converter::index first = tc.add_contraction(1, 2, 5, &addedBoundaries, &removedIndices);
     BOOST_CHECK(first != -1);
     BOOST_CHECK(addedBoundaries.size() == 2);
     BOOST_CHECK(removedIndices.size() == 4);
@@ -223,7 +223,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(contraction_test, ComplexType, complex_types)
     ss.str(std::string());
     ss.clear();
     simplex.clear();
-    for (std::vector<double>* v : addedBoundaries) delete v;
+    for (std::vector<Tower_converter::index>* v : addedBoundaries) delete v;
     addedBoundaries.clear();
     removedIndices.clear();
     Tower_converter<ComplexType> tc_faces(&ss, Tower_converter<ComplexType>::FACES);

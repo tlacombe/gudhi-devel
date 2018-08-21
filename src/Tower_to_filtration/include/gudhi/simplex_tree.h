@@ -36,8 +36,9 @@ class Simplex_tree
 {
 public:
     class Node;
-    using vertex = double;
-    using index = double;
+    using vertex = long long;
+    using index = long long;
+    using size_type = long long;
     using simplex_base = std::vector<vertex>;
     using label_dictionary = std::unordered_map<vertex, Node*>;
 
@@ -81,13 +82,13 @@ public:
     void remove_simplex(simplex_base &simplex, std::vector<index> *removedIndices);
     vertex get_smallest_closed_star(vertex v, vertex u, std::vector<simplex_base*> *closedStar);   //returns vertex with smallest closed star; closedStar is ordered
     index get_boundary(simplex_base &simplex, std::vector<index> *boundary);    //ordered by increasing insertion numbers
-    double get_size() const;
-    double get_max_index() const;
+    size_type get_size() const;
+    index get_max_index() const;
 
     /* Other */
 
     //index contract_vertices(vertex v, vertex u, double timestamp, std::vector<std::vector<index>*> *boundaries, std::vector<index> *&inactiveInsertionNumbers);
-    double get_max_size() const;
+    size_type get_max_size() const;
     int get_max_dimension() const;
     void get_cofaces(simplex_base &simplex, std::vector<simplex_base*> *cofaces);
     void get_cofacets(simplex_base &simplex, std::vector<simplex_base*> *cofacets);
@@ -95,10 +96,10 @@ public:
 
 private:
     std::vector<label_dictionary*> *dictionaries_; // circular list for each label at each height
-    std::unordered_map<double, vertex> *verticesTranslation_;
-    double numberOfSimplices_;
-    double maxIndex_;
-    double maxSize_;
+    std::unordered_map<vertex, vertex> *verticesTranslation_;
+    size_type numberOfSimplices_;
+    index maxIndex_;
+    size_type maxSize_;
     int maxDim_;
 
     Node* insert_simplex_in_tree(simplex_base &simplex);
@@ -122,7 +123,7 @@ private:
 
 inline Simplex_tree::Simplex_tree() : numberOfSimplices_(0), maxIndex_(-1), maxSize_(0), maxDim_(0)
 {
-    verticesTranslation_ = new std::unordered_map<double, vertex>();
+    verticesTranslation_ = new std::unordered_map<vertex, vertex>();
     dictionaries_ = new std::vector<label_dictionary*>();
 }
 
@@ -230,17 +231,17 @@ inline Simplex_tree::index Simplex_tree::get_boundary(simplex_base &simplex, std
     return simplexNode->get_insertion_index();
 }
 
-inline double Simplex_tree::get_size() const
+inline Simplex_tree::size_type Simplex_tree::get_size() const
 {
     return numberOfSimplices_;
 }
 
-inline double Simplex_tree::get_max_index() const
+inline Simplex_tree::index Simplex_tree::get_max_index() const
 {
     return maxIndex_;
 }
 
-inline double Simplex_tree::get_max_size() const
+inline Simplex_tree::size_type Simplex_tree::get_max_size() const
 {
     return maxSize_;
 }

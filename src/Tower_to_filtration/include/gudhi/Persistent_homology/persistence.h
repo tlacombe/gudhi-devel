@@ -48,7 +48,12 @@ template<class ComplexStructure, class ColumnType>
 class Persistence
 {
 public:
-    Persistence(double reductionInterval, std::string persistencePairsFileName);
+    using vertex = typename ComplexStructure::vertex;	    /**< Type for vertex identifiers. */
+    using index = typename ComplexStructure::index;	    /**< Type for simplex identifiers. */
+    using size_type = typename ComplexStructure::size_type;  /**< Type for size mesure. */
+    using simplex_base = typename std::vector<vertex>;	    /**< Type for simplices. */
+
+    Persistence(size_type reductionInterval, std::string persistencePairsFileName);
     ~Persistence();
 
     /**
@@ -60,31 +65,31 @@ public:
 	Boundary_matrix(std::string persistencePairsFileName);
 	~Boundary_matrix();
 
-	void insert_column(double insertionNumber, std::vector<double> &boundary, double timestamp);
-	void insert_vertex(double insertionNumber, double timestamp);
-	void reduce(double start);
+	void insert_column(index insertionNumber, std::vector<index> &boundary, double timestamp);
+	void insert_vertex(index insertionNumber, double timestamp);
+	void reduce(size_type start);
 	void clear_out();
-	void mark_inactive(std::vector<double> &insertionNumbers);
-	void mark_inactive(double insertionNumber);
+	void mark_inactive(std::vector<index> &insertionNumbers);
+	void mark_inactive(index insertionNumber);
 
-	double get_last_insert_number() const;
+	index get_last_insert_number() const;
 	int get_max_dim() const;
 
     private:
-	std::unordered_map<double, ColumnType*> *columns_;                      /**< Columns of the matrix. The key is the column number. */
-	std::unordered_map<double, double> *latest_;                            /**< Pivot to column map. */
-	std::unordered_map<double, std::pair<bool, bool>*> *isActivePositive_;  /**< Indicates if a column is active (first value) and/or is positive. */
+	std::unordered_map<index, ColumnType*> *columns_;			/**< Columns of the matrix. The key is the column number. */
+	std::unordered_map<index, index> *latest_;				/**< Pivot to column map. */
+	std::unordered_map<index, std::pair<bool, bool>*> *isActivePositive_;	/**< Indicates if a column is active (first value) and/or is positive. */
 	std::unordered_map<double, double> *timestamps_;                        /**< Column number to filtration value map. */
-	double lastInsertNumber_;                                               /**< Identifier of the latest inserted simplex (as column). */
+	index lastInsertNumber_;						/**< Identifier of the latest inserted simplex (as column). */
 	int maxDim_;                                                            /**< Maximal dimension of an inserted simplex. */
 	std::ofstream *persistencePairsFile_;                                   /**< Output stream. */
 
-	void clear_column(double columnIndex);
+	void clear_column(index columnIndex);
 	void print_persistence_pair(int dim, double birth, double death);
     };
 
-    bool add_insertion(std::vector<double> &simplex, double timestamp);
-    void add_contraction(double v, double u, double timestamp);
+    bool add_insertion(simplex_base &simplex, double timestamp);
+    void add_contraction(vertex v, vertex u, double timestamp);
     void finalize_reduction();
 
     void print_filtration_data();
@@ -92,8 +97,8 @@ public:
 private:
     Tower_converter<ComplexStructure> *converter_;  /**< Pointer to @ref Gudhi::tower_to_filtration::Tower_converter<ComplexStructure> */
     Boundary_matrix *matrix_;                       /**< Boundary matrix. */
-    double reductionInterval_;                      /**< Number of steps between each matrix processing. */
-    double lastReduction_;                          /**< Number of steps since the last matrix processing. */
+    size_type reductionInterval_;                   /**< Number of steps between each matrix processing. */
+    size_type lastReduction_;                       /**< Number of steps since the last matrix processing. */
 
     void compute_partial_persistence();
 };
@@ -104,7 +109,7 @@ template<class ComplexStructure, class ColumnType>
  * @param reductionInterval number of steps between each matrix processing. The higher the interval, the faster the computing, but the bigger the space consumption.
  * @param persistencePairsFileName file name for the output.
  */
-Persistence<ComplexStructure, ColumnType>::Persistence(double reductionInterval, std::string persistencePairsFileName) : reductionInterval_(reductionInterval), lastReduction_(-1)
+Persistence<ComplexStructure, ColumnType>::Persistence(size_type reductionInterval, std::string persistencePairsFileName) : reductionInterval_(reductionInterval), lastReduction_(-1)
 {
     converter_ = new Tower_converter<ComplexStructure>();
     matrix_ = new Boundary_matrix(persistencePairsFileName);
@@ -129,10 +134,10 @@ template<class ComplexStructure, class ColumnType>
  * @param timestamp time value or filtration value which will be associated to the operation in the filtration. Has to be equal or higher to the precedent ones.
  * @return true if the simplex was not already inserted in the complex, false otherwise.
  */
-bool Persistence<ComplexStructure, ColumnType>::add_insertion(std::vector<double> &simplex, double timestamp)
+bool Persistence<ComplexStructure, ColumnType>::add_insertion(simplex_base &simplex, double timestamp)
 {
-    std::vector<double> boundary;
-    double insertionNum;
+    std::vector<index> boundary;
+    index insertionNum;
 
     if (!converter_->add_insertion(simplex, timestamp, &boundary, &insertionNum)) return false;
     if (simplex.size() == 1) {
@@ -157,15 +162,15 @@ template<class ComplexStructure, class ColumnType>
  * @exception std::out_of_range If @p v or @p u is not an existing identifier in the current complex ;
  *	Therefore be careful with the order of @p v and @p u to keep coherence with futur contractions.
  */
-void Persistence<ComplexStructure, ColumnType>::add_contraction(double v, double u, double timestamp)
+void Persistence<ComplexStructure, ColumnType>::add_contraction(vertex v, vertex u, double timestamp)
 {
-    std::vector<std::vector<double>*> boundaries;
-    std::vector<double> insertionNumbers;
+    std::vector<std::vector<index>*> boundaries;
+    std::vector<index> insertionNumbers;
     bool reduce = false;
 
-    double first = converter_->add_contraction(v, u, timestamp, &boundaries, &insertionNumbers);
+    index first = converter_->add_contraction(v, u, timestamp, &boundaries, &insertionNumbers);
 
-    for (std::vector<std::vector<double>*>::size_type i = 0; i < boundaries.size(); i++){
+    for (typename std::vector<std::vector<index>*>::size_type i = 0; i < boundaries.size(); i++){
         matrix_->insert_column(first + i, boundaries.at(i), timestamp);
         delete boundaries.at(i);
         if (fmod((first + i), reductionInterval_) == 0) reduce = true;
@@ -214,9 +219,9 @@ template<class ComplexStructure, class ColumnType>
  */
 Persistence<ComplexStructure, ColumnType>::Boundary_matrix::Boundary_matrix(std::string persistencePairsFileName) : lastInsertNumber_(-1), maxDim_(-1)
 {
-    columns_ = new std::unordered_map<double, ColumnType*>();
-    latest_ = new std::unordered_map<double, double>();
-    isActivePositive_ = new std::unordered_map<double, std::pair<bool, bool>*>();
+    columns_ = new std::unordered_map<index, ColumnType*>();
+    latest_ = new std::unordered_map<index, index>();
+    isActivePositive_ = new std::unordered_map<index, std::pair<bool, bool>*>();
     timestamps_ = new std::unordered_map<double, double>();
     persistencePairsFile_ = new std::ofstream(persistencePairsFileName);
     if (!persistencePairsFile_->is_open()){
@@ -252,7 +257,7 @@ template<class ComplexStructure, class ColumnType>
  * @param boundary column to be inserted ; has to represent a new nonzero boundary.
  * @param timestamp filtration value of the corresponding simplex.
  */
-void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::insert_column(double insertionNumber, std::vector<double> &boundary, double timestamp)
+void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::insert_column(index insertionNumber, std::vector<index> &boundary, double timestamp)
 {
     ColumnType *col = new ColumnType(boundary.size() - 1);
     isActivePositive_->emplace(insertionNumber, new std::pair<bool, bool>(true, true));
@@ -274,7 +279,7 @@ template<class ComplexStructure, class ColumnType>
  * @param insertionNumber identifier of the vertex.
  * @param timestamp filtration value of the vertex.
  */
-inline void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::insert_vertex(double insertionNumber, double timestamp)
+inline void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::insert_vertex(index insertionNumber, double timestamp)
 {
     isActivePositive_->emplace(insertionNumber, new std::pair<bool, bool>(true, true));
     timestamps_->emplace(insertionNumber, timestamp);
@@ -285,13 +290,13 @@ template<class ComplexStructure, class ColumnType>
  * @brief Reduces the matrix from column @p start to the last inserted column in order.
  * @param start number of the column to start the reduction from.
  */
-void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::reduce(double start)
+void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::reduce(size_type start)
 {
     for (int d = maxDim_; d > 0; d--){
-        for (double i = start; i <= lastInsertNumber_; i++){
+	for (size_type i = start; i <= lastInsertNumber_; i++){
             if (columns_->find(i) != columns_->end() && columns_->at(i)->get_dim() == d){
                 ColumnType *curr = columns_->at(i);
-                double pivot = curr->get_pivot();
+		index pivot = curr->get_pivot();
 
                 while (pivot != -1 && latest_->find(pivot) != latest_->end()){
                     curr->add(columns_->at(latest_->at(pivot)));
@@ -317,8 +322,8 @@ template<class ComplexStructure, class ColumnType>
  */
 void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::clear_out()
 {
-    double r;
-    double c;
+    index r;
+    index c;
 
     for (auto it = columns_->begin(); it != columns_->end(); it++){
         c = it->first;
@@ -364,9 +369,9 @@ template<class ComplexStructure, class ColumnType>
  * @brief Marks columns as inactive.
  * @param insertionNumbers numbers of the columns to be marked.
  */
-inline void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::mark_inactive(std::vector<double> &insertionNumbers)
+inline void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::mark_inactive(std::vector<index> &insertionNumbers)
 {
-    for (std::vector<double>::size_type i = 0; i < insertionNumbers.size(); i++){
+    for (typename std::vector<index>::size_type i = 0; i < insertionNumbers.size(); i++){
 	isActivePositive_->at(insertionNumbers.at(i))->first = false;
     }
 }
@@ -376,7 +381,7 @@ template<class ComplexStructure, class ColumnType>
  * @brief Marks a single column as inactive.
  * @param insertionNumber number of the column to be marked.
  */
-inline void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::mark_inactive(double insertionNumber)
+inline void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::mark_inactive(index insertionNumber)
 {
     isActivePositive_->at(insertionNumber)->first = false;
 }
@@ -386,7 +391,7 @@ template<class ComplexStructure, class ColumnType>
  * @brief Return the number of the last inserted simplex.
  * @return The number of the last inserted simplex.
  */
-inline double Persistence<ComplexStructure, ColumnType>::Boundary_matrix::get_last_insert_number() const
+inline typename Persistence<ComplexStructure, ColumnType>::index Persistence<ComplexStructure, ColumnType>::Boundary_matrix::get_last_insert_number() const
 {
     return lastInsertNumber_;
 }
@@ -406,7 +411,7 @@ template<class ComplexStructure, class ColumnType>
  * @brief Erases the content of a column and the column itself.
  * @param columnIndex number of the column to be deleted.
  */
-inline void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::clear_column(double columnIndex)
+inline void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::clear_column(index columnIndex)
 {
     if (columns_->find(columnIndex) == columns_->end()) return;
     delete columns_->at(columnIndex);

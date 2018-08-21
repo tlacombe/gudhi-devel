@@ -35,8 +35,10 @@ void print_usage(){
     std::cout << "  ./example_elementary_input_streamed_output\n";
 }
 
-bool get_next_filtration_step(std::stringstream *ss, int *dim, int *filtrationValue, std::vector<double> *vertices);	/**< Reads the filtration output stream. */
-void do_something_with_next_filtration_steps(std::stringstream *ss);							/**< Example of how to use the output stream. */
+using vertex = Hash_complex::vertex;
+
+bool get_next_filtration_step(std::stringstream *ss, int *dim, int *filtrationValue, std::vector<vertex> *vertices);	/**< Reads the filtration output stream. */
+void do_something_with_next_filtration_steps(std::stringstream *ss);													/**< Example of how to use the output stream. */
 
 int main(int argc, char *argv[])
 {
@@ -47,8 +49,8 @@ int main(int argc, char *argv[])
 
     std::stringstream ss;
 	Tower_converter<Hash_complex> tc(&ss);	    // by default: output with vertices of simplices, for faces use 'Tower_converter::FACES' as second argument.
-						    // see documentation for stream output format.
-    std::vector<double> vertices;
+												// see documentation for stream output format.
+	std::vector<vertex> vertices;
 
     vertices.push_back(0);
 	tc.add_insertion(vertices, 0);		    // add vertex 0 at time 0
@@ -134,7 +136,7 @@ int main(int argc, char *argv[])
 void do_something_with_next_filtration_steps(std::stringstream *ss){
     int dim;
     int filtrationValue;
-    std::vector<double> vertices;
+	std::vector<vertex> vertices;
 
     while (get_next_filtration_step(ss, &dim, &filtrationValue, &vertices)){	// reads the next filtration operation from output stream
 	// do something with result:
@@ -155,7 +157,7 @@ void do_something_with_next_filtration_steps(std::stringstream *ss){
     ss->clear();     //to enable rewriting in ss.
 }
 
-bool get_next_filtration_step(std::stringstream *ss, int *dim, int *filtrationValue, std::vector<double> *vertices){
+bool get_next_filtration_step(std::stringstream *ss, int *dim, int *filtrationValue, std::vector<vertex> *vertices){
     std::string line;
     if (getline(*ss, line, '\n')){
 	std::stringstream nss(line);

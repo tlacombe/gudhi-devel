@@ -34,9 +34,10 @@ namespace tower_to_filtration {
 class Hash_complex
 {
 public:
-    using vertex = double;
-    using index = double;
+    using vertex = long long;
+    using index = long long;
     using simplex_base = std::vector<vertex>;
+    using size_type = long long;
 
     Hash_complex();
     ~Hash_complex();
@@ -113,21 +114,21 @@ public:
     vertex get_smallest_closed_star(vertex v, vertex u, std::vector<simplex_base *> *closedStar);   //returns vertex with smallest closed star; closedStar is ordered
                                                                                                     //and simplices in closedStar are independent of the ones in Complex
     index get_boundary(simplex_base &simplex, std::vector<index> *boundary);    //ordered by increasing insertion numbers
-    double get_size() const;
-    double get_max_index() const;
+    size_type get_size() const;
+    index get_max_index() const;
 
     /* Other */
 
     //index contract_vertices(vertex v, vertex u, double timestamp, std::vector<std::vector<index>*> *boundaries, std::vector<index> *&inactiveInsertionNumbers);
-    double get_max_size() const;
+    size_type get_max_size() const;
     int get_max_dimension() const;
     void get_cofaces(simplex_base &simplex, std::vector<simplex_base*> *cofaces);
     void get_cofacets(simplex_base &simplex, std::vector<simplex_base *> *cofacets);
     bool contains(simplex_base &simplex);
 
 private:
-    double maxIndex_;
-    double maxSize_;
+    index maxIndex_;
+    size_type maxSize_;
     int maxDim_;
 	std::unordered_map<
 			std::pair<simplex_base*, int>*,
@@ -179,7 +180,7 @@ inline bool Hash_complex::insert_simplex(simplex_base &numVertices)
 
     maxIndex_++;
     if ((int)vs->size() - 1 > maxDim_) maxDim_ = vs->size() - 1;
-    if (maxSize_ < (double)simplices_->size()) maxSize_ = simplices_->size();
+    if (maxSize_ < (size_type)simplices_->size()) maxSize_ = simplices_->size();
 
     if (vs->size() <= 1) return true;
 
@@ -276,17 +277,17 @@ inline Hash_complex::index Hash_complex::get_boundary(simplex_base &simplex, std
     return simplices_->at(&p)->get_insertion_num();
 }
 
-inline double Hash_complex::get_size() const
+inline Hash_complex::size_type Hash_complex::get_size() const
 {
     return simplices_->size();
 }
 
-inline double Hash_complex::get_max_index() const
+inline Hash_complex::index Hash_complex::get_max_index() const
 {
     return maxIndex_;
 }
 
-inline double Hash_complex::get_max_size() const
+inline Hash_complex::size_type Hash_complex::get_max_size() const
 {
     return maxSize_;
 }

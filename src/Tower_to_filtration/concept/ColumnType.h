@@ -37,6 +37,8 @@ namespace tower_to_filtration {
  */
 class ColumnType{
 public:
+    typename coefficient_type;	/**< Type for cell content. Should correspond to @ref Gudhi::tower_to_filtration::Persistence::index, if used for @ref Gudhi::tower_to_filtration::Persistence. */
+
     /**
      * @brief Constructor
      * @param dim dimension of the simplex whose boundary is represented by this column.
@@ -47,12 +49,12 @@ public:
      * @brief Insert a cell at the end of the column.
      * @param cell row index of the cell to be inserted.
      */
-    void push_back(double cell);
+    void push_back(coefficient_type cell);
     /**
      * @brief Return the pivot of the column, which is the index of the last nonzero value.
      * @return The last nonzero value of the column.
      */
-    double get_pivot();
+    coefficient_type get_pivot();
     /**
      * @brief Sum this column and another column. The result replaces this column.
      * @param columnToAdd column to add up.
@@ -64,8 +66,8 @@ public:
      * @param isActivePositive private member of @ref Gudhi::tower_to_filtration::Persistence::Boundary_matrix.
      * @param columns private member of @ref Gudhi::tower_to_filtration::Persistence::Boundary_matrix.
      */
-    void clean(std::unordered_map<double, double> *latest, std::unordered_map<double, std::pair<bool, bool> *> *isActivePositive,
-               std::unordered_map<double, List_column *> *columns);
+    void clean(std::unordered_map<coefficient_type, coefficient_type> *latest, std::unordered_map<coefficient_type, std::pair<bool, bool> *> *isActivePositive,
+	       std::unordered_map<coefficient_type, List_column *> *columns);
 };
 
 }

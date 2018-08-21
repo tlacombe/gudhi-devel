@@ -52,16 +52,16 @@ template<class ComplexStructure>
  * For the right line format, see @ref sophiafileformat.
  *
  * @param line line te be read.
- * @param vertices pointer to an empty vector of doubles. If the operation is an inclusion, it will store the vertices of the inserted simplex in increasing order ;
+ * @param vertices pointer to an empty vector of vertex identifiers. If the operation is an inclusion, it will store the vertices of the inserted simplex in increasing order ;
  * if the operation is a contraction, it will store the two contracted vertices.
  * @param timestamp time value associated to the operation.
  * @return The operation type: #INCLUSION if it is an inclusion, #CONTRACTION if it is a contraction, or #COMMENT if it is not an operation.
  */
-operationType read_operation(std::string &line, std::vector<double> *vertices, double *timestamp)
+operationType read_operation(std::string &line, std::vector<typename ComplexStructure::vertex> *vertices, double *timestamp)
 {
     operationType type;
     vertices->clear();
-    double num;
+    typename ComplexStructure::vertex num;
 
     size_t next = line.find_first_not_of(' ', 0);
     size_t current = next;
@@ -112,7 +112,7 @@ std::ifstream& operator>>(std::ifstream& file, Tower_converter<ComplexStructure>
     std::string line;
 
     if (file.is_open()){
-        std::vector<double> vertices;
+	std::vector<typename ComplexStructure::vertex> vertices;
         double timestamp = -1;
         double defaultTimestamp = 0;
         while (getline(file, line, '\n')){
@@ -149,7 +149,7 @@ std::ifstream& operator>>(std::ifstream& file, Persistence<ComplexStructure,Colu
     std::string line;
 
     if (file.is_open()){
-        std::vector<double> vertices;
+	std::vector<typename ComplexStructure::vertex> vertices;
         double timestamp = -1;
         double defaultTimestamp = 0;
         while (getline(file, line, '\n')){

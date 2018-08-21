@@ -37,36 +37,39 @@ namespace Gudhi {
 namespace tower_to_filtration {
 
 /**
- * @brief Column type which is based on `std::vector<double>` and `std::make_heap`. Fulfills the requirements of the @ref Gudhi::tower_to_filtration::ColumnType concept.
+ * @brief Column type which is based on `std::vector<coefficient_type>` and `std::make_heap`. Fulfills the requirements of the @ref Gudhi::tower_to_filtration::ColumnType concept.
  * Its coefficient are in @f$\mathbb{Z}_2@f$ only. Therefore the values of the vector are the indices of non-zero cells in increasing order.
  */
 class Heap_column
 {
 public:
+    using coefficient_type = long long;	/**< Type for cell content. Should correspond to @ref Gudhi::tower_to_filtration::Persistence::index, if used for @ref Gudhi::tower_to_filtration::Persistence. */
+    using size_type = std::vector<coefficient_type>::size_type;	    /**< Type for size mesure. */
+
     Heap_column(int dim);
     ~Heap_column();
 
 public:
     void add(Heap_column &columnToAdd);
-    void set(std::vector<double> &newColumn);
-    double get_pivot();
-    double pop_pivot();
-    double get_size();
+    void set(std::vector<coefficient_type> &newColumn);
+    coefficient_type get_pivot();
+    coefficient_type pop_pivot();
+    size_type get_size();
     /**
      * @brief Returns the stored dimension.
      * @return The dimension.
      */
     int get_dim() const { return dim_; }
-    void clean(std::unordered_map<double, double> *latest, std::unordered_map<double, std::pair<bool, bool> *> *isActivePositive,
-               std::unordered_map<double, Heap_column*> *columns);
-    void push_back(double value);
-    double at(double index);
+    void clean(std::unordered_map<coefficient_type, coefficient_type> *latest, std::unordered_map<coefficient_type, std::pair<bool, bool> *> *isActivePositive,
+	       std::unordered_map<coefficient_type, Heap_column*> *columns);
+    void push_back(coefficient_type value);
+    coefficient_type at(size_type index);
 
 private:
-    int dim_;                           /**< Dimension of the column. */
-    std::vector<double> *column_;       /**< Data container of the column. */
-    std::vector<double> *temp_column_;  /**< Temporary data container of the column. */
-    double insertsSinceLastPrune_;      /**< Number of insertion since the last time the heap was pruned. */
+    int dim_;					    /**< Dimension of the column. */
+    std::vector<coefficient_type> *column_;	    /**< Data container of the column. */
+    std::vector<coefficient_type> *temp_column_;    /**< Temporary data container of the column. */
+    size_type insertsSinceLastPrune_;		    /**< Number of insertion since the last time the heap was pruned. */
 
     void prune();
 };
@@ -77,9 +80,9 @@ private:
  */
 inline Heap_column::Heap_column(int dim) : dim_(dim), insertsSinceLastPrune_(0)
 {
-    column_ = new std::vector<double>();
+    column_ = new std::vector<coefficient_type>();
     std::make_heap(this->column_->begin(), this->column_->end());
-    temp_column_ = new std::vector<double>();
+    temp_column_ = new std::vector<coefficient_type>();
 }
 
 /**
@@ -101,21 +104,21 @@ inline Heap_column::~Heap_column()
  */
 inline void Heap_column::add(Heap_column &columnToAdd)
 {
-    double size = columnToAdd.get_size();
-    for (double i = 0; i < size; i++) {
+    size_type size = columnToAdd.get_size();
+    for (size_type i = 0; i < size; i++) {
 	column_->push_back(columnToAdd.at(i));
         std::push_heap(column_->begin(), column_->end());
     }
     insertsSinceLastPrune_ += size;
 
-    if (2 * insertsSinceLastPrune_ > (double)column_->size()) prune();
+    if (2 * insertsSinceLastPrune_ > (size_type)column_->size()) prune();
 }
 
 /**
  * @brief Replaces the content of the column with the content of @p newColumn.
  * @param newColumn new column content. Its values represent the index of non-zero cells in increasing order (@f$\mathbb{Z}_2@f$ coefficients).
  */
-inline void Heap_column::set(std::vector<double> &newColumn)
+inline void Heap_column::set(std::vector<coefficient_type> &newColumn)
 {
     column_->clear();
     column_->insert(column_->end(), newColumn.begin(), newColumn.end());
@@ -126,7 +129,7 @@ inline void Heap_column::set(std::vector<double> &newColumn)
  * @brief Insert a cell at the end of the column.
  * @param value value of the cell to be inserted.
  */
-inline void Heap_column::push_back(double value)
+inline void Heap_column::push_back(coefficient_type value)
 {
     column_->push_back(value);
     std::push_heap(column_->begin(), column_->end());
@@ -141,7 +144,7 @@ inline void Heap_column::push_back(double value)
  * @param index desired index.
  * @return Element at index @p index in the underlying vector.
  */
-inline double Heap_column::at(double index)
+inline Heap_column::coefficient_type Heap_column::at(size_type index)
 {
     return column_->at(index);
 }
@@ -150,9 +153,9 @@ inline double Heap_column::at(double index)
  * @brief Returns the pivot of the column, i.e. the index of the last nonzero value.
  * @return The pivot of the column.
  */
-inline double Heap_column::get_pivot()
+inline Heap_column::coefficient_type Heap_column::get_pivot()
 {
-    double pivot = pop_pivot();
+    coefficient_type pivot = pop_pivot();
     if (pivot != -1){
         column_->push_back(pivot);
         std::push_heap(column_->begin(), column_->end());
@@ -163,16 +166,16 @@ inline double Heap_column::get_pivot()
 /**
  * @brief Returns and removes the pivot of the column (i.e. the index of the last nonzero value) from it.
  *
- * It will also remove every double representation of the pivot in the heap.
+ * It will also remove every duplicated representation of the pivot in the heap.
  *
  * @return The pivot of the column.
  */
-inline double Heap_column::pop_pivot()
+inline Heap_column::coefficient_type Heap_column::pop_pivot()
 {
     if (column_->empty()) {
         return -1;
     } else {
-        double pivot = column_->front();
+	coefficient_type pivot = column_->front();
         std::pop_heap(column_->begin(), column_->end());
         column_->pop_back();
         while (!column_->empty() && column_->front() == pivot) {
@@ -194,7 +197,7 @@ inline double Heap_column::pop_pivot()
  * @brief Returns the number of nonzero values in the column.
  * @return The number of nonzero values in the column.
  */
-inline double Heap_column::get_size()
+inline Heap_column::size_type Heap_column::get_size()
 {
     prune();
     return column_->size();
@@ -206,12 +209,12 @@ inline double Heap_column::get_size()
  * @param isActivePositive private member of @ref Gudhi::tower_to_filtration::Persistence::Boundary_matrix.
  * @param columns private member of @ref Gudhi::tower_to_filtration::Persistence::Boundary_matrix.
  */
-inline void Heap_column::clean(std::unordered_map<double, double> *latest, std::unordered_map<double, std::pair<bool, bool> *> *isActivePositive,
-                        std::unordered_map<double, Heap_column*> *columns)
+inline void Heap_column::clean(std::unordered_map<coefficient_type, coefficient_type> *latest, std::unordered_map<coefficient_type, std::pair<bool, bool> *> *isActivePositive,
+			std::unordered_map<coefficient_type, Heap_column *> *columns)
 {
-    std::vector<double> *tmp = temp_column_;
+    std::vector<coefficient_type> *tmp = temp_column_;
     tmp->push_back(pop_pivot());
-    double max = pop_pivot();
+    coefficient_type max = pop_pivot();
     while (max != -1){
         if (latest->find(max) != latest->end() && !isActivePositive->at(max)->first){
             push_back(max);
@@ -235,8 +238,8 @@ inline void Heap_column::prune()
 {
     if (insertsSinceLastPrune_ == 0) return;
 
-    std::vector<double> *tempCol = temp_column_;
-    double pivot = pop_pivot();
+    std::vector<coefficient_type> *tempCol = temp_column_;
+    coefficient_type pivot = pop_pivot();
     while (pivot != -1) {
         tempCol->push_back(pivot);
         pivot = pop_pivot();
