@@ -151,9 +151,11 @@ bool Persistence<ComplexStructure, ColumnType>::add_insertion(std::vector<double
 template<class ComplexStructure, class ColumnType>
 /**
  * @brief Add an elementary contraction as the next tower operation.
- * @param v identifier of the contracted vertex which disapears.
- * @param u identifier of the contracted vertex which remains.
+ * @param v identifier of the contracted vertex which disappears from the complex.
+ * @param u identifier of the contracted vertex which remains in the complex.
  * @param timestamp time value or filtration value which will be associated to the operation in the filtration. Has to be equal or higher to the precedent ones.
+ * @exception std::out_of_range If @p v or @p u is not an existing identifier in the current complex ;
+ *	Therefore be careful with the order of @p v and @p u to keep coherence with futur contractions.
  */
 void Persistence<ComplexStructure, ColumnType>::add_contraction(double v, double u, double timestamp)
 {

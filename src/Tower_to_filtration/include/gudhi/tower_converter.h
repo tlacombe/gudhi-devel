@@ -194,9 +194,11 @@ bool Tower_converter<ComplexStructure>::add_insertion(std::vector<double> &simpl
 template<class ComplexStructure>
 /**
  * @brief Add an elementary contraction as the next tower operation and convert it into a equivalent sequence of insertions into the output stream.
- * @param v identifier of the contracted vertex which disapears.
- * @param u identifier of the contracted vertex which remains.
+ * @param v identifier of the contracted vertex which disappears from the complex.
+ * @param u identifier of the contracted vertex which remains in the complex.
  * @param timestamp time value or filtration value which will be associated to the operation in the filtration. Has to be equal or higher to the precedent ones.
+ * @exception std::out_of_range If @p v or @p u is not an existing identifier in the current complex ;
+ *	Therefore be careful with the order of @p v and @p u to keep coherence with futur contractions.
  * @return The identifier of the first new simplex in the equivalent insertion ; the remaining new simplices will take the identifiers which follows continuously.
  */
 inline typename Tower_converter<ComplexStructure>::index Tower_converter<ComplexStructure>::add_contraction(double v, double u, double timestamp)
@@ -207,11 +209,13 @@ inline typename Tower_converter<ComplexStructure>::index Tower_converter<Complex
 template<class ComplexStructure>
 /**
  * @brief Add an elementary contraction as the next tower operation and convert it into a equivalent sequence of insertions into the output stream.
- * @param v identifier of the contracted vertex which disapears.
- * @param u identifier of the contracted vertex which remains.
+ * @param v identifier of the contracted vertex which disappears from the complex.
+ * @param u identifier of the contracted vertex which remains in the complex.
  * @param timestamp time value or filtration value which will be associated to the operation in the filtration. Has to be equal or higher to the precedent ones.
  * @param addedBoundaries pointer to an (empty) vector, where the boundaries of the inserted simplices will be stored.
  * @param removedIndices pointer to an (empty) vector, where the identifiers of the simplices which become inactive will be stored.
+ * @exception std::out_of_range If @p v or @p u is not an existing identifier in the current complex ;
+ *	Therefore be careful with the order of @p v and @p u to keep coherence with futur contractions.
  * @return The identifier of the first new simplex in the equivalent insertion ; the remaining new simplices will take the identifiers which follows continuously.
  */
 typename Tower_converter<ComplexStructure>::index Tower_converter<ComplexStructure>::add_contraction(double v, double u, double timestamp,
