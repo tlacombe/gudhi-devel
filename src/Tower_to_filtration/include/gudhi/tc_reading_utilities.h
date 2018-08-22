@@ -157,7 +157,7 @@ std::ifstream& operator>>(std::ifstream& file, Persistence<ComplexStructure,Colu
             if (timestamp != -1) defaultTimestamp = timestamp;
 
 	    if (type == INCLUSION){
-                if (pers.add_insertion(&vertices, defaultTimestamp)) defaultTimestamp++;
+		if (pers.add_insertion(vertices, defaultTimestamp)) defaultTimestamp++;
 	    } else if (type == CONTRACTION) {
                 pers.add_contraction(vertices.at(0), vertices.at(1), defaultTimestamp);
                 defaultTimestamp++;

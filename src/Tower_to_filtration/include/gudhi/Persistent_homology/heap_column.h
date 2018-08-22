@@ -218,7 +218,7 @@ inline void Heap_column::clean(std::unordered_map<coefficient_type, coefficient_
     while (max != -1){
         if (latest->find(max) != latest->end() && !isActivePositive->at(max)->first){
             push_back(max);
-            add(columns->at(latest->at(max)));
+	    add(*(columns->at(latest->at(max))));
         } else if (isActivePositive->at(max)->second || isActivePositive->at(max)->first) {
             tmp->push_back(max);
         }

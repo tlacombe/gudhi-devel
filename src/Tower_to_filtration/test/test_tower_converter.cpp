@@ -62,7 +62,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(constructor_test, ComplexType, complex_types)
     BOOST_CHECK(stream_tc.get_tower_width() == 0);
 }
 
-bool test_output_stream_first_line(std::stringstream *ss, int *dim, int *filtrationValue, std::vector<Tower_converter::vertex> *vertices){
+template<typename vertex>
+bool test_output_stream_first_line(std::stringstream *ss, int *dim, int *filtrationValue, std::vector<vertex> *vertices){
     std::string line;
     if (getline(*ss, line, '\n')){
 	std::stringstream nss(line);
@@ -85,15 +86,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(insertion_test, ComplexType, complex_types)
     Tower_converter<ComplexType> tc(&ss);
     ComplexType *complex = tc.get_complex();
 
-    std::vector<Tower_converter::vertex> simplex;
-    std::vector<Tower_converter::index> simplexBoundary;
-    Tower_converter::index simplexInsertionNumber;
+    std::vector<typename ComplexType::vertex> simplex;
+    std::vector<typename ComplexType::index> simplexBoundary;
+    typename ComplexType::index simplexInsertionNumber;
     int dim;
     int filtrationValue;
-    std::vector<Tower_converter::vertex> vertices;
+    std::vector<typename ComplexType::vertex> vertices;
 
     simplex.push_back(0);
-    BOOST_CHECK(tc.add_insertion(&simplex, 0, &simplexBoundary, &simplexInsertionNumber));
+    BOOST_CHECK(tc.add_insertion(simplex, 0, &simplexBoundary, &simplexInsertionNumber));
     BOOST_CHECK(simplexBoundary.size() == 0);
     BOOST_CHECK(complex->get_size() == 1);
     test_output_stream_first_line(&ss, &dim, &filtrationValue, &vertices);
@@ -107,7 +108,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(insertion_test, ComplexType, complex_types)
 
     simplex.at(0) = 1;
     simplexBoundary.clear();
-    BOOST_CHECK(tc.add_insertion(&simplex, 1, &simplexBoundary, &simplexInsertionNumber));
+    BOOST_CHECK(tc.add_insertion(simplex, 1, &simplexBoundary, &simplexInsertionNumber));
     BOOST_CHECK(simplexBoundary.size() == 0);
     BOOST_CHECK(complex->get_size() == 2);
     test_output_stream_first_line(&ss, &dim, &filtrationValue, &vertices);
@@ -122,7 +123,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(insertion_test, ComplexType, complex_types)
     simplex.at(0) = 0;
     simplex.push_back(1);
     simplexBoundary.clear();
-    BOOST_CHECK(tc.add_insertion(&simplex, 2, &simplexBoundary, &simplexInsertionNumber));
+    BOOST_CHECK(tc.add_insertion(simplex, 2, &simplexBoundary, &simplexInsertionNumber));
     BOOST_CHECK(simplexBoundary.size() == 2);
     BOOST_CHECK(simplexBoundary.at(0) == 0);
     BOOST_CHECK(simplexBoundary.at(1) == 1);
@@ -139,7 +140,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(insertion_test, ComplexType, complex_types)
     //Simplex already inserted
     simplex.pop_back();
     simplexBoundary.clear();
-    BOOST_CHECK(!tc.add_insertion(&simplex, 3));
+    BOOST_CHECK(!tc.add_insertion(simplex, 3));
 
     //Faces output
     ss.str(std::string());
@@ -150,15 +151,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(insertion_test, ComplexType, complex_types)
     complex = tc_faces.get_complex();
 
     simplex.push_back(0);
-    BOOST_CHECK(tc_faces.add_insertion(&simplex, 0));
+    BOOST_CHECK(tc_faces.add_insertion(simplex, 0));
     simplex.at(0) = 1;
-    BOOST_CHECK(tc_faces.add_insertion(&simplex, 1));
+    BOOST_CHECK(tc_faces.add_insertion(simplex, 1));
     ss.str(std::string());
     ss.clear();
 
     simplex.at(0) = 0;
     simplex.push_back(1);
-    BOOST_CHECK(tc_faces.add_insertion(&simplex, 2, &simplexBoundary, &simplexInsertionNumber));
+    BOOST_CHECK(tc_faces.add_insertion(simplex, 2, &simplexBoundary, &simplexInsertionNumber));
     BOOST_CHECK(simplexBoundary.size() == 2);
     BOOST_CHECK(simplexBoundary.at(0) == 0);
     BOOST_CHECK(simplexBoundary.at(1) == 1);
@@ -179,29 +180,29 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(contraction_test, ComplexType, complex_types)
     Tower_converter<ComplexType> tc(&ss);
     ComplexType *complex = tc.get_complex();
 
-    std::vector<Tower_converter::vertex> simplex;
+    std::vector<typename ComplexType::vertex> simplex;
     int dim;
     int filtrationValue;
-    std::vector<Tower_converter::vertex> vertices;
-    std::vector<std::vector<Tower_converter::index>*> addedBoundaries;
-    std::vector<Tower_converter::index> removedIndices;
+    std::vector<typename ComplexType::vertex> vertices;
+    std::vector<std::vector<typename ComplexType::index>*> addedBoundaries;
+    std::vector<typename ComplexType::index> removedIndices;
 
     simplex.push_back(0);
-    tc.add_insertion(&simplex, 0);
+    tc.add_insertion(simplex, 0);
     simplex.at(0) = 1;
-    tc.add_insertion(&simplex, 1);
+    tc.add_insertion(simplex, 1);
     simplex.at(0) = 2;
-    tc.add_insertion(&simplex, 2);
+    tc.add_insertion(simplex, 2);
     simplex.at(0) = 0;
     simplex.push_back(1);
-    BOOST_CHECK(tc.add_insertion(&simplex, 3));
+    BOOST_CHECK(tc.add_insertion(simplex, 3));
     simplex.at(0) = 0;
     simplex.at(1) = 2;
-    BOOST_CHECK(tc.add_insertion(&simplex, 4));
+    BOOST_CHECK(tc.add_insertion(simplex, 4));
     ss.str(std::string());
     ss.clear();
 
-    Tower_converter::index first = tc.add_contraction(1, 2, 5, &addedBoundaries, &removedIndices);
+    typename ComplexType::index first = tc.add_contraction(1, 2, 5, &addedBoundaries, &removedIndices);
     BOOST_CHECK(first != -1);
     BOOST_CHECK(addedBoundaries.size() == 2);
     BOOST_CHECK(removedIndices.size() == 4);
@@ -223,24 +224,24 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(contraction_test, ComplexType, complex_types)
     ss.str(std::string());
     ss.clear();
     simplex.clear();
-    for (std::vector<Tower_converter::index>* v : addedBoundaries) delete v;
+    for (std::vector<typename ComplexType::index>* v : addedBoundaries) delete v;
     addedBoundaries.clear();
     removedIndices.clear();
     Tower_converter<ComplexType> tc_faces(&ss, Tower_converter<ComplexType>::FACES);
     complex = tc_faces.get_complex();
 
     simplex.push_back(0);
-    tc_faces.add_insertion(&simplex, 0);
+    tc_faces.add_insertion(simplex, 0);
     simplex.at(0) = 1;
-    tc_faces.add_insertion(&simplex, 1);
+    tc_faces.add_insertion(simplex, 1);
     simplex.at(0) = 2;
-    tc_faces.add_insertion(&simplex, 2);
+    tc_faces.add_insertion(simplex, 2);
     simplex.at(0) = 0;
     simplex.push_back(1);
-    BOOST_CHECK(tc_faces.add_insertion(&simplex, 3));
+    BOOST_CHECK(tc_faces.add_insertion(simplex, 3));
     simplex.at(0) = 0;
     simplex.at(1) = 2;
-    BOOST_CHECK(tc_faces.add_insertion(&simplex, 4));
+    BOOST_CHECK(tc_faces.add_insertion(simplex, 4));
     ss.str(std::string());
     ss.clear();
 

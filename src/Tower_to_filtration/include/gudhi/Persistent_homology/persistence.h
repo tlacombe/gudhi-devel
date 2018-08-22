@@ -144,7 +144,7 @@ bool Persistence<ComplexStructure, ColumnType>::add_insertion(simplex_base &simp
         matrix_->insert_vertex(insertionNum, timestamp);
         return true;
     }
-    matrix_->insert_column(insertionNum, &boundary, timestamp);
+    matrix_->insert_column(insertionNum, boundary, timestamp);
 
     if (fmod(insertionNum, reductionInterval_) == 0) {
         compute_partial_persistence();
@@ -171,11 +171,11 @@ void Persistence<ComplexStructure, ColumnType>::add_contraction(vertex v, vertex
     index first = converter_->add_contraction(v, u, timestamp, &boundaries, &insertionNumbers);
 
     for (typename std::vector<std::vector<index>*>::size_type i = 0; i < boundaries.size(); i++){
-        matrix_->insert_column(first + i, boundaries.at(i), timestamp);
+	matrix_->insert_column(first + i, *(boundaries.at(i)), timestamp);
         delete boundaries.at(i);
         if (fmod((first + i), reductionInterval_) == 0) reduce = true;
     }
-    matrix_->mark_inactive(&insertionNumbers);
+    matrix_->mark_inactive(insertionNumbers);
 
     if (reduce) compute_partial_persistence();
 }
@@ -299,7 +299,7 @@ void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::reduce(size_typ
 		index pivot = curr->get_pivot();
 
                 while (pivot != -1 && latest_->find(pivot) != latest_->end()){
-                    curr->add(columns_->at(latest_->at(pivot)));
+		    curr->add(*(columns_->at(latest_->at(pivot))));
                     pivot = curr->get_pivot();
                 }
 

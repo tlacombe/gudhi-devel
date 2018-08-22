@@ -88,8 +88,8 @@ public:
     void push_back(coefficient_type cell);
 
 private:
-    int dim_;                   /**< Dimension of the column. */
-    std::list<coefficient_type> *column_; /**< Data container of the column. */
+    int dim_;				    /**< Dimension of the column. */
+    std::list<coefficient_type> *column_;   /**< Data container of the column. */
 };
 
 /**
@@ -157,7 +157,7 @@ inline void List_column::clean(std::unordered_map<coefficient_type, coefficient_
     it++;
     while (it != column_->rend()){
         if (latest->find(*it) != latest->end() && !isActivePositive->at(*it)->first){
-            add(columns->at(latest->at(*(it--))));
+	    add(*(columns->at(latest->at(*(it--)))));
         } else if (!isActivePositive->at(*it)->second && !isActivePositive->at(*it)->first) {
             it2 = (++it).base();
             it--; it--;
