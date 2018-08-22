@@ -78,16 +78,17 @@ public:
     /* Important for tower_converter.h */
 
     Node* insert_simplex(simplex_base &numVertices);
+    bool insert_edge_and_expand(vertex u, vertex v, int max_dim);   // u < v !!!
+    bool insert_edge_and_expand(vertex u, vertex v, int max_dim, std::vector<index> *addedIndices, std::vector<std::vector<index>*> *boundaries);   // u < v !!!
     void remove_simplex(simplex_base &simplex);
     void remove_simplex(simplex_base &simplex, std::vector<index> *removedIndices);
-    vertex get_smallest_closed_star(vertex v, vertex u, std::vector<simplex_base*> *closedStar);   //returns vertex with smallest closed star; closedStar is ordered
-    index get_boundary(simplex_base &simplex, std::vector<index> *boundary);    //ordered by increasing insertion numbers
+    vertex get_smallest_closed_star(vertex v, vertex u, std::vector<simplex_base*> *closedStar);    //returns vertex with smallest closed star; closedStar is ordered
+    index get_boundary(simplex_base &simplex, std::vector<index> *boundary);	//ordered by increasing insertion numbers
     size_type get_size() const;
     index get_max_index() const;
 
     /* Other */
 
-    //index contract_vertices(vertex v, vertex u, double timestamp, std::vector<std::vector<index>*> *boundaries, std::vector<index> *&inactiveInsertionNumbers);
     size_type get_max_size() const;
     int get_max_dimension() const;
     void get_cofaces(simplex_base &simplex, std::vector<simplex_base*> *cofaces);
@@ -103,13 +104,17 @@ private:
     int maxDim_;
 
     Node* insert_simplex_in_tree(simplex_base &simplex);
+    Node* insert_union(Node *simplex, vertex v);
     void insert_node_in_dictionary(Node *simplex);
     void delete_node_from_dictionary(Node *simplex);
     void remove_simplex(Node *simplex, std::vector<index> *removedIndices);
+    void expand_node(Node *simplex, int max_dim, std::vector<index> *addedIndices, std::vector<std::vector<index>*> *boundaries);
     Node* find(simplex_base &simplex);
     void get_cofaces(Node *simplex, std::vector<Node*> *cofaces);
     void get_cofacets(Node *simplex, std::vector<Node*> *cofacets);
+    index get_boundary(Node *simplexNode, std::vector<index> *boundary);	//ordered by increasing insertion numbers
     bool is_coface(Node *node, Node *simplex);
+    bool are_all_facets_of_union_inserted(Node *facet, vertex endLabel);
     void get_simplices_in_subtree(Node *node, std::vector<Node*> *simplices);
     vertex get_smallest_star(vertex v, vertex u, std::queue<Node*> *qv, std::queue<Node*> *qu);
     bool get_smallest_star_find_next_node(vertex v, vertex toAvoid, std::vector<label_dictionary*>::size_type &currentHeight,
@@ -150,6 +155,30 @@ inline Simplex_tree::Node* Simplex_tree::insert_simplex(simplex_base &numVertice
     if (maxDim_ < dim) maxDim_ = dim;
 
     return simplexNode;
+}
+
+inline bool Simplex_tree::insert_edge_and_expand(vertex u, vertex v, int max_dim)
+{
+    return insert_edge_and_expand(u, v, max_dim, nullptr, nullptr);
+}
+
+inline bool Simplex_tree::insert_edge_and_expand(vertex u, vertex v, int max_dim, std::vector<index> *addedIndices, std::vector<std::vector<index>*> *boundaries)
+{
+    simplex_base vect;
+    vect.push_back(u);
+    insert_simplex_in_tree(vect);
+    vect.at(0) = v;
+    insert_simplex_in_tree(vect);
+    vect.at(0) = u;
+    vect.push_back(v);
+    Node *edgeNode = insert_simplex_in_tree(vect);
+
+    if (edgeNode) {
+	if (max_dim > 1) expand_node(edgeNode, max_dim, addedIndices, boundaries);
+	return true;
+    }
+
+    return false;
 }
 
 inline void Simplex_tree::remove_simplex(simplex_base &simplex)
@@ -198,6 +227,11 @@ inline Simplex_tree::vertex Simplex_tree::get_smallest_closed_star(vertex v, ver
 inline Simplex_tree::index Simplex_tree::get_boundary(simplex_base &simplex, std::vector<index> *boundary)
 {
     Node *simplexNode = find(simplex);
+    return get_boundary(simplexNode, boundary);
+}
+
+inline Simplex_tree::index Simplex_tree::get_boundary(Node *simplexNode, std::vector<index> *boundary)
+{
     if (simplexNode->get_parent() == nullptr) return simplexNode->get_insertion_index();
 
     simplex_base tail;
@@ -207,23 +241,23 @@ inline Simplex_tree::index Simplex_tree::get_boundary(simplex_base &simplex, std
     Node *itb;
 
     while (it != nullptr){
-        itb = it;
-        tailIt = tail.rbegin();
-        tailIt++;
-        while (tailIt != tail.rend()){
-            itb = itb->get_children()->at(*tailIt);
-            tailIt++;
-        }
-        boundary->push_back(itb->get_insertion_index());
-        tail.push_back(it->get_label());
-        it = it->get_parent();
+	itb = it;
+	tailIt = tail.rbegin();
+	tailIt++;
+	while (tailIt != tail.rend()){
+	    itb = itb->get_children()->at(*tailIt);
+	    tailIt++;
+	}
+	boundary->push_back(itb->get_insertion_index());
+	tail.push_back(it->get_label());
+	it = it->get_parent();
     }
     itb = dictionaries_->front()->at(tail.at(tail.size() - 2));
     tailIt = tail.rbegin();
     tailIt += 2;
     while (tailIt != tail.rend()){
-        itb = itb->get_children()->at(*tailIt);
-        tailIt++;
+	itb = itb->get_children()->at(*tailIt);
+	tailIt++;
     }
     boundary->push_back(itb->get_insertion_index());
 
@@ -306,6 +340,47 @@ inline Simplex_tree::Node* Simplex_tree::insert_simplex_in_tree(simplex_base &si
     return simplexNode;
 }
 
+inline Simplex_tree::Node* Simplex_tree::insert_union(Node *simplex, vertex v)
+{
+    Node *it = simplex;
+    std::stack<vertex> tail;
+    vertex endLabel = v;
+
+    while (it != nullptr && it->get_label() > v){
+	tail.push(it->get_label());
+	it = it->get_parent();
+    }
+    if (it != nullptr && it->get_label() == v) return nullptr;
+    if (it == nullptr){
+	it = dictionaries_->front()->at(v);
+    } else if (it->get_children()->find(v) != it->get_children()->end()){
+	it = it->get_children()->at(v);
+    }
+
+    if (it != simplex){
+	while (!tail.empty() && it->get_children()->find(tail.top()) != it->get_children()->end()){
+	    it = it->get_children()->at(tail.top());
+	    tail.pop();
+	}
+	if (tail.empty() || tail.size() != 1) return nullptr;
+	endLabel = tail.top();
+    }
+
+    if (!are_all_facets_of_union_inserted(it, endLabel)) return nullptr;
+
+    if ((int)dictionaries_->size() == simplex->get_dim() + 1) dictionaries_->push_back(new label_dictionary());
+    Node *simplexNode = new Node(endLabel, maxIndex_ + 1, simplex->get_dim() + 1, it);
+    it->get_children()->emplace(endLabel, simplexNode);
+    insert_node_in_dictionary(simplexNode);
+
+    numberOfSimplices_++;
+    maxIndex_++;
+    if (maxSize_ < numberOfSimplices_) maxSize_ = numberOfSimplices_;
+    if (maxDim_ < simplex->get_dim() + 1) maxDim_ = simplex->get_dim() + 1;
+
+    return simplexNode;
+}
+
 inline void Simplex_tree::insert_node_in_dictionary(Node *simplex)
 {
     label_dictionary *dict = dictionaries_->at(simplex->get_dim());
@@ -352,6 +427,26 @@ inline void Simplex_tree::remove_simplex(Node *simplex, std::vector<index> *remo
         numberOfSimplices_--;
 
         delete toDelete;
+    }
+}
+
+inline void Simplex_tree::expand_node(Node *simplex, int max_dim, std::vector<index> *addedIndices, std::vector<std::vector<index>*> *boundaries)
+{
+    std::vector<Node*> cofacets;
+    get_cofacets(simplex->get_parent(), &cofacets);
+
+    for (Node *cofacet : cofacets){
+	if (cofacet == simplex) continue;
+	Node *node = insert_union(cofacet, simplex->get_label());
+	if (node != nullptr){	//if node could be inserted, i.e. all its facets were there and it-self was not already inserted
+	    if (addedIndices != nullptr) {
+		std::vector<index> *boundary = new std::vector<index>();
+		get_boundary(node, boundary);
+		addedIndices->push_back(node->get_insertion_index());
+		boundaries->push_back(boundary);
+	    }
+	    if (node->get_dim() < max_dim) expand_node(node, max_dim, addedIndices, boundaries);
+	}
     }
 }
 
@@ -419,6 +514,41 @@ inline bool Simplex_tree::is_coface(Node *node, Node *simplex)
 
     if (simplexIt == nullptr) return true;
     else return false;
+}
+
+bool Simplex_tree::are_all_facets_of_union_inserted(Node *facet, vertex endLabel)
+{
+    if (facet->get_parent() == nullptr) return dictionaries_->front()->find(endLabel) != dictionaries_->front()->end();
+
+    simplex_base tail;
+    tail.push_back(endLabel);
+    Node *it = facet;
+    simplex_base::reverse_iterator tailIt;
+    Node *itb;
+
+    while (it != nullptr){
+	itb = it;
+	tailIt = tail.rbegin();
+	tailIt++;
+	while (tailIt != tail.rend()){
+	    if (itb->get_children()->find(*tailIt) == itb->get_children()->end()) return false;
+	    itb = itb->get_children()->at(*tailIt);
+	    tailIt++;
+	}
+	tail.push_back(it->get_label());
+	it = it->get_parent();
+    }
+    if (dictionaries_->front()->find(tail.at(tail.size() - 2)) == dictionaries_->front()->end()) return false;
+    itb = dictionaries_->front()->at(tail.at(tail.size() - 2));
+    tailIt = tail.rbegin();
+    tailIt += 2;
+    while (tailIt != tail.rend()){
+	if (itb->get_children()->find(*tailIt) == itb->get_children()->end()) return false;
+	itb = itb->get_children()->at(*tailIt);
+	tailIt++;
+    }
+
+    return true;
 }
 
 inline void Simplex_tree::get_simplices_in_subtree(Node *node, std::vector<Node *> *simplices)

@@ -48,21 +48,20 @@ public:
      * @brief Insert a simplex in the complex, whose facets were already inserted in the complex.
      * @param numVertices simplex to be inserted, described as the vector of its vertex identifiers in increasing order.
      * @return true if the simplex was not already inserted in the complex, false otherwise.
+     *	    This module uses the result in an `if` statement, the output does not have to be `bool` if the test result is the same.
      */
     bool insert_simplex(std::vector<vertex> &numVertices);
     /**
      * @brief Remove a simplex and all its cofaces from the complex.
      * @param vertex simplex to be removed. This modules only needs to call the function on vertices.
-     * @return true if removal was successful, false otherwise.
      */
-    bool remove_simplex(std::vector<vertex> &vertex);
+    void remove_simplex(std::vector<vertex> &vertex);
     /**
      * @brief Remove a simplex and all its cofaces from the complex.
      * @param vertex simplex to be removed. This modules only needs to call the function on vertices.
      * @param removedIndices pointer to an (empty) vector of simplex identifiers ; if this parameter is given, the identifiers of all the removed simplices are stored in the vector.
-     * @return true if removal was successful, false otherwise.
      */
-    bool remove_simplex(std::vector<vertex> &vertex, std::vector<index> *removedIndices);
+    void remove_simplex(std::vector<vertex> &vertex, std::vector<index> *removedIndices);
     /**
      * @brief Compute the smallest closed star of the vertices v and u and returns the corresponding vertex.
      *
