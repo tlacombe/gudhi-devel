@@ -109,8 +109,9 @@ public:
     /* Important for tower_converter.h */
 
     bool insert_simplex(simplex_base &numVertices);
-    bool insert_edge_and_expand(vertex u, vertex v, int maxDim);   // u < v !!!
-    bool insert_edge_and_expand(vertex u, vertex v, int maxDim, std::vector<simplex_base> *addedSimplices, std::vector<index> *addedIndices, std::vector<std::vector<index>*> *boundaries);   // u < v !!!
+    bool insert_edge_and_expand(vertex u, vertex v, int maxDim = -1);   // u < v !!! ; maxDim == -1 -> no limit
+    bool insert_edge_and_expand(vertex u, vertex v, int maxDim,
+				std::vector<simplex_base> *addedSimplices, std::vector<index> *addedIndices, std::vector<std::vector<index>*> *boundaries);   // u < v !!! ; maxDim == -1 -> no limit
     bool remove_simplex(simplex_base &simplex);
     bool remove_simplex(simplex_base &simplex, std::vector<index> *removedIndices);
     vertex get_smallest_closed_star(vertex v, vertex u, std::vector<simplex_base *> *closedStar);   //returns vertex with smallest closed star; closedStar is ordered
@@ -227,7 +228,7 @@ bool Hash_complex::insert_edge_and_expand(vertex u, vertex v, int maxDim, std::v
 	    get_boundary(*(edge->get_vertices()), boundary);
 	    boundaries->push_back(boundary);
 	}
-	if (maxDim > 1) expand_simplex(vect, maxDim, addedSimplices, addedIndices, boundaries);
+	if (maxDim > 1 || maxDim == -1) expand_simplex(vect, maxDim, addedSimplices, addedIndices, boundaries);
 	return true;
     }
 
@@ -518,7 +519,7 @@ inline void Hash_complex::expand_simplex(simplex_base &vectSimplex, int maxDim,
 		get_boundary(*(union_simplex->get_vertices()), boundary);
 		boundaries->push_back(boundary);
 	    }
-	    if ((int)union_simplex->get_vertices()->size() - 1 < maxDim) expand_simplex(*(union_simplex->get_vertices()), maxDim, addedSimplices, addedIndices, boundaries);
+	    if ((int)union_simplex->get_vertices()->size() - 1 < maxDim  || maxDim == -1) expand_simplex(*(union_simplex->get_vertices()), maxDim, addedSimplices, addedIndices, boundaries);
 	}
     }
 }

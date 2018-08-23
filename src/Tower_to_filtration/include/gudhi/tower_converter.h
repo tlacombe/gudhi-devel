@@ -66,7 +66,7 @@ public:
 
     bool add_insertion(simplex_base &simplex, double timestamp);
     bool add_insertion(simplex_base &simplex, double timestamp, std::vector<index> *simplexBoundary, index *simplexInsertionNumber);
-    bool add_insertions_via_edge_expansion(vertex u, vertex v, double timestamp, int maxExpDim);
+    bool add_insertions_via_edge_expansion(vertex u, vertex v, double timestamp, int maxExpDim = -1);
     bool add_insertions_via_edge_expansion(vertex u, vertex v, double timestamp, int maxExpDim,
 					   std::vector<simplex_base> *addedSimplices, std::vector<std::vector<index>*> *boundaries, std::vector<index> *insertionNumbers);
     index add_contraction(vertex v, vertex u, double timestamp);

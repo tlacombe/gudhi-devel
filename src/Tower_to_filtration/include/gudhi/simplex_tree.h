@@ -78,8 +78,9 @@ public:
     /* Important for tower_converter.h */
 
     Node* insert_simplex(simplex_base &numVertices);
-    bool insert_edge_and_expand(vertex u, vertex v, int maxDim);   // u < v !!!
-    bool insert_edge_and_expand(vertex u, vertex v, int maxDim, std::vector<simplex_base> *addedSimplices, std::vector<index> *addedIndices, std::vector<std::vector<index>*> *boundaries);   // u < v !!!
+    bool insert_edge_and_expand(vertex u, vertex v, int maxDim = -1);   // u < v !!! ; maxDim == -1 -> no limit
+    bool insert_edge_and_expand(vertex u, vertex v, int maxDim,
+				std::vector<simplex_base> *addedSimplices, std::vector<index> *addedIndices, std::vector<std::vector<index>*> *boundaries);   // u < v !!! ; maxDim == -1 -> no limit
     void remove_simplex(simplex_base &simplex);
     void remove_simplex(simplex_base &simplex, std::vector<index> *removedIndices);
     vertex get_smallest_closed_star(vertex v, vertex u, std::vector<simplex_base*> *closedStar);    //returns vertex with smallest closed star; closedStar is ordered
@@ -195,7 +196,7 @@ inline bool Simplex_tree::insert_edge_and_expand(vertex u, vertex v, int maxDim,
 	    get_boundary(edgeNode, boundary);
 	    boundaries->push_back(boundary);
 	}
-	if (maxDim > 1) expand_node(edgeNode, maxDim, addedSimplices, addedIndices, boundaries);
+	if (maxDim > 1 || maxDim == -1) expand_node(edgeNode, maxDim, addedSimplices, addedIndices, boundaries);
 	//std::cout << "inserted\n";
 	return true;
     }
@@ -478,7 +479,7 @@ inline void Simplex_tree::expand_node(Node *simplex, int maxDim, std::vector<sim
 		get_boundary(node, boundary);
 		boundaries->push_back(boundary);
 	    }
-	    if (node->get_dim() < maxDim) expand_node(node, maxDim, addedSimplices, addedIndices, boundaries);
+	    if (node->get_dim() < maxDim || maxDim == -1) expand_node(node, maxDim, addedSimplices, addedIndices, boundaries);
 	}
     }
 }

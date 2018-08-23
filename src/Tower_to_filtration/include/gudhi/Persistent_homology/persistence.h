@@ -89,7 +89,7 @@ public:
     };
 
     bool add_insertion(simplex_base &simplex, double timestamp);
-    bool add_insertions_via_edge_expansion(vertex u, vertex v, double timestamp, int maxExpDim);
+    bool add_insertions_via_edge_expansion(vertex u, vertex v, double timestamp, int maxExpDim = -1);
     void add_contraction(vertex v, vertex u, double timestamp);
     void finalize_reduction();
 
