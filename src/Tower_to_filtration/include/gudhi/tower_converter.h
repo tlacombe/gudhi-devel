@@ -66,6 +66,9 @@ public:
 
     bool add_insertion(simplex_base &simplex, double timestamp);
     bool add_insertion(simplex_base &simplex, double timestamp, std::vector<index> *simplexBoundary, index *simplexInsertionNumber);
+    bool add_insertions_via_edge_expansion(vertex u, vertex v, double timestamp, int maxExpDim);
+    bool add_insertions_via_edge_expansion(vertex u, vertex v, double timestamp, int maxExpDim,
+					   std::vector<simplex_base> *addedSimplices, std::vector<std::vector<index>*> *boundaries, std::vector<index> *insertionNumbers);
     index add_contraction(vertex v, vertex u, double timestamp);
     index add_contraction(vertex v, vertex u, double timestamp, std::vector<std::vector<index>*> *addedBoundaries, std::vector<index> *removedIndices);
 
@@ -108,7 +111,8 @@ template<class ComplexStructure>
  * @param outputStream Pointer to a std::stringstream.
  * @param type Output format. By default it is #VERTICES. See Enumeration #streamingType.
  */
-Tower_converter<ComplexStructure>::Tower_converter(std::stringstream *outputStream, streamingType type) : outputStream_(outputStream), outputFile_(nullptr), streamingType_(type), filtrationSize_(0), towerWidth_(0)
+Tower_converter<ComplexStructure>::Tower_converter(std::stringstream *outputStream, streamingType type) :
+    outputStream_(outputStream), outputFile_(nullptr), streamingType_(type), filtrationSize_(0), towerWidth_(0)
 {
     vertices_ = new std::unordered_map<vertex, vertex>();
     complex_ = new ComplexStructure();
@@ -189,6 +193,43 @@ bool Tower_converter<ComplexStructure>::add_insertion(simplex_base &simplex, dou
 	if (simplexBoundary != nullptr) *simplexInsertionNumber = complex_->get_boundary(transSimplex, simplexBoundary);
         return true;
     }
+    return false;
+}
+
+template<class ComplexStructure>
+bool Tower_converter<ComplexStructure>::add_insertions_via_edge_expansion(vertex u, vertex v, double timestamp, int maxExpDim)
+{
+    return add_insertions_via_edge_expansion(u, v, timestamp, maxExpDim, nullptr, nullptr, nullptr);
+}
+
+template<class ComplexStructure>
+bool Tower_converter<ComplexStructure>::add_insertions_via_edge_expansion(vertex u, vertex v, double timestamp, int maxExpDim, std::vector<simplex_base> *addedSimplices,
+									  std::vector<std::vector<index>*> *boundaries, std::vector<index> *insertionNumbers)
+{
+    std::vector<simplex_base> *insertedSimplices;
+    vertex first = u;
+    vertex second = u;
+    if (u < v) second = v;
+    else first = v;
+
+    vertices_->emplace(u, u);
+    vertices_->emplace(v, v);
+
+    if (addedSimplices == nullptr) insertedSimplices = new std::vector<simplex_base>();
+    else insertedSimplices = addedSimplices;
+
+    if (complex_->insert_edge_and_expand(first, second, maxExpDim, insertedSimplices, insertionNumbers, boundaries)){
+	for (simplex_base simplex : *insertedSimplices){
+	    stream_simplex(simplex, timestamp);
+	}
+
+	if (complex_->get_size() > towerWidth_) towerWidth_ = complex_->get_size();
+
+	if (addedSimplices == nullptr) delete insertedSimplices;
+	return true;
+    }
+
+    if (addedSimplices == nullptr) delete insertedSimplices;
     return false;
 }
 

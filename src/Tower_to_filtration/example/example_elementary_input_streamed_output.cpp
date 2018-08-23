@@ -139,37 +139,37 @@ void do_something_with_next_filtration_steps(std::stringstream *ss){
 	std::vector<vertex> vertices;
 
     while (get_next_filtration_step(ss, &dim, &filtrationValue, &vertices)){	// reads the next filtration operation from output stream
-	// do something with result:
-	// dim: dimension of new inserted simplex
-	// filtrationValue: filtration value of new inserted simplex
-	// vertices: vertices of new inserted simplex
-	//	in the case where 'Tower_converter::FACES' was used, it contains the faces of the new inserted simplex
+		// do something with result:
+		// dim: dimension of new inserted simplex
+		// filtrationValue: filtration value of new inserted simplex
+		// vertices: vertices of new inserted simplex
+		//	in the case where 'Tower_converter::FACES' was used, it contains the faces of the new inserted simplex
 
-	// for example, print information:
+		// for example, print information:
 
-	std::cout << dim << " ";
-	for (int i = 0; i < vertices.size(); i++){
-	    std::cout << vertices.at(i) << " ";
+		std::cout << dim << " ";
+		for (int i = 0; i < vertices.size(); i++){
+			std::cout << vertices.at(i) << " ";
+		}
+		std::cout << filtrationValue << "\n";
 	}
-	std::cout << filtrationValue << "\n";
-    }
 
-    ss->clear();     //to enable rewriting in ss.
+	ss->clear();     //to enable rewriting in ss.
 }
 
 bool get_next_filtration_step(std::stringstream *ss, int *dim, int *filtrationValue, std::vector<vertex> *vertices){
     std::string line;
     if (getline(*ss, line, '\n')){
-	std::stringstream nss(line);
-	vertices->clear();
-	int buf;
-	nss >> *dim;
-	while (nss >> buf) vertices->push_back(buf);
-	*filtrationValue = vertices->back();
-	vertices->pop_back();
-	return true;
+		std::stringstream nss(line);
+		vertices->clear();
+		int buf;
+		nss >> *dim;
+		while (nss >> buf) vertices->push_back(buf);
+		*filtrationValue = vertices->back();
+		vertices->pop_back();
+		return true;
     } else {
-	return false;
+		return false;
     }
 }
 
