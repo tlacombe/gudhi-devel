@@ -50,7 +50,7 @@ class Persistence
 public:
     using vertex = typename ComplexStructure::vertex;	    /**< Type for vertex identifiers. */
     using index = typename ComplexStructure::index;	    /**< Type for simplex identifiers. */
-    using size_type = typename ComplexStructure::size_type;  /**< Type for size mesure. */
+    using size_type = typename ComplexStructure::size_type; /**< Type for size mesure. */
     using simplex_base = typename std::vector<vertex>;	    /**< Type for simplices. */
 
     Persistence(size_type reductionInterval, std::string persistencePairsFileName);
@@ -89,6 +89,7 @@ public:
     };
 
     bool add_insertion(simplex_base &simplex, double timestamp);
+    bool add_insertions_via_edge_expansion(vertex u, vertex v, double timestamp, int maxExpDim);
     void add_contraction(vertex v, vertex u, double timestamp);
     void finalize_reduction();
 
@@ -148,6 +149,32 @@ bool Persistence<ComplexStructure, ColumnType>::add_insertion(simplex_base &simp
 
     if (fmod(insertionNum, reductionInterval_) == 0) {
         compute_partial_persistence();
+    }
+
+    return true;
+}
+
+template<class ComplexStructure, class ColumnType>
+bool Persistence<ComplexStructure, ColumnType>::add_insertions_via_edge_expansion(vertex u, vertex v, double timestamp, int maxExpDim)
+{
+    std::vector<simplex_base> addedSimplices;
+    std::vector<std::vector<index>*> boundaries;
+    std::vector<index> insertionNumbers;
+    int c = 0;
+
+    if (!converter_->add_insertions_via_edge_expansion(u, v, timestamp, maxExpDim, &addedSimplices, &boundaries, &insertionNumbers)) return false;
+
+    for (simplex_base simplex : addedSimplices){
+	if (simplex.size() == 1) {
+	    matrix_->insert_vertex(insertionNumbers.at(c), timestamp);
+	} else {
+	    matrix_->insert_column(insertionNumbers.at(c), *(boundaries.at(c)), timestamp);
+
+	    if (fmod(insertionNumbers.at(c), reductionInterval_) == 0) {
+		compute_partial_persistence();
+	    }
+	}
+	++c;
     }
 
     return true;
