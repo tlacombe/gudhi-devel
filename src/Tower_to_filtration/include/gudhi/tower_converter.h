@@ -52,16 +52,15 @@ public:
     using simplex_base = typename std::vector<vertex>;	    /**< Type for simplices. */
 
     /**
-     * @brief Enumeration for the streaming format.
+     * @brief Callback function model for output.
+     * @param complex pointer to the stored complex.
+     * @param simplex vector of vertex identifiers of the next simplex in the filtration.
+     * @param timestamp filtration value of the next simplex in the filtration.
      */
-    enum streamingType : int {
-        FACES,      /**< Simplices will be represented by the identifiers of their facets in the output. */
-        VERTICES    /**< Simplices will be represented by the identifiers of their vertices in the output. */
-    };
+    typedef void (*process_output)(ComplexStructure *complex, std::vector<vertex> &simplex, double timestamp);
 
     Tower_converter();
-    Tower_converter(std::stringstream *outputStream, streamingType type = VERTICES);
-    Tower_converter(std::string outputFileName, streamingType type = VERTICES);
+    Tower_converter(process_output outputFunction);
     ~Tower_converter();
 
     bool add_insertion(simplex_base &simplex, double timestamp);
@@ -80,9 +79,7 @@ public:
 private:
     ComplexStructure *complex_;                     /**< Current complex. */
     std::unordered_map<vertex, vertex> *vertices_;  /**< Current vertices in the complex. Keeps the coherence between vertex identifiers outside and inside the class. */
-    std::stringstream *outputStream_;               /**< Output stream. */
-    std::ofstream *outputFile_;                     /**< Output file. */
-    streamingType streamingType_;                   /**< Output format. See Enumeration `streamingType`. */
+    process_output outputFunction_;		    /**< Output function. */
     size_type filtrationSize_;                      /**< Current filtration size. */
     size_type towerWidth_;                          /**< Current tower width. */
 
@@ -96,7 +93,7 @@ template<class ComplexStructure>
  *
  * Initializes the members. The output option is set as "no output".
  */
-Tower_converter<ComplexStructure>::Tower_converter() : outputStream_(nullptr), outputFile_(nullptr), streamingType_(VERTICES), filtrationSize_(0), towerWidth_(0)
+Tower_converter<ComplexStructure>::Tower_converter() : outputFunction_(nullptr), filtrationSize_(0), towerWidth_(0)
 {
     vertices_ = new std::unordered_map<vertex, vertex>();
     complex_ = new ComplexStructure();
@@ -104,36 +101,14 @@ Tower_converter<ComplexStructure>::Tower_converter() : outputStream_(nullptr), o
 
 template<class ComplexStructure>
 /**
- * @brief Full constructor (1).
+ * @brief Full constructor.
  *
- * Initializes the members. The output stream will be redirected to @p outputStream with the output format @p type.
+ * Initializes the members. The output stream will be redirected to @p outputFunction.
  *
- * @param outputStream Pointer to a std::stringstream.
- * @param type Output format. By default it is #VERTICES. See Enumeration #streamingType.
+ * @param outputFunction pointer to a callback function which process the filtration output stream.
  */
-Tower_converter<ComplexStructure>::Tower_converter(std::stringstream *outputStream, streamingType type) :
-    outputStream_(outputStream), outputFile_(nullptr), streamingType_(type), filtrationSize_(0), towerWidth_(0)
+Tower_converter<ComplexStructure>::Tower_converter(process_output outputFunction) : outputFunction_(outputFunction), filtrationSize_(0), towerWidth_(0)
 {
-    vertices_ = new std::unordered_map<vertex, vertex>();
-    complex_ = new ComplexStructure();
-}
-
-template<class ComplexStructure>
-/**
- * @brief Full constructor (2).
- *
- * Initializes the members. The output stream will be redirected to @p outputFileName with the output format @p type.
- *
- * @param outputFileName File name for the output.
- * @param type Output format. By default it is #VERTICES. See Enumeration #streamingType.
- */
-Tower_converter<ComplexStructure>::Tower_converter(std::string outputFileName, streamingType type) : outputStream_(nullptr), streamingType_(type), filtrationSize_(0), towerWidth_(0)
-{
-    outputFile_ = new std::ofstream(outputFileName);
-    if (!outputFile_->is_open()){
-        std::cout << "Output File could not be open.\n";
-	return;
-    }
     vertices_ = new std::unordered_map<vertex, vertex>();
     complex_ = new ComplexStructure();
 }
@@ -144,10 +119,6 @@ template<class ComplexStructure>
  */
 Tower_converter<ComplexStructure>::~Tower_converter()
 {
-    if (outputFile_ != nullptr){
-        outputFile_->close();
-        delete outputFile_;
-    }
     delete vertices_;
     delete complex_;
 }
@@ -359,39 +330,14 @@ void Tower_converter<ComplexStructure>::get_union(vertex v, std::vector<simplex_
 
 template<class ComplexStructure>
 /**
- * @brief Writes the simplex as an insertion in the output.
+ * @brief Writes the simplex as an insertion in the output stream.
  * @param simplex simplex to be inserted.
  * @param timestamp filtration value of the insertion.
  */
 void Tower_converter<ComplexStructure>::stream_simplex(simplex_base &simplex, double timestamp)
 {
     filtrationSize_++;
-
-    std::ostream *stream;
-    if (outputStream_ == nullptr && outputFile_ == nullptr) return;
-    else if (outputStream_ != nullptr) stream = outputStream_;
-    else stream = outputFile_;
-
-    typename simplex_base::size_type size = simplex.size();
-    *stream << std::setprecision(std::numeric_limits<double>::digits10 + 1) << (size - 1) << " ";
-    //std::cout << std::setprecision(std::numeric_limits<double>::digits10 + 1) << (size - 1) << " ";
-    if (streamingType_ == FACES){
-        if (size > 1){
-            std::vector<index> boundary;
-	    complex_->get_boundary(simplex, &boundary);
-	    for (typename std::vector<index>::size_type i = 0; i < size; i++){
-                *stream << boundary.at(i) << " ";
-                //std::cout << boundary.at(i) << " ";
-            }
-        }
-    } else {
-	for (typename simplex_base::size_type i = 0; i < size; i++){
-	    *stream << simplex.at(i) << " ";
-            //std::cout << simplex->at(i) << " ";
-        }
-    }
-    *stream << timestamp << "\n";
-    //std::cout << timestamp << "\n";
+    if (outputFunction_ != nullptr) outputFunction_(complex_, simplex, timestamp);
 }
 
 }

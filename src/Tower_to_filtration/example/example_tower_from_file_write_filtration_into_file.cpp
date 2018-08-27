@@ -31,28 +31,69 @@ using namespace Gudhi::tower_to_filtration;	//module namespace
  * @brief Print usage of example file
  */
 void print_usage(){
-    std::cout << "Usage:\n";
-    std::cout << "  ./example_tower_from_file_write_filtration_into_file input_file_name output_file_name\n";
+	std::cout << "Usage:" << std::endl;
+	std::cout << "  ./example_tower_from_file_write_filtration_into_file input_file_name output_file_name" << std::endl;
 }
+
+std::ofstream *outputFile;		/**< Pointer to output file. */
+
+void write_tc_results_to_file_as_vertices(Hash_complex *complex, std::vector<Hash_complex::vertex> &simplex, double timestamp);	/**< Exemple 1 of callback function for Tower_converter. */
+void write_tc_results_to_file_as_faces(Hash_complex *complex, std::vector<Hash_complex::vertex> &simplex, double timestamp);	/**< Exemple 2 of callback function for Tower_converter. */
 
 int main(int argc, char *argv[])
 {
     if (argc != 3){
-	print_usage();
-	return 0;
+		print_usage();
+		return 0;
     }
 
     std::ifstream file(argv[1]);
-    Tower_converter<Hash_complex> tc(argv[2]);	    // by default: output with vertices of simplices, for faces use 'Tower_converter::FACES' as second argument.
-						    // see documentation for output file format.
+	outputFile = new std::ofstream(argv[2]);
 
-    if (file.is_open()){
-	file >> tc;				    // >> function in gudhi/tc_reading_utilities.h, see documentation for input file format.
+	if (!outputFile->is_open()){
+		std::cout << "Unable to open output file." << std::endl;
+		if (!file.is_open()){
+			std::cout << "Unable to open input file." << std::endl;
+			file.setstate(std::ios::failbit);
+		}
+		return 0;
+	}
+	if (!file.is_open()){
+		std::cout << "Unable to open input file." << std::endl;
+		file.setstate(std::ios::failbit);
+		outputFile->close();
+		return 0;
+	}
+
+	Tower_converter<Hash_complex> tc(write_tc_results_to_file_as_vertices);	// output callback function ; another exemple: write_tc_results_to_file_as_faces.
+	file >> tc;		// >> function in gudhi/tc_reading_utilities.h, see documentation for input file format.
+
 	file.close();
-    } else {
-	std::cout << "Unable to open input file\n";
-	file.setstate(std::ios::failbit);
+	outputFile->close();
 	return 0;
-    }
 }
+
+void write_tc_results_to_file_as_vertices(Hash_complex *complex, std::vector<Hash_complex::vertex> &simplex, double timestamp){
+	std::vector<Hash_complex::vertex>::size_type size = simplex.size();
+	*outputFile << std::setprecision(std::numeric_limits<double>::digits10 + 1) << (size - 1) << " ";
+	for (std::vector<Hash_complex::vertex>::size_type i = 0; i < size; i++){
+		*outputFile << simplex.at(i) << " ";
+	}
+	*outputFile << timestamp << std::endl;
+}
+
+void write_tc_results_to_file_as_faces(Hash_complex *complex, std::vector<Hash_complex::vertex> &simplex, double timestamp){
+	std::vector<Hash_complex::vertex>::size_type size = simplex.size();
+	*outputFile << std::setprecision(std::numeric_limits<double>::digits10 + 1) << (size - 1) << " ";
+	if (size > 1){
+		std::vector<Hash_complex::index> boundary;
+		complex->get_boundary(simplex, &boundary);
+		for (std::vector<Hash_complex::index>::size_type i = 0; i < size; i++){
+			*outputFile << boundary.at(i) << " ";
+		}
+	}
+	*outputFile << timestamp << std::endl;
+}
+
+
 

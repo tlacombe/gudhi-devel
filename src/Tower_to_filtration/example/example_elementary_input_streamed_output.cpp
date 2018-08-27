@@ -31,8 +31,8 @@ using namespace Gudhi::tower_to_filtration;	//module namespace
  * @brief Print usage of example file
  */
 void print_usage(){
-    std::cout << "Usage:\n";
-    std::cout << "  ./example_elementary_input_streamed_output\n";
+	std::cout << "Usage:" << std::endl;
+	std::cout << "  ./example_elementary_input_streamed_output" << std::endl;
 }
 
 using vertex = Hash_complex::vertex;
@@ -43,8 +43,8 @@ void do_something_with_next_filtration_steps(std::stringstream *ss);												
 int main(int argc, char *argv[])
 {
     if (argc != 1){
-	print_usage();
-	return 0;
+		print_usage();
+		return 0;
     }
 
     std::stringstream ss;
@@ -151,7 +151,7 @@ void do_something_with_next_filtration_steps(std::stringstream *ss){
 		for (int i = 0; i < vertices.size(); i++){
 			std::cout << vertices.at(i) << " ";
 		}
-		std::cout << filtrationValue << "\n";
+		std::cout << filtrationValue << std::endl;
 	}
 
 	ss->clear();     //to enable rewriting in ss.

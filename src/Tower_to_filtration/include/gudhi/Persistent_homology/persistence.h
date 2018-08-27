@@ -53,7 +53,15 @@ public:
     using size_type = typename ComplexStructure::size_type; /**< Type for size mesure. */
     using simplex_base = typename std::vector<vertex>;	    /**< Type for simplices. */
 
-    Persistence(size_type reductionInterval, std::string persistencePairsFileName);
+    /**
+     * @brief Callback function model for output.
+     * @param dim dimension of the persistence pair.
+     * @param birth birth time of the persistence pair.
+     * @param death death time of the persistence pair.
+     */
+    typedef void (*process_persistence_pair)(int dim, double birth, double death);
+
+    Persistence(size_type reductionInterval, process_persistence_pair outputFunction);
     ~Persistence();
 
     /**
@@ -62,7 +70,7 @@ public:
     class Boundary_matrix
     {
     public:
-	Boundary_matrix(std::string persistencePairsFileName);
+	Boundary_matrix(process_persistence_pair outputFunction);
 	~Boundary_matrix();
 
 	void insert_column(index insertionNumber, std::vector<index> &boundary, double timestamp);
@@ -82,10 +90,10 @@ public:
 	std::unordered_map<double, double> *timestamps_;                        /**< Column number to filtration value map. */
 	index lastInsertNumber_;						/**< Identifier of the latest inserted simplex (as column). */
 	int maxDim_;                                                            /**< Maximal dimension of an inserted simplex. */
-	std::ofstream *persistencePairsFile_;                                   /**< Output stream. */
+	process_persistence_pair outputFunction_;                               /**< Output function. */
 
 	void clear_column(index columnIndex);
-	void print_persistence_pair(int dim, double birth, double death);
+	void stream_persistence_pair(int dim, double birth, double death);
     };
 
     bool add_insertion(simplex_base &simplex, double timestamp);
@@ -108,12 +116,12 @@ template<class ComplexStructure, class ColumnType>
 /**
  * @brief Constructor
  * @param reductionInterval number of steps between each matrix processing. The higher the interval, the faster the computing, but the bigger the space consumption.
- * @param persistencePairsFileName file name for the output.
+ * @param outputFunction pointer to a callback function which process the persistence pairs' output stream.
  */
-Persistence<ComplexStructure, ColumnType>::Persistence(size_type reductionInterval, std::string persistencePairsFileName) : reductionInterval_(reductionInterval), lastReduction_(-1)
+Persistence<ComplexStructure, ColumnType>::Persistence(size_type reductionInterval, process_persistence_pair outputFunction) : reductionInterval_(reductionInterval), lastReduction_(-1)
 {
     converter_ = new Tower_converter<ComplexStructure>();
-    matrix_ = new Boundary_matrix(persistencePairsFileName);
+    matrix_ = new Boundary_matrix(outputFunction);
     if (reductionInterval_ < 1) reductionInterval_ = 1;
 }
 
@@ -242,19 +250,14 @@ inline void Persistence<ComplexStructure, ColumnType>::compute_partial_persisten
 template<class ComplexStructure, class ColumnType>
 /**
  * @brief Constructor
- * @param persistencePairsFileName file name for the output.
+ * @param outputFunction pointer to a callback function which process the persistence pairs' output stream.
  */
-Persistence<ComplexStructure, ColumnType>::Boundary_matrix::Boundary_matrix(std::string persistencePairsFileName) : lastInsertNumber_(-1), maxDim_(-1)
+Persistence<ComplexStructure, ColumnType>::Boundary_matrix::Boundary_matrix(process_persistence_pair outputFunction) : lastInsertNumber_(-1), maxDim_(-1), outputFunction_(outputFunction)
 {
     columns_ = new std::unordered_map<index, ColumnType*>();
     latest_ = new std::unordered_map<index, index>();
     isActivePositive_ = new std::unordered_map<index, std::pair<bool, bool>*>();
     timestamps_ = new std::unordered_map<double, double>();
-    persistencePairsFile_ = new std::ofstream(persistencePairsFileName);
-    if (!persistencePairsFile_->is_open()){
-        std::cout << "Persistence Pairs File could not be open\n";
-        exit(0);
-    }
 }
 
 template<class ComplexStructure, class ColumnType>
@@ -272,8 +275,6 @@ Persistence<ComplexStructure, ColumnType>::Boundary_matrix::~Boundary_matrix()
         delete it->second;
     }
     delete isActivePositive_;
-    persistencePairsFile_->close();
-    delete persistencePairsFile_;
     delete timestamps_;
 }
 
@@ -334,7 +335,7 @@ void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::reduce(size_typ
                     isActivePositive_->at(i)->second = false;
                     latest_->emplace(pivot, i);
                     clear_column(pivot);
-                    print_persistence_pair(d - 1, pivot, i);
+		    stream_persistence_pair(d - 1, pivot, i);
                 } else {
                     clear_column(i);
                 }
@@ -452,10 +453,9 @@ template<class ComplexStructure, class ColumnType>
  * @param birth birth value of the corresponding cycle class.
  * @param death death value of the corresponding cycle class.
  */
-inline void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::print_persistence_pair(int dim, double birth, double death)
+inline void Persistence<ComplexStructure, ColumnType>::Boundary_matrix::stream_persistence_pair(int dim, double birth, double death)
 {
-    if (timestamps_->at(birth) != timestamps_->at(death)) *persistencePairsFile_ << std::setprecision(std::numeric_limits<double>::digits10 + 1)
-                                                                              << dim << " " << timestamps_->at(birth) << " " << timestamps_->at(death) << std::endl;
+    if (outputFunction_ != nullptr && timestamps_->at(birth) != timestamps_->at(death)) outputFunction_(dim, timestamps_->at(birth), timestamps_->at(death));
     timestamps_->erase(birth);
     timestamps_->erase(death);
 }
