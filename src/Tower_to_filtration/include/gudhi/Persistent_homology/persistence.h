@@ -77,8 +77,8 @@ public:
 	void insert_vertex(index insertionNumber, double timestamp);
 	void reduce(size_type start);
 	void clear_out();
-	void mark_inactive(std::vector<index> &insertionNumbers);
-	void mark_inactive(index insertionNumber);
+	void mark_inactive(std::vector<typename ComplexStructure::index> &insertionNumbers);
+	void mark_inactive(typename ComplexStructure::index insertionNumber);
 
 	index get_last_insert_number() const;
 	int get_max_dim() const;
@@ -138,7 +138,7 @@ Persistence<ComplexStructure, ColumnType>::~Persistence()
 
 template<class ComplexStructure, class ColumnType>
 /**
- * @brief Add an elementary insertion as the next tower operation.
+ * @brief Adds an elementary insertion as the next tower operation.
  * @param simplex simplex to be inserted, represented as a vector of its vertex identifiers in increasing order.
  * @param timestamp time value or filtration value which will be associated to the operation in the filtration. Has to be equal or higher to the precedent ones.
  * @return true if the simplex was not already inserted in the complex, false otherwise.
@@ -163,6 +163,14 @@ bool Persistence<ComplexStructure, ColumnType>::add_insertion(simplex_base &simp
 }
 
 template<class ComplexStructure, class ColumnType>
+/**
+ * @brief Adds a sequence of elementary insertions as the next tower operations. These consists of inserting the edge @p uv (and its vertices if not inserted) and all its possible cofaces.
+ * @param u vertex identifier of the first vertex of the edge.
+ * @param v vertex identifier of the second vertex of the edge.
+ * @param timestamp filtration value for the insertions
+ * @param maxExpDim maximal dimension of the cofaces to be inserted ; if -1, then there is no limit.
+ * @return true if the edge was not already inserted in the complex, false otherwise.
+ */
 bool Persistence<ComplexStructure, ColumnType>::add_insertions_via_edge_expansion(vertex u, vertex v, double timestamp, int maxExpDim)
 {
     std::vector<simplex_base> addedSimplices;
@@ -190,7 +198,7 @@ bool Persistence<ComplexStructure, ColumnType>::add_insertions_via_edge_expansio
 
 template<class ComplexStructure, class ColumnType>
 /**
- * @brief Add an elementary contraction as the next tower operation.
+ * @brief Adds an elementary contraction as the next tower operation.
  * @param v identifier of the contracted vertex which disappears from the complex.
  * @param u identifier of the contracted vertex which remains in the complex.
  * @param timestamp time value or filtration value which will be associated to the operation in the filtration. Has to be equal or higher to the precedent ones.

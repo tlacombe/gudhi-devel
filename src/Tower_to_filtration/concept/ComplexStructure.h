@@ -52,10 +52,19 @@ public:
      */
     bool insert_simplex(std::vector<vertex> &numVertices);
     /**
-     * @brief Remove a simplex and all its cofaces from the complex.
-     * @param vertex simplex to be removed. This modules only needs to call the function on vertices.
+     * @brief Inserts the edge @p uv (and its vertices if not inserted) and all its possible cofaces.
+     * @param u vertex identifier of the first vertex of the edge ; the module calls the method such that @p u < @p v.
+     * @param v vertex identifier of the second vertex of the edge ; the module calls the method such that @p u < @p v.
+     * @param maxDim the maximal dimension of the cofaces to be inserted ; if -1, then there is no limit.
+     * @param addedSimplices pointer to an (empty) vector of simplices ; the method stores in insertion order all newly inserted simplices here.
+     * @param addedIndices pointer to an (empty) vector of identifiers ;
+     *	    the method stores there the identifiers of the simplices in @p addedSimplices in the corresponding order.
+     * @param boundaries pointer to an (empty) vector of boundary identifiers ;
+     *	    the method stores there the identifiers of the boundary simplices of the simplices in @p addedSimplices in the corresponding order.
+     * @return true if the edge was not already inserted in the complex, false otherwise.
+     *	    This module uses the result in an `if` statement, the output does not have to be `bool` if the test result is the same.
      */
-    void remove_simplex(std::vector<vertex> &vertex);
+    bool insert_edge_and_expand(vertex u, vertex v, int maxDim, std::vector<std::vector<vertex> > *addedSimplices, std::vector<index> *addedIndices, std::vector<std::vector<index>*> *boundaries);
     /**
      * @brief Remove a simplex and all its cofaces from the complex.
      * @param vertex simplex to be removed. This modules only needs to call the function on vertices.
@@ -93,16 +102,6 @@ public:
      * @return Current biggest identifier of a simplex.
      */
     index get_max_index() const;
-    /**
-     * @brief Returns the maximal size the complex had at some point until now.
-     * @return The maximal size the complex had at some point until now.
-     */
-    size_type get_max_size() const;
-    /**
-     * @brief Returns the maximal dimension of the simplices currently in the complex.
-     * @return Maximal dimension of the simplices currently in the complex.
-     */
-    int get_max_dimension() const;
 };
 
 }

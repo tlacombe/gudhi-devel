@@ -70,26 +70,29 @@ namespace tower_to_filtration {
  *
  * @section usage Usage
  *
- * @ref Tower_converter and @ref Persistence can both be used via two functions:
+ * @ref Tower_converter (TC) and @ref Persistence (P) can both be used via four functions:
  *
- * <span style="color:red;">TODO</span>: make @ref Persistence independent of @ref Tower_converter
- * (i.e. @ref Tower_converter has to be used externally).
- *
- * - @ref Tower_converter<ComplexStructure>::add_insertion /
- *	@ref Persistence<ComplexStructure,ColumnType>::add_insertion
+ * - add_insertion [@link Tower_converter<ComplexStructure>::add_insertion TC@endlink || @link Persistence<ComplexStructure,ColumnType>::add_insertion P@endlink]
  *
  * Add an elementary tower insertion operation, which is directly processed.
  * As result, the insertion is added to the output filtration.
  *
- * - @ref Tower_converter<ComplexStructure>::add_contraction /
- *	@ref Persistence<ComplexStructure,ColumnType>::add_contraction
+ * - add_faces_insertions <span style="color:red;">TODO</span>
+ *
+ * Add as elementary tower insertion operations the insertion of a simplex and all its faces (when not already inserted).
+ * As result, the sequence of insertions is added to the output filtration.
+ *
+ * - add_insertions_via_edge_expansion [@link Tower_converter<ComplexStructure>::add_insertions_via_edge_expansion TC@endlink ||
+ *	@link Persistence<ComplexStructure,ColumnType>::add_insertions_via_edge_expansion P@endlink]
+ *
+ * Add as elementary tower insertion operations the insertion of an edge, its vertices (if not already inserted) and all its possible cofaces.
+ * If used without @p add_insertion or @p add_faces_insertions, it builds the flag complex based on the given edges.
+ * As result, the sequence of insertions is added to the output filtration.
+ *
+ * - add_contraction [@link Tower_converter<ComplexStructure>::add_contraction TC@endlink || @link Persistence<ComplexStructure,ColumnType>::add_contraction P@endlink]
  *
  * Add an elementary tower contraction operation, which is directly processed.
- * As result, all the sequence of insertions equivalent to the given contraction  is added to the output filtration.
- *
- * - <span style="color:red;">TODO</span>
- *
- * Allowing sequence of edges as input to build flag complex
+ * As result, all the sequence of insertions equivalent to the given contraction is added to the output filtration.
  *
  * @subsection temp Templates
  *
@@ -106,36 +109,21 @@ namespace tower_to_filtration {
  *
  * - Output format
  *
- * @ref Tower_converter outputs its result either in a file,
- * or in an output stream (std::stringstream). In both cases, it uses the same output format:
+ * Both @ref Tower_converter and @ref Persistence use a callback function to output their results.
+ * Therefore the output has to be processed by the user.
+ * See Tower_converter<ComplexStructure>::process_output and Persistence<ComplexStructure,ColumnType>::process_persistence_pair
+ * for more information.
+ * See the example files @link examples [1]@endlink for examples of use.
  *
- * Each new line corresponds to an inclusion of a @f$d@f$-simplex @f$s@f$:
- *
- * @f$\quad\quad d@f$ @f$v_1@f$ ... @f$v_{d+1}@f$ @f$ts@f$,
- *
- * where @f$(v_i)_{1 \leq i \leq d+1}@f$ is by default the set of vertices of @f$s@f$
- * (option @ref Tower_converter::VERTICES)
- * or the set of facets of @f$s@f$ (option @ref Tower_converter::FACES).
- * For each @f$i < j \in \{1,...,d+1\}@f$, @f$v_i < v_j@f$.
- * And @f$ts@f$ corresponds to the filtration value of @f$s@f$.
- *
- * @ref Persistence outputs the persistence barcode in a file,
- * where each new line corresponds to a persistence pair @f$(b,d)@f$ of dimension @f$dim@f$:
- *
- * @f$\quad\quad dim@f$ @f$b@f$ @f$d@f$.
- *
- * Essential cycles (i.e. paired with infinity) are not printed.
- * <span style="color:red;">(Add "finalize function" to enable the printing of those paires?)</span>
- *
- * <span style="color:red;">(Other output kind of interest: callback to get tuple (dim,birth,death).)</span>
+ * Note that for @ref Persistence, only the persistence pairs are given to the output (because of the streaming format).
+ * Essential cycles (i.e. paired with infinity) are not outputed.
+ * <span style="color:red;">(Add "finalize function" to enable getting this paires?)</span>
  *
  * - Input format
  *
  * The file tc_reading_utilities.h includes two reading functions
  * `read_operation` and `>>`
- * (see @link Tower_to_filtration/example_tower_from_file_write_filtration_into_file.cpp [1] @endlink and
- * @link Tower_to_filtration/example_tower_from_file_streamed_output.cpp [2] @endlink
- * for examples of use).
+ * (see @link Tower_to_filtration/example_tower_from_file_write_filtration_into_file.cpp [2]@endlink for examples of use).
  * The input format for both is the following.
  *
  * Each line is either a comment beginning with '#' or a tower operation:
@@ -162,7 +150,7 @@ namespace tower_to_filtration {
  *
  * Following examples are avaible in the 'example/Tower_to_filtration/' folder.
  *
- * - @link Tower_to_filtration/example_tower_from_file_write_filtration_into_file.cpp example_tower_from_file_write_filtration_into_file.cpp @endlink
+ * - @link Tower_to_filtration/example_tower_from_file_write_filtration_into_file.cpp example_tower_from_file_write_filtration_into_file.cpp@endlink
  *
  * @code{.sh}
  *	./Tower_to_filtration_example_tower_from_file_write_filtration_into_file input_file_name output_file_name
@@ -171,34 +159,14 @@ namespace tower_to_filtration {
  * and writing the resulting filtration in a file.
  * See @ref sophiafileformat.
  *
- * - @link Tower_to_filtration/example_tower_from_file_streamed_output.cpp example_tower_from_file_streamed_output.cpp @endlink
- *
- * @code{.sh}
- *	./Tower_to_filtration_example_tower_from_file_streamed_output input_file_name
- * @endcode
- * Simple example of how to use the module when reading the tower from a file and
- * writing the resulting filtration in an output stream.
- * See @ref sophiafileformat.
- * The output stream should be processed/emptied regularly to avoid memory consumption.
- *
- * - @link Tower_to_filtration/example_elementary_input_streamed_output.cpp example_elementary_input_streamed_output.cpp @endlink
- *
- * @code{.sh}
- *	./Tower_to_filtration_example_elementary_input_streamed_output
- * @endcode
- * Simple example of how to add tower operations to the module and
- * writing the resulting filtration in an output stream.
- * See @ref sophiafileformat for stream output format.
- * The output stream should be processed/emptied regularly to avoid memory consumption.
- *
- * - @link Tower_to_filtration/example_elementary_input_write_filtration_into_file.cpp example_elementary_input_write_filtration_into_file.cpp @endlink
+ * - @link Tower_to_filtration/example_elementary_input_write_filtration_into_file.cpp example_elementary_input_write_filtration_into_file.cpp@endlink
  *
  * @code{.sh}
  *	./Tower_to_filtration_example_elementary_input_write_filtration_into_file output_file_name
  * @endcode
  * Simple example of how to add tower operations to the module
  * and writing the resulting filtration in a file.
- * See @ref sophiafileformat for output format.
+ * See @ref sophiafileformat.
  *
  * - <span style="color:red;">TODO</span>: examples for persistence
  *

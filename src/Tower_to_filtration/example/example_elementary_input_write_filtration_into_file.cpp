@@ -39,8 +39,8 @@ using vertex = Hash_complex::vertex;
 
 std::ofstream *outputFile;		/**< Pointer to output file. */
 
-void write_tc_results_to_file_as_vertices(Hash_complex *complex, std::vector<vertex> &simplex, double timestamp);	/**< Exemple 1 of callback function for Tower_converter. */
-void write_tc_results_to_file_as_faces(Hash_complex *complex, std::vector<vertex> &simplex, double timestamp);		/**< Exemple 2 of callback function for Tower_converter. */
+void write_tc_results_to_file_as_vertices(Hash_complex *complex, std::vector<vertex> &simplex, double timestamp);	/**< Example 1 of callback function for Tower_converter. */
+void write_tc_results_to_file_as_faces(Hash_complex *complex, std::vector<vertex> &simplex, double timestamp);		/**< Example 2 of callback function for Tower_converter. */
 
 int main(int argc, char *argv[])
 {
@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-	Tower_converter<Hash_complex> tc(write_tc_results_to_file_as_vertices);	// output callback function ; another exemple: write_tc_results_to_file_as_faces.
+	Tower_converter<Hash_complex> tc(write_tc_results_to_file_as_vertices);	// output callback function ; another example: write_tc_results_to_file_as_faces.
 
 	vertices.push_back(0);
 	tc.add_insertion(vertices, 0);		// add vertex 0 at time 0

@@ -74,7 +74,6 @@ public:
     ComplexStructure *get_complex() const;
     size_type get_filtration_size() const;
     size_type get_tower_width() const;
-    void print_filtration_data();
 
 private:
     ComplexStructure *complex_;                     /**< Current complex. */
@@ -125,7 +124,7 @@ Tower_converter<ComplexStructure>::~Tower_converter()
 
 template<class ComplexStructure>
 /**
- * @brief Add an elementary insertion as the next tower operation and convert it into the output stream.
+ * @brief Adds an elementary insertion as the next tower operation and convert it into the output stream.
  * @param simplex simplex to be inserted, represented as a vector of its vertex identifiers in increasing order.
  * @param timestamp time value or filtration value which will be associated to the operation in the filtration. Has to be equal or higher to the precedent ones.
  * @return true if the simplex was not already inserted in the complex, false otherwise.
@@ -137,7 +136,7 @@ inline bool Tower_converter<ComplexStructure>::add_insertion(simplex_base &simpl
 
 template<class ComplexStructure>
 /**
- * @brief Add an elementary insertion as the next tower operation and convert it into the output stream.
+ * @brief Adds an elementary insertion as the next tower operation and convert it into the output stream.
  * @param simplex simplex to be inserted, represented as a vector of its vertex identifiers in increasing order.
  * @param timestamp time value or filtration value which will be associated to the operation in the filtration. Has to be equal or higher to the precedent ones.
  * @param simplexBoundary pointer to an (empty) vector, where the identifiers of the boundary of the inserted simplex will be stored.
@@ -168,12 +167,33 @@ bool Tower_converter<ComplexStructure>::add_insertion(simplex_base &simplex, dou
 }
 
 template<class ComplexStructure>
+/**
+ * @brief Adds a sequence of elementary insertions as the next tower operations. These consists of inserting the edge @p uv (and its vertices if not inserted) and all its possible cofaces.
+ * @param u vertex identifier of the first vertex of the edge.
+ * @param v vertex identifier of the second vertex of the edge.
+ * @param timestamp filtration value for the insertions
+ * @param maxExpDim maximal dimension of the cofaces to be inserted ; if -1, then there is no limit.
+ * @return true if the edge was not already inserted in the complex, false otherwise.
+ */
 bool Tower_converter<ComplexStructure>::add_insertions_via_edge_expansion(vertex u, vertex v, double timestamp, int maxExpDim)
 {
     return add_insertions_via_edge_expansion(u, v, timestamp, maxExpDim, nullptr, nullptr, nullptr);
 }
 
 template<class ComplexStructure>
+/**
+ * @brief Adds a sequence of elementary insertions as the next tower operations. These consists of inserting the edge @p uv (and its vertices if not inserted) and all its possible cofaces.
+ * @param u vertex identifier of the first vertex of the edge.
+ * @param v vertex identifier of the second vertex of the edge.
+ * @param timestamp filtration value for the insertions
+ * @param maxExpDim maximal dimension of the cofaces to be inserted ; if -1, then there is no limit.
+ * @param addedSimplices pointer to an (empty) vector of simplices ; the method stores in insertion order all newly inserted simplices here.
+ * @param boundaries pointer to an (empty) vector of boundary identifiers ; the method stores there the identifiers of the
+ *	boundary simplices of the simplices in @p addedSimplices in the corresponding order.
+ * @param insertionNumbers pointer to an (empty) vector of identifiers ;
+ *	the method stores there the identifiers of the simplices in @p addedSimplices in the corresponding order.
+ * @return
+ */
 bool Tower_converter<ComplexStructure>::add_insertions_via_edge_expansion(vertex u, vertex v, double timestamp, int maxExpDim, std::vector<simplex_base> *addedSimplices,
 									  std::vector<std::vector<index>*> *boundaries, std::vector<index> *insertionNumbers)
 {
@@ -206,7 +226,7 @@ bool Tower_converter<ComplexStructure>::add_insertions_via_edge_expansion(vertex
 
 template<class ComplexStructure>
 /**
- * @brief Add an elementary contraction as the next tower operation and convert it into a equivalent sequence of insertions into the output stream.
+ * @brief Adds an elementary contraction as the next tower operation and convert it into a equivalent sequence of insertions into the output stream.
  * @param v identifier of the contracted vertex which disappears from the complex.
  * @param u identifier of the contracted vertex which remains in the complex.
  * @param timestamp time value or filtration value which will be associated to the operation in the filtration. Has to be equal or higher to the precedent ones.
@@ -221,7 +241,7 @@ inline typename Tower_converter<ComplexStructure>::index Tower_converter<Complex
 
 template<class ComplexStructure>
 /**
- * @brief Add an elementary contraction as the next tower operation and convert it into a equivalent sequence of insertions into the output stream.
+ * @brief Adds an elementary contraction as the next tower operation and convert it into a equivalent sequence of insertions into the output stream.
  * @param v identifier of the contracted vertex which disappears from the complex.
  * @param u identifier of the contracted vertex which remains in the complex.
  * @param timestamp time value or filtration value which will be associated to the operation in the filtration. Has to be equal or higher to the precedent ones.
@@ -285,20 +305,6 @@ template<class ComplexStructure>
 inline typename Tower_converter<ComplexStructure>::size_type Tower_converter<ComplexStructure>::get_tower_width() const
 {
     return towerWidth_;
-}
-
-template<class ComplexStructure>
-/**
- * @brief Prints various information about the filtration in the terminal.
- *
- * Those are: filtration size, maximal size of a complex, maximal dimension of a simplex, tower width.
- */
-inline void Tower_converter<ComplexStructure>::print_filtration_data()
-{
-    std::cout << std::setprecision(std::numeric_limits<double>::digits10 + 1) << "Filtration Size: " << filtrationSize_ << "\n";
-    std::cout << "Max Size: " << complex_->get_max_size() << "\n";
-    std::cout << "Max Dimension: " << complex_->get_max_dimension() << "\n";
-    std::cout << "Tower Width: " << towerWidth_ << "\n";
 }
 
 template<class ComplexStructure>
