@@ -47,8 +47,10 @@ class Tower_converter
 {
 public:
     using vertex = typename ComplexStructure::vertex;	    /**< Type for vertex identifiers. */
-    using index = typename ComplexStructure::index;	    /**< Type for simplex identifiers. */
-    using size_type = typename ComplexStructure::size_type; /**< Type for size mesure. */
+    using simplex_handle = typename ComplexStructure::simplex_handle;
+    using simplex_vertex_range = typename ComplexStructure::simplex_vertex_range;
+    using index = long long;				    /**< Type for simplex identifiers. */
+    using size_type = long long;			    /**< Type for size mesure. */
     using simplex_base = typename std::vector<vertex>;	    /**< Type for simplices. */
 
     /**
@@ -57,7 +59,7 @@ public:
      * @param simplex vector of vertex identifiers of the next simplex in the filtration.
      * @param timestamp filtration value of the next simplex in the filtration.
      */
-    typedef void (*process_output)(ComplexStructure *complex, std::vector<vertex> &simplex, double timestamp);
+    typedef void (*process_output)(ComplexStructure *complex, simplex_handle &simplex, double timestamp);
 
     Tower_converter();
     Tower_converter(process_output outputFunction);
@@ -66,10 +68,10 @@ public:
     bool add_insertion(simplex_base &simplex, double timestamp);
     bool add_insertion(simplex_base &simplex, double timestamp, std::vector<index> *simplexBoundary, index *simplexInsertionNumber);
     bool add_faces_insertions(simplex_base &simplex, double timestamp);
-    bool add_faces_insertions(simplex_base &simplex, double timestamp, std::vector<simplex_base> *addedSimplices, std::vector<std::vector<index>*> *boundaries, std::vector<index> *insertionNumbers);
+    bool add_faces_insertions(simplex_base &simplex, double timestamp, std::vector<std::vector<index>*> *boundaries, std::vector<index> *insertionNumbers);
     bool add_insertions_via_edge_expansion(vertex u, vertex v, double timestamp, int maxExpDim = -1);
     bool add_insertions_via_edge_expansion(vertex u, vertex v, double timestamp, int maxExpDim,
-					   std::vector<simplex_base> *addedSimplices, std::vector<std::vector<index>*> *boundaries, std::vector<index> *insertionNumbers);
+					   std::vector<std::vector<index>*> *boundaries, std::vector<index> *insertionNumbers);
     index add_contraction(vertex v, vertex u, double timestamp);
     index add_contraction(vertex v, vertex u, double timestamp, std::vector<std::vector<index>*> *addedBoundaries, std::vector<index> *removedIndices);
 
@@ -80,12 +82,15 @@ public:
 private:
     ComplexStructure *complex_;                     /**< Current complex. */
     std::unordered_map<vertex, vertex> *vertices_;  /**< Current vertices in the complex. Keeps the coherence between vertex identifiers outside and inside the class. */
+    std::unordered_map<simplex_handle, index> *handleToIndex_;
     process_output outputFunction_;		    /**< Output function. */
     size_type filtrationSize_;                      /**< Current filtration size. */
     size_type towerWidth_;                          /**< Current tower width. */
+    size_type complexSize_;
+    index maxIndex_;
 
-    void get_union(vertex v, std::vector<simplex_base*> *simplices);
-    void stream_simplex(simplex_base &simplex, double timestamp);
+    void get_union(vertex v, std::vector<simplex_handle> *simplices, std::vector<simplex_base*> *unions);
+    void stream_simplex(simplex_handle &simplex, double timestamp);
 };
 
 template<class ComplexStructure>
@@ -94,9 +99,10 @@ template<class ComplexStructure>
  *
  * Initializes the members. The output option is set as "no output".
  */
-Tower_converter<ComplexStructure>::Tower_converter() : outputFunction_(nullptr), filtrationSize_(0), towerWidth_(0)
+Tower_converter<ComplexStructure>::Tower_converter() : outputFunction_(nullptr), filtrationSize_(0), towerWidth_(0), complexSize_(0), maxIndex_(-1)
 {
     vertices_ = new std::unordered_map<vertex, vertex>();
+    handleToIndex_ = new std::unordered_map<simplex_handle, index>();
     complex_ = new ComplexStructure();
 }
 
@@ -108,9 +114,10 @@ template<class ComplexStructure>
  *
  * @param outputFunction pointer to a callback function which process the filtration output stream.
  */
-Tower_converter<ComplexStructure>::Tower_converter(process_output outputFunction) : outputFunction_(outputFunction), filtrationSize_(0), towerWidth_(0)
+Tower_converter<ComplexStructure>::Tower_converter(process_output outputFunction) : outputFunction_(outputFunction), filtrationSize_(0), towerWidth_(0), complexSize_(0), maxIndex_(-1)
 {
     vertices_ = new std::unordered_map<vertex, vertex>();
+    handleToIndex_ = new std::unordered_map<simplex_handle, index>();
     complex_ = new ComplexStructure();
 }
 
@@ -121,6 +128,7 @@ template<class ComplexStructure>
 Tower_converter<ComplexStructure>::~Tower_converter()
 {
     delete vertices_;
+    delete handleToIndex_;
     delete complex_;
 }
 
@@ -148,6 +156,7 @@ template<class ComplexStructure>
 bool Tower_converter<ComplexStructure>::add_insertion(simplex_base &simplex, double timestamp, std::vector<index> *simplexBoundary, index *simplexInsertionNumber)
 {
     simplex_base transSimplex;
+    simplex_handle handle;
 
     if (simplex.size() == 1){
 	vertices_->emplace(simplex.at(0), simplex.at(0));
@@ -159,10 +168,15 @@ bool Tower_converter<ComplexStructure>::add_insertion(simplex_base &simplex, dou
         std::sort(transSimplex.begin(), transSimplex.end());
     }
 
-    if (complex_->insert_simplex(transSimplex)) {
-	stream_simplex(transSimplex, timestamp);
-        if (complex_->get_size() > towerWidth_) towerWidth_ = complex_->get_size();
-	if (simplexBoundary != nullptr) *simplexInsertionNumber = complex_->get_boundary(transSimplex, simplexBoundary);
+    if (complex_->insert_simplex(transSimplex, &handle)) {
+	stream_simplex(handle, timestamp);
+	if (complexSize_ > towerWidth_) towerWidth_ = complexSize_;
+	if (simplexInsertionNumber != nullptr) *simplexInsertionNumber = maxIndex_;
+	if (simplexBoundary != nullptr){
+	    std::vector<simplex_handle> boundary;
+	    complex_->get_boundary(handle, &boundary);
+	    for (simplex_handle h : boundary) simplexBoundary->push_back(handleToIndex_->at(h));
+	}
         return true;
     }
     return false;
@@ -171,15 +185,16 @@ bool Tower_converter<ComplexStructure>::add_insertion(simplex_base &simplex, dou
 template<class ComplexStructure>
 bool Tower_converter<ComplexStructure>::add_faces_insertions(simplex_base &simplex, double timestamp)
 {
-    return add_faces_insertions(simplex, timestamp, nullptr, nullptr, nullptr);
+    return add_faces_insertions(simplex, timestamp, nullptr, nullptr);
 }
 
 template<class ComplexStructure>
-bool Tower_converter<ComplexStructure>::add_faces_insertions(simplex_base &simplex, double timestamp,
-							     std::vector<simplex_base> *addedSimplices, std::vector<std::vector<index>*> *boundaries, std::vector<index> *insertionNumbers)
+bool Tower_converter<ComplexStructure>::add_faces_insertions(simplex_base &simplex, double timestamp, std::vector<std::vector<index>*> *boundaries, std::vector<index> *insertionNumbers)
 {
     simplex_base transSimplex;
-    std::vector<simplex_base> *insertedSimplices;
+    std::vector<simplex_handle> insertedSimplices;
+    bool res;
+
 
     for (vertex v : simplex){
 	if (vertices_->find(v) == vertices_->end()) vertices_->emplace(v, v);
@@ -187,17 +202,22 @@ bool Tower_converter<ComplexStructure>::add_faces_insertions(simplex_base &simpl
     }
     std::sort(transSimplex.begin(), transSimplex.end());
 
-    if (addedSimplices == nullptr) insertedSimplices = new std::vector<simplex_base>();
-    else insertedSimplices = addedSimplices;
+    res = complex_->insert_simplex_and_faces(transSimplex, &insertedSimplices);
 
-    bool res = complex_->insert_simplex_and_faces(transSimplex, insertedSimplices, insertionNumbers, boundaries);
-
-    for (simplex_base added : *insertedSimplices){
+    for (simplex_handle added : insertedSimplices){
 	stream_simplex(added, timestamp);
-    }
-    if (addedSimplices == nullptr) delete insertedSimplices;
 
-    if (complex_->get_size() > towerWidth_) towerWidth_ = complex_->get_size();
+	if (insertionNumbers != nullptr) insertionNumbers->push_back(maxIndex_);
+	if (boundaries != nullptr){
+	    std::vector<index>* boundaryIndices = new std::vector<index>();
+	    std::vector<simplex_handle> boundary;
+	    complex_->get_boundary(added, &boundary);
+	    for (simplex_handle h : boundary) boundaryIndices->push_back(handleToIndex_->at(h));
+	    boundaries->push_back(boundaryIndices);
+	}
+    }
+
+    if (complexSize_ > towerWidth_) towerWidth_ = complexSize_;
 
     return res;
 }
@@ -213,7 +233,7 @@ template<class ComplexStructure>
  */
 bool Tower_converter<ComplexStructure>::add_insertions_via_edge_expansion(vertex u, vertex v, double timestamp, int maxExpDim)
 {
-    return add_insertions_via_edge_expansion(u, v, timestamp, maxExpDim, nullptr, nullptr, nullptr);
+    return add_insertions_via_edge_expansion(u, v, timestamp, maxExpDim, nullptr, nullptr);
 }
 
 template<class ComplexStructure>
@@ -230,10 +250,10 @@ template<class ComplexStructure>
  *	the method stores there the identifiers of the simplices in @p addedSimplices in the corresponding order.
  * @return
  */
-bool Tower_converter<ComplexStructure>::add_insertions_via_edge_expansion(vertex u, vertex v, double timestamp, int maxExpDim, std::vector<simplex_base> *addedSimplices,
+bool Tower_converter<ComplexStructure>::add_insertions_via_edge_expansion(vertex u, vertex v, double timestamp, int maxExpDim,
 									  std::vector<std::vector<index>*> *boundaries, std::vector<index> *insertionNumbers)
 {
-    std::vector<simplex_base> *insertedSimplices;
+    std::vector<simplex_handle> insertedSimplices;
     vertex first;
     vertex second;
 
@@ -245,17 +265,22 @@ bool Tower_converter<ComplexStructure>::add_insertions_via_edge_expansion(vertex
     if (first < vertices_->at(v)) second = vertices_->at(v);
     else first = vertices_->at(v);
 
-    if (addedSimplices == nullptr) insertedSimplices = new std::vector<simplex_base>();
-    else insertedSimplices = addedSimplices;
+    bool res = complex_->insert_edge_and_expand(first, second, maxExpDim, &insertedSimplices);
 
-    bool res = complex_->insert_edge_and_expand(first, second, maxExpDim, insertedSimplices, insertionNumbers, boundaries);
+    for (simplex_handle added : insertedSimplices){
+	stream_simplex(added, timestamp);
 
-    for (simplex_base simplex : *insertedSimplices){
-	stream_simplex(simplex, timestamp);
+	if (insertionNumbers != nullptr) insertionNumbers->push_back(maxIndex_);
+	if (boundaries != nullptr){
+	    std::vector<index>* boundaryIndices = new std::vector<index>();
+	    std::vector<simplex_handle> boundary;
+	    complex_->get_boundary(added, &boundary);
+	    for (simplex_handle h : boundary) boundaryIndices->push_back(handleToIndex_->at(h));
+	    boundaries->push_back(boundaryIndices);
+	}
     }
-    if (addedSimplices == nullptr) delete insertedSimplices;
 
-    if (complex_->get_size() > towerWidth_) towerWidth_ = complex_->get_size();
+    if (complexSize_ > towerWidth_) towerWidth_ = complexSize_;
 
     return res;
 }
@@ -290,14 +315,15 @@ template<class ComplexStructure>
 typename Tower_converter<ComplexStructure>::index Tower_converter<ComplexStructure>::add_contraction(vertex v, vertex u, double timestamp,
 									  std::vector<std::vector<index>*> *addedBoundaries, std::vector<index> *removedIndices)
 {
-    std::vector<simplex_base*> closedStar;
+    std::vector<simplex_base> closedStar;
     vertex tv = vertices_->at(v), tu = vertices_->at(u);
-    vertex dis = complex_->get_smallest_closed_star(tv, tu, &closedStar);
-    simplex_base vdis(1, dis);
+    simplex_handle disappearing = complex_->get_smallest_closed_star(tv, tu, &closedStar);
     index first = -1;
+    simplex_handle handle;
+    std::vector<simplex_handle> removedSimplices;
 
     vertices_->erase(v);
-    if (dis == tu){
+    if (*(complex_->get_vertices(disappearing).begin()) == tu){
         vertices_->at(u) = tv;
         get_union(tv, &closedStar);
     } else {
@@ -305,20 +331,26 @@ typename Tower_converter<ComplexStructure>::index Tower_converter<ComplexStructu
     }
 
     for (auto it = closedStar.begin(); it != closedStar.end(); it++){
-	if (complex_->insert_simplex(**it)) {
-	    stream_simplex(**it, timestamp);
+	if (complex_->insert_simplex(*it, &handle)) {
+	    stream_simplex(handle, timestamp);
+	    if (first == -1) first = maxIndex_;
 	    if (addedBoundaries != nullptr){
-                std::vector<index> *boundary = new std::vector<index>();
-                if (first == -1) first = complex_->get_max_index();
-		complex_->get_boundary(**it, boundary);
-                addedBoundaries->push_back(boundary);
-            }
-        }
-        delete *it;
+		std::vector<index> *boundaryIndices = new std::vector<index>();
+		std::vector<simplex_handle> boundary;
+		complex_->get_boundary(handle, &boundary);
+		for (simplex_handle h : boundary) boundaryIndices->push_back(handleToIndex_->at(h));
+		addedBoundaries->push_back(boundaryIndices);
+	    }
+	}
     }
-    complex_->remove_simplex(vdis, removedIndices);
 
-    if (complex_->get_size() > towerWidth_) towerWidth_ = complex_->get_size();
+    complex_->remove_simplex(disappearing, &removedSimplices);
+    for (simplex_handle h : removedSimplices){
+	--complexSize_;
+	if (removedIndices != nullptr) removedIndices->push_back(handleToIndex_->at(h));
+    }
+
+    if (complexSize_ > towerWidth_) towerWidth_ = complexSize_;
 
     return first;
 }
@@ -359,7 +391,7 @@ template<class ComplexStructure>
  * @param v vertex identifier to unify.
  * @param simplices vector of simplices to unify with @p v. The simplices will be replaced by the resulting simplices.
  */
-void Tower_converter<ComplexStructure>::get_union(vertex v, std::vector<simplex_base*> *simplices)
+void Tower_converter<ComplexStructure>::get_union(vertex v, std::vector<simplex_handle> *simplices, std::vector<simplex_base*> *unions)
 {
     for (auto itSimplices = simplices->begin(); itSimplices != simplices->end(); itSimplices++){
         auto itVertices = (*itSimplices)->begin();
@@ -376,9 +408,11 @@ template<class ComplexStructure>
  * @param simplex simplex to be inserted.
  * @param timestamp filtration value of the insertion.
  */
-void Tower_converter<ComplexStructure>::stream_simplex(simplex_base &simplex, double timestamp)
+void Tower_converter<ComplexStructure>::stream_simplex(simplex_handle &simplex, double timestamp)
 {
-    filtrationSize_++;
+    handleToIndex_->emplace(simplex, ++maxIndex_);
+    ++complexSize_;
+    ++filtrationSize_;
     if (outputFunction_ != nullptr) outputFunction_(complex_, simplex, timestamp);
 }
 

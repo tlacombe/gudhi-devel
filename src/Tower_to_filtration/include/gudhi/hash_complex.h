@@ -36,128 +36,128 @@ class Hash_complex
 public:
     using vertex = long long;
     using index = long long;
-    using simplex_base = std::vector<vertex>;
+    using simplex_handle = index;
+    using simplex_vertex_range = std::vector<vertex>;
     using size_type = long long;
 
     Hash_complex();
     ~Hash_complex();
 
-	class Simplex
-	{
-	public:
-        Simplex(index num, simplex_base *vertices);
-		~Simplex();
+    class Simplex
+    {
+    public:
+	Simplex(index num, simplex_vertex_range *vertices);
+	~Simplex();
 
-        index get_insertion_num() const;
-        void set_insertion_num(const index &insertionNum);
+	index get_insertion_num() const;
+	void set_insertion_num(const index &insertionNum);
 
-        void add_cofacet(Simplex *coface, vertex v);
-        std::unordered_map<vertex, Simplex*>* get_cofacets() const;
+	void add_cofacet(Simplex *coface, vertex v);
+	std::unordered_map<vertex, Simplex*>* get_cofacets() const;
 
-        simplex_base *get_vertices() const;
+	simplex_vertex_range *get_vertices() const;
 
     private:
-        index insertionNum_;
-        std::unordered_map<vertex, Simplex*> *cofacets_;
-        simplex_base* vertices_;
-	};
+	index insertionNum_;
+	std::unordered_map<vertex, Simplex*> *cofacets_;
+	simplex_vertex_range* vertices_;
+    };
 
     struct Key_hasher {
-		std::size_t operator()(const std::pair<simplex_base*, int> *k) const
-		{
-			std::size_t seed;
-			if (k->second < 0) seed = k->first->size();
-			else seed = k->first->size() - 1;
+	std::size_t operator()(const std::pair<simplex_vertex_range*, int> *k) const
+	{
+	    std::size_t seed;
+	    if (k->second < 0) seed = k->first->size();
+	    else seed = k->first->size() - 1;
 
-			for (int i = 0; i < (int)k->first->size(); i++) {
-				if (i != k->second) seed ^= (std::size_t)(k->first->at(i)) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-			}
-			return seed;
+	    for (int i = 0; i < (int)k->first->size(); i++) {
+		if (i != k->second) seed ^= (std::size_t)(k->first->at(i)) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+	    }
+	    return seed;
+	}
+    };
+
+    struct Simplices_equals : std::binary_function<const std::pair<simplex_vertex_range*, int>*, const std::pair<simplex_vertex_range*, int>*, bool> {
+	bool operator()(const std::pair<simplex_vertex_range*, int> *s1, const std::pair<simplex_vertex_range*, int> *s2) const
+	{
+	    const std::pair<simplex_vertex_range*, int> *key;
+	    const std::pair<simplex_vertex_range*, int> *inMap;
+	    simplex_vertex_range::size_type size;
+
+	    if (s1->second > -1) {
+		key = s1;
+		inMap = s2;
+	    } else {
+		key = s2;
+		inMap = s1;
+	    }
+
+	    if (key->second < 0) size = key->first->size();
+	    else size = key->first->size() - 1;
+	    if (size != inMap->first->size()) return false;
+	    int j = 0;
+	    for (simplex_vertex_range::size_type i = 0; i < size; i++){
+		if (j == key->second) j++;
+		if (key->first->at(j) != inMap->first->at(i)) {
+		    return false;
 		}
-	};
-
-    struct Simplices_equals : std::binary_function<const std::pair<simplex_base*, int>*, const std::pair<simplex_base*, int>*, bool> {
-		bool operator()(const std::pair<simplex_base*, int> *s1, const std::pair<simplex_base*, int> *s2) const
-		{
-			const std::pair<simplex_base*, int> *key;
-			const std::pair<simplex_base*, int> *inMap;
-			simplex_base::size_type size;
-
-			if (s1->second > -1) {
-				key = s1;
-				inMap = s2;
-			} else {
-				key = s2;
-				inMap = s1;
-			}
-
-			if (key->second < 0) size = key->first->size();
-			else size = key->first->size() - 1;
-			if (size != inMap->first->size()) return false;
-			int j = 0;
-			for (simplex_base::size_type i = 0; i < size; i++){
-				if (j == key->second) j++;
-				if (key->first->at(j) != inMap->first->at(i)) {
-					return false;
-				}
-				j++;
-			}
-			return true;
-		}
-	};
+		j++;
+	    }
+	    return true;
+	}
+    };
 
     /* Important for tower_converter.h */
 
-    bool insert_simplex(simplex_base &simplex);
-    bool insert_simplex(simplex_base &simplex, index* insertionNumber, std::vector<index> *boundary);
-    bool insert_simplex_and_faces(simplex_base &simplex);
-    bool insert_simplex_and_faces(simplex_base &simplex, std::vector<simplex_base> *addedSimplices, std::vector<index> *addedIndices, std::vector<std::vector<index>*> *boundaries);
-    bool insert_edge_and_expand(vertex u, vertex v, int maxDim = -1);   // u < v !!! ; maxDim == -1 -> no limit
-    bool insert_edge_and_expand(vertex u, vertex v, int maxDim,
-				std::vector<simplex_base> *addedSimplices, std::vector<index> *addedIndices, std::vector<std::vector<index>*> *boundaries);   // u < v !!! ; maxDim == -1 -> no limit
-    bool remove_simplex(simplex_base &simplex);
-    bool remove_simplex(simplex_base &simplex, std::vector<index> *removedIndices);
-    vertex get_smallest_closed_star(vertex v, vertex u, std::vector<simplex_base *> *closedStar);   //returns vertex with smallest closed star; closedStar is ordered
-                                                                                                    //and simplices in closedStar are independent of the ones in Complex
-    index get_boundary(simplex_base &simplex, std::vector<index> *boundary);    //ordered by increasing insertion numbers
-    size_type get_size() const;
-    index get_max_index() const;
+    bool insert_simplex(simplex_vertex_range &simplex, simplex_handle *handle = nullptr);
+    bool insert_simplex_and_faces(simplex_vertex_range &simplex, std::vector<simplex_handle> *addedSimplices = nullptr);
+    bool insert_edge_and_expand(vertex u, vertex v, int maxDim = -1, std::vector<simplex_handle> *addedSimplices = nullptr);	// u < v !!! ; maxDim == -1 -> no limit
+    bool remove_simplex(simplex_vertex_range &simplex, std::vector<simplex_handle> *removedIndices = nullptr);
+    bool remove_simplex(simplex_handle &simplex, std::vector<simplex_handle> *removedIndices = nullptr);
+    simplex_handle get_smallest_closed_star(vertex v, vertex u, std::vector<simplex_vertex_range> *closedStar);    //returns vertex with smallest closed star; closedStar is ordered
+    void get_boundary(simplex_handle &handle, std::vector<simplex_handle> *boundary);	//ordered by increasing insertion numbers
+    simplex_vertex_range& get_vertices(simplex_handle &handle) const;
 
     /* Other */
 
-    index get_index(simplex_base &simplex);
+    simplex_handle get_simplex_handle(simplex_vertex_range &simplex);
+    int get_dimension(simplex_handle handle);
+    size_type get_size() const;
     size_type get_max_size() const;
     int get_max_dimension() const;
-    void get_cofaces(simplex_base &simplex, std::vector<simplex_base*> *cofaces);
-    void get_cofacets(simplex_base &simplex, std::vector<simplex_base *> *cofacets);
-    bool contains(simplex_base &simplex);
+    void get_cofaces(simplex_vertex_range &simplex, std::vector<simplex_vertex_range*> *cofaces);
+    void get_cofacets(simplex_vertex_range &simplex, std::vector<simplex_vertex_range *> *cofacets);
+    bool contains(simplex_vertex_range &simplex);
     void print();
 
 private:
     index maxIndex_;
     size_type maxSize_;
     int maxDim_;
-	std::unordered_map<
-	    std::pair<simplex_base*, int>*,
-	    Simplex*,
-            Key_hasher,
-            Simplices_equals
-        > *simplices_;
+    std::unordered_map<
+	std::pair<simplex_vertex_range*, int>*,
+	Simplex*,
+	Key_hasher,
+	Simplices_equals
+    > *simplices_;
+    std::unordered_map<simplex_handle, Simplex*> *handleToSimplex_;
 
-    vertex get_smallest_star(vertex v, vertex u, std::queue<simplex_base*> *qv, std::queue<simplex_base*> *qu);
-    int get_vertex_index(simplex_base *simplex, vertex v);
-    void expand_simplex(simplex_base &vectSimplex, int maxDim, std::vector<simplex_base> *addedSimplices, std::vector<index> *addedIndices, std::vector<std::vector<index>*> *boundaries);
+    vertex get_smallest_star(vertex v, vertex u, std::queue<simplex_vertex_range*> *qv, std::queue<simplex_vertex_range*> *qu);
+    int get_vertex_index(simplex_vertex_range *simplex, vertex v);
+    void expand_simplex(simplex_vertex_range *vectSimplex, int maxDim, std::vector<simplex_handle> *addedSimplices);
     Simplex* insert_union(Simplex *simplex, vertex v);
+    bool remove_simplex(Simplex *simplex, std::vector<simplex_handle> *removedIndices);
 };
 
 inline Hash_complex::Hash_complex() : maxIndex_(-1), maxSize_(0), maxDim_(0)
 {
     simplices_ = new std::unordered_map<
-            std::pair<simplex_base*, int>*,
-            Simplex*,
-            Key_hasher,
-            Simplices_equals
-            >();
+		    std::pair<simplex_vertex_range*, int>*,
+		    Simplex*,
+		    Key_hasher,
+		    Simplices_equals
+		>();
+    handleToSimplex_ = new std::unordered_map<simplex_handle, Simplex*>();
 }
 
 inline Hash_complex::~Hash_complex()
@@ -167,17 +167,13 @@ inline Hash_complex::~Hash_complex()
         delete it->second;
     }
     delete simplices_;
+    delete handleToSimplex_;
 }
 
-inline bool Hash_complex::insert_simplex(simplex_base &simplex)
+inline bool Hash_complex::insert_simplex(simplex_vertex_range &simplex, simplex_handle *handle)
 {
-    return insert_simplex(simplex, nullptr, nullptr);
-}
-
-inline bool Hash_complex::insert_simplex(simplex_base &simplex, index *insertionNumber, std::vector<index> *boundary)
-{
-    simplex_base *vs = new simplex_base(simplex);
-    std::pair<simplex_base*,int> *p = new std::pair<simplex_base*,int>(vs, -1);
+    simplex_vertex_range *vs = new simplex_vertex_range(simplex);
+    std::pair<simplex_vertex_range*,int> *p = new std::pair<simplex_vertex_range*,int>(vs, -1);
     Simplex *splx = new Simplex(maxIndex_ + 1, vs);
 
     if (simplices_->emplace(p, splx).second == false) {
@@ -187,16 +183,15 @@ inline bool Hash_complex::insert_simplex(simplex_base &simplex, index *insertion
 	return false;
     }
 
-    maxIndex_++;
+    handleToSimplex_->emplace(++maxIndex_, splx);
     if ((int)vs->size() - 1 > maxDim_) maxDim_ = vs->size() - 1;
     if (maxSize_ < (size_type)simplices_->size()) maxSize_ = simplices_->size();
 
-    if (boundary != nullptr) get_boundary(simplex, boundary);
-    if (insertionNumber != nullptr) *insertionNumber = splx->get_insertion_num();
+    if (handle != nullptr) *handle = maxIndex_;
 
     if (vs->size() <= 1) return true;
 
-    for (simplex_base::size_type i = 0; i < vs->size(); i++){
+    for (simplex_vertex_range::size_type i = 0; i < vs->size(); i++){
 	p->second = i;
 	simplices_->at(p)->add_cofacet(splx, vs->at(i));
     }
@@ -205,34 +200,23 @@ inline bool Hash_complex::insert_simplex(simplex_base &simplex, index *insertion
     return true;
 }
 
-inline bool Hash_complex::insert_simplex_and_faces(simplex_base &simplex)
+inline bool Hash_complex::insert_simplex_and_faces(simplex_vertex_range &simplex, std::vector<simplex_handle> *addedSimplices)
 {
-    return insert_simplex_and_faces(simplex, nullptr, nullptr, nullptr);
-}
-
-inline bool Hash_complex::insert_simplex_and_faces(simplex_base &simplex, std::vector<simplex_base> *addedSimplices, std::vector<index> *addedIndices, std::vector<std::vector<index>*> *boundaries)
-{
-    std::pair<simplex_base*,int> p(&simplex, -1);
+    std::pair<simplex_vertex_range*,int> p(&simplex, -1);
     if (simplices_->find(&p) != simplices_->end()) return false;
 
-    std::vector<simplex_base> simplices;
-    std::vector<simplex_base> tmpSimplices;
-    index currentIndex;
-    std::vector<index> currentBoundary;
-    simplices.push_back(simplex_base());
+    std::vector<simplex_vertex_range> simplices;
+    std::vector<simplex_vertex_range> tmpSimplices;
+    simplex_handle currentIndex;
+    simplices.push_back(simplex_vertex_range());
 
-    for (simplex_base::size_type i = 0; i < simplex.size(); ++i){
+    for (simplex_vertex_range::size_type i = 0; i < simplex.size(); ++i){
 	vertex v = simplex.at(i);
 	tmpSimplices.clear();
-	for (simplex_base &prefix : simplices){
-	    tmpSimplices.push_back(simplex_base(prefix));
+	for (simplex_vertex_range &prefix : simplices){
+	    tmpSimplices.push_back(simplex_vertex_range(prefix));
 	    tmpSimplices.back().push_back(v);
-	    currentBoundary.clear();
-	    if (insert_simplex(tmpSimplices.back(), &currentIndex, &currentBoundary)){
-		if (addedSimplices != nullptr) addedSimplices->push_back(tmpSimplices.back());
-		if (addedIndices != nullptr) addedIndices->push_back(currentIndex);
-		if (boundaries != nullptr) boundaries->push_back(new std::vector<index>(currentBoundary));
-	    }
+	    if (insert_simplex(tmpSimplices.back(), &currentIndex) && addedSimplices != nullptr) addedSimplices->push_back(currentIndex);
 	}
 	for (auto it = tmpSimplices.begin(); it != tmpSimplices.end(); ++it){
 	    simplices.push_back(*it);
@@ -242,84 +226,73 @@ inline bool Hash_complex::insert_simplex_and_faces(simplex_base &simplex, std::v
     return true;
 }
 
-inline bool Hash_complex::insert_edge_and_expand(vertex u, vertex v, int maxDim)
+inline bool Hash_complex::insert_edge_and_expand(vertex u, vertex v, int maxDim, std::vector<simplex_handle> *addedSimplices)
 {
-    return insert_edge_and_expand(u, v, maxDim, nullptr, nullptr, nullptr);
-}
-
-inline bool Hash_complex::insert_edge_and_expand(vertex u, vertex v, int maxDim, std::vector<simplex_base> *addedSimplices, std::vector<index> *addedIndices, std::vector<std::vector<index>*> *boundaries)
-{
-    simplex_base vect;
-    std::pair<simplex_base*,int> p(&vect, -1);
+    simplex_vertex_range vect;
+    simplex_handle handle;
+    std::pair<simplex_vertex_range*,int> p(&vect, -1);
     vect.push_back(u);
-    if (insert_simplex(vect)){
-	Simplex *vertex = simplices_->at(&p);
-	if (addedSimplices != nullptr) addedSimplices->push_back(vect);
-	if (addedIndices != nullptr) addedIndices->push_back(vertex->get_insertion_num());
-	if (boundaries != nullptr) boundaries->push_back(new std::vector<index>());
-    }
+    if (insert_simplex(vect, &handle) && addedSimplices != nullptr) addedSimplices->push_back(handle);
     vect.at(0) = v;
-    if (insert_simplex(vect)){
-	Simplex *vertex = simplices_->at(&p);
-	if (addedSimplices != nullptr) addedSimplices->push_back(vect);
-	if (addedIndices != nullptr) addedIndices->push_back(vertex->get_insertion_num());
-	if (boundaries != nullptr) boundaries->push_back(new std::vector<index>());
-    }
+    if (insert_simplex(vect, &handle) && addedSimplices != nullptr) addedSimplices->push_back(handle);
     vect.at(0) = u;
     vect.push_back(v);
 
-    if (insert_simplex(vect)) {
-	Simplex *edge = simplices_->at(&p);
-	if (addedSimplices != nullptr) addedSimplices->push_back(vect);
-	if (addedIndices != nullptr) addedIndices->push_back(edge->get_insertion_num());
-	if (boundaries != nullptr){
-	    std::vector<index> *boundary = new std::vector<index>();
-	    get_boundary(*(edge->get_vertices()), boundary);
-	    boundaries->push_back(boundary);
-	}
-	if (maxDim > 1 || maxDim == -1) expand_simplex(vect, maxDim, addedSimplices, addedIndices, boundaries);
+    if (insert_simplex(vect, &handle)) {
+	if (addedSimplices != nullptr) addedSimplices->push_back(handle);
+	if (maxDim > 1 || maxDim == -1) expand_simplex(&vect, maxDim, addedSimplices);
 	return true;
     }
 
     return false;
 }
 
-inline bool Hash_complex::remove_simplex(simplex_base &simplex)
+inline bool Hash_complex::remove_simplex(simplex_vertex_range &simplex, std::vector<simplex_handle> *removedIndices)
 {
-    return remove_simplex(simplex, nullptr);
+    std::pair<simplex_vertex_range*,int> p(&simplex, -1);
+    if (simplices_->find(&p) == simplices_->end()) return false;
+    return remove_simplex(simplices_->at(&p), removedIndices);
 }
 
-inline bool Hash_complex::remove_simplex(simplex_base &simplex, std::vector<index> *removedIndices)
+inline bool Hash_complex::remove_simplex(simplex_handle &simplex, std::vector<simplex_handle> *removedIndices)
 {
-    std::pair<simplex_base*,int> p(&simplex, -1);
-    if (simplices_->find(&p) == simplices_->end()) return false;
-    Simplex *splx = simplices_->at(&p);
-    std::unordered_map<vertex, Simplex*> *cofacets = splx->get_cofacets();
+    if (handleToSimplex_->find(simplex) == handleToSimplex_->end()) return false;
+    return remove_simplex(handleToSimplex_->at(simplex), removedIndices);
+}
 
-    if (simplex.size() > 1){
-	for (int i = 0; i < (int)simplex.size(); i++){
-            p.second = i;
-	    simplices_->at(&p)->get_cofacets()->erase(simplex.at(i));
-        }
+inline bool Hash_complex::remove_simplex(Simplex *simplex, std::vector<simplex_handle> *removedIndices)
+{
+    std::unordered_map<vertex, Simplex*> *cofacets = simplex->get_cofacets();
+    simplex_vertex_range *vertices = simplex->get_vertices();
+    std::pair<simplex_vertex_range*,int> p(vertices, -1);
+
+    if (vertices->size() > 1){
+	for (int i = 0; i < (int)vertices->size(); i++){
+	    p.second = i;
+	    simplices_->at(&p)->get_cofacets()->erase(vertices->at(i));
+	}
     }
     p.second = -1;
 
-    while (!cofacets->empty()) remove_simplex(*(cofacets->begin()->second->get_vertices()), removedIndices);
+    while (!cofacets->empty()) remove_simplex(cofacets->begin()->second, removedIndices);
 
-    std::pair<simplex_base*,int> *tmp = simplices_->find(&p)->first;
-    if (removedIndices != nullptr) removedIndices->push_back(splx->get_insertion_num());
+    std::pair<simplex_vertex_range*,int> *tmp = simplices_->find(&p)->first;
+    if (removedIndices != nullptr) removedIndices->push_back(simplex->get_insertion_num());
     simplices_->erase(&p);
+    handleToSimplex_->erase(simplex->get_insertion_num());
     delete tmp;
-    delete splx;
+    delete simplex;
     return true;
 }
 
-inline Hash_complex::vertex Hash_complex::get_smallest_closed_star(vertex v, vertex u, std::vector<simplex_base *> *closedStar)
+inline Hash_complex::simplex_handle Hash_complex::get_smallest_closed_star(vertex v, vertex u, std::vector<simplex_vertex_range> *closedStar)
 {
-    std::queue<simplex_base*> qv;
-    std::queue<simplex_base*> qu;
-    simplex_base *s;
-    std::pair<simplex_base*,int> p;
+    std::queue<simplex_vertex_range*> qv;
+    std::queue<simplex_vertex_range*> qu;
+    simplex_vertex_range *s;
+    std::pair<simplex_vertex_range*,int> p;
+    simplex_vertex_range vv(1, v);
+    simplex_vertex_range vu(1, u);
 
     if (get_smallest_star(v, u, &qv, &qu) == v){
         while (!qv.empty()){
@@ -328,13 +301,13 @@ inline Hash_complex::vertex Hash_complex::get_smallest_closed_star(vertex v, ver
             p.first = s;
             p.second = get_vertex_index(s, v);
             if (s->size() > 1){
-                closedStar->push_back(new simplex_base(*(simplices_->at(&p)->get_vertices())));
+		closedStar->push_back(*(simplices_->at(&p)->get_vertices()));
             }
             p.second = -1;
-            closedStar->push_back(new simplex_base(*s));
+	    closedStar->push_back(*s);
         }
 
-        return v;
+	p.first = &vv;
     } else {
         while (!qu.empty()){
             s = qu.front();
@@ -342,46 +315,52 @@ inline Hash_complex::vertex Hash_complex::get_smallest_closed_star(vertex v, ver
             p.first = s;
             p.second = get_vertex_index(s, u);
             if (s->size() > 1){
-                closedStar->push_back(new simplex_base(*(simplices_->at(&p)->get_vertices())));
+		closedStar->push_back(*(simplices_->at(&p)->get_vertices()));
             }
             p.second = -1;
-            closedStar->push_back(new simplex_base(*s));
+	    closedStar->push_back(*s);
         }
 
-        return u;
+	p.first = &vu;
     }
-}
-
-inline Hash_complex::index Hash_complex::get_boundary(simplex_base &simplex, std::vector<index> *boundary)
-{
-    std::pair<simplex_base*,int> p(&simplex, -1);
-
-    if (simplex.size() == 1) return simplices_->at(&p)->get_insertion_num();
-
-    for (simplex_base::size_type i = 0; i < simplex.size(); i++){
-        p.second = i;
-        boundary->push_back(simplices_->at(&p)->get_insertion_num());
-    }
-    std::sort(boundary->begin(), boundary->end());
 
     p.second = -1;
     return simplices_->at(&p)->get_insertion_num();
 }
 
-inline Hash_complex::index Hash_complex::get_index(simplex_base &simplex)
+inline void Hash_complex::get_boundary(simplex_handle &handle, std::vector<simplex_handle> *boundary)
 {
-    std::pair<simplex_base*,int> p(&simplex, -1);
+    Simplex *simplex = handleToSimplex_->at(handle);
+    std::pair<simplex_vertex_range*,int> p(simplex->get_vertices(), -1);
+
+    if (simplex->get_vertices()->size() == 1) return;
+
+    for (simplex_vertex_range::size_type i = 0; i < simplex->get_vertices()->size(); i++){
+	p.second = i;
+	boundary->push_back(simplices_->at(&p)->get_insertion_num());
+    }
+    std::sort(boundary->begin(), boundary->end());
+}
+
+inline Hash_complex::simplex_vertex_range& Hash_complex::get_vertices(simplex_handle &handle) const
+{
+    return *(handleToSimplex_->at(handle)->get_vertices());
+}
+
+inline Hash_complex::simplex_handle Hash_complex::get_simplex_handle(simplex_vertex_range &simplex)
+{
+    std::pair<simplex_vertex_range*,int> p(&simplex, -1);
     return simplices_->at(&p)->get_insertion_num();
+}
+
+int Hash_complex::get_dimension(simplex_handle handle)
+{
+    return handleToSimplex_->at(handle)->get_vertices()->size() - 1;
 }
 
 inline Hash_complex::size_type Hash_complex::get_size() const
 {
     return simplices_->size();
-}
-
-inline Hash_complex::index Hash_complex::get_max_index() const
-{
-    return maxIndex_;
 }
 
 inline Hash_complex::size_type Hash_complex::get_max_size() const
@@ -394,29 +373,29 @@ inline int Hash_complex::get_max_dimension() const
     return maxDim_;
 }
 
-inline void Hash_complex::get_cofaces(simplex_base &simplex, std::vector<simplex_base *> *cofaces)
+inline void Hash_complex::get_cofaces(simplex_vertex_range &simplex, std::vector<simplex_vertex_range *> *cofaces)
 {
-    auto hash = [](simplex_base* const& k) {
+    auto hash = [](simplex_vertex_range* const& k) {
         std::size_t seed = k->size();
-        for (simplex_base::size_type i = 0; i < k->size(); i++) {
+	for (simplex_vertex_range::size_type i = 0; i < k->size(); i++) {
             seed ^= (std::size_t)(k->at(i)) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
         }
         return seed;
     };
-    auto comp = [](const simplex_base* s1, const simplex_base* s2) {
-        simplex_base::size_type size = s1->size();
+    auto comp = [](const simplex_vertex_range* s1, const simplex_vertex_range* s2) {
+	simplex_vertex_range::size_type size = s1->size();
         if (size != s2->size()) return false;
-        for (simplex_base::size_type i = 0; i < size; i++){
+	for (simplex_vertex_range::size_type i = 0; i < size; i++){
             if (s1->at(i) != s2->at(i)) return false;
         }
         return true;
     };
 
-    std::unordered_map<simplex_base*, bool, decltype(hash), decltype(comp)> visited(100, hash, comp);
-    std::pair<simplex_base*,int> p(&simplex, -1);
+    std::unordered_map<simplex_vertex_range*, bool, decltype(hash), decltype(comp)> visited(100, hash, comp);
+    std::pair<simplex_vertex_range*,int> p(&simplex, -1);
     std::unordered_map<vertex, Simplex*> *cofacets;
     std::unordered_map<vertex, Simplex*>::iterator it;
-    std::queue<simplex_base*> q;
+    std::queue<simplex_vertex_range*> q;
 
     q.push(&simplex);
 
@@ -428,68 +407,68 @@ inline void Hash_complex::get_cofaces(simplex_base &simplex, std::vector<simplex
             p.first = it->second->get_vertices();
             if (visited.find(p.first) == visited.end()){
                 visited.emplace(p.first, true);
-                cofaces->push_back(new simplex_base(*(p.first)));
+		cofaces->push_back(new simplex_vertex_range(*(p.first)));
                 q.push(p.first);
             }
         }
     }
 }
 
-inline void Hash_complex::get_cofacets(simplex_base &simplex, std::vector<simplex_base *> *cofacets)
+inline void Hash_complex::get_cofacets(simplex_vertex_range &simplex, std::vector<simplex_vertex_range *> *cofacets)
 {
-    std::pair<simplex_base*,int> p(&simplex, -1);
+    std::pair<simplex_vertex_range*,int> p(&simplex, -1);
     std::unordered_map<vertex, Simplex*> *mapedCofacets = simplices_->at(&p)->get_cofacets();
     for (auto it = mapedCofacets->begin(); it != mapedCofacets->end(); it++){
-        cofacets->push_back(new simplex_base(*(it->second->get_vertices())));
+	cofacets->push_back(new simplex_vertex_range(*(it->second->get_vertices())));
     }
 }
 
-inline bool Hash_complex::contains(simplex_base &simplex)
+inline bool Hash_complex::contains(simplex_vertex_range &simplex)
 {
-    std::pair<simplex_base*,int> p(&simplex, -1);
+    std::pair<simplex_vertex_range*,int> p(&simplex, -1);
     return (simplices_->find(&p) != simplices_->end());
 }
 
 void Hash_complex::print()
 {
     for (auto it = simplices_->begin(); it != simplices_->end(); ++it){
-	simplex_base *current = it->second->get_vertices();
-	for (simplex_base::size_type i = 0; i < current->size(); ++i){
+	simplex_vertex_range *current = it->second->get_vertices();
+	for (simplex_vertex_range::size_type i = 0; i < current->size(); ++i){
 	    std::cout << current->at(i);
 	}
 	std::cout << "\n";
     }
 }
 
-inline Hash_complex::vertex Hash_complex::get_smallest_star(vertex v, vertex u, std::queue<simplex_base *> *qv, std::queue<simplex_base *> *qu)
+inline Hash_complex::vertex Hash_complex::get_smallest_star(vertex v, vertex u, std::queue<simplex_vertex_range *> *qv, std::queue<simplex_vertex_range *> *qu)
 {
-    auto hash = [](simplex_base* const& k) {
+    auto hash = [](simplex_vertex_range* const& k) {
         std::size_t seed = k->size();
-        for (simplex_base::size_type i = 0; i < k->size(); i++) {
+	for (simplex_vertex_range::size_type i = 0; i < k->size(); i++) {
             seed ^= (std::size_t)(k->at(i)) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
         }
         return seed;
     };
-    auto comp = [](const simplex_base* s1, const simplex_base* s2) {
-        simplex_base::size_type size = s1->size();
+    auto comp = [](const simplex_vertex_range* s1, const simplex_vertex_range* s2) {
+	simplex_vertex_range::size_type size = s1->size();
         if (size != s2->size()) return false;
-        for (simplex_base::size_type i = 0; i < size; i++){
+	for (simplex_vertex_range::size_type i = 0; i < size; i++){
             if (s1->at(i) != s2->at(i)) return false;
         }
         return true;
     };
 
-    std::unordered_map<simplex_base*, bool, decltype(hash), decltype(comp)> visitedV(100, hash, comp);
-    std::unordered_map<simplex_base*, bool, decltype(hash), decltype(comp)> visitedU(100, hash, comp);
-    std::pair<simplex_base*,int> p;
+    std::unordered_map<simplex_vertex_range*, bool, decltype(hash), decltype(comp)> visitedV(100, hash, comp);
+    std::unordered_map<simplex_vertex_range*, bool, decltype(hash), decltype(comp)> visitedU(100, hash, comp);
+    std::pair<simplex_vertex_range*,int> p;
     std::unordered_map<vertex, Simplex*> *cofacetsV;
     std::unordered_map<vertex, Simplex*> *cofacetsU;
     std::unordered_map<vertex, Simplex*>::iterator vit;
     std::unordered_map<vertex, Simplex*>::iterator uit;
-    std::queue<simplex_base*> tv;
-    std::queue<simplex_base*> tu;
-    simplex_base sv(1, v);
-    simplex_base su(1, u);
+    std::queue<simplex_vertex_range*> tv;
+    std::queue<simplex_vertex_range*> tu;
+    simplex_vertex_range sv(1, v);
+    simplex_vertex_range su(1, u);
 
     p.first = &sv;
     p.second = -1;
@@ -543,7 +522,7 @@ inline Hash_complex::vertex Hash_complex::get_smallest_star(vertex v, vertex u, 
     else return v;
 }
 
-inline int Hash_complex::get_vertex_index(simplex_base *simplex, vertex v)
+inline int Hash_complex::get_vertex_index(simplex_vertex_range *simplex, vertex v)
 {
     int i = 0;
     while (i < (int)simplex->size() && simplex->at(i) != v){
@@ -553,37 +532,30 @@ inline int Hash_complex::get_vertex_index(simplex_base *simplex, vertex v)
     return i;
 }
 
-inline void Hash_complex::expand_simplex(simplex_base &vectSimplex, int maxDim,
-					 std::vector<simplex_base> *addedSimplices, std::vector<index> *addedIndices, std::vector<std::vector<index>*> *boundaries)
+inline void Hash_complex::expand_simplex(simplex_vertex_range *vectSimplex, int maxDim, std::vector<simplex_handle> *addedSimplices)
 {
-    std::pair<simplex_base*,int> p(&vectSimplex, -1);
+    std::pair<simplex_vertex_range*,int> p(vectSimplex, -1);
     Simplex *simplex = simplices_->at(&p);
-    p.second = vectSimplex.size() - 1;
+    p.second = vectSimplex->size() - 1;
     Simplex *facet = simplices_->at(&p);
     std::unordered_map<vertex, Simplex*> *cofacets = facet->get_cofacets();
 
     for (auto it = cofacets->begin(); it != cofacets->end(); ++it){
 	Simplex *current = it->second;
 	if (current == simplex) continue;
-	Simplex *union_simplex = insert_union(current, vectSimplex.back());
+	Simplex *union_simplex = insert_union(current, vectSimplex->back());
 	if (union_simplex != nullptr){	//if union could be inserted, i.e. all its facets were there and it-self was not already inserted
-	    if (addedSimplices != nullptr) addedSimplices->push_back(*(union_simplex->get_vertices()));
-	    if (addedIndices != nullptr) addedIndices->push_back(union_simplex->get_insertion_num());
-	    if (boundaries != nullptr) {
-		std::vector<index> *boundary = new std::vector<index>();
-		get_boundary(*(union_simplex->get_vertices()), boundary);
-		boundaries->push_back(boundary);
-	    }
-	    if ((int)union_simplex->get_vertices()->size() - 1 < maxDim  || maxDim == -1) expand_simplex(*(union_simplex->get_vertices()), maxDim, addedSimplices, addedIndices, boundaries);
+	    if (addedSimplices != nullptr) addedSimplices->push_back(union_simplex->get_insertion_num());
+	    if ((int)union_simplex->get_vertices()->size() - 1 < maxDim  || maxDim == -1) expand_simplex(union_simplex->get_vertices(), maxDim, addedSimplices);
 	}
     }
 }
 
 inline Hash_complex::Simplex *Hash_complex::insert_union(Simplex *simplex, vertex v)
 {
-    simplex_base unionVect;
-    simplex_base *simplexVect = simplex->get_vertices();
-    simplex_base::size_type i = 0;
+    simplex_vertex_range unionVect;
+    simplex_vertex_range *simplexVect = simplex->get_vertices();
+    simplex_vertex_range::size_type i = 0;
     while (i < simplexVect->size() && simplexVect->at(i) < v){
 	unionVect.push_back(simplexVect->at(i));
 	++i;
@@ -596,7 +568,7 @@ inline Hash_complex::Simplex *Hash_complex::insert_union(Simplex *simplex, verte
     }
 
     i = 0;
-    std::pair<simplex_base*,int> p(&unionVect, -1);
+    std::pair<simplex_vertex_range*,int> p(&unionVect, -1);
     while (i < unionVect.size()){
 	p.second = i;
 	if (simplices_->find(&p) == simplices_->end()) return nullptr;
@@ -608,7 +580,7 @@ inline Hash_complex::Simplex *Hash_complex::insert_union(Simplex *simplex, verte
     return simplices_->at(&p);
 }
 
-inline Hash_complex::Simplex::Simplex(index num, simplex_base *vertices) : insertionNum_(num), vertices_(vertices)
+inline Hash_complex::Simplex::Simplex(index num, simplex_vertex_range *vertices) : insertionNum_(num), vertices_(vertices)
 {
     cofacets_ = new std::unordered_map<vertex, Simplex*>();
 }
@@ -639,7 +611,7 @@ inline std::unordered_map<Hash_complex::vertex, Hash_complex::Simplex*>* Hash_co
     return cofacets_;
 }
 
-inline Hash_complex::simplex_base *Hash_complex::Simplex::get_vertices() const
+inline Hash_complex::simplex_vertex_range *Hash_complex::Simplex::get_vertices() const
 {
     return vertices_;
 }

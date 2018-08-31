@@ -35,9 +35,9 @@ namespace tower_to_filtration {
  */
 class ComplexStructure{
 public:
-    typename vertex;	    /**< Type for vertex identifiers. */
-    typename index;	    /**< Type for simplex identifiers. */
-    typename size_type;	    /**< Type for size mesure. */
+    typename vertex;		    /**< Type for vertex identifiers. Should be able to be used by std::unordered_map as key type without customized hash function. */
+    typename simplex_handle;	    /**< Type for simplex identifiers. Should be able to be used by std::unordered_map as key type without customized hash function. */
+    typename simplex_vertex_range;  /**< Range of vertex identifiers. Should be iteratable with a begin() and end() function. */
 
     /**
      * @brief Constructor with no parameters
@@ -47,60 +47,66 @@ public:
     /**
      * @brief Insert a simplex in the complex, whose facets were already inserted in the complex.
      * @param simplex simplex to be inserted, described as the vector of its vertex identifiers. The module will give them in increasing order.
+     * @param handle pointer to a simplex identifier ; the method should store here the identifier of the just inserted simplex.
+     *	    This identifier needs to be unique and fixed: it should not change later in the process and a same simplex should always be associated with the same identifier.
+     *	    If the simplex is removed from the simplex, the identifier can be invalidated.
      * @return true if the simplex was not already inserted in the complex, false otherwise.
      *	    This module uses the result in an `if` statement, the output does not have to be `bool` if the test result is the same.
      */
-    bool insert_simplex(std::vector<vertex> &simplex);
+    bool insert_simplex(std::vector<vertex> &simplex, simplex_handle *handle);
+    /**
+     * @brief Insert a simplex in the complex and all its facets if they are not already inserted.
+     * @param simplex simplex simplex to be inserted, described as the vector of its vertex identifiers. The module will give them in increasing order.
+     * @param addedSimplices pointer to an (empty) vector of simplex identifiers ; the method should store in a valid filtration order all newly inserted simplices here.
+     *	    These identifiers need to be unique and fixed: they should not change later in the process and a same simplex should always be associated with the same identifier.
+     *	    If the simplex is removed from the simplex, the identifier can be invalidated.
+     * @return true if @p simplex was not already inserted in the complex, false otherwise.
+     */
+    bool insert_simplex_and_faces(std::vector<vertex> &simplex, std::vector<simplex_handle> *addedSimplices);
     /**
      * @brief Inserts the edge @p uv (and its vertices if not inserted) and all its possible cofaces.
      * @param u vertex identifier of the first vertex of the edge ; the module calls the method such that @p u < @p v.
      * @param v vertex identifier of the second vertex of the edge ; the module calls the method such that @p u < @p v.
      * @param maxDim the maximal dimension of the cofaces to be inserted ; if -1, then there is no limit.
-     * @param addedSimplices pointer to an (empty) vector of simplices ; the method stores in insertion order all newly inserted simplices here.
-     * @param addedIndices pointer to an (empty) vector of identifiers ;
-     *	    the method stores there the identifiers of the simplices in @p addedSimplices in the corresponding order.
-     * @param boundaries pointer to an (empty) vector of boundary identifiers ;
-     *	    the method stores there the identifiers of the boundary simplices of the simplices in @p addedSimplices in the corresponding order.
+     * @param addedSimplices pointer to an (empty) vector of simplex identifiers ; the method should store in a valid filtration order all newly inserted simplices here.
+     *	    These identifiers need to be unique and fixed: they should not change later in the process and a same simplex should always be associated with the same identifier.
+     *	    If the simplex is removed from the simplex, the identifier can be invalidated.
      * @return true if the edge was not already inserted in the complex, false otherwise.
      */
-    bool insert_edge_and_expand(vertex u, vertex v, int maxDim, std::vector<std::vector<vertex> > *addedSimplices, std::vector<index> *addedIndices, std::vector<std::vector<index>*> *boundaries);
+    bool insert_edge_and_expand(vertex u, vertex v, int maxDim, std::vector<simplex_handle> *addedSimplices);
     /**
      * @brief Remove a simplex and all its cofaces from the complex.
      * @param vertex simplex to be removed. This modules only needs to call the function on vertices.
-     * @param removedIndices pointer to an (empty) vector of simplex identifiers ; if this parameter is given, the identifiers of all the removed simplices are stored in the vector.
+     * @param removedIndices pointer to an (empty) vector of simplex identifiers ; the identifiers of all the removed simplices should be stored in the vector.
      */
-    void remove_simplex(std::vector<vertex> &vertex, std::vector<index> *removedIndices);
+    void remove_simplex(simplex_handle &vertex, std::vector<simplex_handle> *removedIndices);
     /**
-     * @brief Compute the smallest closed star of the vertices v and u and returns the corresponding vertex.
+     * @brief Compute the smallest closed star of the vertices v and u and returns the corresponding vertex
+     * in a time depending on the smallest closed star and not the biggest one.
      *
      * The star of a simplex is the set of simplices containing this simplex. The closed star is the smallest subcomplex containing the star.
      *
      * @param v identifier of the first vertex
      * @param u identifier of the second vertex
-     * @param closedStar pointer to an empty vector of simplices ; the method stores here the simplices contained in the smallest closed star, ordered such that possible faces
-     * of a simplex have smaller indices than the simplex itself.
-     * The simplices are represented by pointers to vectors containing the vertex indentifiers of the simplex in increasing order.
-     * Simplices will be modified and deleted later on and therefore should not be the same than the one stored in the complex.
+     * @param closedStar pointer to an empty vector of simplices ; the method should store here the simplices contained in the smallest closed star, ordered such that possible faces
+     * of a simplex come before the simplex itself.
+     * The simplices are represented by vectors containing the vertex indentifiers of the simplex in increasing order.
      * @return The identifier of the vertex which had the smallest closed star.
      */
-    vertex get_smallest_closed_star(vertex v, vertex u, std::vector<std::vector<vertex>*> *closedStar);
+    simplex_handle get_smallest_closed_star(vertex v, vertex u, std::vector<std::vector<vertex> > *closedStar);
     /**
      * @brief Computes the boundary of a simplex and returns the identifier of the simplex.
-     * @param simplex simplex which boundary will be computed, described as the vector of its vertex identifiers in increasing order.
-     * @param boundary pointer to an (empty) vector of simplex identifiers ; the method stores here the simplices in the boundary in increasing order of insertion.
+     * @param simplex identifier of the simplex which boundary will be computed.
+     * @param boundary pointer to an (empty) vector of simplex identifiers ; the method should store here the simplices in the boundary in increasing order of insertion.
      * @return The identifier of the simplex.
      */
-    index get_boundary(std::vector<vertex> &simplex, std::vector<index> *boundary);
+    void get_boundary(simplex_handle &simplex, std::vector<simplex_handle> *boundary);
     /**
-     * @brief Returns the current size if the complex.
-     * @return Current size of the complex.
+     * @brief Returns a range of the identifiers of the given simplex' vertices.
+     * @param simplex identifier of the simplex of which the vertices should be returned.
+     * @return A range of the identifiers of the given simplex' vertices.
      */
-    size_type get_size() const;
-    /**
-     * @brief Returns the biggest identifier of a simplex currently in the complex.
-     * @return Current biggest identifier of a simplex.
-     */
-    index get_max_index() const;
+    simplex_vertex_range get_vertices(simplex_handle &simplex);
 };
 
 }

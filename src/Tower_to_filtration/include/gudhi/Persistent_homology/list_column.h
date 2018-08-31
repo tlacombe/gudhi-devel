@@ -41,7 +41,11 @@ namespace tower_to_filtration {
 class List_column
 {
 public:
-    using coefficient_type = long long;	/**< Type for cell content. Should correspond to @ref Gudhi::tower_to_filtration::Persistence::index, if used for @ref Gudhi::tower_to_filtration::Persistence. */
+    /**
+     * Type for cell content. Should correspond to @ref Gudhi::tower_to_filtration::Persistence::index, if used for @ref Gudhi::tower_to_filtration::Persistence.
+     * Needs to be comparable (== and <) and order corresponds to order in filtration.
+     */
+    using coefficient_type = long long;
 
     List_column(int dim);
     ~List_column();

@@ -49,8 +49,8 @@ class Persistence
 {
 public:
     using vertex = typename ComplexStructure::vertex;	    /**< Type for vertex identifiers. */
-    using index = typename ComplexStructure::index;	    /**< Type for simplex identifiers. */
-    using size_type = typename ComplexStructure::size_type; /**< Type for size mesure. */
+    using index = typename Tower_converter<ComplexStructure>::index;	    /**< Type for simplex identifiers. */
+    using size_type = typename Tower_converter<ComplexStructure>::size_type; /**< Type for size mesure. */
     using simplex_base = typename std::vector<vertex>;	    /**< Type for simplices. */
 
     /**
@@ -77,8 +77,8 @@ public:
 	void insert_vertex(index insertionNumber, double timestamp);
 	void reduce(size_type start);
 	void clear_out();
-	void mark_inactive(std::vector<typename ComplexStructure::index> &insertionNumbers);
-	void mark_inactive(typename ComplexStructure::index insertionNumber);
+	void mark_inactive(std::vector<index> &insertionNumbers);
+	void mark_inactive(index insertionNumber);
 
 	index get_last_insert_number() const;
 	int get_max_dim() const;
@@ -101,8 +101,6 @@ public:
     bool add_insertions_via_edge_expansion(vertex u, vertex v, double timestamp, int maxExpDim = -1);
     void add_contraction(vertex v, vertex u, double timestamp);
     void finalize_reduction();
-
-    void print_filtration_data();
 
 private:
     Tower_converter<ComplexStructure> *converter_;  /**< Pointer to @ref Gudhi::tower_to_filtration::Tower_converter<ComplexStructure> */
@@ -166,18 +164,17 @@ bool Persistence<ComplexStructure, ColumnType>::add_insertion(simplex_base &simp
 template<class ComplexStructure, class ColumnType>
 bool Persistence<ComplexStructure, ColumnType>::add_faces_insertions(simplex_base &simplex, double timestamp)
 {
-    std::vector<simplex_base> addedSimplices;
     std::vector<std::vector<index>*> boundaries;
     std::vector<index> insertionNumbers;
     int c = 0;
 
-    bool res = converter_->add_faces_insertions(simplex, timestamp, &addedSimplices, &boundaries, &insertionNumbers);
+    bool res = converter_->add_faces_insertions(simplex, timestamp, &boundaries, &insertionNumbers);
 
-    for (simplex_base added : addedSimplices){
-	if (added.size() == 1) {
+    for (std::vector<index>* added : boundaries){
+	if (added->size() == 0) {
 	    matrix_->insert_vertex(insertionNumbers.at(c), timestamp);
 	} else {
-	    matrix_->insert_column(insertionNumbers.at(c), *(boundaries.at(c)), timestamp);
+	    matrix_->insert_column(insertionNumbers.at(c), *added, timestamp);
 
 	    if (fmod(insertionNumbers.at(c), reductionInterval_) == 0) {
 		compute_partial_persistence();
@@ -200,18 +197,17 @@ template<class ComplexStructure, class ColumnType>
  */
 bool Persistence<ComplexStructure, ColumnType>::add_insertions_via_edge_expansion(vertex u, vertex v, double timestamp, int maxExpDim)
 {
-    std::vector<simplex_base> addedSimplices;
     std::vector<std::vector<index>*> boundaries;
     std::vector<index> insertionNumbers;
     int c = 0;
 
-    bool res = converter_->add_insertions_via_edge_expansion(u, v, timestamp, maxExpDim, &addedSimplices, &boundaries, &insertionNumbers);
+    bool res = converter_->add_insertions_via_edge_expansion(u, v, timestamp, maxExpDim, &boundaries, &insertionNumbers);
 
-    for (simplex_base simplex : addedSimplices){
-	if (simplex.size() == 1) {
+    for (std::vector<index>* boundary : boundaries){
+	if (boundary->size() == 0) {
 	    matrix_->insert_vertex(insertionNumbers.at(c), timestamp);
 	} else {
-	    matrix_->insert_column(insertionNumbers.at(c), *(boundaries.at(c)), timestamp);
+	    matrix_->insert_column(insertionNumbers.at(c), *boundary, timestamp);
 
 	    if (fmod(insertionNumbers.at(c), reductionInterval_) == 0) {
 		compute_partial_persistence();
@@ -258,17 +254,6 @@ inline void Persistence<ComplexStructure, ColumnType>::finalize_reduction()
 {
     if (lastReduction_ != matrix_->get_last_insert_number()) matrix_->reduce(lastReduction_ + 1);
     lastReduction_ = matrix_->get_last_insert_number();
-}
-
-template<class ComplexStructure, class ColumnType>
-/**
- * @brief Prints various information about the resulting filtration in the terminal.
- *
- * Those are: filtration size, maximal size of a complex, maximal dimension of a simplex, tower width.
- */
-inline void Persistence<ComplexStructure, ColumnType>::print_filtration_data()
-{
-    converter_->print_filtration_data();
 }
 
 template<class ComplexStructure, class ColumnType>
