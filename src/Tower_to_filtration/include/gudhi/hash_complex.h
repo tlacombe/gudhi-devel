@@ -108,7 +108,10 @@ public:
 
     /* Important for tower_converter.h */
 
-    bool insert_simplex(simplex_base &numVertices);
+    bool insert_simplex(simplex_base &simplex);
+    bool insert_simplex(simplex_base &simplex, index* insertionNumber, std::vector<index> *boundary);
+    bool insert_simplex_and_faces(simplex_base &simplex);
+    bool insert_simplex_and_faces(simplex_base &simplex, std::vector<simplex_base> *addedSimplices, std::vector<index> *addedIndices, std::vector<std::vector<index>*> *boundaries);
     bool insert_edge_and_expand(vertex u, vertex v, int maxDim = -1);   // u < v !!! ; maxDim == -1 -> no limit
     bool insert_edge_and_expand(vertex u, vertex v, int maxDim,
 				std::vector<simplex_base> *addedSimplices, std::vector<index> *addedIndices, std::vector<std::vector<index>*> *boundaries);   // u < v !!! ; maxDim == -1 -> no limit
@@ -122,6 +125,7 @@ public:
 
     /* Other */
 
+    index get_index(simplex_base &simplex);
     size_type get_max_size() const;
     int get_max_dimension() const;
     void get_cofaces(simplex_base &simplex, std::vector<simplex_base*> *cofaces);
@@ -165,30 +169,75 @@ inline Hash_complex::~Hash_complex()
     delete simplices_;
 }
 
-inline bool Hash_complex::insert_simplex(simplex_base &numVertices)
+inline bool Hash_complex::insert_simplex(simplex_base &simplex)
 {
-    simplex_base *vs = new simplex_base(numVertices);
+    return insert_simplex(simplex, nullptr, nullptr);
+}
+
+inline bool Hash_complex::insert_simplex(simplex_base &simplex, index *insertionNumber, std::vector<index> *boundary)
+{
+    simplex_base *vs = new simplex_base(simplex);
     std::pair<simplex_base*,int> *p = new std::pair<simplex_base*,int>(vs, -1);
     Simplex *splx = new Simplex(maxIndex_ + 1, vs);
 
     if (simplices_->emplace(p, splx).second == false) {
 	p->first = nullptr;
-        delete splx;
-        delete p;
-        return false;
+	delete splx;
+	delete p;
+	return false;
     }
 
     maxIndex_++;
     if ((int)vs->size() - 1 > maxDim_) maxDim_ = vs->size() - 1;
     if (maxSize_ < (size_type)simplices_->size()) maxSize_ = simplices_->size();
 
+    if (boundary != nullptr) get_boundary(simplex, boundary);
+    if (insertionNumber != nullptr) *insertionNumber = splx->get_insertion_num();
+
     if (vs->size() <= 1) return true;
 
     for (simplex_base::size_type i = 0; i < vs->size(); i++){
-        p->second = i;
-        simplices_->at(p)->add_cofacet(splx, vs->at(i));
+	p->second = i;
+	simplices_->at(p)->add_cofacet(splx, vs->at(i));
     }
     p->second = -1;
+
+    return true;
+}
+
+inline bool Hash_complex::insert_simplex_and_faces(simplex_base &simplex)
+{
+    return insert_simplex_and_faces(simplex, nullptr, nullptr, nullptr);
+}
+
+inline bool Hash_complex::insert_simplex_and_faces(simplex_base &simplex, std::vector<simplex_base> *addedSimplices, std::vector<index> *addedIndices, std::vector<std::vector<index>*> *boundaries)
+{
+    std::pair<simplex_base*,int> p(&simplex, -1);
+    if (simplices_->find(&p) != simplices_->end()) return false;
+
+    std::vector<simplex_base> simplices;
+    std::vector<simplex_base> tmpSimplices;
+    index currentIndex;
+    std::vector<index> currentBoundary;
+    simplices.push_back(simplex_base());
+
+    for (simplex_base::size_type i = 0; i < simplex.size(); ++i){
+	vertex v = simplex.at(i);
+	tmpSimplices.clear();
+	for (simplex_base &prefix : simplices){
+	    tmpSimplices.push_back(simplex_base(prefix));
+	    tmpSimplices.back().push_back(v);
+	    currentBoundary.clear();
+	    if (insert_simplex(tmpSimplices.back(), &currentIndex, &currentBoundary)){
+		if (addedSimplices != nullptr) addedSimplices->push_back(tmpSimplices.back());
+		if (addedIndices != nullptr) addedIndices->push_back(currentIndex);
+		if (boundaries != nullptr) boundaries->push_back(new std::vector<index>(currentBoundary));
+	    }
+	}
+	for (auto it = tmpSimplices.begin(); it != tmpSimplices.end(); ++it){
+	    simplices.push_back(*it);
+	}
+    }
 
     return true;
 }
@@ -198,7 +247,7 @@ inline bool Hash_complex::insert_edge_and_expand(vertex u, vertex v, int maxDim)
     return insert_edge_and_expand(u, v, maxDim, nullptr, nullptr, nullptr);
 }
 
-bool Hash_complex::insert_edge_and_expand(vertex u, vertex v, int maxDim, std::vector<simplex_base> *addedSimplices, std::vector<index> *addedIndices, std::vector<std::vector<index>*> *boundaries)
+inline bool Hash_complex::insert_edge_and_expand(vertex u, vertex v, int maxDim, std::vector<simplex_base> *addedSimplices, std::vector<index> *addedIndices, std::vector<std::vector<index>*> *boundaries)
 {
     simplex_base vect;
     std::pair<simplex_base*,int> p(&vect, -1);
@@ -316,6 +365,12 @@ inline Hash_complex::index Hash_complex::get_boundary(simplex_base &simplex, std
     std::sort(boundary->begin(), boundary->end());
 
     p.second = -1;
+    return simplices_->at(&p)->get_insertion_num();
+}
+
+inline Hash_complex::index Hash_complex::get_index(simplex_base &simplex)
+{
+    std::pair<simplex_base*,int> p(&simplex, -1);
     return simplices_->at(&p)->get_insertion_num();
 }
 

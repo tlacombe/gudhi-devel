@@ -46,11 +46,11 @@ public:
 
     /**
      * @brief Insert a simplex in the complex, whose facets were already inserted in the complex.
-     * @param numVertices simplex to be inserted, described as the vector of its vertex identifiers in increasing order.
+     * @param simplex simplex to be inserted, described as the vector of its vertex identifiers. The module will give them in increasing order.
      * @return true if the simplex was not already inserted in the complex, false otherwise.
      *	    This module uses the result in an `if` statement, the output does not have to be `bool` if the test result is the same.
      */
-    bool insert_simplex(std::vector<vertex> &numVertices);
+    bool insert_simplex(std::vector<vertex> &simplex);
     /**
      * @brief Inserts the edge @p uv (and its vertices if not inserted) and all its possible cofaces.
      * @param u vertex identifier of the first vertex of the edge ; the module calls the method such that @p u < @p v.
@@ -62,7 +62,6 @@ public:
      * @param boundaries pointer to an (empty) vector of boundary identifiers ;
      *	    the method stores there the identifiers of the boundary simplices of the simplices in @p addedSimplices in the corresponding order.
      * @return true if the edge was not already inserted in the complex, false otherwise.
-     *	    This module uses the result in an `if` statement, the output does not have to be `bool` if the test result is the same.
      */
     bool insert_edge_and_expand(vertex u, vertex v, int maxDim, std::vector<std::vector<vertex> > *addedSimplices, std::vector<index> *addedIndices, std::vector<std::vector<index>*> *boundaries);
     /**

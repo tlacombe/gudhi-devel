@@ -77,7 +77,10 @@ public:
 
     /* Important for tower_converter.h */
 
-    Node* insert_simplex(simplex_base &numVertices);
+    Node* insert_simplex(simplex_base &simplex);
+    Node* insert_simplex(simplex_base &simplex, index* insertionNumber, std::vector<index> *boundary);
+    bool insert_simplex_and_faces(simplex_base &simplex);
+    bool insert_simplex_and_faces(simplex_base &simplex, std::vector<simplex_base> *addedSimplices, std::vector<index> *addedIndices, std::vector<std::vector<index>*> *boundaries);
     bool insert_edge_and_expand(vertex u, vertex v, int maxDim = -1);   // u < v !!! ; maxDim == -1 -> no limit
     bool insert_edge_and_expand(vertex u, vertex v, int maxDim,
 				std::vector<simplex_base> *addedSimplices, std::vector<index> *addedIndices, std::vector<std::vector<index>*> *boundaries);   // u < v !!! ; maxDim == -1 -> no limit
@@ -90,6 +93,7 @@ public:
 
     /* Other */
 
+    index get_index(simplex_base &simplex);
     size_type get_max_size() const;
     int get_max_dimension() const;
     void get_cofaces(simplex_base &simplex, std::vector<simplex_base*> *cofaces);
@@ -145,12 +149,20 @@ inline Simplex_tree::~Simplex_tree()
     delete dictionaries_;
 }
 
-inline Simplex_tree::Node* Simplex_tree::insert_simplex(simplex_base &numVertices)
+inline Simplex_tree::Node* Simplex_tree::insert_simplex(simplex_base &simplex)
 {
-    Node *simplexNode = insert_simplex_in_tree(numVertices);
+    return insert_simplex(simplex, nullptr, nullptr);
+}
+
+inline Simplex_tree::Node *Simplex_tree::insert_simplex(simplex_base &simplex, index *insertionNumber, std::vector<index> *boundary)
+{
+    Node *simplexNode = insert_simplex_in_tree(simplex);
     if (simplexNode == nullptr) return simplexNode;
 
-    int dim = numVertices.size() - 1;
+    if (insertionNumber != nullptr) *insertionNumber = simplexNode->get_insertion_index();
+    if (boundary != nullptr) get_boundary(simplexNode, boundary);
+
+    int dim = simplex.size() - 1;
 
     numberOfSimplices_++;
     maxIndex_++;
@@ -158,6 +170,76 @@ inline Simplex_tree::Node* Simplex_tree::insert_simplex(simplex_base &numVertice
     if (maxDim_ < dim) maxDim_ = dim;
 
     return simplexNode;
+}
+
+inline bool Simplex_tree::insert_simplex_and_faces(simplex_base &simplex)
+{
+    return insert_simplex_and_faces(simplex, nullptr, nullptr, nullptr);
+}
+
+inline bool Simplex_tree::insert_simplex_and_faces(simplex_base &simplex, std::vector<simplex_base> *addedSimplices, std::vector<index> *addedIndices, std::vector<std::vector<index>*> *boundaries)
+{
+    int dim;
+    std::vector<Node*> nodes;
+    std::vector<Node*> tmpNodes;
+    Node *vertexNode;
+
+    if (find(simplex) != nullptr) return false;
+
+    if (numberOfSimplices_ == 0) dictionaries_->push_back(new label_dictionary());
+    label_dictionary *vertices = dictionaries_->front();
+
+    for (simplex_base::size_type i = 0; i < simplex.size(); ++i){
+	vertex v = simplex.at(i);
+	tmpNodes.clear();
+
+	if (vertices->find(v) != vertices->end()){
+	    vertexNode = vertices->at(v);
+	} else {
+	    vertexNode = new Node(v, maxIndex_ + 1, 0, nullptr);
+	    vertices->emplace(v, vertexNode);
+	    ++numberOfSimplices_;
+	    ++maxIndex_;
+	    if (addedSimplices != nullptr) addedSimplices->push_back(simplex_base(1,v));
+	    if (addedIndices != nullptr) addedIndices->push_back(vertexNode->get_insertion_index());
+	    if (boundaries != nullptr) boundaries->push_back(new std::vector<index>());
+	}
+	tmpNodes.push_back(vertexNode);
+
+	for (Node *node : nodes){
+	    label_dictionary* children = node->get_children();
+	    dim = node->get_dim();
+	    if (children->find(v) == children->end()){
+		if ((int)dictionaries_->size() == dim + 1) dictionaries_->push_back(new label_dictionary());
+		Node *vNode = new Node(v, maxIndex_ + 1, dim + 1, node);
+		children->emplace(v, vNode);
+		insert_node_in_dictionary(vNode);
+		++numberOfSimplices_;
+		++maxIndex_;
+		if (addedSimplices != nullptr){
+		    simplex_base *vVector = node_to_vector(vNode);
+		    addedSimplices->push_back(*vVector);
+		    delete vVector;
+		}
+		if (addedIndices != nullptr) addedIndices->push_back(vNode->get_insertion_index());
+		if (boundaries != nullptr){
+		    std::vector<index> *boundary = new std::vector<index>();
+		    get_boundary(vNode, boundary);
+		    boundaries->push_back(boundary);
+		}
+	    }
+	    tmpNodes.push_back(children->at(v));
+	}
+	for (Node *node : tmpNodes){
+	    nodes.push_back(node);
+	}
+    }
+
+    dim = simplex.size() - 1;
+    if (maxSize_ < numberOfSimplices_) maxSize_ = numberOfSimplices_;
+    if (maxDim_ < dim) maxDim_ = dim;
+
+    return true;
 }
 
 inline bool Simplex_tree::insert_edge_and_expand(vertex u, vertex v, int maxDim)
@@ -171,14 +253,22 @@ inline bool Simplex_tree::insert_edge_and_expand(vertex u, vertex v, int maxDim,
     vect.push_back(u);
     Node *vertexNode = insert_simplex(vect);
     if (vertexNode){
-	if (addedSimplices != nullptr) addedSimplices->push_back(*(node_to_vector(vertexNode)));
+	if (addedSimplices != nullptr){
+	    simplex_base *vertexVector = node_to_vector(vertexNode);
+	    addedSimplices->push_back(*vertexVector);
+	    delete vertexVector;
+	}
 	if (addedIndices != nullptr) addedIndices->push_back(vertexNode->get_insertion_index());
 	if (boundaries != nullptr) boundaries->push_back(new std::vector<index>());
     }
     vect.at(0) = v;
     vertexNode = insert_simplex(vect);
     if (vertexNode){
-	if (addedSimplices != nullptr) addedSimplices->push_back(*(node_to_vector(vertexNode)));
+	if (addedSimplices != nullptr){
+	    simplex_base *vertexVector = node_to_vector(vertexNode);
+	    addedSimplices->push_back(*vertexVector);
+	    delete vertexVector;
+	}
 	if (addedIndices != nullptr) addedIndices->push_back(vertexNode->get_insertion_index());
 	if (boundaries != nullptr) boundaries->push_back(new std::vector<index>());
     }
@@ -189,7 +279,11 @@ inline bool Simplex_tree::insert_edge_and_expand(vertex u, vertex v, int maxDim,
     //std::cout << "first\n";
 
     if (edgeNode) {
-	if (addedSimplices != nullptr) addedSimplices->push_back(*(node_to_vector(edgeNode)));
+	if (addedSimplices != nullptr){
+	    simplex_base *edgeVector = node_to_vector(edgeNode);
+	    addedSimplices->push_back(*edgeVector);
+	    delete edgeVector;
+	}
 	if (addedIndices != nullptr) addedIndices->push_back(edgeNode->get_insertion_index());
 	if (boundaries != nullptr){
 	    std::vector<index> *boundary = new std::vector<index>();
@@ -217,7 +311,7 @@ inline void Simplex_tree::remove_simplex(simplex_base &simplex, std::vector<inde
     remove_simplex(simplexNode, removedIndices);
 }
 
-inline Simplex_tree::vertex Simplex_tree::get_smallest_closed_star(vertex v, vertex u, std::vector<simplex_base *> *closedStar)
+inline Simplex_tree::vertex Simplex_tree::get_smallest_closed_star(vertex v, vertex u, std::vector<simplex_base*> *closedStar)
 {
     std::queue<Node*> qv;
     std::queue<Node*> qu;
@@ -252,6 +346,12 @@ inline Simplex_tree::index Simplex_tree::get_boundary(simplex_base &simplex, std
 {
     Node *simplexNode = find(simplex);
     return get_boundary(simplexNode, boundary);
+}
+
+inline Simplex_tree::index Simplex_tree::get_index(simplex_base &simplex)
+{
+    Node *simplexNode = find(simplex);
+    return simplexNode->get_insertion_index();
 }
 
 inline Simplex_tree::index Simplex_tree::get_boundary(Node *simplexNode, std::vector<index> *boundary)
@@ -309,7 +409,7 @@ inline int Simplex_tree::get_max_dimension() const
     return maxDim_;
 }
 
-inline void Simplex_tree::get_cofaces(simplex_base &simplex, std::vector<simplex_base *> *cofaces)
+inline void Simplex_tree::get_cofaces(simplex_base &simplex, std::vector<simplex_base*> *cofaces)
 {
     Node *simplexNode = find(simplex);
     std::vector<Node*> cofaceNodes;
@@ -472,7 +572,11 @@ inline void Simplex_tree::expand_node(Node *simplex, int maxDim, std::vector<sim
 	if (cofacet == simplex) continue;
 	Node *node = insert_union(cofacet, simplex->get_label());
 	if (node != nullptr){	//if node could be inserted, i.e. all its facets were there and it-self was not already inserted
-	    if (addedSimplices != nullptr) addedSimplices->push_back(*(node_to_vector(node)));
+	    if (addedSimplices != nullptr){
+		simplex_base *vector = node_to_vector(node);
+		addedSimplices->push_back(*vector);
+		delete vector;
+	    }
 	    if (addedIndices != nullptr) addedIndices->push_back(node->get_insertion_index());
 	    if (boundaries != nullptr) {
 		std::vector<index> *boundary = new std::vector<index>();

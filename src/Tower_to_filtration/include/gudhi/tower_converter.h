@@ -65,6 +65,8 @@ public:
 
     bool add_insertion(simplex_base &simplex, double timestamp);
     bool add_insertion(simplex_base &simplex, double timestamp, std::vector<index> *simplexBoundary, index *simplexInsertionNumber);
+    bool add_faces_insertions(simplex_base &simplex, double timestamp);
+    bool add_faces_insertions(simplex_base &simplex, double timestamp, std::vector<simplex_base> *addedSimplices, std::vector<std::vector<index>*> *boundaries, std::vector<index> *insertionNumbers);
     bool add_insertions_via_edge_expansion(vertex u, vertex v, double timestamp, int maxExpDim = -1);
     bool add_insertions_via_edge_expansion(vertex u, vertex v, double timestamp, int maxExpDim,
 					   std::vector<simplex_base> *addedSimplices, std::vector<std::vector<index>*> *boundaries, std::vector<index> *insertionNumbers);
@@ -167,6 +169,40 @@ bool Tower_converter<ComplexStructure>::add_insertion(simplex_base &simplex, dou
 }
 
 template<class ComplexStructure>
+bool Tower_converter<ComplexStructure>::add_faces_insertions(simplex_base &simplex, double timestamp)
+{
+    return add_faces_insertions(simplex, timestamp, nullptr, nullptr, nullptr);
+}
+
+template<class ComplexStructure>
+bool Tower_converter<ComplexStructure>::add_faces_insertions(simplex_base &simplex, double timestamp,
+							     std::vector<simplex_base> *addedSimplices, std::vector<std::vector<index>*> *boundaries, std::vector<index> *insertionNumbers)
+{
+    simplex_base transSimplex;
+    std::vector<simplex_base> *insertedSimplices;
+
+    for (vertex v : simplex){
+	if (vertices_->find(v) == vertices_->end()) vertices_->emplace(v, v);
+	transSimplex.push_back(vertices_->at(v));
+    }
+    std::sort(transSimplex.begin(), transSimplex.end());
+
+    if (addedSimplices == nullptr) insertedSimplices = new std::vector<simplex_base>();
+    else insertedSimplices = addedSimplices;
+
+    bool res = complex_->insert_simplex_and_faces(transSimplex, insertedSimplices, insertionNumbers, boundaries);
+
+    for (simplex_base added : *insertedSimplices){
+	stream_simplex(added, timestamp);
+    }
+    if (addedSimplices == nullptr) delete insertedSimplices;
+
+    if (complex_->get_size() > towerWidth_) towerWidth_ = complex_->get_size();
+
+    return res;
+}
+
+template<class ComplexStructure>
 /**
  * @brief Adds a sequence of elementary insertions as the next tower operations. These consists of inserting the edge @p uv (and its vertices if not inserted) and all its possible cofaces.
  * @param u vertex identifier of the first vertex of the edge.
@@ -198,30 +234,30 @@ bool Tower_converter<ComplexStructure>::add_insertions_via_edge_expansion(vertex
 									  std::vector<std::vector<index>*> *boundaries, std::vector<index> *insertionNumbers)
 {
     std::vector<simplex_base> *insertedSimplices;
-    vertex first = u;
-    vertex second = u;
-    if (u < v) second = v;
-    else first = v;
+    vertex first;
+    vertex second;
 
     vertices_->emplace(u, u);
     vertices_->emplace(v, v);
 
+    first = vertices_->at(u);
+    second = vertices_->at(u);
+    if (first < vertices_->at(v)) second = vertices_->at(v);
+    else first = vertices_->at(v);
+
     if (addedSimplices == nullptr) insertedSimplices = new std::vector<simplex_base>();
     else insertedSimplices = addedSimplices;
 
-    if (complex_->insert_edge_and_expand(first, second, maxExpDim, insertedSimplices, insertionNumbers, boundaries)){
-	for (simplex_base simplex : *insertedSimplices){
-	    stream_simplex(simplex, timestamp);
-	}
+    bool res = complex_->insert_edge_and_expand(first, second, maxExpDim, insertedSimplices, insertionNumbers, boundaries);
 
-	if (complex_->get_size() > towerWidth_) towerWidth_ = complex_->get_size();
-
-	if (addedSimplices == nullptr) delete insertedSimplices;
-	return true;
+    for (simplex_base simplex : *insertedSimplices){
+	stream_simplex(simplex, timestamp);
     }
-
     if (addedSimplices == nullptr) delete insertedSimplices;
-    return false;
+
+    if (complex_->get_size() > towerWidth_) towerWidth_ = complex_->get_size();
+
+    return res;
 }
 
 template<class ComplexStructure>

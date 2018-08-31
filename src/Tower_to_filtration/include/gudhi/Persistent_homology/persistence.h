@@ -97,6 +97,7 @@ public:
     };
 
     bool add_insertion(simplex_base &simplex, double timestamp);
+    bool add_faces_insertions(simplex_base &simplex, double timestamp);
     bool add_insertions_via_edge_expansion(vertex u, vertex v, double timestamp, int maxExpDim = -1);
     void add_contraction(vertex v, vertex u, double timestamp);
     void finalize_reduction();
@@ -163,6 +164,32 @@ bool Persistence<ComplexStructure, ColumnType>::add_insertion(simplex_base &simp
 }
 
 template<class ComplexStructure, class ColumnType>
+bool Persistence<ComplexStructure, ColumnType>::add_faces_insertions(simplex_base &simplex, double timestamp)
+{
+    std::vector<simplex_base> addedSimplices;
+    std::vector<std::vector<index>*> boundaries;
+    std::vector<index> insertionNumbers;
+    int c = 0;
+
+    bool res = converter_->add_faces_insertions(simplex, timestamp, &addedSimplices, &boundaries, &insertionNumbers);
+
+    for (simplex_base added : addedSimplices){
+	if (added.size() == 1) {
+	    matrix_->insert_vertex(insertionNumbers.at(c), timestamp);
+	} else {
+	    matrix_->insert_column(insertionNumbers.at(c), *(boundaries.at(c)), timestamp);
+
+	    if (fmod(insertionNumbers.at(c), reductionInterval_) == 0) {
+		compute_partial_persistence();
+	    }
+	}
+	++c;
+    }
+
+    return res;
+}
+
+template<class ComplexStructure, class ColumnType>
 /**
  * @brief Adds a sequence of elementary insertions as the next tower operations. These consists of inserting the edge @p uv (and its vertices if not inserted) and all its possible cofaces.
  * @param u vertex identifier of the first vertex of the edge.
@@ -178,7 +205,7 @@ bool Persistence<ComplexStructure, ColumnType>::add_insertions_via_edge_expansio
     std::vector<index> insertionNumbers;
     int c = 0;
 
-    if (!converter_->add_insertions_via_edge_expansion(u, v, timestamp, maxExpDim, &addedSimplices, &boundaries, &insertionNumbers)) return false;
+    bool res = converter_->add_insertions_via_edge_expansion(u, v, timestamp, maxExpDim, &addedSimplices, &boundaries, &insertionNumbers);
 
     for (simplex_base simplex : addedSimplices){
 	if (simplex.size() == 1) {
@@ -193,7 +220,7 @@ bool Persistence<ComplexStructure, ColumnType>::add_insertions_via_edge_expansio
 	++c;
     }
 
-    return true;
+    return res;
 }
 
 template<class ComplexStructure, class ColumnType>
