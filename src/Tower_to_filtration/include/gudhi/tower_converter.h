@@ -89,7 +89,7 @@ private:
     size_type complexSize_;
     index maxIndex_;
 
-    void get_union(vertex v, std::vector<simplex_handle> *simplices, std::vector<simplex_base*> *unions);
+    void get_union(vertex v, std::vector<simplex_handle> &simplices, std::vector<simplex_base> *unions);
     void stream_simplex(simplex_handle &simplex, double timestamp);
 };
 
@@ -315,7 +315,8 @@ template<class ComplexStructure>
 typename Tower_converter<ComplexStructure>::index Tower_converter<ComplexStructure>::add_contraction(vertex v, vertex u, double timestamp,
 									  std::vector<std::vector<index>*> *addedBoundaries, std::vector<index> *removedIndices)
 {
-    std::vector<simplex_base> closedStar;
+    std::vector<simplex_handle> closedStar;
+    std::vector<simplex_base> unions;
     vertex tv = vertices_->at(v), tu = vertices_->at(u);
     simplex_handle disappearing = complex_->get_smallest_closed_star(tv, tu, &closedStar);
     index first = -1;
@@ -325,12 +326,12 @@ typename Tower_converter<ComplexStructure>::index Tower_converter<ComplexStructu
     vertices_->erase(v);
     if (*(complex_->get_vertices(disappearing).begin()) == tu){
         vertices_->at(u) = tv;
-        get_union(tv, &closedStar);
+	get_union(tv, closedStar, &unions);
     } else {
-        get_union(tu, &closedStar);
+	get_union(tu, closedStar, &unions);
     }
 
-    for (auto it = closedStar.begin(); it != closedStar.end(); it++){
+    for (auto it = unions.begin(); it != unions.end(); it++){
 	if (complex_->insert_simplex(*it, &handle)) {
 	    stream_simplex(handle, timestamp);
 	    if (first == -1) first = maxIndex_;
@@ -389,16 +390,27 @@ template<class ComplexStructure>
 /**
  * @brief Make the union of a set of simplices and a vertex.
  * @param v vertex identifier to unify.
- * @param simplices vector of simplices to unify with @p v. The simplices will be replaced by the resulting simplices.
+ * @param simplices vector of simplices to unify with @p v.
+ * @param unions pointer to an empty vector of simplices. The method will fill the vector with the resulting simplices.
  */
-void Tower_converter<ComplexStructure>::get_union(vertex v, std::vector<simplex_handle> *simplices, std::vector<simplex_base*> *unions)
+void Tower_converter<ComplexStructure>::get_union(vertex v, std::vector<simplex_handle> &simplices, std::vector<simplex_base> *unions)
 {
-    for (auto itSimplices = simplices->begin(); itSimplices != simplices->end(); itSimplices++){
-        auto itVertices = (*itSimplices)->begin();
-        while (itVertices != (*itSimplices)->end() && *itVertices < v) itVertices++;
-        if ((itVertices != (*itSimplices)->end() && *itVertices != v) || itVertices == (*itSimplices)->end()){
-            (*itSimplices)->insert(itVertices, v);
-        }
+    unions->resize(simplices.size());
+    int c = 0;
+
+    for (simplex_handle handle : simplices){
+	simplex_vertex_range vertices = complex_->get_vertices(handle);
+	auto it = vertices.begin();
+	while (it != vertices.end() && *it < v){
+	    unions->at(c).push_back(*it);
+	    ++it;
+	}
+	if ((it != vertices.end() && *it != v) || it == vertices.end()) unions->at(c).push_back(v);
+	while (it != vertices.end){
+	    unions->at(c).push_back(*it);
+	    ++it;
+	}
+	++c;
     }
 }
 

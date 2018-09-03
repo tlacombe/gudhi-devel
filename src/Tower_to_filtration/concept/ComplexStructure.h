@@ -35,9 +35,9 @@ namespace tower_to_filtration {
  */
 class ComplexStructure{
 public:
-    typename vertex;		    /**< Type for vertex identifiers. Should be able to be used by std::unordered_map as key type without customized hash function. */
+    typename vertex;		    /**< Type for vertex identifiers. Should be able to be used by std::unordered_map as key type without customized hash function. Needs to be comparable and have a total order (<, ==). */
     typename simplex_handle;	    /**< Type for simplex identifiers. Should be able to be used by std::unordered_map as key type without customized hash function. */
-    typename simplex_vertex_range;  /**< Range of vertex identifiers. Should be iteratable with a begin() and end() function. */
+    typename simplex_vertex_range;  /**< Ordered range of vertex identifiers. Should be iteratable with a begin() and end() function. */
 
     /**
      * @brief Constructor with no parameters
@@ -88,12 +88,11 @@ public:
      *
      * @param v identifier of the first vertex
      * @param u identifier of the second vertex
-     * @param closedStar pointer to an empty vector of simplices ; the method should store here the simplices contained in the smallest closed star, ordered such that possible faces
-     * of a simplex come before the simplex itself.
-     * The simplices are represented by vectors containing the vertex indentifiers of the simplex in increasing order.
+     * @param closedStar pointer to an empty vector of simplices ; the method should store here the simplices contained in the smallest closed star,
+     *	    ordered such that possible faces of a simplex come before the simplex itself.
      * @return The identifier of the vertex which had the smallest closed star.
      */
-    simplex_handle get_smallest_closed_star(vertex v, vertex u, std::vector<std::vector<vertex> > *closedStar);
+    simplex_handle get_smallest_closed_star(vertex v, vertex u, std::vector<simplex_handle> *closedStar);
     /**
      * @brief Computes the boundary of a simplex and returns the identifier of the simplex.
      * @param simplex identifier of the simplex which boundary will be computed.

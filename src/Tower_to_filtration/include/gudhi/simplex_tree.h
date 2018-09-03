@@ -83,7 +83,7 @@ public:
     bool insert_edge_and_expand(vertex u, vertex v, int maxDim = -1, std::vector<simplex_handle> *addedSimplices = nullptr);	// u < v !!! ; maxDim == -1 -> no limit
     void remove_simplex(simplex_vertex_range &simplex, std::vector<simplex_handle> *removedIndices = nullptr);
     void remove_simplex(simplex_handle &simplex, std::vector<simplex_handle> *removedIndices = nullptr);
-    simplex_handle& get_smallest_closed_star(vertex v, vertex u, std::vector<simplex_vertex_range> *closedStar);    //returns vertex with smallest closed star; closedStar is ordered
+    simplex_handle get_smallest_closed_star(vertex v, vertex u, std::vector<simplex_handle> *closedStar);    //returns vertex with smallest closed star; closedStar is ordered
     void get_boundary(simplex_handle &simplex, std::vector<simplex_handle> *boundary);   //ordered by increasing insertion numbers
     simplex_vertex_range get_vertices(simplex_handle &simplex);
 
@@ -124,7 +124,6 @@ private:
                                           label_dictionary *&children, label_dictionary::iterator &it, std::queue<Node*> *&tail);
     bool get_smallest_star_find_next_root(vertex v, vertex toAvoid, std::vector<label_dictionary*>::size_type &currentHeight,
                                           Node *&currentRoot, Node *&startRoot, Node *&currentNode, bool &currentNodeIsRoot);
-    simplex_vertex_range node_to_vector(Node *node);
     Node* get_opposite_facet(Node *simplex, vertex v);
     void print_from_node(Node *node, std::string prefix);
 };
@@ -263,7 +262,7 @@ inline void Simplex_tree::remove_simplex(simplex_handle &simplex, std::vector<si
     }
 }
 
-inline Simplex_tree::simplex_handle& Simplex_tree::get_smallest_closed_star(vertex v, vertex u, std::vector<simplex_vertex_range> *closedStar)
+inline Simplex_tree::simplex_handle Simplex_tree::get_smallest_closed_star(vertex v, vertex u, std::vector<simplex_handle> *closedStar)
 {
     std::queue<Node*> qv;
     std::queue<Node*> qu;
@@ -274,9 +273,9 @@ inline Simplex_tree::simplex_handle& Simplex_tree::get_smallest_closed_star(vert
             s = qv.front();
             qv.pop();
 	    if (s->get_parent() != nullptr){
-                closedStar->push_back(node_to_vector(get_opposite_facet(s, v)));
+		closedStar->push_back(get_opposite_facet(s, v));
             }
-            closedStar->push_back(node_to_vector(s));
+	    closedStar->push_back(s);
         }
 
 	return dictionaries_->front()->at(v);
@@ -285,9 +284,9 @@ inline Simplex_tree::simplex_handle& Simplex_tree::get_smallest_closed_star(vert
             s = qu.front();
             qu.pop();
 	    if (s->get_parent() != nullptr){
-                closedStar->push_back(node_to_vector(get_opposite_facet(s, u)));
+		closedStar->push_back(get_opposite_facet(s, u));
             }
-            closedStar->push_back(node_to_vector(s));
+	    closedStar->push_back(s);
         }
 
 	return dictionaries_->front()->at(u);
@@ -336,9 +335,16 @@ inline void Simplex_tree::get_boundary(simplex_handle &simplexNode, std::vector<
     });
 }
 
-Simplex_tree::simplex_vertex_range Simplex_tree::get_vertices(simplex_handle &simplex)
+inline Simplex_tree::simplex_vertex_range Simplex_tree::get_vertices(simplex_handle &simplex)
 {
-    return node_to_vector(simplex);
+    simplex_vertex_range vector;
+    Node *nodeIt = simplex;
+    while (nodeIt != nullptr){
+	vector.push_back(nodeIt->get_label());
+	nodeIt = nodeIt->get_parent();
+    }
+    std::reverse(vector.begin(), vector.end());
+    return vector;
 }
 
 inline Simplex_tree::size_type Simplex_tree::get_size() const
@@ -346,7 +352,7 @@ inline Simplex_tree::size_type Simplex_tree::get_size() const
     return numberOfSimplices_;
 }
 
-int Simplex_tree::get_dimension(simplex_handle handle)
+inline int Simplex_tree::get_dimension(simplex_handle handle)
 {
     return handle->get_dim();
 }
@@ -709,18 +715,6 @@ inline bool Simplex_tree::get_smallest_star_find_next_root(vertex v, vertex toAv
     currentNode = currentRoot;
     currentNodeIsRoot = true;
     return true;
-}
-
-inline Simplex_tree::simplex_vertex_range Simplex_tree::node_to_vector(Node *node)
-{
-    simplex_vertex_range vector;
-    Node *nodeIt = node;
-    while (nodeIt != nullptr){
-	vector.push_back(nodeIt->get_label());
-        nodeIt = nodeIt->get_parent();
-    }
-    std::reverse(vector.begin(), vector.end());
-    return vector;
 }
 
 inline Simplex_tree::Node *Simplex_tree::get_opposite_facet(Node *simplex, vertex v)

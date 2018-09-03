@@ -114,7 +114,7 @@ public:
     bool insert_edge_and_expand(vertex u, vertex v, int maxDim = -1, std::vector<simplex_handle> *addedSimplices = nullptr);	// u < v !!! ; maxDim == -1 -> no limit
     bool remove_simplex(simplex_vertex_range &simplex, std::vector<simplex_handle> *removedIndices = nullptr);
     bool remove_simplex(simplex_handle &simplex, std::vector<simplex_handle> *removedIndices = nullptr);
-    simplex_handle get_smallest_closed_star(vertex v, vertex u, std::vector<simplex_vertex_range> *closedStar);    //returns vertex with smallest closed star; closedStar is ordered
+    simplex_handle get_smallest_closed_star(vertex v, vertex u, std::vector<simplex_handle> *closedStar);    //returns vertex with smallest closed star; closedStar is ordered
     void get_boundary(simplex_handle &handle, std::vector<simplex_handle> *boundary);	//ordered by increasing insertion numbers
     simplex_vertex_range& get_vertices(simplex_handle &handle) const;
 
@@ -142,7 +142,7 @@ private:
     > *simplices_;
     std::unordered_map<simplex_handle, Simplex*> *handleToSimplex_;
 
-    vertex get_smallest_star(vertex v, vertex u, std::queue<simplex_vertex_range*> *qv, std::queue<simplex_vertex_range*> *qu);
+    vertex get_smallest_star(vertex v, vertex u, std::queue<Simplex*> *qv, std::queue<Simplex*> *qu);
     int get_vertex_index(simplex_vertex_range *simplex, vertex v);
     void expand_simplex(simplex_vertex_range *vectSimplex, int maxDim, std::vector<simplex_handle> *addedSimplices);
     Simplex* insert_union(Simplex *simplex, vertex v);
@@ -285,11 +285,11 @@ inline bool Hash_complex::remove_simplex(Simplex *simplex, std::vector<simplex_h
     return true;
 }
 
-inline Hash_complex::simplex_handle Hash_complex::get_smallest_closed_star(vertex v, vertex u, std::vector<simplex_vertex_range> *closedStar)
+inline Hash_complex::simplex_handle Hash_complex::get_smallest_closed_star(vertex v, vertex u, std::vector<simplex_handle> *closedStar)
 {
-    std::queue<simplex_vertex_range*> qv;
-    std::queue<simplex_vertex_range*> qu;
-    simplex_vertex_range *s;
+    std::queue<Simplex*> qv;
+    std::queue<Simplex*> qu;
+    Simplex *s;
     std::pair<simplex_vertex_range*,int> p;
     simplex_vertex_range vv(1, v);
     simplex_vertex_range vu(1, u);
@@ -298,13 +298,13 @@ inline Hash_complex::simplex_handle Hash_complex::get_smallest_closed_star(verte
         while (!qv.empty()){
             s = qv.front();
             qv.pop();
-            p.first = s;
-            p.second = get_vertex_index(s, v);
-            if (s->size() > 1){
-		closedStar->push_back(*(simplices_->at(&p)->get_vertices()));
+	    p.first = s->get_vertices();
+	    p.second = get_vertex_index(s->get_vertices(), v);
+	    if (s->get_vertices()->size() > 1){
+		closedStar->push_back(simplices_->at(&p)->get_insertion_num());
             }
             p.second = -1;
-	    closedStar->push_back(*s);
+	    closedStar->push_back(s->get_insertion_num());
         }
 
 	p.first = &vv;
@@ -312,13 +312,13 @@ inline Hash_complex::simplex_handle Hash_complex::get_smallest_closed_star(verte
         while (!qu.empty()){
             s = qu.front();
             qu.pop();
-            p.first = s;
-            p.second = get_vertex_index(s, u);
-            if (s->size() > 1){
-		closedStar->push_back(*(simplices_->at(&p)->get_vertices()));
+	    p.first = s->get_vertices();
+	    p.second = get_vertex_index(s->get_vertices(), u);
+	    if (s->get_vertices()->size() > 1){
+		closedStar->push_back(simplices_->at(&p)->get_insertion_num());
             }
             p.second = -1;
-	    closedStar->push_back(*s);
+	    closedStar->push_back(s->get_insertion_num());
         }
 
 	p.first = &vu;
@@ -353,7 +353,7 @@ inline Hash_complex::simplex_handle Hash_complex::get_simplex_handle(simplex_ver
     return simplices_->at(&p)->get_insertion_num();
 }
 
-int Hash_complex::get_dimension(simplex_handle handle)
+inline int Hash_complex::get_dimension(simplex_handle handle)
 {
     return handleToSimplex_->at(handle)->get_vertices()->size() - 1;
 }
@@ -373,7 +373,7 @@ inline int Hash_complex::get_max_dimension() const
     return maxDim_;
 }
 
-inline void Hash_complex::get_cofaces(simplex_vertex_range &simplex, std::vector<simplex_vertex_range *> *cofaces)
+inline void Hash_complex::get_cofaces(simplex_vertex_range &simplex, std::vector<simplex_vertex_range*> *cofaces)
 {
     auto hash = [](simplex_vertex_range* const& k) {
         std::size_t seed = k->size();
@@ -429,7 +429,7 @@ inline bool Hash_complex::contains(simplex_vertex_range &simplex)
     return (simplices_->find(&p) != simplices_->end());
 }
 
-void Hash_complex::print()
+inline void Hash_complex::print()
 {
     for (auto it = simplices_->begin(); it != simplices_->end(); ++it){
 	simplex_vertex_range *current = it->second->get_vertices();
@@ -440,7 +440,7 @@ void Hash_complex::print()
     }
 }
 
-inline Hash_complex::vertex Hash_complex::get_smallest_star(vertex v, vertex u, std::queue<simplex_vertex_range *> *qv, std::queue<simplex_vertex_range *> *qu)
+inline Hash_complex::vertex Hash_complex::get_smallest_star(vertex v, vertex u, std::queue<Simplex*> *qv, std::queue<Simplex*> *qu)
 {
     auto hash = [](simplex_vertex_range* const& k) {
         std::size_t seed = k->size();
@@ -472,12 +472,12 @@ inline Hash_complex::vertex Hash_complex::get_smallest_star(vertex v, vertex u, 
 
     p.first = &sv;
     p.second = -1;
-    qv->push(simplices_->at(&p)->get_vertices());
+    qv->push(simplices_->at(&p));
     cofacetsV = simplices_->at(&p)->get_cofacets();
     vit = cofacetsV->begin();
 
     p.first = &su;
-    qu->push(simplices_->at(&p)->get_vertices());
+    qu->push(simplices_->at(&p));
     cofacetsU = simplices_->at(&p)->get_cofacets();
     uit = cofacetsU->begin();
 
@@ -487,12 +487,12 @@ inline Hash_complex::vertex Hash_complex::get_smallest_star(vertex v, vertex u, 
     while (vit != cofacetsV->end() && uit != cofacetsU->end()) {
         p.first = vit->second->get_vertices();
         visitedV.emplace(p.first, true);
-        qv->push(p.first);
+	qv->push(vit->second);
         tv.push(p.first);
 
         p.first = uit->second->get_vertices();
         visitedU.emplace(p.first, true);
-        qu->push(p.first);
+	qu->push(uit->second);
         tu.push(p.first);
 
         vit++;
