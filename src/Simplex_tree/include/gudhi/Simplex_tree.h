@@ -440,19 +440,19 @@ public:
   * 'value_type' is Simplex_handle.
   */ 
   typedef Flagzigzag_simplex_iterator< Simplex_tree > 
-                                                   Zigzag_simplex_iterator;
+                                                   Zigzagfiltration_simplex_iterator;
 /** Range for the flag zigzag filtration.*/
-  typedef boost::iterator_range< Zigzag_simplex_iterator > 
-                                                      Zigzag_simplex_range;
+  typedef boost::iterator_range< Zigzagfiltration_simplex_iterator > 
+                                                      Zigzagfiltration_simplex_range;
   /** \brief Range over the simplices of the simplicial complex, ordered by the filtration. */
   typedef typename std::conditional< Options::is_zigzag, 
-                      Zigzag_simplex_range,
+                      Zigzagfiltration_simplex_range,
                       std::vector<Simplex_handle> >::type  Filtration_simplex_range;
   /** \brief Iterator over the simplices of the simplicial complex, ordered by the filtration.
    *
    * 'value_type' is Simplex_handle. */
   typedef typename std::conditional< Options::is_zigzag, 
-                      Zigzag_simplex_iterator,
+                      Zigzagfiltration_simplex_iterator,
                       typename std::vector<Simplex_handle>::const_iterator >::type 
                                                         Filtration_simplex_iterator;
 
@@ -1443,14 +1443,14 @@ private:
   */
 public:
   template< class ZigzagEdgeRange >
-  Zigzag_simplex_range 
+  Zigzagfiltration_simplex_range 
   zigzag_simplex_range( ZigzagEdgeRange & zz_edge_fil
                       , int dim_max )
   { 
     return 
-        Zigzag_simplex_range( 
-                      Zigzag_simplex_iterator(this, &zz_edge_fil, dim_max)
-                    , Zigzag_simplex_iterator()  );
+        Zigzagfiltration_simplex_range( 
+                      Zigzagfiltration_simplex_iterator(this, &zz_edge_fil, dim_max)
+                    , Zigzagfiltration_simplex_iterator()  );
   }
 
 public:
@@ -1464,7 +1464,7 @@ public:
   }
 
 //must call initialize_filtration beforehand
-  Zigzag_simplex_range & filtration_simplex_range(zigzag_indexing_tag)
+  Zigzagfiltration_simplex_range & filtration_simplex_range(zigzag_indexing_tag)
   { 
     assert(zigzag_simplex_range_initialized_);
     zigzag_simplex_range_initialized_ = false;
@@ -1476,7 +1476,7 @@ public:
   { return filtration_simplex_range(Indexing_tag()); }
 
 private:
-  Zigzag_simplex_range zigzag_simplex_range_;
+  Zigzagfiltration_simplex_range zigzag_simplex_range_;
   bool                 zigzag_simplex_range_initialized_;
 
 
