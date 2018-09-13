@@ -34,13 +34,14 @@
 #include <boost/intrusive/list.hpp>
 #include <boost/pool/object_pool.hpp>
 #include <boost/progress.hpp>
+#include <cmath>
 
 namespace Gudhi {
 
 namespace zigzag_persistence {
 
 template <typename ZigzagFilteredComplex>
-class matrix_chain;
+class zz_matrix_chain;
 
 struct zzmat_h_tag; // for horizontal traversal in the persistence matrix
 struct zzmat_v_tag; // for vertical traversal in the persistence matrix
@@ -63,7 +64,7 @@ class Zigzag_persistence_cell
 : public base_hook_zzmat_h, public base_hook_zzmat_v {
   public:
   typedef typename ZigzagFilteredComplex::Simplex_key              Simplex_key;   
-  typedef matrix_chain< ZigzagFilteredComplex >                    matrix_chain;
+  typedef zz_matrix_chain< ZigzagFilteredComplex >                 matrix_chain;
 
   Zigzag_persistence_cell( Simplex_key     key
                          , matrix_chain * self_chain ) 
@@ -108,7 +109,7 @@ class Zigzag_persistence_cell
  * - has a direct access to its lowest index.
  */
 template < typename ZigzagFilteredComplex >
-class matrix_chain {
+class zz_matrix_chain {
 public:
   typedef typename ZigzagFilteredComplex::Simplex_key              Simplex_key;   
   typedef typename ZigzagFilteredComplex::Simplex_handle           Simplex_handle;
@@ -128,15 +129,15 @@ public:
                                  , boost::intrusive::constant_time_size<false> 
                                  , boost::intrusive::base_hook< base_hook_zzmat_h > 
                                  >                  Row;  //horizontal list of cells
-  matrix_chain() 
+  zz_matrix_chain() 
   : column_(NULL), row_(NULL), paired_col_(NULL)
   , birth_(-3), 
   // birth_fil_(0), 
   lowest_idx_(-1) {}
 
-  matrix_chain( Column         * c
+  zz_matrix_chain( Column         * c
               , Row            * r
-              , matrix_chain   * p_col
+              , zz_matrix_chain   * p_col
               , Simplex_key      b
               // , Filtration_value fil
               , Simplex_key      l) 
@@ -145,11 +146,11 @@ public:
   // birth_fil_(fil), 
   lowest_idx_(l) {}
 
-  matrix_chain * paired_col() { return paired_col_; }
-  void assign_paired_col( matrix_chain * other_col ) { paired_col_ = other_col; }
+  zz_matrix_chain * paired_col() { return paired_col_; }
+  void assign_paired_col( zz_matrix_chain * other_col ) { paired_col_ = other_col; }
   Simplex_key birth() { return birth_; }
   void assign_birth( Simplex_key b ) { birth_ = b; }
-  void assign_birth(matrix_chain *other) 
+  void assign_birth(zz_matrix_chain *other) 
   { birth_ = other->birth_; 
     // birth_fil_ = other->birth_fil_;
   }
@@ -157,7 +158,7 @@ public:
 // private:
   Column             * column_      ; //col at index i 
   Row                * row_         ; //row at index i
-  matrix_chain       * paired_col_  ; //\in F -> NULL, \in H -> g, \in G -> h
+  zz_matrix_chain       * paired_col_  ; //\in F -> NULL, \in H -> g, \in G -> h
   Simplex_key          birth_       ; //\in F -> b, \in H -> -2 \in G -> -1
   // Filtration_value     birth_fil_   ; //filtration value of simplex with key birth_
   Simplex_key          lowest_idx_  ; //lowest_idx_ = i
@@ -166,7 +167,7 @@ public:
 
 // Print a Simplex_tree in os.
 template <typename... T>
-std::ostream& operator<<(std::ostream& os, matrix_chain<T...>& chain) {
+std::ostream& operator<<(std::ostream& os, zz_matrix_chain<T...>& chain) {
   os << " : [k=" << chain.lowest_idx_ <<"] ";
   os << "[b=" << chain.birth_ <<"] ";
   if(chain.paired_col_ != NULL) { os << "[pc=" << chain.paired_col_->lowest_idx_ <<"]     ";}
@@ -196,7 +197,7 @@ public:
   typedef typename Complex_ds::Simplex_key              Simplex_key;//must be signed
   typedef typename Complex_ds::Simplex_handle           Simplex_handle;
   typedef typename Complex_ds::Filtration_value         Filtration_value;
-  typedef matrix_chain< Complex_ds >                    matrix_chain;
+  typedef zz_matrix_chain< Complex_ds >                 matrix_chain;
   typedef typename matrix_chain::Cell                   Cell;
   typedef typename matrix_chain::Column                 Column;
   typedef typename matrix_chain::Row                    Row;
@@ -445,9 +446,11 @@ public:
   * death-order <=d (because all arrows in the suffix are backward).
   *
   * Insertion: cpx_->key(*zzit) is a strictly increasing sequence for zzit 
-  * insertion of cells (does not need to be contiguous).  
+  * insertion of cells (does not need to be contiguous). However, for every forward 
+  * arrow, cpx_->key(*zzit) == num_arrows_.
   * Removal: cpx_->key(*zzit) gives the assigned key (during past insertion) of a 
-  * cell == *zzit during a removal.  
+  * cell == *zzit during a removal. We use num_arrows_ to record the deaths in the 
+  * persistence diagram.
   * Insertion and Removal: zzit.filtration() is totally monotone. Note that the 
   * iterator encodes the filtration, and not the cells within the complex structure.
   */
@@ -967,7 +970,7 @@ private:
   */
 void forward_arrow( Simplex_handle zzsh )
 { //maintain the <=b order
-  birth_ordering_.add_birth_forward(num_arrow_);
+  birth_ordering_.add_birth_forward(cpx_->key(zzsh));
 //Reduce the boundary of zzsh in the basis of cycles.
   //Compute the simplex keys of the simplices of the boundary of zzsh.
   std::set< Simplex_key > col_bsh; //set maintains the order on indices

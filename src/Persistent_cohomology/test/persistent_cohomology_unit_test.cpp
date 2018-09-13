@@ -176,7 +176,7 @@ struct MiniSTOptions {
   static const bool store_annotation_vector = false;
   static const bool store_morse_matching = false;
   static const bool simplex_handle_strong_validity = false;
-  static const bool precompute_cofaces = false;
+  static const bool precompute_coboundaries = false;
 };
 
 using Mini_simplex_tree = Gudhi::Simplex_tree<MiniSTOptions>;

@@ -188,6 +188,8 @@ class Simplex_tree {
       return *this;
     }
     void unlink_hooks() { list_max_vertex_hook_.unlink(); }
+    ~Hooks_simplex_base_cofaces() { unlink_hooks(); }
+
     mutable Member_hook_t list_max_vertex_hook_;
   };
   // intrusive list of Nodes using the hooks
@@ -202,16 +204,18 @@ class Simplex_tree {
                                     Hooks_simplex_base_dummy>::type Hooks_simplex_base;
 
  public:
-  /** \brief Handle type to a simplex contained in the simplicial complex represented
-   * by the simplex tree. */
+  /** \brief Handle type to a simplex contained in the simplicial complex 
+    *represented
+    * by the simplex tree. 
+    */
   typedef typename Dictionary::iterator Simplex_handle;
 
+// private: //fast cofaces location data structure
   template <typename SimplexTree>
   struct cofaces_data_structure_dummy {
     cofaces_data_structure_dummy(){};
     void insert(typename SimplexTree::Simplex_handle sh) {}
   };
-
   // todo: accelerate by using intrusive::map interface, storing the vertex directly in the Node. Issue with
   // Simplex_handle type: create a fake type with ->first and ->second methods.
   template <typename SimplexTree>
@@ -236,43 +240,69 @@ class Simplex_tree {
                                     cofaces_data_structure_optimized<Simplex_tree>,
                                     cofaces_data_structure_dummy<Simplex_tree>>::type Cofaces_data_structure;
 
-  Cofaces_data_structure cofaces_data_structure_;
+  Cofaces_data_structure                   cofaces_data_structure_;
 
 
-  struct cmp_sh_by_vh {
-    bool operator()(Simplex_handle sh1, Simplex_handle sh2) {
-      return sh1->first < sh2->first;
-    } 
+  // struct cmp_sh_by_vh {
+  //   bool operator()(Simplex_handle sh1, Simplex_handle sh2) {
+  //     return sh1->first < sh2->first;
+  //   } 
+  // };
+  // typedef typename std::set< Simplex_handle, cmp_sh_by_vh > 
+  //                                           Precomputed_coboundary_simplex_range;
+  // struct Store_coboundary_in_nodes {
+  //   Store_coboundary_in_nodes() { 
+  //     coboundary_ = new std::set< Simplex_handle, cmp_sh_by_vh >(); }
+  //   ~Store_coboundary_in_nodes() {coboundary_->clear(); delete coboundary_;}
+
+  //   void insert_coboundary(Simplex_handle sh) { coboundary_->insert(sh); }
+  //   void erase_coboundary(Simplex_handle sh) { coboundary_->erase(sh); }
+  //   std::set< Simplex_handle, cmp_sh_by_vh > * coboundary() { return coboundary_; }
+
+  //   std::set< Simplex_handle, cmp_sh_by_vh > * coboundary_;
+  // };
+
+//Store precomputed coboundaries in a hash set
+  struct Simplex_handle_hasher {//compare Node* by address
+    std::size_t operator()(const Simplex_handle &sh) const {
+      return std::hash<Node*>()(&(sh->second));
+    }
   };
-
+  struct Simplex_handle_equals 
+  : std::binary_function<const Simplex_handle &, const Simplex_handle &, bool> {
+    bool operator()(const Simplex_handle &sh1, const Simplex_handle &sh2) const {
+      return &(sh1->second) == &(sh2->second);
+    }
+  };
+  typedef typename std::unordered_set< Simplex_handle, Simplex_handle_hasher,
+    Simplex_handle_equals >                     Precomputed_coboundary_simplex_range;
 //to precompute coboundary, store a map of cofaces in each node
   struct Store_coboundary_in_nodes {
-    Store_coboundary_in_nodes() { coboundary_ = new std::set< Simplex_handle, cmp_sh_by_vh >(); }
-    ~Store_coboundary_in_nodes() {coboundary_->clear(); delete coboundary_;}
+    Store_coboundary_in_nodes() {}
+    ~Store_coboundary_in_nodes() {}
 
-    void insert_coboundary(Simplex_handle sh) { coboundary_->insert(sh); }
-    void erase_coboundary(Simplex_handle sh) { coboundary_->erase(sh); }
-    std::set< Simplex_handle, cmp_sh_by_vh > * coboundary() { return coboundary_; }
-
-    std::set< Simplex_handle, cmp_sh_by_vh > * coboundary_;
+    void insert_coboundary(Simplex_handle sh) { coboundary_.insert(sh); }
+    void erase_coboundary(Simplex_handle sh) { coboundary_.erase(sh); }
+    Precomputed_coboundary_simplex_range *coboundary() { return &coboundary_; }
+    Precomputed_coboundary_simplex_range coboundary_;
   };
-  struct Store_coboundary_in_nodes_dummy {
+  struct Store_coboundary_in_nodes_dummy {//do not precompute coboundaries
     Store_coboundary_in_nodes_dummy() {}
     void insert_coboundary(Simplex_handle sh) { }
     void erase_coboundary(Simplex_handle sh) { }
-    std::set<Simplex_handle, cmp_sh_by_vh> * coboundary() { return &std::set<Simplex_handle>(); }
+    Precomputed_coboundary_simplex_range * coboundary() { return nullptr; }
   };
 
  public:
-  typedef typename std::conditional<Options::precompute_cofaces, 
+  typedef typename std::conditional<Options::precompute_coboundaries, 
                                     Store_coboundary_in_nodes,
                                     Store_coboundary_in_nodes_dummy>::type 
                                                  Precompute_coboundary_simplex_base;
 
-  std::set<Simplex_handle, cmp_sh_by_vh> * coboundary_simplex_range_precomputed(Simplex_handle sh)
-  {
-    return (sh->second.coboundary());
-  }
+  // Precomputed_coboundary_simplex_range * coboundary_simplex_range_precomputed(Simplex_handle sh)
+  // {
+  //   return (sh->second.coboundary());
+  // }
 
 private:
   // the zigzag persistence cohomology algorithm requires to store a
@@ -371,20 +401,31 @@ public:
  private:
   // update all extra data structures in the Simplex_tree, include fast
   // cofaces locator, after the successful insertion of a simplex.
-  void update_simplex_tree_after_node_insertion(Simplex_handle sh) { cofaces_data_structure_.insert(sh); 
-    // for(auto b_sh : boundary_simplex_range(sh)) {
-    //   b_sh->second.insert_coboundary(sh);
-    // }
+  void update_simplex_tree_after_node_insertion(Simplex_handle sh) { 
+    if constexpr(Options::link_simplices_through_max_vertex) {
+      cofaces_data_structure_.insert(sh); 
+    }
+    if constexpr(Options::precompute_coboundaries)
+    {//insert new simplex in the coboundary sets of the simplices in its boundary.
+      for(auto b_sh : boundary_simplex_range(sh)) {
+        b_sh->second.insert_coboundary(sh);
+      }
+    }
   }
 
   // update all extra data structures in the Simplex_tree, include fast
   // cofaces locator, after the successful insertion of a simplex.
   void update_simplex_tree_after_node_removal(Simplex_handle sh) { 
-    // cofaces_data_structure_.insert(sh); 
-    // for(auto b_sh : boundary_simplex_range(sh)) {
-    //   b_sh->second.erase_coboundary(sh);
-    // }
+    if constexpr(Options::precompute_coboundaries)
+    {//remove simplex sh from the coboundary sets of the simplices in its boundary.
+      for(auto b_sh : boundary_simplex_range(sh)) {
+        b_sh->second.erase_coboundary(sh);
+      }
+    }
   }
+
+
+
 
   typedef typename Dictionary::iterator Dictionary_it;
   typedef typename Dictionary_it::value_type Dit_value_t;
@@ -1144,15 +1185,36 @@ public:
    * \param simplex represent the simplex of which we search the star
    * \return Vector of Simplex_handle, empty vector if no cofaces found.
    */
-
   Cofaces_simplex_range star_simplex_range(const Simplex_handle simplex) { return cofaces_simplex_range(simplex, 0); }
 
-  /** \brief Compute the coboundary a n simplex
-   * \param simplex represent the simplex of which we search the coboundary, 
-   * i.e., all cofaces of codimension 1
-   * \return Vector of Simplex_handle, empty vector if no cofaces found.
+
+  typedef typename std::conditional<Options::precompute_coboundaries,
+                                    Precomputed_coboundary_simplex_range,
+                                    Cofaces_simplex_range>::type
+                                                           Coboundary_simplex_range;
+  /** \brief Compute the coboundary of a simplex
+   * \param sh represent the simplex of which we search the coboundary, 
+   * i.e., all cofaces of codimension 1. Note that the compiler chooses between 
+   * two version of the fonction depending on the boolean precompute_boundaries.
+   *
+   * \return Range of Simplex_handle.
    */
-  Cofaces_simplex_range coboundary_simplex_range(const Simplex_handle simplex) { return cofaces_simplex_range(simplex, 1); }
+  template<class SimplexHandle,
+           typename std::enable_if<Options::precompute_coboundaries, 
+                                   SimplexHandle>::type * = nullptr 
+          > 
+  Coboundary_simplex_range coboundary_simplex_range(const SimplexHandle sh) {
+    return sh->second.coboundary();
+  }
+  template<class SimplexHandle,
+         typename std::enable_if<!Options::precompute_coboundaries, 
+                                  SimplexHandle>::type * = nullptr 
+        > 
+  Coboundary_simplex_range coboundary_simplex_range(const SimplexHandle sh) {
+   return cofaces_simplex_range(sh, 1); 
+ }
+
+  // Cofaces_simplex_range coboundary_simplex_range(const Simplex_handle simplex) { return cofaces_simplex_range(simplex, 1); }
 
   /** \brief Compute the cofaces of a n simplex
    * \param simplex represent the n-simplex of which we search the n+codimension cofaces
@@ -1539,11 +1601,11 @@ public:
     auto res_ins_v = root_.members().emplace(v,Node(&root_,fil));
     auto res_ins_u = root_.members().emplace(u,Node(&root_,fil)); 
     if(res_ins_v.second) { 
-      update_simplex_tree_after_node_insertion(res_ins_v.first);
+      // update_simplex_tree_after_node_insertion(res_ins_v.first);
       zz_filtration.push_back(res_ins_v.first); //no more inserts in root_.members()
     }
     if(res_ins_u.second) { 
-      update_simplex_tree_after_node_insertion(res_ins_u.first);
+      // update_simplex_tree_after_node_insertion(res_ins_u.first);
       zz_filtration.push_back(res_ins_u.first); //no more inserts in root_.members()
     } //check if the edge {u,v} is already in the complex, if true, nothing to do.
     if(has_children(res_ins_u.first) && res_ins_u.first->second.children()->members().find(v) != res_ins_u.first->second.children()->members().end()) {return;} 
@@ -1582,6 +1644,8 @@ public:
 #else
     sort(zz_filtration.begin(), zz_filtration.end(), is_before_in_filtration(this));
 #endif
+    //update cofaces data structures
+    for(auto sh : zz_filtration) { update_simplex_tree_after_node_insertion(sh); }
   }
 
 private:
@@ -1602,7 +1666,7 @@ private:
                             , std::vector<Simplex_handle> & zz_filtration )
   { //insertion always succeeds because the edge {u,v} used to not be here.
     auto res_ins_v = sib->members().emplace(v, Node(sib,fil));
-    update_simplex_tree_after_node_insertion(res_ins_v.first);//for cofaces hooks
+    // update_simplex_tree_after_node_insertion(res_ins_v.first);//for cofaces hooks
     zz_filtration.push_back(res_ins_v.first); //no more insertion in sib
 
     if(k == 0) { return; } //reached the maximal dimension
@@ -1668,7 +1732,7 @@ private:
       for( auto new_sh = new_sib->members().begin(); 
            new_sh != new_sib->members().end(); ++new_sh )
       { 
-        update_simplex_tree_after_node_insertion(new_sh);
+        // update_simplex_tree_after_node_insertion(new_sh);
         zz_filtration.push_back(new_sh);//new_sib does not change anymore
       }
       inter.clear();
@@ -1719,7 +1783,7 @@ private:
           for( auto new_sh = new_sib->members().begin(); 
                new_sh != new_sib->members().end(); ++new_sh )
           { 
-            update_simplex_tree_after_node_insertion(new_sh);//cofaces hooks
+            // update_simplex_tree_after_node_insertion(new_sh);//cofaces hooks
             zz_filtration.push_back(new_sh); //new_sib does not change anymore
           }
           inter.clear();
@@ -1828,8 +1892,8 @@ public:
   template<class SimplexHandleRange>
   void remove_maximal_simplices(SimplexHandleRange &rg) {
     for( auto sh : rg) {
-      sh->second.unlink_hooks(); //<--- put in hook destructor instead
-      remove_maximal_simplex(sh);} //modify the complex 
+      remove_maximal_simplex(sh);
+    } //modify the complex 
   }
 
  public:
@@ -2093,8 +2157,9 @@ public:
     // Guarantee the simplex has no children
     GUDHI_CHECK(!has_children(sh),
                 std::invalid_argument("Simplex_tree::remove_maximal_simplex - argument has children"));
-
-
+    
+    //update cofaces data structures
+    update_simplex_tree_after_node_removal(sh);
 
     // Simplex is a leaf, it means the child is the Siblings owning the leaf
     Siblings* child = sh->second.children();
@@ -2180,7 +2245,7 @@ struct Simplex_tree_options_full_featured {
   static const bool store_annotation_vector = false;
   static const bool store_morse_matching = false;
   static const bool simplex_handle_strong_validity = false;
-  static const bool precompute_cofaces = false;
+  static const bool precompute_coboundaries = false;
 };
 
 /** Model of SimplexTreeOptions, faster than `Simplex_tree_options_full_featured` but note the unsafe
@@ -2202,7 +2267,7 @@ struct Simplex_tree_options_fast_persistence {
   static const bool store_annotation_vector = false;
   static const bool store_morse_matching = false;
   static const bool simplex_handle_strong_validity = false;
-  static const bool precompute_cofaces = false;
+  static const bool precompute_coboundaries = false;
 };
 
 /** Model of SimplexTreeOptions, with a zigzag_indexing_tag.
@@ -2228,7 +2293,7 @@ struct Simplex_tree_options_zigzag_persistence {
   static const bool store_annotation_vector = false; //for zigzag cohomology
   static const bool store_morse_matching = false;
   static const bool simplex_handle_strong_validity = true;//Dictionary::iterators remain valid even after insertions and deletions
-  static const bool precompute_cofaces = false;
+  static const bool precompute_coboundaries = false;
 };
 
 /** Model of SimplexTreeOptions, with a zigzag_indexing_tag.
@@ -2254,7 +2319,7 @@ struct Simplex_tree_options_morse {
   static const bool store_annotation_vector = false; //for zigzag cohomology
   static const bool store_morse_matching = true;
   static const bool simplex_handle_strong_validity = true;//Dictionary::iterators remain valid even after insertions and deletions
-  static const bool precompute_cofaces = false;
+  static const bool precompute_coboundaries = false;
 };
 
 struct Simplex_tree_options_morse_zigzag_persistence {
@@ -2270,7 +2335,7 @@ struct Simplex_tree_options_morse_zigzag_persistence {
   static const bool store_annotation_vector = false; //for zigzag cohomology
   static const bool store_morse_matching = true;
   static const bool simplex_handle_strong_validity = true;//Dictionary::iterators remain valid even after insertions and deletions
-  static const bool precompute_cofaces = true;
+  static const bool precompute_coboundaries = true;
   static const bool is_morse = true;
 };
 
