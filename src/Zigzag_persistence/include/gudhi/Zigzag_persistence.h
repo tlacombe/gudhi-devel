@@ -39,7 +39,7 @@ namespace Gudhi {
 
 namespace zigzag_persistence {
 
-template <typename FilteredComplex>
+template <typename ZigzagFilteredComplex>
 class matrix_chain;
 
 struct zzmat_h_tag; // for horizontal traversal in the persistence matrix
@@ -58,12 +58,12 @@ typedef boost::intrusive::list_base_hook
  * Cell for the persistence matrix. Contains a key for the simplex index, and 
  * horizontal and vertical hooks for connections within sparse rows and columns.
  */
-template < typename FilteredComplex >
+template < typename ZigzagFilteredComplex >
 class Zigzag_persistence_cell 
 : public base_hook_zzmat_h, public base_hook_zzmat_v {
   public:
-  typedef typename FilteredComplex::Simplex_key              Simplex_key;   
-  typedef matrix_chain< FilteredComplex >                    matrix_chain;
+  typedef typename ZigzagFilteredComplex::Simplex_key              Simplex_key;   
+  typedef matrix_chain< ZigzagFilteredComplex >                    matrix_chain;
 
   Zigzag_persistence_cell( Simplex_key     key
                          , matrix_chain * self_chain ) 
@@ -79,14 +79,14 @@ class Zigzag_persistence_cell
 //  * Sparse column in the persistence matrix. Essentially a wrapper for a 
 //  * boost::intrusive::list.
 //  */
-// template < typename FilteredComplex >
+// template < typename ZigzagFilteredComplex >
 // class Zigzag_persistence_column
 // : public boost::intrusive::set_base_hook 
 //              < boost::intrusive::link_mode< boost::intrusive::normal_link > > 
 // {
 // public:
-//   typedef typename FilteredComplex::Simplex_key              Simplex_key;   
-//   typedef Zigzag_persistence_cell < FilteredComplex >        Cell;
+//   typedef typename ZigzagFilteredComplex::Simplex_key              Simplex_key;   
+//   typedef Zigzag_persistence_cell < ZigzagFilteredComplex >        Cell;
 
 //   typedef boost::intrusive::list < Cell 
 //                                  , boost::intrusive::constant_time_size<false> 
@@ -107,18 +107,18 @@ class Zigzag_persistence_cell
  * - is paired with another chain, indicating its type F G H
  * - has a direct access to its lowest index.
  */
-template < typename FilteredComplex >
+template < typename ZigzagFilteredComplex >
 class matrix_chain {
 public:
-  typedef typename FilteredComplex::Simplex_key              Simplex_key;   
-  typedef typename FilteredComplex::Simplex_handle           Simplex_handle;
-  typedef typename FilteredComplex::Filtration_value         Filtration_value;
+  typedef typename ZigzagFilteredComplex::Simplex_key              Simplex_key;   
+  typedef typename ZigzagFilteredComplex::Simplex_handle           Simplex_handle;
+  typedef typename ZigzagFilteredComplex::Filtration_value         Filtration_value;
 // Encoding Matrix types:
   // // Column type
-  // typedef Zigzag_persistence_column < FilteredComplex >  Column; // contains 1 set_hook
+  // typedef Zigzag_persistence_column < ZigzagFilteredComplex >  Column; // contains 1 set_hook
   // // Cell type
   // typedef typename Column::Cell                     Cell;   // contains 2 list_hooks
-  typedef Zigzag_persistence_cell < FilteredComplex > Cell; // contains 2 list_hooks
+  typedef Zigzag_persistence_cell < ZigzagFilteredComplex > Cell; // contains 2 list_hooks
   typedef boost::intrusive::list < Cell 
                                , boost::intrusive::constant_time_size<false> 
                                , boost::intrusive::base_hook< base_hook_zzmat_v > 
@@ -188,10 +188,10 @@ std::ostream& operator<<(std::ostream& os, matrix_chain<T...>& chain) {
  * more than 32 bits of storage. The type used (int, long, etc) should be chosen in 
  * consequence. Simplex_key must be signed.
  */
-template < typename ZigzagComplex >
+template < typename ZigzagFilteredComplex >
 class Zigzag_persistence {
 public:
-  typedef ZigzagComplex                                 Complex_ds;
+  typedef ZigzagFilteredComplex                         Complex_ds;
   // Data attached to each simplex to interface with a Property Map.
   typedef typename Complex_ds::Simplex_key              Simplex_key;//must be signed
   typedef typename Complex_ds::Simplex_handle           Simplex_handle;
