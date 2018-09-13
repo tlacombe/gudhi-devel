@@ -1574,9 +1574,14 @@ public:
       }
     }
     //todo sort zz_filtration appropriately
-    sort( zz_filtration.begin(), zz_filtration.end(), 
-          is_before_in_filtration(this) 
-          );
+    // sort( zz_filtration.begin(), zz_filtration.end(), 
+    //       is_before_in_filtration(this) 
+    //       );
+#ifdef GUDHI_USE_TBB
+    tbb::parallel_sort(zz_filtration.begin(), zz_filtration.end(), is_before_in_filtration(this));
+#else
+    sort(zz_filtration.begin(), zz_filtration.end(), is_before_in_filtration(this));
+#endif
   }
 
 private:
@@ -2266,6 +2271,7 @@ struct Simplex_tree_options_morse_zigzag_persistence {
   static const bool store_morse_matching = true;
   static const bool simplex_handle_strong_validity = true;//Dictionary::iterators remain valid even after insertions and deletions
   static const bool precompute_cofaces = true;
+  static const bool is_morse = true;
 };
 
 /** @} */  // end defgroup simplex_tree

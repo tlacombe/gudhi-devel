@@ -39,7 +39,7 @@ add_gudhi_module(Nerve_GIC)
 add_gudhi_module(Zigzag_filtration)
 add_gudhi_module(Zigzag_persistence)
 
-add_subdirectory(src/Simplex_tree/example)
+# add_subdirectory(src/Simplex_tree/example)
 add_subdirectory(src/Zigzag_persistence/example)
 
 message("++ GUDHI_MODULES list is:\"${GUDHI_MODULES}\"")

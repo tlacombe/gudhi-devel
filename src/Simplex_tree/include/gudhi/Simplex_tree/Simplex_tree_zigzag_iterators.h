@@ -41,7 +41,7 @@ private:
 };
 
 /** 
-  * Iterator over a flag zigzag filtration implicitely 
+  * Iterator over a flag zigzag filtration implicitly 
   * represented by a list of Zigzag_edges. 
   *
   * Given an empty FlagZigzagFiltrationComplex and a range of insertions and 
@@ -58,8 +58,9 @@ class Flagzigzag_simplex_iterator
           , boost::forward_traversal_tag >
 {
   public:
-    typedef typename FlagZigzagFilteredComplex::Simplex_handle Simplex_handle;
-    typedef typename FlagZigzagFilteredComplex::Edge_type      Edge_type;
+    typedef typename FlagZigzagFilteredComplex::Simplex_handle   Simplex_handle;
+    typedef typename FlagZigzagFilteredComplex::Edge_type        Edge_type;
+    typedef typename FlagZigzagFilteredComplex::Filtration_value Filtration_value;
 
     Flagzigzag_simplex_iterator() //any end iterator
     : cpx_(NULL)
@@ -83,9 +84,10 @@ class Flagzigzag_simplex_iterator
       { cpx_ = NULL; return; } //end() iterator
       
       //add the first edge
-      arrow_direction_ = edge_it_->type(); //must be true, i.e., and insertion
+      arrow_direction_ = edge_it_->type(); //must be true, i.e., an insertion
       cpx_->flag_add_edge( edge_it_->u(), edge_it_->v(), edge_it_->fil()
-                                , dim_max_, partial_zzfil_);
+                         , dim_max_, partial_zzfil_);
+      fil_ = edge_it_->fil();
       sh_it_ = partial_zzfil_.begin();
       ++edge_it_;
       for(auto & sh : partial_zzfil_) 
@@ -102,9 +104,14 @@ class Flagzigzag_simplex_iterator
     , edge_it_(other.edge_it_)
     , arrow_direction_(other.arrow_direction_)
     , counter_insert(other.counter_insert)
-    , are_we_done(other.are_we_done) {}
+    , are_we_done(other.are_we_done)
+    , fil_(other.fil_) {}
 
     bool arrow_direction() { return arrow_direction_; }
+
+    Filtration_value filtration() { return fil_; } 
+
+    int dim_max() { return dim_max_; }
 
   private:
     friend class boost::iterator_core_access;
@@ -167,6 +174,7 @@ class Flagzigzag_simplex_iterator
         { 
           if(are_we_done) { cpx_ = NULL; return; } //set iterator to end() position 
           else {//no edge left, consider simplices remaining in the complex 
+            fil_ = 0;
             are_we_done = true;//happens once
             //fills up zz_partial with the remaining simplices in complex
             cpx_->flag_lazy_empty_complex(partial_zzfil_); 
@@ -203,13 +211,12 @@ class Flagzigzag_simplex_iterator
               });
         }
        //partial_zzfil_ contains at least the new edge
+        fil_ = edge_it_->fil();
         sh_it_ = partial_zzfil_.begin(); 
         ++edge_it_;
       }
     }
   
-
-
   //complex getting modified
   FlagZigzagFilteredComplex                                            * cpx_; 
 /* List of insertion and deletion of edges representing the flag zigzag fil.*/
@@ -230,4 +237,7 @@ class Flagzigzag_simplex_iterator
   int                                              counter_insert;
   //true iff we are finishing emptying the complex
   bool                                             are_we_done;
+  //filtration value attached to the arrow
+  Filtration_value                                 fil_;
+
 };
