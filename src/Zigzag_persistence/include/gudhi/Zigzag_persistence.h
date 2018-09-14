@@ -457,18 +457,15 @@ public:
 void compute_zigzag_persistence()
 { //compute index persistence, interval are closed, i.e., [b,d) is stored as [b,d-1]
   // std::vector< std::pair< Simplex_key, Filtration_value > > filtration_values;
-  Filtration_value                                          prev_fil_, curr_fil_;
+  Filtration_value prev_fil_, curr_fil_;
 
   assert(num_arrow_ == 0); 
   auto zzrg = cpx_->filtration_simplex_range();
   auto zzit = zzrg.begin();
-
   dim_max_ = zzit.dim_max();
-
   std::vector<unsigned int> faces_per_dim(dim_max_+1,0);
 
-  prev_fil_ = zzit.filtration();
-  // prev_fil_ = cpx_->filtration(*zzit);
+  prev_fil_ = zzit.filtration(); // prev_fil_ = cpx_->filtration(*zzit);
   // filtration_values_.emplace_back(cpx_->key(*zzit), prev_fil_);
   filtration_values_.emplace_back(num_arrow_, prev_fil_);
 
@@ -477,50 +474,29 @@ void compute_zigzag_persistence()
     faces_per_dim[cpx_->dimension(*zzit)] += 1;
 
     if(num_arrow_ % 100000 == 0) std::cout << num_arrow_ << "\n";
-    // display_mat();
-    // std::cout << std::endl;
-    // if(zzit.arrow_direction()) std::cout << "+ ";
-    // else std::cout << "- ";
-    // for(auto v : cpx_->simplex_vertex_range(*zzit)) {
-    //   std::cout << v << " ";
-    // } 
-    // std::cout << "      k" << cpx_->key(*zzit)  << "  f" << cpx_->filtration(*zzit) <<  "\n";
-    // std::cout << std::endl;
 
-
-    curr_fil_ = zzit.filtration();//cpx_->filtration(*zzit);//check whether the filt val has changed
-    if(curr_fil_ != prev_fil_) 
+    curr_fil_ = zzit.filtration();//cpx_->filtration(*zzit);
+    if(curr_fil_ != prev_fil_) //check whether the filt val has changed
     { 
-      prev_fil_ = curr_fil_;
+      prev_fil_=curr_fil_; filtration_values_.emplace_back(num_arrow_-1, prev_fil_);
       // filtration_values_.emplace_back(cpx_->key(*zzit), prev_fil_);
-      filtration_values_.emplace_back(num_arrow_-1, prev_fil_);
     }
-
-    //gives only critical simplices for insertion, and potentially maximal non-critical (i.e., paired) simplices at deletion.
-    //keys must be already assigned by the filtration_simplex_iterator
-
-      // if(cpx_->dimension(*zzit) == 4) {
-      //   max_dim_arrow(*zzit, zzit.arrow_direction());
-      // }
-      // else {
-        if(zzit.arrow_direction()) //forward arrow
-        {
-          forward_arrow(*zzit); 
-        }
-        else //backward arrow 
-        {
-          if(!cpx_->critical(*zzit)) //if the simplex is paired, make it critical
-          { //matrix A becomes matrix A U \{\tau,sigma\}
-            std::cout << "NO\n";
-            make_pair_critical(*zzit);
-          }
-
-          backward_arrow(*zzit); 
-        }
-      // }
-
-    ++zzit;
-    ++num_arrow_; //count total number of arrows
+    //Iterator zzit gives only Morse critical cells for insertion (forward arrows).
+    //It gives both critical and non-critical cells for deletion (backward arrows). 
+    //The later case happens when the deletion of a cell sigma in a Morse pair 
+    //(tau,sigma) happens with a different filtration value than the one of the 
+    //deletion of tau. At the moment of deletion, sigma is a maximal cell, all keys
+    //have been assigned correctly by the filtration_simplex_iterator, both tau and 
+    //sigma must be elevated into critical cells. This last operation is 
+    //implemented in make_pair_critical. sigma is then removed like a normal cell. 
+    if(zzit.arrow_direction()) { forward_arrow(*zzit); }//forward arrow
+    else {//backward arrow 
+      if(!cpx_->critical(*zzit)) //matrix A becomes matrix A U \{\tau,sigma\}
+      { std::cout << "A cell is critical.\n";
+        make_pair_critical(*zzit); }
+      backward_arrow(*zzit); 
+    }
+    ++zzit; ++num_arrow_; //count total number of arrows
   }
   if(!matrix_.empty()) {std::cout << "Remains " << matrix_.size() << " columns.\n";}
 
@@ -554,27 +530,6 @@ void compute_zigzag_persistence()
 
 }
 
-
-
-
-//to do remove
-// void max_dim_arrow(Simplex_handle sh, bool dir) {
-//      if(dir) //forward arrow
-//     {
-//       forward_arrow(sh); 
-//     }
-//     else //backward arrow 
-//     {
-//       backward_arrow(sh); 
-//     }
-// }
-
-
-
-
-
-
-
 /* sh is a maximal simplex paired with a simplex tsh
  * Morse pair (tau,sigma)
  *
@@ -596,8 +551,6 @@ void compute_zigzag_persistence()
  */
 void make_pair_critical(Simplex_handle zzsh)
 {
-  std::cout << "Make_pair_critical.\n";
-
   auto tsh = cpx_->morse_pair(zzsh);//Morse pair (*tsh, *sh)
   //new column and row for sigma
   Column * new_col_s = new Column();

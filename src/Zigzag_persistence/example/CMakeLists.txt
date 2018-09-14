@@ -1,4 +1,4 @@
-project(Simplex_tree_examples)
+project(Zigzag_persistence_examples)
 
 add_executable ( tmp_zz_points tmp_zz_points.cpp )
 if (TBB_FOUND)

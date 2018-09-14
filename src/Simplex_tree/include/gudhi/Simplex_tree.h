@@ -339,23 +339,26 @@ private:
 
 private:
   /* Allows to pair simplices, in particular in a Morse matching.*/
+  // template<class SimplexTree>
   struct Pairing_simplex_base_dummy {
     Pairing_simplex_base_dummy() {}
     Pairing_simplex_base_dummy(Simplex_handle sh) {}
-    // Simplex_handle morse_pairing() {return this->null_simplex();}
+    // Simplex_handle morse_pairing() {return SimplexTree::null_simplex();}
     void assign_morse_pairing(Simplex_handle sh) {}
     bool is_critical() { return true; }
     bool is_paired_with(Simplex_handle sh) { return false; }
-    Simplex_handle morse_pairing() { return sh_; }
+    // Simplex_handle morse_pairing() { return this->null_simplex(); }
 
-    Simplex_handle sh_; //todo remove!
+    // Simplex_handle sh_; //todo remove!
   };
   struct Pairing_simplex_base_morse {
-    Pairing_simplex_base_morse() {}
+    Pairing_simplex_base_morse() {}//sh_ must be initialized from the outside
     Pairing_simplex_base_morse(Simplex_handle sh) : sh_(sh) {}
-    Simplex_handle morse_pairing() {return sh_;}
+    Simplex_handle morse_pairing() { return sh_; }
     void assign_morse_pairing(Simplex_handle sh) {sh_ = sh;}
-    bool is_critical() { return &(sh_->second) == &(static_cast<Node&>(*this)); }//true iff critical
+    //true iff critical
+    bool is_critical() //{ return sh_ == this->null_simplex(); } 
+    { return &(sh_->second) == &(static_cast<Node&>(*this)); }
     //true iff the simplex is paired with sh
     bool is_paired_with(Simplex_handle sh) {
       return &(sh_->second) == &(sh->second);
@@ -369,10 +372,15 @@ public:
                                                             Pairing_simplex_base;
 /**
   * Return the Simplex_handle to the simplex with which sh is paired. 
-  * Return null_ptr() if sh is critical. 
+  * Return null_simplex() or itself if sh is critical. Must check critical(...) beforehand. 
   * sh must be distinct from null_simplex()
   */
-  Simplex_handle morse_pair(Simplex_handle sh) {return sh->second.morse_pairing(); }
+  Simplex_handle morse_pair(Simplex_handle sh) {
+    if constexpr(Options::store_morse_matching) {
+      return sh->second.morse_pairing(); 
+    }
+    return sh;
+  }
 /**
   * Return true iff the simplex is critical.
   */
@@ -401,6 +409,7 @@ public:
  private:
   // update all extra data structures in the Simplex_tree, include fast
   // cofaces locator, after the successful insertion of a simplex.
+  //all coboundary faces of the simplex must be in the complex when calling this
   void update_simplex_tree_after_node_insertion(Simplex_handle sh) { 
     if constexpr(Options::link_simplices_through_max_vertex) {
       cofaces_data_structure_.insert(sh); 
@@ -411,11 +420,14 @@ public:
         b_sh->second.insert_coboundary(sh);
       }
     }
+    if constexpr(Options::store_morse_matching) {//not necessary
+      assign_morse_pairing(sh);//make Morse critical by default
+    }
   }
 
   // update all extra data structures in the Simplex_tree, include fast
   // cofaces locator, after the successful insertion of a simplex.
-  void update_simplex_tree_after_node_removal(Simplex_handle sh) { 
+  void update_simplex_tree_before_node_removal(Simplex_handle sh) { 
     if constexpr(Options::precompute_coboundaries)
     {//remove simplex sh from the coboundary sets of the simplices in its boundary.
       for(auto b_sh : boundary_simplex_range(sh)) {
@@ -601,11 +613,14 @@ public:
         null_dictionary_(simplex_source.null_dictionary_),
         null_simplex_(simplex_source.null_simplex_) {
     auto root_source = simplex_source.root_;
-    rec_copy(&root_, &root_source);
+    std::list<Simplex_handle> simp;
+    rec_copy(&root_, &root_source, simp);
+    for(auto sh : simp) { update_simplex_tree_after_node_insertion(sh); }
   }
 
   /** \brief depth first search, inserts simplices when reaching a leaf. */
-  void rec_copy(Siblings* sib, Siblings* sib_source) {
+  void rec_copy(Siblings* sib, Siblings* sib_source, 
+                std::list<Simplex_handle> &simp) {
     for (auto sh = sib->members().begin(), sh_source = sib_source->members().begin(); sh != sib->members().end();
          ++sh, ++sh_source) {
       if (has_children(sh_source)) {
@@ -614,9 +629,9 @@ public:
         for (auto& child : sh_source->second.children()->members()) {
           Simplex_handle new_sh = newsib->members_.emplace_hint(newsib->members_.end(), child.first,
                                                                 Node(newsib, child.second.filtration()));
-          update_simplex_tree_after_node_insertion(new_sh);
+          simp.push_back(new_sh);
         }
-        rec_copy(newsib, sh_source->second.children());
+        rec_copy(newsib, sh_source->second.children(), simp);
         sh->second.assign_children(newsib);
       }
     }
@@ -887,6 +902,7 @@ public:
       GUDHI_CHECK(*vi != null_vertex(), "cannot use the dummy null_vertex() as a real vertex");
       res_insert = curr_sib->members_.emplace(*vi, Node(curr_sib, filtration));
       if (res_insert.second) {
+        //all subfaces must already be in the complex
         update_simplex_tree_after_node_insertion(res_insert.first);
       }
       if (!(has_children(res_insert.first))) {
@@ -897,6 +913,7 @@ public:
     GUDHI_CHECK(*vi != null_vertex(), "cannot use the dummy null_vertex() as a real vertex");
     res_insert = curr_sib->members_.emplace(*vi, Node(curr_sib, filtration));
     if (res_insert.second) {
+      //all subfaces must already be in the complex
       update_simplex_tree_after_node_insertion(res_insert.first);
     }
     if (!res_insert.second) {
@@ -984,8 +1001,7 @@ public:
     GUDHI_CHECK_code(for (Vertex_handle v
                           : copy)
                          GUDHI_CHECK(v != null_vertex(), "cannot use the dummy null_vertex() as a real vertex");)
-
-        return insert_simplex_and_subfaces_sorted(copy, filtration);
+    return insert_simplex_and_subfaces_sorted(copy, filtration); 
   }
 
  private:
@@ -999,12 +1015,21 @@ public:
     GUDHI_CHECK(std::is_sorted(first, last), "simplex vertices listed in unsorted order");
     // Update dimension if needed. We could wait to see if the insertion succeeds, but I doubt there is much to gain.
     dimension_ = (std::max)(dimension_, static_cast<int>(std::distance(first, last)) - 1);
-    return rec_insert_simplex_and_subfaces_sorted(root(), first, last, filt);
+
+    //keep track of all new simplices
+    std::list<Simplex_handle> new_simplices;
+    auto res = rec_insert_simplex_and_subfaces_sorted(root(), first, last, filt, new_simplices);
+    for(auto sh : new_simplices) { update_simplex_tree_after_node_insertion(sh); }
+    return res;
   }
   // To insert {1,2,3,4}, we insert {2,3,4} twice, once at the root, and once below 1.
   template <class ForwardVertexIterator>
-  std::pair<Simplex_handle, bool> rec_insert_simplex_and_subfaces_sorted(Siblings* sib, ForwardVertexIterator first, ForwardVertexIterator last,
-                                                                         Filtration_value filt) {
+  std::pair<Simplex_handle, bool> rec_insert_simplex_and_subfaces_sorted(
+              Siblings* sib, 
+              ForwardVertexIterator first, 
+              ForwardVertexIterator last,
+              Filtration_value filt,
+              std::list<Simplex_handle> & new_simplices) {
     // An alternative strategy would be:
     // - try to find the complete simplex, if found (and low filtration) exit
     // - insert all the vertices at once in sib
@@ -1013,9 +1038,7 @@ public:
     auto&& dict = sib->members();
     auto insertion_result = dict.emplace(vertex_one, Node(sib, filt));
 
-    if (insertion_result.second) {
-      update_simplex_tree_after_node_insertion(insertion_result.first);
-    }
+    if (insertion_result.second) { new_simplices.push_back(insertion_result.first);}
 
     Simplex_handle simplex_one = insertion_result.first;
     bool one_is_new = insertion_result.second;
@@ -1031,9 +1054,9 @@ public:
     if (!has_children(simplex_one))
       // TODO: have special code here, we know we are building the whole subtree from scratch.
       simplex_one->second.assign_children(new Siblings(sib, vertex_one));
-    auto res = rec_insert_simplex_and_subfaces_sorted(simplex_one->second.children(), first, last, filt);
+    auto res = rec_insert_simplex_and_subfaces_sorted(simplex_one->second.children(), first, last, filt, new_simplices);
     // No need to continue if the full simplex was already there with a low enough filtration value.
-    if (!is_null(res.first)) rec_insert_simplex_and_subfaces_sorted(sib, first, last, filt);
+    if (!is_null(res.first)) rec_insert_simplex_and_subfaces_sorted(sib, first, last, filt, new_simplices);
     return res;
   }
 
@@ -1199,20 +1222,42 @@ public:
    *
    * \return Range of Simplex_handle.
    */
-  template<class SimplexHandle,
-           typename std::enable_if<Options::precompute_coboundaries, 
-                                   SimplexHandle>::type * = nullptr 
-          > 
-  Coboundary_simplex_range coboundary_simplex_range(const SimplexHandle sh) {
-    return sh->second.coboundary();
+ //  template<class SimplexHandle,
+ //           typename std::enable_if<Options::precompute_coboundaries, 
+ //                                   SimplexHandle>::type * = nullptr 
+ //          > 
+ //  // Coboundary_simplex_range 
+ //  Precomputed_coboundary_simplex_range coboundary_simplex_range(const SimplexHandle sh) {
+ //    return sh->second.coboundary();
+ //  }
+ //  template<class SimplexHandle,
+ //         typename std::enable_if<!Options::precompute_coboundaries, 
+ //                                  SimplexHandle>::type * = nullptr 
+ //        > 
+ //  // Coboundary_simplex_range 
+ //  Cofaces_simplex_range coboundary_simplex_range(const SimplexHandle sh) {
+ //   return cofaces_simplex_range(sh, 1); 
+ // }
+
+  Coboundary_simplex_range coboundary_simplex_range(Simplex_handle sh) {
+    if constexpr(Options::precompute_coboundaries) {
+      return *(sh->second.coboundary());
+    }
+    if constexpr(!Options::precompute_coboundaries) {
+      return cofaces_simplex_range(sh, 1);
+    }
+
   }
-  template<class SimplexHandle,
-         typename std::enable_if<!Options::precompute_coboundaries, 
-                                  SimplexHandle>::type * = nullptr 
-        > 
-  Coboundary_simplex_range coboundary_simplex_range(const SimplexHandle sh) {
-   return cofaces_simplex_range(sh, 1); 
- }
+  // return impl_coboundary_simplex_range(sh, std::integral_constant<bool, Options::precompute_coboundaries>{});
+  // Coboundary_simplex_range 
+ //  Precomputed_coboundary_simplex_range impl_coboundary_simplex_range(const Simplex_handle sh, std::true_type) {
+ //    return sh->second.coboundary();
+ //  }
+ //  // Coboundary_simplex_range 
+ //  Cofaces_simplex_range coboundary_simplex_range(const Simplex_handle sh, std::false_type) {
+ //   return cofaces_simplex_range(sh, 1); 
+ // }
+
 
   // Cofaces_simplex_range coboundary_simplex_range(const Simplex_handle simplex) { return cofaces_simplex_range(simplex, 1); }
 
@@ -2157,9 +2202,9 @@ public:
     // Guarantee the simplex has no children
     GUDHI_CHECK(!has_children(sh),
                 std::invalid_argument("Simplex_tree::remove_maximal_simplex - argument has children"));
-    
+
     //update cofaces data structures
-    update_simplex_tree_after_node_removal(sh);
+    update_simplex_tree_before_node_removal(sh);
 
     // Simplex is a leaf, it means the child is the Siblings owning the leaf
     Siblings* child = sh->second.children();
