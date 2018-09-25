@@ -388,7 +388,7 @@ public:
 /**
   * Return true iff the simplex is critical.
   */
-    bool is_critical(Simplex_handle sh) { return sh->second.is_critical(); }
+    bool critical(Simplex_handle sh) { return sh->second.is_critical(); }
     /**
   * Pair sh_t with sh_s and sh_s with sh_t.
   * Both Simplex_handles must be valid, distinct from null_simplex() handles.
@@ -1118,7 +1118,7 @@ public:
    * Will be automatically called when calling filtration_simplex_range()
    * if the filtration has never been initialized yet. */
     void initialize_filtration() {
-#ifdef GUDHI_COMPLEX_TIME
+#ifdef COMPLEX_TIME
 	start_ = std::chrono::system_clock::now();
 #endif
 
@@ -1145,7 +1145,7 @@ public:
 	    for(auto sh : filtration_vect_) { assign_key(sh, key++); }
 	}
 
-#ifdef GUDHI_COMPLEX_TIME
+#ifdef COMPLEX_TIME
 	end_ = std::chrono::system_clock::now();
 	enlapsed_sec_ = end_ - start_;
 	complexOperationTime_ += enlapsed_sec_.count();
@@ -1592,14 +1592,14 @@ public:
     void initialize_filtration( ZigzagEdgeRange & zz_edge_fil, int dim_max )
     { //empty complex
 	//todo
-#ifdef GUDHI_COMPLEX_TIME
+#ifdef COMPLEX_TIME
 	start_ = std::chrono::system_clock::now();
 #endif
 
 	zigzag_simplex_range_ = zigzag_simplex_range(zz_edge_fil, dim_max);
 	zigzag_simplex_range_initialized_ = true;
 
-#ifdef GUDHI_COMPLEX_TIME
+#ifdef COMPLEX_TIME
 	end_ = std::chrono::system_clock::now();
 	enlapsed_sec_ = end_ - start_;
 	complexOperationTime_ += enlapsed_sec_.count();
@@ -1661,7 +1661,7 @@ public:
 			, int                             dim_max
 			, std::vector< Simplex_handle > & zz_filtration )
     {
-#ifdef GUDHI_COMPLEX_TIME
+#ifdef COMPLEX_TIME
 	start_ = std::chrono::system_clock::now();
 #endif
 
@@ -1715,8 +1715,7 @@ public:
 					   , node_u.children()
 					   , fil
 					   , dim_max - curr_dim -1 //>= 0
-					   , zz_filtration
-					   , &l); //u on top
+					   , zz_filtration); //u on top
 		}
 	    }
 	}
@@ -1732,7 +1731,7 @@ public:
     //update cofaces data structures
     for(auto sh : zz_filtration) { update_simplex_tree_after_node_insertion(sh); }
 
-#ifdef GUDHI_COMPLEX_TIME
+#ifdef COMPLEX_TIME
 	end_ = std::chrono::system_clock::now();
 	enlapsed_sec_ = end_ - start_;
 	complexOperationTime_ += enlapsed_sec_.count();
@@ -1769,8 +1768,7 @@ private:
 			    , sib
 			    , fil
 			    , k
-			    , zz_filtration
-			    , l);
+			    , zz_filtration);
 
 	//punctual expansion in nodes on the left of v, i.e. with label x < v
 	for( auto sh = sib->members().begin(); sh != res_ins_v.first; ++sh )
@@ -1787,8 +1785,7 @@ private:
 				       , sh->second.children()
 				       , fil
 				       , k-1
-				       , zz_filtration
-				       , l);
+				       , zz_filtration);
 	    }
 	}
 
@@ -1806,8 +1803,7 @@ private:
 	    , Siblings       * curr_sib //Siblings containing the node sh_v
 	    , Filtration_value fil_uv //Fil value of the edge uv in the zz filtration
 	    , int              k //Stopping condition for recursion based on max dim
-	    , std::vector<Simplex_handle> &zz_filtration
-	    , std::list<Simplex_handle> *l) //range of all new simplices
+	    , std::vector<Simplex_handle> &zz_filtration) //range of all new simplices
     { //pick N^+(v)
 	Simplex_handle root_sh_v = find_vertex(sh_v->first);
 	if(!has_children(root_sh_v)) { return; }
@@ -1957,7 +1953,7 @@ public:
 	    , Vertex_handle v
 	    , std::vector< Simplex_handle > & zz_filtration )
     {
-#ifdef GUDHI_COMPLEX_TIME
+#ifdef COMPLEX_TIME
 	start_ = std::chrono::system_clock::now();
 #endif
 
@@ -1967,7 +1963,7 @@ public:
 
 	auto root_it_u = root_.members().find(u);
 	if(root_it_u == root_.members().end()) {    //u not in Simplex_tree
-#ifdef GUDHI_COMPLEX_TIME
+#ifdef COMPLEX_TIME
 	    end_ = std::chrono::system_clock::now();
 	    enlapsed_sec_ = end_ - start_;
 	    complexOperationTime_ += enlapsed_sec_.count();
@@ -1979,7 +1975,7 @@ public:
 	    sh_uv = root_it_u;
 	    //keep track of all cofaces of the simplex removed, including simplex itself
 	    for(auto sh : star_simplex_range(sh_uv)) {zz_filtration.push_back(sh);}
-#ifdef GUDHI_COMPLEX_TIME
+#ifdef COMPLEX_TIME
 	    end_ = std::chrono::system_clock::now();
 	    enlapsed_sec_ = end_ - start_;
 	    complexOperationTime_ += enlapsed_sec_.count();
@@ -1993,7 +1989,7 @@ public:
 	    if(sh_uv == root_it_u->second.children()->members().end()) { return; }//edge not here
 	    //keep track of all cofaces of the simplex removed, including simplex itself
 	    for(auto sh : star_simplex_range(sh_uv)) {zz_filtration.push_back(sh);}
-#ifdef GUDHI_COMPLEX_TIME
+#ifdef COMPLEX_TIME
 	    end_ = std::chrono::system_clock::now();
 	    enlapsed_sec_ = end_ - start_;
 	    complexOperationTime_ += enlapsed_sec_.count();
@@ -2007,11 +2003,11 @@ public:
     void flag_lazy_empty_complex(
 	    std::vector< Simplex_handle > & zz_filtration)
     {
-#ifdef GUDHI_COMPLEX_TIME
+#ifdef COMPLEX_TIME
 	start_ = std::chrono::system_clock::now();
 #endif
 	for(auto sh : complex_simplex_range()) { zz_filtration.push_back(sh); }
-#ifdef GUDHI_COMPLEX_TIME
+#ifdef COMPLEX_TIME
 	end_ = std::chrono::system_clock::now();
 	enlapsed_sec_ = end_ - start_;
 	complexOperationTime_ += enlapsed_sec_.count();
@@ -2019,16 +2015,15 @@ public:
     }
     /* SimplexHandleRange is a range of Simplex_handles such that simplices are
  * ordered in a reverse inclusion order.*/
-<<<<<<< .working
     template<class SimplexHandleRange>
     void remove_maximal_simplices(SimplexHandleRange &rg) {
-#ifdef GUDHI_COMPLEX_TIME
+#ifdef COMPLEX_TIME
 	start_ = std::chrono::system_clock::now();
 #endif
 	for( auto sh : rg) {
 	    remove_maximal_simplex(sh);	    // modify the complex
 	}
-#ifdef GUDHI_COMPLEX_TIME
+#ifdef COMPLEX_TIME
 	end_ = std::chrono::system_clock::now();
 	enlapsed_sec_ = end_ - start_;
 	complexOperationTime_ += enlapsed_sec_.count();
@@ -2293,7 +2288,7 @@ public:
    * bound. If you care, you can call `dimension()` to recompute the exact dimension.
    */
     void remove_maximal_simplex(Simplex_handle sh) {
-#ifdef GUDHI_COMPLEX_TIME
+#ifdef COMPLEX_TIME
 	start_ = std::chrono::system_clock::now();
 #endif
 
@@ -2319,7 +2314,7 @@ public:
 	    dimension_to_be_lowered_ = true;
 	}
 
-#ifdef GUDHI_COMPLEX_TIME
+#ifdef COMPLEX_TIME
 	end_ = std::chrono::system_clock::now();
 	enlapsed_sec_ = end_ - start_;
 	complexOperationTime_ += enlapsed_sec_.count();
@@ -2341,7 +2336,7 @@ private:
     Dictionary null_dictionary_;
     Simplex_handle null_simplex_;
 
-#ifdef GUDHI_COMPLEX_TIME
+#ifdef COMPLEX_TIME
     double complexOperationTime_ = 0.0;
     std::chrono::time_point<std::chrono::system_clock> start_, end_;
     std::chrono::duration<double> enlapsed_sec_;
