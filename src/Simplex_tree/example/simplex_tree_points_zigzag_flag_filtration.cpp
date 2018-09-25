@@ -27,6 +27,16 @@ void program_options( int argc, char* argv[]
                     , Filtration_value& mu
                     , int& dim_max);
 
+bool lex_cmp( Point_d p, Point_d q ) {
+  auto itp = p.begin(); auto itq = q.begin();
+  while(itp != p.end() && itq != q.end()) {
+    if(*itp != *itq) { return *itp < *itq; }
+    ++itp; ++itq;
+  }
+  return false;
+}
+
+
 int main(int argc, char* argv[])
 {
   std::chrono::time_point<std::chrono::system_clock> start, end;
@@ -37,19 +47,29 @@ int main(int argc, char* argv[])
   int dim_max;
 
   program_options(argc, argv, off_file_points, nu, mu, dim_max);
-
+//sequence of insertion and deletions of vertices and edges
   std::vector< Zz_edge >        edge_filtration;
+//epsilon_i values, size() == #points
   std::vector<Filtration_value> filtration_values;
   //extract points from file
   Points_off_reader off_reader(off_file_points); //read points
+//kernel
+  K k_d; 
 
-  K k_d;
+//check whether there are duplicates
+  bool(*tmp_cmp)(Point_d,Point_d) = lex_cmp;
+  std::set<Point_d, bool(*)(Point_d,Point_d) > no_dup(tmp_cmp);
+  for(auto p : off_reader.get_point_cloud()) { no_dup.insert(p); }
+  if(no_dup.size() != off_reader.get_point_cloud().size()) { 
+    std::cout << "Duplicates " << no_dup.size() << " vs. " << off_reader.get_point_cloud().size() << "\n"; 
+    return 0; 
+  }
 
   //sort points
   start = std::chrono::system_clock::now();
   std::vector<Point_d> sorted_points;
   Gudhi::subsampling::choose_n_farthest_points( k_d, off_reader.get_point_cloud() 
-    , 100//off_reader.get_point_cloud().size() //all points
+    , off_reader.get_point_cloud().size() //all points
     , 0//start with point [0]//Gudhi::subsampling::random_starting_point
     , std::back_inserter(sorted_points));
 
@@ -62,23 +82,22 @@ int main(int argc, char* argv[])
 
   auto sqdist = k_d.squared_distance_d_object();
 
+
   //Compute edge filtration
   start = std::chrono::system_clock::now();
-	fast_points_to_edge_filtration( sorted_points, 
-                             sqdist,
-                             //Gudhi::Euclidean_distance(),
-                             nu, mu, filtration_values, edge_filtration );
+	points_to_edge_filtration( sorted_points, 
+                             sqdist, //Gudhi::Euclidean_distance(),
+                             nu*nu, mu*mu, filtration_values, edge_filtration );
   end = std::chrono::system_clock::now();
   enlapsed_sec =std::chrono::duration_cast<std::chrono::seconds>(end-start).count();
 
-  std::cout << "Edge filtration computation (fast): " << enlapsed_sec << " sec.\n";
+  std::cout << "Edge filtration computation: " << enlapsed_sec << " sec.\n";
   
   //apply sqrt to correct the use of sqrt distance
   for(auto & f : filtration_values) { f = std::sqrt(f); }
   for(auto & e : edge_filtration) { e.assign_fil(std::sqrt(e.fil())); }
 
-
-  std::cout << "Point cloud : \n";
+  std::cout << "Point cloud, with furthest point ordering: \n";
   for(auto point : sorted_points) {
     for(auto x : point) { std::cout << x << " "; }
     std::cout << std::endl;
@@ -96,7 +115,7 @@ int main(int argc, char* argv[])
   for(auto edg : edge_filtration) 
   { 
    if(edg.type()) { std::cout << "+ "; } else { std::cout << "- "; }
-    std::cout <<  " " << edg.u() << " " << edg.v() << " " << edg.fil() << std::endl;
+    std::cout <<  " " << edg.u() << " " << edg.v() << "     " << edg.fil() << std::endl;
   }
   std::cout << std::endl;
  
@@ -106,19 +125,29 @@ int main(int argc, char* argv[])
   auto zz_rg = st.filtration_simplex_range();
   
   size_t num_arrows = 0;
+  size_t max_size_complex = 0;
+  size_t curr_size_complex = 0;
   std::cout << "Simplex filtration: \n";
   for(auto it = zz_rg.begin(); it != zz_rg.end(); ++it ) {
     ++num_arrows;
-    if(it.arrow_direction()) {std::cout << "+ ";} else {std::cout << "- ";}
-    for(auto u : st.simplex_vertex_range(*it)) { std::cout << u << " "; }
-      std::cout << "    " << st.filtration(*it) << "  " << st.key(*it) << "\n";
+    if(it.arrow_direction()) {
+      // std::cout << "+ ";
+      if(++curr_size_complex > max_size_complex) { 
+        max_size_complex = curr_size_complex; 
+      }
+    }
+    else {
+      // std::cout << "- ";
+      --curr_size_complex;
+    }
+    // std::cout << "   (" << curr_size_complex << " , " << max_size_complex << ")   ";
+    // for(auto u : st.simplex_vertex_range(*it)) { std::cout << u << " "; }
+    // std::cout << "    " << st.filtration(*it) << "  " << st.key(*it) << "\n";
   }
   std::cout << std::endl << std::endl;
-  std::cout << "Number of arrows : " << num_arrows << std::endl;
-
-
-    if(std::numeric_limits<double>::max() != std::numeric_limits<double>::infinity())
-      { std::cout << "max != limit\n";}
+  std::cout << "Number of arrows:       " << num_arrows << std::endl;
+  std::cout << "Maximal size complexes: " << max_size_complex << std::endl;
+  std::cout << "Total number of edges + vertices:  " << edge_filtration.size() << "\n";
 
   return 0;
 }
@@ -133,10 +162,10 @@ void program_options(int argc, char* argv[], std::string& off_file_points, Filtr
 
   po::options_description visible("Allowed options", 100);
   visible.add_options()("help,h", "produce help message")
-  ( "nu",
+  ( "nu,n",
     po::value<Filtration_value>(&nu)->default_value(3.0),
     "Lower multiplicative factor in the oscillating Rips zigzag filtration.")
-  ( "mu",
+  ( "mu,m",
     po::value<Filtration_value>(&mu)->default_value(3.2),
     "Upper multiplicative factor in the oscillating Rips zigzag filtration.")
   ( "cpx-dimension,d", po::value<int>(&dim_max)->default_value(1),

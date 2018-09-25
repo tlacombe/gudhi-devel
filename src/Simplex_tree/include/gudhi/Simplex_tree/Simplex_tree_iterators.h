@@ -48,21 +48,21 @@ namespace Gudhi {
  * Forward iterator, 'value_type' is SimplexTree::Vertex_handle.*/
 template <class SimplexTree>
 class Simplex_tree_simplex_vertex_iterator
-        : public boost::iterator_facade<Simplex_tree_simplex_vertex_iterator<SimplexTree>,
-        typename SimplexTree::Vertex_handle const, boost::forward_traversal_tag,
-        typename SimplexTree::Vertex_handle const> {
+	: public boost::iterator_facade<Simplex_tree_simplex_vertex_iterator<SimplexTree>,
+	typename SimplexTree::Vertex_handle const, boost::forward_traversal_tag,
+	typename SimplexTree::Vertex_handle const> {
 public:
     typedef typename SimplexTree::Simplex_handle Simplex_handle;
     typedef typename SimplexTree::Siblings Siblings;
     typedef typename SimplexTree::Vertex_handle Vertex_handle;
 
     explicit Simplex_tree_simplex_vertex_iterator(SimplexTree* st)
-        :  // any end() iterator
-          sib_(nullptr),
-          v_(st->null_vertex()) {}
+	:  // any end() iterator
+	  sib_(nullptr),
+	  v_(st->null_vertex()) {}
 
     Simplex_tree_simplex_vertex_iterator(SimplexTree* st, Simplex_handle sh)
-        : sib_(st->self_siblings(sh)), v_(sh->first) {}
+	: sib_(st->self_siblings(sh)), v_(sh->first) {}
 
 private:
     friend class boost::iterator_core_access;
@@ -72,8 +72,8 @@ private:
     Vertex_handle const& dereference() const { return v_; }
 
     void increment() {
-        v_ = sib_->parent();
-        sib_ = sib_->oncles();
+	v_ = sib_->parent();
+	sib_ = sib_->oncles();
     }
 
     Siblings* sib_;
@@ -87,8 +87,8 @@ private:
  * Forward iterator, value_type is SimplexTree::Simplex_handle.*/
 template <class SimplexTree>
 class Simplex_tree_boundary_simplex_iterator
-        : public boost::iterator_facade<Simplex_tree_boundary_simplex_iterator<SimplexTree>,
-        typename SimplexTree::Simplex_handle const, boost::forward_traversal_tag> {
+	: public boost::iterator_facade<Simplex_tree_boundary_simplex_iterator<SimplexTree>,
+	typename SimplexTree::Simplex_handle const, boost::forward_traversal_tag> {
 public:
     typedef typename SimplexTree::Simplex_handle Simplex_handle;
     typedef typename SimplexTree::Vertex_handle Vertex_handle;
@@ -99,21 +99,21 @@ public:
 
     template <class SimplexHandle>
     Simplex_tree_boundary_simplex_iterator(SimplexTree* st, SimplexHandle sh) : last_(sh->first), sib_(nullptr), st_(st) {
-        // Only check once at the beginning instead of for every increment, as this is expensive.
-        if (SimplexTree::Options::contiguous_vertices)
-            GUDHI_CHECK(st_->contiguous_vertices(), "The set of vertices is not { 0, ..., n } without holes");
-        Siblings* sib = st->self_siblings(sh);
-        next_ = sib->parent();
-        sib_ = sib->oncles();
-        if (sib_ != nullptr) {
-            // Only relevant for edges
-            if constexpr (SimplexTree::Options::contiguous_vertices) {
-                if(sib_->oncles() == nullptr) { sh_ = sib_->members_.begin() + next_; }
-                else { sh_ = sib_->find(next_); }
-            } else { sh_ = sib_->find(next_); }
-        } else {
-            sh_ = st->null_simplex();
-        }  // vertex: == end()
+	// Only check once at the beginning instead of for every increment, as this is expensive.
+	if (SimplexTree::Options::contiguous_vertices)
+	    GUDHI_CHECK(st_->contiguous_vertices(), "The set of vertices is not { 0, ..., n } without holes");
+	Siblings* sib = st->self_siblings(sh);
+	next_ = sib->parent();
+	sib_ = sib->oncles();
+	if (sib_ != nullptr) {
+	    // Only relevant for edges
+	    if constexpr (SimplexTree::Options::contiguous_vertices) {
+		if(sib_->oncles() == nullptr) { sh_ = sib_->members_.begin() + next_; }
+		else { sh_ = sib_->find(next_); }
+	    } else { sh_ = sib_->find(next_); }
+	} else {
+	    sh_ = st->null_simplex();
+	}  // vertex: == end()
     }
 
 private:
@@ -122,8 +122,8 @@ private:
     bool equal(Simplex_tree_boundary_simplex_iterator const& other) const { return sh_ == other.sh_; }
 
     Simplex_handle const& dereference() const {
-        assert(sh_ != st_->null_simplex());
-        return sh_;
+	assert(sh_ != st_->null_simplex());
+	return sh_;
     }
 
     void increment() {
@@ -134,26 +134,26 @@ private:
 	start = std::chrono::system_clock::now();
 #endif
 
-        if (sib_ == nullptr) {
-            sh_ = st_->null_simplex();
+	if (sib_ == nullptr) {
+	    sh_ = st_->null_simplex();
 #ifdef GUDHI_COMPLEX_TIME
 	    end = std::chrono::system_clock::now();
 	    enlapsed_sec = end - start;
 	    st_->add_to_complex_operation_time(enlapsed_sec.count());
 #endif
-            return;
-        }
+	    return;
+	}
 
-        Siblings* for_sib = sib_;
-        Siblings* new_sib = sib_->oncles();
-        auto rit = suffix_.rbegin();
-        if constexpr (SimplexTree::Options::contiguous_vertices) {
-            if(new_sib == nullptr) {
-                // We reached the root, use a short-cut to find a vertex.
-                if (rit == suffix_.rend()) {
-                    // Segment, this vertex is the last boundary simplex
-                    sh_ = for_sib->members_.begin() + last_;
-                    sib_ = nullptr;
+	Siblings* for_sib = sib_;
+	Siblings* new_sib = sib_->oncles();
+	auto rit = suffix_.rbegin();
+	if constexpr (SimplexTree::Options::contiguous_vertices) {
+	    if(new_sib == nullptr) {
+		// We reached the root, use a short-cut to find a vertex.
+		if (rit == suffix_.rend()) {
+		    // Segment, this vertex is the last boundary simplex
+		    sh_ = for_sib->members_.begin() + last_;
+		    sib_ = nullptr;
 
 #ifdef GUDHI_COMPLEX_TIME
 		    end = std::chrono::system_clock::now();
@@ -161,23 +161,23 @@ private:
 		    st_->add_to_complex_operation_time(enlapsed_sec.count());
 #endif
 
-                    return;
-                } else {
-                    // Dim >= 2, initial step of the descent
-                    sh_ = for_sib->members_.begin() + *rit;
-                    for_sib = sh_->second.children();
-                    ++rit;
-                }
-            }
-        }
-        for (; rit != suffix_.rend(); ++rit) {
-            sh_ = for_sib->find(*rit);
-            for_sib = sh_->second.children();
-        }
-        sh_ = for_sib->find(last_);  // sh_ points to the right simplex now
-        suffix_.push_back(next_);
-        next_ = sib_->parent();
-        sib_ = new_sib;
+		    return;
+		} else {
+		    // Dim >= 2, initial step of the descent
+		    sh_ = for_sib->members_.begin() + *rit;
+		    for_sib = sh_->second.children();
+		    ++rit;
+		}
+	    }
+	}
+	for (; rit != suffix_.rend(); ++rit) {
+	    sh_ = for_sib->find(*rit);
+	    for_sib = sh_->second.children();
+	}
+	sh_ = for_sib->find(last_);  // sh_ points to the right simplex now
+	suffix_.push_back(next_);
+	next_ = sib_->parent();
+	sib_ = new_sib;
 
 #ifdef GUDHI_COMPLEX_TIME
 	end = std::chrono::system_clock::now();
@@ -208,8 +208,8 @@ private:
  * Forward iterator, value_type is SimplexTree::Simplex_handle.*/
 template <class SimplexTree>
 class Simplex_tree_complex_simplex_iterator
-        : public boost::iterator_facade<Simplex_tree_complex_simplex_iterator<SimplexTree>,
-        typename SimplexTree::Simplex_handle const, boost::forward_traversal_tag> {
+	: public boost::iterator_facade<Simplex_tree_complex_simplex_iterator<SimplexTree>,
+	typename SimplexTree::Simplex_handle const, boost::forward_traversal_tag> {
 public:
     typedef typename SimplexTree::Simplex_handle Simplex_handle;
     typedef typename SimplexTree::Siblings Siblings;
@@ -219,16 +219,16 @@ public:
     Simplex_tree_complex_simplex_iterator() : sib_(nullptr), st_(nullptr) {}
 
     explicit Simplex_tree_complex_simplex_iterator(SimplexTree* st) : sib_(nullptr), st_(st) {
-        if (st == nullptr || st->root() == nullptr || st->root()->members().empty()) {
-            st_ = nullptr;
-        } else {
-            sh_ = st->root()->members().begin();
-            sib_ = st->root();
-            while (st->has_children(sh_)) {
-                sib_ = sh_->second.children();
-                sh_ = sib_->members().begin();
-            }
-        }
+	if (st == nullptr || st->root() == nullptr || st->root()->members().empty()) {
+	    st_ = nullptr;
+	} else {
+	    sh_ = st->root()->members().begin();
+	    sib_ = st->root();
+	    while (st->has_children(sh_)) {
+		sib_ = sh_->second.children();
+		sh_ = sib_->members().begin();
+	    }
+	}
     }
 
 private:
@@ -236,33 +236,33 @@ private:
 
     // valid when iterating along the SAME boundary.
     bool equal(Simplex_tree_complex_simplex_iterator const& other) const {
-        if (other.st_ == nullptr) {
-            return (st_ == nullptr);
-        }
-        if (st_ == nullptr) {
-            return false;
-        }
-        return (&(sh_->second) == &(other.sh_->second));
+	if (other.st_ == nullptr) {
+	    return (st_ == nullptr);
+	}
+	if (st_ == nullptr) {
+	    return false;
+	}
+	return (&(sh_->second) == &(other.sh_->second));
     }
 
     Simplex_handle const& dereference() const { return sh_; }
 
     // Depth first traversal.
     void increment() {
-        ++sh_;
-        if (sh_ == sib_->members().end()) {
-            if (sib_->oncles() == nullptr) {
-                st_ = nullptr;
-                return;
-            }  // reach the end
-            sh_ = sib_->oncles()->members().find(sib_->parent());
-            sib_ = sib_->oncles();
-            return;
-        }
-        while (st_->has_children(sh_)) {
-            sib_ = sh_->second.children();
-            sh_ = sib_->members().begin();
-        }
+	++sh_;
+	if (sh_ == sib_->members().end()) {
+	    if (sib_->oncles() == nullptr) {
+		st_ = nullptr;
+		return;
+	    }  // reach the end
+	    sh_ = sib_->oncles()->members().find(sib_->parent());
+	    sib_ = sib_->oncles();
+	    return;
+	}
+	while (st_->has_children(sh_)) {
+	    sib_ = sh_->second.children();
+	    sh_ = sib_->members().begin();
+	}
     }
 
     Simplex_handle sh_;
@@ -276,8 +276,8 @@ private:
  * Forward iterator, value_type is SimplexTree::Simplex_handle.*/
 template <class SimplexTree>
 class Simplex_tree_skeleton_simplex_iterator
-        : public boost::iterator_facade<Simplex_tree_skeleton_simplex_iterator<SimplexTree>,
-        typename SimplexTree::Simplex_handle const, boost::forward_traversal_tag> {
+	: public boost::iterator_facade<Simplex_tree_skeleton_simplex_iterator<SimplexTree>,
+	typename SimplexTree::Simplex_handle const, boost::forward_traversal_tag> {
 public:
     typedef typename SimplexTree::Simplex_handle Simplex_handle;
     typedef typename SimplexTree::Siblings Siblings;
@@ -287,18 +287,18 @@ public:
     Simplex_tree_skeleton_simplex_iterator() : sib_(nullptr), st_(nullptr), dim_skel_(0), curr_dim_(0) {}
 
     Simplex_tree_skeleton_simplex_iterator(SimplexTree* st, int dim_skel)
-        : sib_(nullptr), st_(st), dim_skel_(dim_skel), curr_dim_(0) {
-        if (st == nullptr || st->root() == nullptr || st->root()->members().empty()) {
-            st_ = nullptr;
-        } else {
-            sh_ = st->root()->members().begin();
-            sib_ = st->root();
-            while (st->has_children(sh_) && curr_dim_ < dim_skel_) {
-                sib_ = sh_->second.children();
-                sh_ = sib_->members().begin();
-                ++curr_dim_;
-            }
-        }
+	: sib_(nullptr), st_(st), dim_skel_(dim_skel), curr_dim_(0) {
+	if (st == nullptr || st->root() == nullptr || st->root()->members().empty()) {
+	    st_ = nullptr;
+	} else {
+	    sh_ = st->root()->members().begin();
+	    sib_ = st->root();
+	    while (st->has_children(sh_) && curr_dim_ < dim_skel_) {
+		sib_ = sh_->second.children();
+		sh_ = sib_->members().begin();
+		++curr_dim_;
+	    }
+	}
     }
 
 private:
@@ -306,35 +306,35 @@ private:
 
     // valid when iterating along the SAME boundary.
     bool equal(Simplex_tree_skeleton_simplex_iterator const& other) const {
-        if (other.st_ == nullptr) {
-            return (st_ == nullptr);
-        }
-        if (st_ == nullptr) {
-            return false;
-        }
-        return (&(sh_->second) == &(other.sh_->second));
+	if (other.st_ == nullptr) {
+	    return (st_ == nullptr);
+	}
+	if (st_ == nullptr) {
+	    return false;
+	}
+	return (&(sh_->second) == &(other.sh_->second));
     }
 
     Simplex_handle const& dereference() const { return sh_; }
 
     // Depth first traversal of the skeleton.
     void increment() {
-        ++sh_;
-        if (sh_ == sib_->members().end()) {
-            if (sib_->oncles() == nullptr) {
-                st_ = nullptr;
-                return;
-            }  // reach the end
-            sh_ = sib_->oncles()->members().find(sib_->parent());
-            sib_ = sib_->oncles();
-            --curr_dim_;
-            return;
-        }
-        while (st_->has_children(sh_) && curr_dim_ < dim_skel_) {
-            sib_ = sh_->second.children();
-            sh_ = sib_->members().begin();
-            ++curr_dim_;
-        }
+	++sh_;
+	if (sh_ == sib_->members().end()) {
+	    if (sib_->oncles() == nullptr) {
+		st_ = nullptr;
+		return;
+	    }  // reach the end
+	    sh_ = sib_->oncles()->members().find(sib_->parent());
+	    sib_ = sib_->oncles();
+	    --curr_dim_;
+	    return;
+	}
+	while (st_->has_children(sh_) && curr_dim_ < dim_skel_) {
+	    sib_ = sh_->second.children();
+	    sh_ = sib_->members().begin();
+	    ++curr_dim_;
+	}
     }
 
     Simplex_handle sh_;
@@ -350,8 +350,8 @@ private:
  * Forward iterator, value_type is SimplexTree::Simplex_handle.*/
 template <class SimplexTree>
 class Simplex_tree_opt_cofaces_rooted_subtrees_simplex_iterator
-        : public boost::iterator_facade<Simplex_tree_opt_cofaces_rooted_subtrees_simplex_iterator<SimplexTree>,
-        typename SimplexTree::Simplex_handle const, boost::forward_traversal_tag> {
+	: public boost::iterator_facade<Simplex_tree_opt_cofaces_rooted_subtrees_simplex_iterator<SimplexTree>,
+	typename SimplexTree::Simplex_handle const, boost::forward_traversal_tag> {
 public:
     typedef typename SimplexTree::Simplex_handle Simplex_handle;
     typedef typename SimplexTree::Siblings Siblings;
@@ -371,35 +371,35 @@ public:
    */
     class is_coface {
     public:
-        is_coface() : cpx_(NULL) {}
-        is_coface(SimplexTree* cpx, std::vector<Vertex_handle> simp) : cpx_(cpx), simp_(simp) {}
+	is_coface() : cpx_(NULL) {}
+	is_coface(SimplexTree* cpx, std::vector<Vertex_handle> simp) : cpx_(cpx), simp_(simp) {}
 
-        // Returns true iff traversing the Node upwards to the root reads a
-        // coface of simp_ of codimension codim_
-        bool operator()(typename SimplexTree::Hooks_simplex_base& curr_hooks) {
-            int dim = 0;
-            Node& curr_node = static_cast<Node&>(curr_hooks);
-            auto vertex_it = simp_.begin();
-            // first Node must always have label simp_.begin()
-            auto curr_sib = cpx_->self_siblings(curr_node, *vertex_it);
-            if (++vertex_it == simp_.end()) {
-                return true;
-            }
-            while (curr_sib->oncles() != NULL) {  // todo is NULL valid?
-                if (curr_sib->parent() == *vertex_it) {
-                    if (++vertex_it == simp_.end()) {  // we have a coface root
-                        return true;
-                    }
-                }
-                curr_sib = curr_sib->oncles();
-                ++dim;
-            }
-            return false;
-        }
+	// Returns true iff traversing the Node upwards to the root reads a
+	// coface of simp_ of codimension codim_
+	bool operator()(typename SimplexTree::Hooks_simplex_base& curr_hooks) {
+	    int dim = 0;
+	    Node& curr_node = static_cast<Node&>(curr_hooks);
+	    auto vertex_it = simp_.begin();
+	    // first Node must always have label simp_.begin()
+	    auto curr_sib = cpx_->self_siblings(curr_node, *vertex_it);
+	    if (++vertex_it == simp_.end()) {
+		return true;
+	    }
+	    while (curr_sib->oncles() != NULL) {  // todo is NULL valid?
+		if (curr_sib->parent() == *vertex_it) {
+		    if (++vertex_it == simp_.end()) {  // we have a coface root
+			return true;
+		    }
+		}
+		curr_sib = curr_sib->oncles();
+		++dim;
+	    }
+	    return false;
+	}
 
     private:
-        SimplexTree* cpx_;
-        std::vector<Vertex_handle> simp_;  // vertices of simplex, reverse ordered
+	SimplexTree* cpx_;
+	std::vector<Vertex_handle> simp_;  // vertices of simplex, reverse ordered
     };
 
     typedef boost::filter_iterator<is_coface, typename SimplexTree::List_max_vertex::iterator>
@@ -408,15 +408,15 @@ public:
     Simplex_tree_opt_cofaces_rooted_subtrees_simplex_iterator() : predicate_(), st_(nullptr) {}
 
     Simplex_tree_opt_cofaces_rooted_subtrees_simplex_iterator(SimplexTree* cpx, std::vector<Vertex_handle> simp)
-        : predicate_(cpx, simp), st_(cpx) {
-        max_v_ = *(simp.begin());
-        auto list_ptr = st_->cofaces_data_structure_.access(max_v_);
-        // assert(list_it != st_->cofaces_data_structure_.end());
-        it_ = boost::make_filter_iterator(predicate_, list_ptr->begin(), list_ptr->end());
-        end_ = boost::make_filter_iterator(predicate_, list_ptr->end(), list_ptr->end());
-        Node& curr_node = static_cast<Node&>(*it_);
-        auto curr_sib = st_->self_siblings(curr_node, max_v_);
-        sh_ = curr_sib->find(max_v_);
+	: predicate_(cpx, simp), st_(cpx) {
+	max_v_ = *(simp.begin());
+	auto list_ptr = st_->cofaces_data_structure_.access(max_v_);
+	// assert(list_it != st_->cofaces_data_structure_.end());
+	it_ = boost::make_filter_iterator(predicate_, list_ptr->begin(), list_ptr->end());
+	end_ = boost::make_filter_iterator(predicate_, list_ptr->end(), list_ptr->end());
+	Node& curr_node = static_cast<Node&>(*it_);
+	auto curr_sib = st_->self_siblings(curr_node, max_v_);
+	sh_ = curr_sib->find(max_v_);
     }
 
 private:
@@ -424,26 +424,26 @@ private:
 
     // valid when iterating along the SAME list of max vertex.
     bool equal(Simplex_tree_opt_cofaces_rooted_subtrees_simplex_iterator const& other) const {
-        if (other.st_ == nullptr) {
-            return (st_ == nullptr);
-        }
-        if (st_ == nullptr) {
-            return false;
-        }
-        return (&(*it_) == &(*(other.it_)));
+	if (other.st_ == nullptr) {
+	    return (st_ == nullptr);
+	}
+	if (st_ == nullptr) {
+	    return false;
+	}
+	return (&(*it_) == &(*(other.it_)));
     }
 
     Simplex_handle const& dereference() const { return sh_; }
 
     void increment() {
-        if (++it_ == end_) {
-            st_ = nullptr;
-        }       //== end
-        else {  // update sh_
-            Node& curr_node = static_cast<Node&>(*it_);
-            auto curr_sib = st_->self_siblings(curr_node, max_v_);
-            sh_ = curr_sib->find(max_v_);
-        }
+	if (++it_ == end_) {
+	    st_ = nullptr;
+	}       //== end
+	else {  // update sh_
+	    Node& curr_node = static_cast<Node&>(*it_);
+	    auto curr_sib = st_->self_siblings(curr_node, max_v_);
+	    sh_ = curr_sib->find(max_v_);
+	}
     }
 
     is_coface predicate_;
@@ -460,8 +460,8 @@ private:
  * uses hooks stored in the Node of the SimplexTree.*/
 template <class SimplexTree>
 class Simplex_tree_opt_cofaces_simplex_iterator
-        : public boost::iterator_facade<Simplex_tree_opt_cofaces_simplex_iterator<SimplexTree>,
-        typename SimplexTree::Simplex_handle const, boost::forward_traversal_tag> {
+	: public boost::iterator_facade<Simplex_tree_opt_cofaces_simplex_iterator<SimplexTree>,
+	typename SimplexTree::Simplex_handle const, boost::forward_traversal_tag> {
 public:
     typedef typename SimplexTree::Simplex_handle Simplex_handle;
     typedef typename SimplexTree::Siblings Siblings;
@@ -472,24 +472,24 @@ public:
     Simplex_tree_opt_cofaces_simplex_iterator() : st_(nullptr) {}
 
     Simplex_tree_opt_cofaces_simplex_iterator(SimplexTree* cpx, std::vector<Vertex_handle> simp, int codim)
-        : st_(cpx),
-          it_(cpx, simp),
-          end_(),
-          sh_(*it_),
-          dim_root_(st_->dimension(sh_)),
-          dim_sh_(dim_root_),
-          sib_(st_->self_siblings(sh_)) {
-        if (codim == 0) {
-            max_dim_cofaces_ = cpx->dimension();
-            all_cofaces = true;
-        }       // all cofaces
-        else {  // exact dimension
-            max_dim_cofaces_ = codim + simp.size() - 1;
-            all_cofaces = false;
-            while (st_ != nullptr && dim_sh_ != max_dim_cofaces_) {
-                increment_bounded_dimension(); //look for a coface of right codimension
-            }
-        }
+	: st_(cpx),
+	  it_(cpx, simp),
+	  end_(),
+	  sh_(*it_),
+	  dim_root_(st_->dimension(sh_)),
+	  dim_sh_(dim_root_),
+	  sib_(st_->self_siblings(sh_)) {
+	if (codim == 0) {
+	    max_dim_cofaces_ = cpx->dimension();
+	    all_cofaces = true;
+	}       // all cofaces
+	else {  // exact dimension
+	    max_dim_cofaces_ = codim + simp.size() - 1;
+	    all_cofaces = false;
+	    while (st_ != nullptr && dim_sh_ != max_dim_cofaces_) {
+		increment_bounded_dimension(); //look for a coface of right codimension
+	    }
+	}
     }
 
     int dim_sh() { return dim_sh_; }
@@ -499,80 +499,80 @@ private:
 
     // valid when iterating along the SAME list of max vertex.
     bool equal(Simplex_tree_opt_cofaces_simplex_iterator const& other) const {
-        if (other.st_ == nullptr) {
-            return (st_ == nullptr);
-        }
-        if (st_ == nullptr) {
-            return false;
-        }
-        return (&(sh_->second) == &(other.sh_->second));
+	if (other.st_ == nullptr) {
+	    return (st_ == nullptr);
+	}
+	if (st_ == nullptr) {
+	    return false;
+	}
+	return (&(sh_->second) == &(other.sh_->second));
     }
 
     Simplex_handle const& dereference() const { return sh_; }
 
     void increment_bounded_dimension() {
-        if (dim_root_ == dim_sh_) {  // sh_ points at a subtree root,
-            // which is a valid coface of the right dimension.
-            if (!st_->has_children(sh_) || dim_root_ == max_dim_cofaces_) {  // go to next subtree
-                do {
-                    if (++it_ == end_) {
-                        st_ = nullptr;
-                        return;
-                    }
-                    sh_ = *it_;  // initialize fields for new subtree
-                    dim_root_ = st_->dimension(sh_);
-                    dim_sh_ = dim_root_;
-                    sib_ = st_->self_siblings(sh_);
-                } while (dim_root_ > max_dim_cofaces_);
-                return;
-            } else {  // sh_ has children, of dimension <= dim_cofaces
-                sib_ = sh_->second.children();
-                sh_ = sib_->members().begin();
-                ++dim_sh_;
-                return;
-            }
-        } else { // we are inside a subtree
-            if (!st_->has_children(sh_) || dim_sh_ == max_dim_cofaces_) { //++sh_
-                ++sh_;
-                while (sh_ == sib_->members().end()) {
-                    if (dim_sh_ == dim_root_ + 1) {  // go to next subtree with dim_root_ <= dim_cofaces
-                        do {
-                            if (++it_ == end_) {
-                                st_ = nullptr;
-                                return;
-                            }
-                            sh_ = *it_;  // initialize fields for new subtree
-                            dim_root_ = st_->dimension(sh_);
-                            dim_sh_ = dim_root_;
-                            sib_ = st_->self_siblings(sh_);
-                        } while (dim_root_ > max_dim_cofaces_);
-                        return;
-                    } else {  // continue going up
-                        Vertex_handle parent = sib_->parent();
-                        sib_ = sib_->oncles();
-                        sh_ = sib_->members().find(parent);
-                        ++sh_;
-                        --dim_sh_;
-                    }
-                }
-                return;
-            } else {  // sh_ has children, of dimension <= dim_cofaces: go down DFS
-                sib_ = sh_->second.children();
-                sh_ = sib_->members().begin();
-                ++dim_sh_;
-                return;
-            }
-        }
+	if (dim_root_ == dim_sh_) {  // sh_ points at a subtree root,
+	    // which is a valid coface of the right dimension.
+	    if (!st_->has_children(sh_) || dim_root_ == max_dim_cofaces_) {  // go to next subtree
+		do {
+		    if (++it_ == end_) {
+			st_ = nullptr;
+			return;
+		    }
+		    sh_ = *it_;  // initialize fields for new subtree
+		    dim_root_ = st_->dimension(sh_);
+		    dim_sh_ = dim_root_;
+		    sib_ = st_->self_siblings(sh_);
+		} while (dim_root_ > max_dim_cofaces_);
+		return;
+	    } else {  // sh_ has children, of dimension <= dim_cofaces
+		sib_ = sh_->second.children();
+		sh_ = sib_->members().begin();
+		++dim_sh_;
+		return;
+	    }
+	} else { // we are inside a subtree
+	    if (!st_->has_children(sh_) || dim_sh_ == max_dim_cofaces_) { //++sh_
+		++sh_;
+		while (sh_ == sib_->members().end()) {
+		    if (dim_sh_ == dim_root_ + 1) {  // go to next subtree with dim_root_ <= dim_cofaces
+			do {
+			    if (++it_ == end_) {
+				st_ = nullptr;
+				return;
+			    }
+			    sh_ = *it_;  // initialize fields for new subtree
+			    dim_root_ = st_->dimension(sh_);
+			    dim_sh_ = dim_root_;
+			    sib_ = st_->self_siblings(sh_);
+			} while (dim_root_ > max_dim_cofaces_);
+			return;
+		    } else {  // continue going up
+			Vertex_handle parent = sib_->parent();
+			sib_ = sib_->oncles();
+			sh_ = sib_->members().find(parent);
+			++sh_;
+			--dim_sh_;
+		    }
+		}
+		return;
+	    } else {  // sh_ has children, of dimension <= dim_cofaces: go down DFS
+		sib_ = sh_->second.children();
+		sh_ = sib_->members().begin();
+		++dim_sh_;
+		return;
+	    }
+	}
     }
 
     void increment() {
-        if (!all_cofaces) {
-            do {
-                increment_bounded_dimension();
-            } while (st_ != nullptr && dim_sh_ != max_dim_cofaces_);
-        } else {
-            increment_bounded_dimension();
-        }
+	if (!all_cofaces) {
+	    do {
+		increment_bounded_dimension();
+	    } while (st_ != nullptr && dim_sh_ != max_dim_cofaces_);
+	} else {
+	    increment_bounded_dimension();
+	}
     }
 
     SimplexTree* st_;

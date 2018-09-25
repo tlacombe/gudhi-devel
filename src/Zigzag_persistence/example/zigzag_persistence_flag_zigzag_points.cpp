@@ -29,6 +29,15 @@ void program_options( int argc, char* argv[]
                     , Filtration_value& mu
                     , int& dim_max);
 
+bool lex_cmp( Point_d p, Point_d q ) {
+  auto itp = p.begin(); auto itq = q.begin();
+  while(itp != p.end() && itq != q.end()) {
+    if(*itp != *itq) { return *itp < *itq; }
+    ++itp; ++itq;
+  }
+  return false;
+}
+
 int main(int argc, char* argv[])
 {
   std::chrono::time_point<std::chrono::system_clock> start, end;
@@ -39,21 +48,32 @@ int main(int argc, char* argv[])
   int dim_max;
 
   program_options(argc, argv, off_file_points, nu, mu, dim_max);
-
+//sequence of insertion and deletions of vertices and edges
   std::vector< Zz_edge >        edge_filtration;
+//epsilon_i values, size() == #points
   std::vector<Filtration_value> filtration_values;
   //extract points from file
   Points_off_reader off_reader(off_file_points); //read points
+//kernel
+  K k_d; 
 
-  K k_d;
- 
-  //sort points 
+//check whether there are duplicates
+  bool(*tmp_cmp)(Point_d,Point_d) = lex_cmp;
+  std::set<Point_d, bool(*)(Point_d,Point_d) > no_dup(tmp_cmp);
+  for(auto p : off_reader.get_point_cloud()) { no_dup.insert(p); }
+  if(no_dup.size() != off_reader.get_point_cloud().size()) { 
+    std::cout << "Duplicates " << no_dup.size() << " vs. " << off_reader.get_point_cloud().size() << "\n"; 
+    return 0; 
+  }
+
+  //sort points
   start = std::chrono::system_clock::now();
   std::vector<Point_d> sorted_points;
   Gudhi::subsampling::choose_n_farthest_points( k_d, off_reader.get_point_cloud() 
     , off_reader.get_point_cloud().size() //all points
     , 0//start with point [0]//Gudhi::subsampling::random_starting_point
     , std::back_inserter(sorted_points));
+
   end = std::chrono::system_clock::now();
   enlapsed_sec =std::chrono::duration_cast<std::chrono::seconds>(end-start).count();
 
@@ -63,68 +83,36 @@ int main(int argc, char* argv[])
 
   //Compute edge filtration
   start = std::chrono::system_clock::now();
-  fast_points_to_edge_filtration( sorted_points, 
-                             sqdist,
-                             //Gudhi::Euclidean_distance(),
-                             nu, mu, filtration_values, edge_filtration );
+  points_to_edge_filtration( sorted_points, 
+                             sqdist, //Gudhi::Euclidean_distance(),
+                             nu*nu, mu*mu, filtration_values, edge_filtration );
   end = std::chrono::system_clock::now();
   enlapsed_sec =std::chrono::duration_cast<std::chrono::seconds>(end-start).count();
 
-  std::cout << "Edge filtration computation (fast): " << enlapsed_sec << " sec.\n";
+  std::cout << "Edge filtration computation: " << enlapsed_sec << " sec.\n";
   
   //apply sqrt to correct the use of sqrt distance
   for(auto & f : filtration_values) { f = std::sqrt(f); }
   for(auto & e : edge_filtration) { e.assign_fil(std::sqrt(e.fil())); }
 
+  Simplex_tree st;
+  st.initialize_filtration(edge_filtration, dim_max); 
+  // auto zz_rg = st.filtration_simplex_range();
 
-  // std::cout << "Point cloud : \n";
-  // for(auto point : sorted_points) {
-  //   for(auto x : point) { std::cout << x << " "; }
-  //   std::cout << std::endl;
-  // }
-  // std::cout << std::endl;
-  // std::cout << "Epsilon filtration values: \n";
-  // for(size_t i = 0; i < filtration_values.size(); ++i) {
-  //   std::cout << "eps_" << i << " : " << filtration_values[i] << std::endl;
-  // }
-  // std::cout << std::endl;
-  // std::cout << "Edge filtration: \n";
-  // for(auto edg : edge_filtration) 
-  // { 
-  //  if(edg.type()) { std::cout << "+ "; } else { std::cout << "- "; }
-  //   std::cout <<  " " << edg.u() << " " << edg.v() << " " << edg.fil() << std::endl;
-  // }
-  // std::cout << std::endl;
-  
-  // traverse the filtration
-  // {
-  //   Simplex_tree st;
-  //   st.initialize_filtration(edge_filtration, dim_max); 
-  //   auto zz_rg = st.filtration_simplex_range();
-  //   for(auto it = zz_rg.begin(); it != zz_rg.end(); ++it ) {
-  //     if(it.arrow_direction()) {std::cout << "+ ";} else {std::cout << "- ";}
-  //     for(auto u : st.simplex_vertex_range(*it)) { std::cout << u << " "; }
-  //       std::cout << "  " << st.key(*it) << " " << st.filtration(*it) << "\n";
-  //   }
-  //   std::cout << std::endl;
-  // }
+  start = std::chrono::system_clock::now();
+  Zz_persistence zz(st);
+  zz.compute_zigzag_persistence();
+  end = std::chrono::system_clock::now();
+  enlapsed_sec =std::chrono::duration_cast<std::chrono::seconds>(end-start).count();
 
-  {
-    Simplex_tree st;
-    st.initialize_filtration(edge_filtration, dim_max); 
-    // auto zz_rg = st.filtration_simplex_range();
+  std::cout << "Compute zigzag persistence in: " << enlapsed_sec << " sec.\n";
+  std::cout << std::endl;
+  std::cout << "Persistence diagram (log2): \n";
+  zz.output_log2_diagram();
 
-    start = std::chrono::system_clock::now();
-    Zz_persistence zz(st);
-    zz.compute_zigzag_persistence();
-    end = std::chrono::system_clock::now();
-    enlapsed_sec =std::chrono::duration_cast<std::chrono::seconds>(end-start).count();
-
-    std::cout << "Compute zigzag persistence in: " << enlapsed_sec << " sec.\n";
-
-    zz.output_log2_diagram();
-
-  }
+  std::cout << "\n\n\n";
+  std::cout << "Persistence diagram: \n";
+  zz.output_diagram();
 
   return 0;
 }

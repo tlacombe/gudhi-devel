@@ -119,6 +119,24 @@ Filtration_simplex_range filtration_simplex_range();
   *
   * This is never called on null_simplex(). */
   void                     assign_key(Simplex_handle sh, Simplex_key n);
+/** Returns the two Simplex_handle corresponding to the endpoints of
+   * and edge. sh must point to a 1-dimensional simplex. This is an
+   * optimized version of the boundary computation. 
+   */
+  std::pair<Simplex_handle, Simplex_handle> endpoints(Simplex_handle sh) {
+  /** \brief Iterator over the simplices of the skeleton of the simplicial complex, 
+    * for a given dimension.
+   *
+   * 'value_type' is Simplex_handle. */
+  typedef unspecified Skeleton_simplex_iterator;
+  /** \brief Range over the simplices of the skeleton of the simplicial complex, 
+    * for a given dimension. 
+    */
+  typedef unspecified Skeleton_simplex_range;
+  /** \brief Returns a range over the simplices of the dim-skeleton of the 
+    * simplicial complex.
+    */
+  Skeleton_simplex_range skeleton_simplex_range(int dim); 
 /** @} */
  
 
