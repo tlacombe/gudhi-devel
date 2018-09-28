@@ -1727,6 +1727,7 @@ public:
     tbb::parallel_sort(zz_filtration.begin(), zz_filtration.end(), is_before_in_filtration(this));
 #else
     sort(zz_filtration.begin(), zz_filtration.end(), is_before_in_filtration(this));
+
 #endif
     //update cofaces data structures
     for(auto sh : zz_filtration) { update_simplex_tree_after_node_insertion(sh); }

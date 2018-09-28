@@ -476,31 +476,40 @@ public:
 	double nber_forward = 0;
 	double nber_backward = 0;
 	double nber_halfpair = 0;
-#ifdef GUDHI_COMPLEX_TIME
-	//	std::chrono::time_point<std::chrono::system_clock> start, end;
-	//	std::chrono::time_point<std::chrono::system_clock> start2, end2;
-	//	std::chrono::duration<double> enlapsed_sec;
-	//	double enlapsed_total = 0.0;
+#ifdef COMPLEX_TIME
+//	std::chrono::time_point<std::chrono::system_clock> start, end;
+//	std::chrono::time_point<std::chrono::system_clock> start2, end2;
+//	std::chrono::duration<double> enlapsed_sec;
+//	double enlapsed_total = 0.0;
 #endif
 
 	prev_fil_ = zzit.filtration(); // prev_fil_ = cpx_->filtration(*zzit);
 	// filtration_values_.emplace_back(cpx_->key(*zzit), prev_fil_);
+	//std::cout << "num_arrow: " << num_arrow_ << " fil: " << prev_fil_ << "\n";
+	//std::cout << cpx_->key(*zzit) << " " << zzit.filtration() << "\n";
 	filtration_values_.emplace_back(num_arrow_, prev_fil_);
 
 	while( zzit != zzrg.end() )
 	{
-#ifdef GUDHI_COMPLEX_TIME
-	    //	    start2 = std::chrono::system_clock::now();
+#ifdef COMPLEX_TIME
+//	    start2 = std::chrono::system_clock::now();
 #endif
+	    //std::cout << "++zzit\n";
+	    //std::cout << cpx_->key(*zzit) << " " << zzit.filtration() << "\n";
 	    //std::cout << cpx_->key(*zzit) << " key\n";
-	    faces_per_dim[cpx_->dimension(*zzit)] += 1;
+	    //std::cout << "num_arrow: " << num_arrow_ << "\n";
+	    if (zzit.arrow_direction()) faces_per_dim[cpx_->dimension(*zzit)] += 1;
+	    //else std::cout << "remove: " << cpx_->key(*zzit) << "\n";
 
-	    if(num_arrow_ % 100000 == 0) std::cout << num_arrow_ << "\n";
+	    //if(num_arrow_ % 100000 == 0) std::cout << num_arrow_ << "\n";
 
 	    curr_fil_ = zzit.filtration();//cpx_->filtration(*zzit);
 	    if(curr_fil_ != prev_fil_) //check whether the filt val has changed
 	    {
-		prev_fil_=curr_fil_; filtration_values_.emplace_back(num_arrow_-1, prev_fil_);
+		prev_fil_=curr_fil_;
+		//std::cout << "num_arrow: " << num_arrow_ << " fil: " << prev_fil_ << "\n";
+		//std::cout << cpx_->key(*zzit) << " " << zzit.filtration() << "\n";
+		filtration_values_.emplace_back(num_arrow_, prev_fil_);
 		// filtration_values_.emplace_back(cpx_->key(*zzit), prev_fil_);
 	    }
 	    //Iterator zzit gives only Morse critical cells for insertion (forward arrows).
@@ -513,15 +522,15 @@ public:
 	    //implemented in make_pair_critical. sigma is then removed like a normal cell.
 	    if(zzit.arrow_direction()) {
 		//std::cout << "forward arrow\n";
-#ifdef GUDHI_COMPLEX_TIME
-		//		start = std::chrono::system_clock::now();
+#ifdef COMPLEX_TIME
+//		start = std::chrono::system_clock::now();
 #endif
 		++nber_forward;
 		forward_arrow(*zzit);
-#ifdef GUDHI_COMPLEX_TIME
-		//		end = std::chrono::system_clock::now();
-		//		enlapsed_sec = end-start;
-		//		std::cout << "forward arrow: " << enlapsed_sec.count() << " sec.\n";
+#ifdef COMPLEX_TIME
+//		end = std::chrono::system_clock::now();
+//		enlapsed_sec = end-start;
+//		std::cout << "forward arrow: " << enlapsed_sec.count() << " sec.\n";
 #endif
 	    }//forward arrow
 	    else {//backward arrow
@@ -530,38 +539,38 @@ public:
 		if(!cpx_->critical(*zzit)) //matrix A becomes matrix A U \{\tau,sigma\}
 		{
 		    ++nber_halfpair;
-#ifdef GUDHI_COMPLEX_TIME
-		    //		    start = std::chrono::system_clock::now();
+#ifdef COMPLEX_TIME
+//		    start = std::chrono::system_clock::now();
 #endif
 		    //std::cout << "A cell is critical.\n";
 		    make_pair_critical(*zzit);
-#ifdef GUDHI_COMPLEX_TIME
-		    //		end = std::chrono::system_clock::now();
-		    //		enlapsed_sec = end-start;
-		    //		std::cout << "backward arrow: " << enlapsed_sec.count() << " sec.\n";
+#ifdef COMPLEX_TIME
+//		    end = std::chrono::system_clock::now();
+//		    enlapsed_sec = end-start;
+//		    std::cout << "backward arrow: " << enlapsed_sec.count() << " sec.\n";
 #endif
 		}
-#ifdef GUDHI_COMPLEX_TIME
-		//		    start = std::chrono::system_clock::now();
+#ifdef COMPLEX_TIME
+//		start = std::chrono::system_clock::now();
 #endif
 		backward_arrow(*zzit);
-#ifdef GUDHI_COMPLEX_TIME
-		//		end = std::chrono::system_clock::now();
-		//		enlapsed_sec = end-start;
-		//		std::cout << "backward arrow: " << enlapsed_sec.count() << " sec.\n";
+#ifdef COMPLEX_TIME
+//		end = std::chrono::system_clock::now();
+//		enlapsed_sec = end-start;
+//		std::cout << "backward arrow: " << enlapsed_sec.count() << " sec.\n";
 #endif
 	    }
-#ifdef GUDHI_COMPLEX_TIME
-	    //	    end2 = std::chrono::system_clock::now();
-	    //	    enlapsed_sec = end2-start2;
-	    //	    enlapsed_total += enlapsed_sec.count();
+#ifdef COMPLEX_TIME
+//	    end2 = std::chrono::system_clock::now();
+//	    enlapsed_sec = end2-start2;
+//	    enlapsed_total += enlapsed_sec.count();
 #endif
 	    ++zzit; ++num_arrow_; //count total number of arrows
 	}
 
 	if(!matrix_.empty()) {std::cout << "Remains " << matrix_.size() << " columns.\n";}
 
-#ifdef GUDHI_COMPLEX_TIME
+#ifdef COMPLEX_TIME
 	//	std::cout << "total: " << enlapsed_total << " sec.\n";
 #endif
 
@@ -592,9 +601,9 @@ public:
 	// }
 
 	std::cout << "Total number of arrows: " << num_arrow_ << std::endl;
-	std::cout << std::setprecision(std::numeric_limits<double>::digits10 + 1) /*<< "Number of forward arrows: "*/ << nber_forward << std::endl;
-	std::cout /*<< "Number of backward arrows: "*/ << nber_backward << std::endl;
-	std::cout /*<< "Number of halfpair arrows: "*/ << nber_halfpair << std::setprecision(5) << std::endl;
+	std::cout << std::setprecision(std::numeric_limits<double>::digits10 + 1) << "Number of forward arrows: " << nber_forward << std::endl;
+	std::cout << "Number of backward arrows: " << nber_backward << std::endl;
+	std::cout << "Number of halfpair arrows: " << nber_halfpair << std::setprecision(5) << std::endl;
 
     }
 
@@ -799,7 +808,7 @@ public:
    */
     void output_diagram(std::ostream& ostream = std::cout) {
 
-	int num_intervals = 10;
+	int num_intervals = 50;
 	// std::cout << "Filtration values: ";
 	// for(auto pp : filtration_values_) {
 	//   std::cout << "[ " << pp.first << " ; " << pp.second << " ]  ";
@@ -843,30 +852,39 @@ public:
 	    auto it_b =
 		    std::lower_bound( filtration_values_.begin(), filtration_values_.end()
 				      , std::pair<Simplex_key, Filtration_value>(bar.b_, std::numeric_limits<double>::infinity() )
-				      , []( std::pair<Simplex_key, Filtration_value> p1
-				      , std::pair<Simplex_key, Filtration_value> p2) {
-		    return p1.first < p2.first; }
+				      , []( std::pair<Simplex_key, Filtration_value> p1, std::pair<Simplex_key, Filtration_value> p2) {
+						return p1.first < p2.first; }
 		    );
 	    auto it_d =
 		    std::upper_bound( filtration_values_.begin(), filtration_values_.end()
 				      , std::pair<Simplex_key, Filtration_value>(bar.d_, std::numeric_limits<double>::infinity() )
-				      , []( std::pair<Simplex_key, Filtration_value> p1
-				      , std::pair<Simplex_key, Filtration_value> p2) {
-		    return p1.first < p2.first; }
+				      , []( std::pair<Simplex_key, Filtration_value> p1, std::pair<Simplex_key, Filtration_value> p2) {
+						return p1.first < p2.first; }
 		    );
 	    //discard interval strictly included between two consecutive indices
-	    if(it_b->first != it_d->first) {
+	    //std::cout << "b: " << bar.b_ << " " << it_b->first << "\n";
+	    //std::cout << "d: " << bar.d_ << " " << it_d->first << "\n";
+	    //if(it_b->first != it_d->first) {
+		if (it_b == filtration_values_.end() || it_b->first != bar.b_) --it_b;
 		--it_d;
+		//std::cout << "b: " << bar.b_ << " " << it_b->first << "\n";
+		//std::cout << "d: " << bar.d_ << " " << it_d->first << "\n";
 		if(it_b->second != it_d->second) {
-		    tmp_diag.emplace_back(bar.dim_, it_b->second
-					  , it_d->second );
+		    //std::cout << "emplace: " << bar.dim_ << " " << it_b->second << " " << it_d->second << "\n";
+		    tmp_diag.emplace_back(bar.dim_, it_b->second, it_d->second );
 		}
-	    }
+	    //}
 	}
 	cmp_intervals_by_length cmp;
 	std::stable_sort(tmp_diag.begin(), tmp_diag.end(), cmp);
 
 	if(tmp_diag.empty()) {return;}
+
+	std::cout << "Filtration Values:\n";
+	for (auto p : filtration_values_){
+	    std::cout << p.first << " " << p.second << "\n";
+	}
+	std::cout << "end\n";
 
 	int curr_dim = tmp_diag.begin()->dim_;
 	int curr_num_intervals = num_intervals;
@@ -1356,13 +1374,13 @@ private:
 	// // }
 	persistence_diagram_.emplace_back( cpx_->dimension(zzsh)-1
 					   , maxb//cpx_->filtration(max_birth)
-					   , cpx_->key(zzsh)-1);//-1);//cpx_->filtration(zzsh));
+					   , num_arrow_);//-1);//cpx_->filtration(zzsh));
     }
 
     //cpx_->key(zzsh) is the key of the simplex we remove, not a new one
     void backward_arrow( Simplex_handle zzsh )
     { //maintain the <=b order
-	birth_ordering_.add_birth_backward(cpx_->key(zzsh));//num_arrow_);
+	birth_ordering_.add_birth_backward(num_arrow_);
 
 	// std::cout << "backward_arrow \n";
 
@@ -1412,15 +1430,15 @@ private:
 	    // // }
 	    int dim_zzsh = cpx_->dimension(zzsh);
 	    if(dim_zzsh < dim_max_) {
+		//std::cout << "dia emplace: " << dim_zzsh << " " << curr_col->birth() << " " << num_arrow_ << "\n";
 		persistence_diagram_.emplace_back( dim_zzsh
 						   , curr_col->birth()
-						   // , cpx_->key(zzsh) <-- incorrect
-						   , num_arrow_ -1);
+						   , num_arrow_);
 	    }
 	}
 	else { //in H    -> paired c_g belongs to F now
 	    curr_col->paired_col()->assign_paired_col(NULL);
-	    curr_col->paired_col()->assign_birth(cpx_->key(zzsh));//num_arrow_); //closed interval WRONG
+	    curr_col->paired_col()->assign_birth(num_arrow_); //closed interval WRONG
 	    // curr_col->paired_col()->assign_fil(curr_fil_);
 	}
 

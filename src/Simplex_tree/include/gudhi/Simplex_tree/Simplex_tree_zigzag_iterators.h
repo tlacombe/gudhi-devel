@@ -173,7 +173,8 @@ public:
         { 
           if(are_we_done) { cpx_ = NULL; return; } //set iterator to end() position 
           else {//no edge left, consider simplices remaining in the complex 
-            fil_ = 0;
+	    //fil_ = 0;
+	    ++fil_;
             are_we_done = true;//happens once
             //fills up zz_partial with the remaining simplices in complex
             cpx_->flag_lazy_empty_complex(partial_zzfil_); 
