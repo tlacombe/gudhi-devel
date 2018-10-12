@@ -12,6 +12,8 @@ install(TARGETS Witness_complex_example_nearest_landmark_table DESTINATION bin)
 # CGAL and Eigen3 are required for Euclidean version of Witness
 if (NOT CGAL_WITH_EIGEN3_VERSION VERSION_LESS 4.6.0)
   add_executable( Witness_complex_example_off example_witness_complex_off.cpp )
+  add_executable( Witness_complex_example_fvecs example_witness_complex_fvecs.cpp )
+  # TODO : to be tested
   add_executable ( Witness_complex_example_sphere example_witness_complex_sphere.cpp )
   
   add_executable( Witness_complex_example_strong_off example_strong_witness_complex_off.cpp )
