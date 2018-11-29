@@ -538,7 +538,7 @@ public:
 		if(vertex_range.size() == 2)
 	    {
 		    if(membership(vertex_range.begin() && membership(vertex_range.end())) ){
-		    	vertexVector nbhrs neibhours(vertex_range.begin());
+		    	vertexVector nbhrs neighbors(vertex_range.begin());
 				vertexVector::iterator it;
 
 				it = find (nbhrs.begin(), nbhrs.end(), vertex_range.end());
@@ -621,40 +621,48 @@ public:
     	return sparse_colpsd_adj_Matrix;
     }
     
-    vertexVector active_neibhours(size_t vertex)
+    vertexVector active_neighbors(const Vertex & v)
     {  
-    	auto rw_v = vertexToRow.find(vertex);
+    	auto rw_v = vertexToRow.find(v);
     	if(rw_v != vertexToRow.end())  		
     		return readActiveRow(rw_v->second);
     }
+    vertexVector non_active_neighbors(const Vertex & v)
+    {
+    	vertexVector non_active;
+    	for(auto & x : all_neighbors(v) )
+    		if(not activeIndicator[vertexToRow[x]])
+    			non_active.push_back(x);	
+ 		return non_active;
+    }
 
-    vertexVector all_neibhours(size_t vertex)
+    vertexVector all_neighbors(const Vertex & v)
     {  
-    	auto rw_v = vertexToRow.find(vertex);
+    	auto rw_v = vertexToRow.find(v);
     	if(rw_v != vertexToRow.end())  		
     		return readAllRow(rw_v->second);
     }
 
     vertexVector all_common_neigbhour(const Vertex &v, const Vertex & w){
-    	auto & nbhrs_v = all_neibhours(v);
-    	auto & nbhrs_w = all_neibhours(w);
+    	auto & nbhrs_v = all_neighbors(v);
+    	auto & nbhrs_w = all_neighbors(w);
     	std::vector<Vertex> common; // neighbors of v intersection w
- 		std::set_difference(nbhrs_v.begin(), nbhrs_v.end(), nbhrs_w.begin(), nbhrs_w.end(), std::back_inserter(common));
+ 		std::set_intersection(nbhrs_v.begin(), nbhrs_v.end(), nbhrs_w.begin(), nbhrs_w.end(), std::back_inserter(common));
  		return common;
     }
     
     vertexVector all_active_common_neigbhour(const Vertex &v, const Vertex & w){
-    	auto & nbhrs_v = active_neibhours(v);
-    	auto & nbhrs_w = active_neibhours(w);
+    	auto & nbhrs_v = active_neighbors(v);
+    	auto & nbhrs_w = active_neighbors(w);
     	std::vector<Vertex> common_active; // neighbors of v intersection w
- 		std::set_difference(nbhrs_v.begin(), nbhrs_v.end(), nbhrs_w.begin(), nbhrs_w.end(), std::back_inserter(common_active));
+ 		std::set_intersection(nbhrs_v.begin(), nbhrs_v.end(), nbhrs_w.begin(), nbhrs_w.end(), std::back_inserter(common_active));
  		return common_active;
     }
 
-    vertexVector active_relative_neibhours(const Vertex &v, const Vertex & w){
+    vertexVector active_relative_neighbors(const Vertex &v, const Vertex & w){
     	if(membership(v) && membership(w)){
-    		auto & nbhrs_v = neibhours(v);
-    		auto & nbhrs_w = neibhours(w);
+    		auto & nbhrs_v = neighbors(v);
+    		auto & nbhrs_w = neighbors(w);
     		std::vector<Vertex> diff; // neighbors of v minus w
     		std::vector<Vertex> active_nbhrs;
  			std::set_difference(nbhrs_v.begin(), nbhrs_v.end(), nbhrs_w.begin(), nbhrs_w.end(), std::back_inserter(diff));
@@ -664,10 +672,10 @@ public:
     	}	
     }
 
-    bool domination_check((const Vertex &v, const Vertex & w){ // checks if v is dominated by w
+    bool domination_check((const Vertex &v, const Vertex & w){ // checks if v is dominated by w // assumes both are active
  		if(v != w){
- 			auto active_v = active_neibhours(v);
- 			auto active_w = active_neibhours(w);
+ 			auto active_v = active_neighbors(v);
+ 			auto active_w = active_neighbors(w);
 			if(active_v.size() <= active_w.size())
 				if(std::includes(active_v.begin(), active_v.end(), active_w.begin(), active_w.end())) // Listj is a subset of Listi i.e. w is dominated by v.
 					return true;
@@ -677,18 +685,36 @@ public:
 
 	void update_active_indicator(const Vertex &v, const Vertex & w){ // Assumption [v,w] is an edge in the graph // updates the active/inactive flag in the neighbourhood of the edge [v,w].
 		
-		activeIndicator[vertexToRow[v]] = true; // forcefully making v and w active. 
-		activeIndicator[vertexToRow[w]] = true;
+		bool init_active_v = activeIndicator[vertexToRow[v]];
+		bool init_active_w = activeIndicator[vertexToRow[v]];
+		if(init_active_v && init_active_w)
+
+
+		activeIndicator[vertexToRow[w]] = true; // forcefully making v,w active. So that it appears in v's neighbour list
+		activeIndicator[vertexToRow[v]] = true;
 		update_active_indicator(v);  
-		update_active_indicator(w);
-		for( auto & x: all_active_common_neigbhour(v, w)){ 	// {v,w} maynot be present unless they are active. if they are active then can only be dominated by  {w,v} respectively.
+		if(not init_active_v && not activeIndicator[vertexToRow[v]])
+			return;
+		
+		if (activeIndicator[vertexToRow[v]]){
+			update_active_indicator(w);
+		}
+		else
+			activeIndicator[vertexToRow[w]] = init_active_w;
+
+		if( not init_active_v &&  activeIndicator[vertexToRow[v]])
+			deep_update_active_indicator(v);
+		if(not init_active_w &&  activeIndicator[vertexToRow[v]])
+			deep_update_active_indicator(w);
+		
+		for( auto & x: all_active_common_neigbhour(v, w)){ 	// {v,w} may_not be present unless they are active. if they are active then can only be dominated by  {w,v} respectively.
 			if(domination_check (x,w) || domination_check(x,v))
 				activeIndicator[vertexToRow[x]] = false;
 		}
 	}
 	
 	void update_active_indicator(const Vertex & v){  // checks for domination in the active neighborhood of the vertex v.
-		for(auto & x: active_neibhours(v))
+		for(auto & x: active_neighbors(v))
 			if(domination_check(v,x)){  // Check in v is dominated by x
 				activeIndicator[vertexToRow[v]] = false;
 				return;
@@ -696,13 +722,24 @@ public:
 		activeIndicator[vertexToRow[v]] = true;
 		return;	
 	}
+	void deep_update_active_indicator(const Vertex & v){
+		for(auto & x: non_active_neighbors(v)){
+			for(auto & y : active_neighbors(x)){
+				if(domination_check(x,y)){
+					activeIndicator[vertexToRow[x]] = true;	
+					deep_update_active_indicator(x);
+				}
+			}
+		}
+		return;		
+	}
     //Returns the contracted edge.
 	//template <typename Input_vertex_range, typename Edge_list >
     
     Vertex active_strong_expansion(const Vertex & v, const Vertex & w){
 		if(membership(v) && membership(w)){
-			auto active_list_v_w = active_relative_neibhours(v,w);
-			auto active_list_w_v = active_relative_neibhours(w,v);
+			auto active_list_v_w = active_relative_neighbors(v,w);
+			auto active_list_w_v = active_relative_neighbors(w,v);
 			if(active_list_w_v.size() <= active_list_v_w.size()){ // simulate the contraction of w by expanding the star of v
 				for (auto &x : active_list_w_v){
 					active_edge_insertion(v,x);
