@@ -162,6 +162,7 @@ class FlagComplexSpMatrix
       Initialised to a queue with all row-indices inserted.
       Subsequently once the row is checked for dominated the row-index is poped out from the queue. A row-index is inserted once again if it is a non-zero element of a dominated column.
     */
+	boolVector activeIndicator; 	// active indicator
 	boolVector contractionIndicator; //(contraction indicator)
 
   	doubleQueue rowIterator;
@@ -296,30 +297,6 @@ class FlagComplexSpMatrix
 		}
 	}
 
-	template <typename Input_vertex_range>
-	std::vector<Simplex> all_faces(const Input_vertex_range &vertex_range){
-	    int set_size = vertex_range.size();
-	    unsigned int pow_set_size = pow(2, set_size);
-	    unsigned int counter, j;
-	    std::vector<Simplex> facets;
-	    std::vector<Vertex> maxSimplex(vertex_range.begin(), vertex_range.end());
-	    // maxSimplex.sort();
-
-	    /*Run from counter 000..0 to 111..1*/
-	    for(counter = 1; counter < pow_set_size; counter++)
-	    {
-	      Simplex f;
-	      for(j = 0; j < set_size; j++)
-	       {          
-	          if(counter & (1<<j))                    /* Check if jth bit in the counter is set/true If set then inserts jth element from vertex_range */
-	            f.insert(maxSimplex[j]);
-	       }
-	       facets.emplace_back(f);
-	       f.clear();
-	    }
-	    return facets;
-	}
-
 	void sparse_strong_collapse()
 	{
  		complete_domination_check(rowIterator, rowInsertIndicator, vertDomnIndicator); 		// Complete check for rows in rowIterator, rowInsertIndicator is a list of boolean indicator if a vertex is already inserted in the working row_queue (rowIterator)
@@ -374,7 +351,7 @@ class FlagComplexSpMatrix
 		}
 		return 0;	
 	}
-
+	
 	doubleVector read(double indx, bool firstEntrOnly) // Returns list of non-zero rows(which = true)/columns(which = false) of the particular indx. 
 	{											// Caution : Check for domination before calling the method.
 	  	doubleVector nonZeroIndices;     
@@ -409,6 +386,25 @@ class FlagComplexSpMatrix
   		for (sparseMatrix::InnerIterator itRow(sparseRowAdjMatrix,rowIndx); itCol; ++itCol)  // Iterate over the non-zero columns
      		if(not vertDomnIndicator[itCol.index()])  					// Check if the row corresponds to a dominated vertex
       			colmns.push_back(rowToVertex[itCol.index()]); 			// inner index, here it is equal to it.row()
+
+  		return colmns;
+	}
+
+	vertexVector readActiveRow(double rowIndx) // Returns list of all non-zero "vertices" of the particular colIndx which are currently active. the difference is in the return type.
+	{
+		vertexVector colmns ; 
+  		for (sparseMatrix::InnerIterator itRow(sparseRowAdjMatrix,rowIndx); itCol; ++itCol)  // Iterate over the non-zero columns
+     		if( activeIndicator[itCol.index()])  					// Check if the row corresponds to a dominated vertex
+      			colmns.push_back(rowToVertex[itCol.index()]); 			// inner index, here it is equal to it.row()
+
+  		return colmns;
+	}
+	
+	vertexVector readAllRow(double rowIndx) // Returns list of all non-zero "vertices" of the particular colIndx whether dominated or not. the difference is in the return type.
+	{
+		vertexVector colmns ; 
+  		for (sparseMatrix::InnerIterator itRow(sparseRowAdjMatrix,rowIndx); itCol; ++itCol)  // Iterate over the non-zero columns
+     		colmns.push_back(rowToVertex[itCol.index()]); 			// inner index, here it is equal to it.row()
 
   		return colmns;
 	}
@@ -560,42 +556,6 @@ public:
 			exit(-1); 	
 		}	
 	}
-
-	// void contraction(const Vertex & del, const Vertex & keep)
-	// {
-	// 	bool del_mem  = membership (del);
-	// 	bool keep_mem = membership(keep);
-	// 	if( del_mem && keep_mem)
-	// 	{
-	// 		doubleVector  del_indcs, keep_indcs, diff;
-	// 		auto row_del = vertexToRow.find(del);
-	// 		auto row_keep = vertexToRow.find(keep);
-	// 		del_indcs = read(row_del->second, false, true);
-	// 		keep_indcs = read(row_keep->second, false, true);
-	// 		std::set_difference(del_indcs.begin(), del_indcs.end(), keep_indcs.begin(), keep_indcs.end(), std::inserter(diff, diff.begin()));
-	// 		for (auto columns : diff) 
-	// 		{
-	// 			sparseMxSimplices.insert(row_keep->second,columns) 	  = 1;
- //        		sparseRowAdjMatrix.insert(row_keep->second,columns) = 1;	
-	// 		}
-	// 		setZero(row_del->second, row_keep->second, true);
-	// 		complete_domination_check(columnIterator, colInsertIndicator, simpDomnIndicator, false); 
-	// 	}
-	// 	else if(del_mem && not keep_mem)
-	// 	{
-	// 		vertexToRow.insert(std::make_pair(keep, vertexToRow.find(del)->second));
-	// 		rowToVertex[vertexToRow.find(del)->second] = keep;
-	// 		vertices.emplace(keep);
-	// 		vertices.erase(del);
-	// 		vertexToRow.erase(vertexToRow.find(del));
-
-	// 	}
-	// 	else
-	// 	{
-	// 		std::cerr << "The first vertex entered in the method contraction() doesn't exist in the matrix:" <<std::endl;	
-	// 		exit(-1); 	
-	// 	}
-	// }
 	 
 	template <typename Input_vertex_range >
 	void insert_new_edges(const Input_vertex_range & vertex_range)
@@ -660,40 +620,112 @@ public:
     {
     	return sparse_colpsd_adj_Matrix;
     }
-    vertexVector neibhours(size_t vertex)
+    
+    vertexVector active_neibhours(size_t vertex)
     {  
     	auto rw_v = vertexToRow.find(vertex);
     	if(rw_v != vertexToRow.end())  		
-    		return readRow(rw_v->second);
+    		return readActiveRow(rw_v->second);
     }
 
-    bool dominated(size_t vertex)
-    {
+    vertexVector all_neibhours(size_t vertex)
+    {  
     	auto rw_v = vertexToRow.find(vertex);
-    	if(rw_v != vertexToRow.end())
-    		for (auto & v : neibhours(rw_v->second){
-	    		if (pair_domination_check(rw_v->second, v) != 0)
-	    		{
-	    			return true;
-	    		}
-    		}
-    	return false;	
+    	if(rw_v != vertexToRow.end())  		
+    		return readAllRow(rw_v->second);
     }
 
-	template <typename Input_vertex_range, typename Edge_list >
-    Edge_list active_strong_expansion(const Vertex & dominating, const Vertex & dominated){
-		Edge_list included_edges; 
-		if(membership(dominating) && membership(dominated)){
-			for (auto &v : active_relative_neibhours(dominated, dominating)){
-				std::vector<size_t> edge = {dominating,v};
-				insert_new_edges(edge);
-				included_edges.push_back(edge);		
-			}
-			auto rw_d = vertexToRow.find(dominated);
-			if(rw_d != vertexToRow.end())
-				contractionIndicator[rw_d->second];	
+    vertexVector all_common_neigbhour(const Vertex &v, const Vertex & w){
+    	auto & nbhrs_v = all_neibhours(v);
+    	auto & nbhrs_w = all_neibhours(w);
+    	std::vector<Vertex> common; // neighbors of v intersection w
+ 		std::set_difference(nbhrs_v.begin(), nbhrs_v.end(), nbhrs_w.begin(), nbhrs_w.end(), std::back_inserter(common));
+ 		return common;
+    }
+    
+    vertexVector all_active_common_neigbhour(const Vertex &v, const Vertex & w){
+    	auto & nbhrs_v = active_neibhours(v);
+    	auto & nbhrs_w = active_neibhours(w);
+    	std::vector<Vertex> common_active; // neighbors of v intersection w
+ 		std::set_difference(nbhrs_v.begin(), nbhrs_v.end(), nbhrs_w.begin(), nbhrs_w.end(), std::back_inserter(common_active));
+ 		return common_active;
+    }
+
+    vertexVector active_relative_neibhours(const Vertex &v, const Vertex & w){
+    	if(membership(v) && membership(w)){
+    		auto & nbhrs_v = neibhours(v);
+    		auto & nbhrs_w = neibhours(w);
+    		std::vector<Vertex> diff; // neighbors of v minus w
+    		std::vector<Vertex> active_nbhrs;
+ 			std::set_difference(nbhrs_v.begin(), nbhrs_v.end(), nbhrs_w.begin(), nbhrs_w.end(), std::back_inserter(diff));
+    		for(auto & x : diff){
+
+    		}	
+    	}	
+    }
+
+    bool domination_check((const Vertex &v, const Vertex & w){ // checks if v is dominated by w
+ 		if(v != w){
+ 			auto active_v = active_neibhours(v);
+ 			auto active_w = active_neibhours(w);
+			if(active_v.size() <= active_w.size())
+				if(std::includes(active_v.begin(), active_v.end(), active_w.begin(), active_w.end())) // Listj is a subset of Listi i.e. w is dominated by v.
+					return true;
 		}
-		return included_edges;	
+		return false;
+	}	
+
+	void update_active_indicator(const Vertex &v, const Vertex & w){ // Assumption [v,w] is an edge in the graph // updates the active/inactive flag in the neighbourhood of the edge [v,w].
+		
+		activeIndicator[vertexToRow[v]] = true; // forcefully making v and w active. 
+		activeIndicator[vertexToRow[w]] = true;
+		update_active_indicator(v);  
+		update_active_indicator(w);
+		for( auto & x: all_active_common_neigbhour(v, w)){ 	// {v,w} maynot be present unless they are active. if they are active then can only be dominated by  {w,v} respectively.
+			if(domination_check (x,w) || domination_check(x,v))
+				activeIndicator[vertexToRow[x]] = false;
+		}
 	}
+	
+	void update_active_indicator(const Vertex & v){  // checks for domination in the active neighborhood of the vertex v.
+		for(auto & x: active_neibhours(v))
+			if(domination_check(v,x)){  // Check in v is dominated by x
+				activeIndicator[vertexToRow[v]] = false;
+				return;
+			}
+		activeIndicator[vertexToRow[v]] = true;
+		return;	
+	}
+    //Returns the contracted edge.
+	//template <typename Input_vertex_range, typename Edge_list >
+    
+    Vertex active_strong_expansion(const Vertex & v, const Vertex & w){
+		if(membership(v) && membership(w)){
+			auto active_list_v_w = active_relative_neibhours(v,w);
+			auto active_list_w_v = active_relative_neibhours(w,v);
+			if(active_list_w_v.size() <= active_list_v_w.size()){ // simulate the contraction of w by expanding the star of v
+				for (auto &x : active_list_w_v){
+					active_edge_insertion(v,x);
+				}
+				auto rw_d = vertexToRow.find(w);
+				if(rw_d != vertexToRow.end())
+					contractionIndicator[rw_d->second] = true;	
+				return w;
+			}
+			else  												// simulate the contraction of v by expanding the star of w
+				for (auto &y : active_list_v_w){
+					active_edge_insertion(w,y);
+				}
+				auto rw_d = vertexToRow.find(v);  
+				if(rw_d != vertexToRow.end())
+					contractionIndicator[rw_d->second] = true;	
+				return v;
+		}
+	}
+	void active_edge_insertion(const Vertex & v, const Vertex & w){
+		insert_new_edges({v,w});
+		update_active_indicator(v,w);
+
+	}		
 
 };
