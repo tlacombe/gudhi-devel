@@ -55,11 +55,8 @@ using Edge_list 			= std::vector<Edge>;
 using MapVertexToIndex 	  	= std::unordered_map<Vertex,int>;
 using Map 				  	= std::unordered_map<Vertex,Vertex>;
 
-using sparseMatrix 		 	= Eigen::SparseMatrix<double> ;
 using sparseRowMatrix  	 	= Eigen::SparseMatrix<double, Eigen::RowMajor> ;
-
 using rowInnerIterator 		= sparseRowMatrix::InnerIterator;
-using columnInnerIterator 	= sparseMatrix::InnerIterator;
 
 using intVector 	   = std::vector<int>;
 using doubleVector 	   = std::vector<double>;
@@ -67,7 +64,7 @@ using vertexVector     = std::vector<Vertex>;
 using boolVector       = std::vector<bool>;
 
 using doubleQueue 	   = std::queue<double>;
-using matixTuple	   = std::tuple<sparseMatrix, sparseRowMatrix>;
+// using matixTuple	   = std::tuple<sparseMatrix, sparseRowMatrix>;
 
 typedef std::vector< std::tuple< double, Vertex, Vertex > > Filtered_sorted_edge_list;
 
@@ -137,8 +134,7 @@ class FlagComplexSpMatrix
     ;
 	sparseMatrix* Sparse*/
 
-	//sparseMatrix sparseMxSimplices;
-	
+
 	sparseRowMatrix sparse_colpsd_adj_Matrix;       // Stores the collapsed sparse matrix representaion.
 	sparseRowMatrix sparseRowAdjMatrix; 		// This is row-major version of the same sparse-matrix, to facilitate easy access to elements when traversing the matrix row-wise.
 
@@ -200,12 +196,6 @@ class FlagComplexSpMatrix
     */
 	Map ReductionMap;
 
-	//std::size_t maxNumCollSiplices;
-	//std::size_t maxNumInitSimplices;
-	
-	//int  initComplexDimension;
-	//int  collComplexDimension;
-
 	bool already_collapsed;
 	int expansion_limit;
 
@@ -220,21 +210,11 @@ class FlagComplexSpMatrix
 		rowInsertIndicator.clear();
 		rowIterator.push(0);
 		rowIterator.pop();
-
-		//  simpDomnIndicator.clear();
-		//  colInsertIndicator.clear();
-  		//  columnIterator.push(0);  				//  A naive way to initialize, might be reduntant.
- 		// 	columnIterator.pop(); 
-
+		
 		rows = 0;
 		
 		numOneSimplices = 0;
 		expansion_limit = 3;
-	
-	  	// maxNumInitSimplices  = 0;
-	  	// maxNumCollSiplices   = 0;
-  		// initComplexDimension = 0;
-  		// collComplexDimension = 0;
 
   		already_collapsed = false;
 	}
@@ -255,10 +235,11 @@ class FlagComplexSpMatrix
 		{
 			if(not vertDomnIndicator[rw]) 				//If the current column is not dominated
 			{
-				auto nbhrs_to_insert = read(rw,false); 
-        		for(auto & v:nbhrs_to_insert){
+				auto nbhrs_to_insert = read_row_index(rw); // returns row indices of the non-dominated vertices.
+        		for(auto & v: nbhrs_to_insert){
           			sparse_colpsd_adj_Matrix.insert(rw, v) = 1;
-          			one_simplices.push_back({rw,v});
+          			if(rw < v)
+          				one_simplices.push_back({rowToVertex[rw],rowToVertex[v]});
         		}
 			}			
 		}
@@ -320,7 +301,7 @@ class FlagComplexSpMatrix
 	      	insertIndicator[k] = false;
 	    	if( not domnIndicator[k]) 				// Check if is  already dominated
 	    	{ 
-		        nonZeroInnerIdcs  = read(k, false); 					       // "true", returns the first non-zero entry not equal to itself.
+		        nonZeroInnerIdcs  = read_row_index(k); 					     
 		        for (doubleVector::iterator it = nonZeroInnerIdcs.begin(); it!=nonZeroInnerIdcs.end(); it++) 
 		        {
 		       		int checkDom = pair_domination_check(k, *it);   	// "true" for row domination comparison
@@ -340,8 +321,8 @@ class FlagComplexSpMatrix
 	{
 		if(i != j)
 		{
-			doubleVector Listi = read(i, false);
-			doubleVector Listj = read(j, false);
+			doubleVector Listi = read_row_index(i);
+			doubleVector Listj = read_row_index(j);
 			if(Listj.size() <= Listi.size())
 			{
       			if(std::includes(Listi.begin(), Listi.end(), Listj.begin(), Listj.end())) // Listj is a subset of Listi
@@ -355,11 +336,16 @@ class FlagComplexSpMatrix
 		return 0;	
 	}
 	
-	doubleVector read(double indx, bool firstEntrOnly) // Returns list of non-zero rows(which = true)/columns(which = false) of the particular indx. 
-	{											// Caution : Check for domination before calling the method.
+	doubleVector read_row_index(double indx) 	// Returns list of non-zero columns of the particular indx. 
+	{													
 	  	doubleVector nonZeroIndices;     
-  		nonZeroIndices = read<rowInnerIterator, sparseRowMatrix>(sparseRowAdjMatrix, vertDomnIndicator, firstEntrOnly, indx);
-	  	return nonZeroIndices;
+	  	if(not vertDomnIndicator[indx])
+	      	for (rowInnerIterator it(sparseRowAdjMatrix, indx); it; ++it) {             // Iterate over the non-zero columns
+	        	if(not vertDomnIndicator[it.index()]) {
+	            	nonZeroIndices.push_back(it.index());  // inner index, here it is equal to it.columns()
+	        	}
+	    	}
+      	return nonZeroIndices;
 	}
 
 	void setZero(double dominated, double dominating)
@@ -371,15 +357,20 @@ class FlagComplexSpMatrix
   		vertices.erase(rowToVertex[dominated]);
   		rowToVertex.erase(dominated);
 
-  		setZero<rowInnerIterator, sparseRowMatrix>(sparseRowAdjMatrix, vertDomnIndicator, rowInsertIndicator, rowIterator, dominated); // To update the working list, row_queue
+  		for (rowInnerIterator it(sparseRowAdjMatrix,dominated); it; ++it)  // Iterate over the non-zero rows
+	      if(not vertDomnIndicator[it.index()] && not rowInsertIndicator[it.index()]) // Checking if the row is already dominated(set zero) or inserted	
+	      {  
+	        rowIterator.push(it.index()); 
+	        rowInsertIndicator[it.index()] = true;
+	      }
 	}
  	
 	vertexVector readRow(double rowIndx) // Returns list of non-zero "vertices" of the particular colIndx. the difference is in the return type
 	{
 		vertexVector colmns ; 
   		for (rowInnerIterator itCol(sparseRowAdjMatrix,rowIndx); itCol; ++itCol)  // Iterate over the non-zero columns
-     		if(not vertDomnIndicator[itCol.index()])  					// Check if the row corresponds to a dominated vertex
-      			colmns.push_back(rowToVertex[itCol.index()]); 			// inner index, here it is equal to it.col()
+     		if(not vertDomnIndicator[itCol.index()])  					          // Check if the row corresponds to a dominated vertex
+      			colmns.push_back(rowToVertex[itCol.index()]); 			          // inner index, here it is equal to it.col()
 
   		return colmns;
 	}
@@ -388,8 +379,8 @@ class FlagComplexSpMatrix
 	{
 		vertexVector colmns ; 
   		for (rowInnerIterator itCol(sparseRowAdjMatrix,rowIndx); itCol; ++itCol)  // Iterate over the non-zero columns
-     		if( not contractionIndicator[itCol.index()])  					// Check if the row corresponds to a contracted vertex
-      			colmns.push_back(rowToVertex[itCol.index()]); 			// inner index, here it is equal to it.col()
+     		if( not contractionIndicator[itCol.index()] && not vertDomnIndicator[itCol.index()])  					      // Check if the row corresponds to a contracted vertex
+      			colmns.push_back(rowToVertex[itCol.index()]); 			          // inner index, here it is equal to it.col()
 
   		return colmns;
 	}
@@ -403,30 +394,30 @@ class FlagComplexSpMatrix
   		return colmns;
 	}
 
-	template<typename type, typename matrix>
-  	void setZero(const matrix& m, boolVector& domnIndicator, boolVector& insertIndicator, doubleQueue& iterator, double indx) // Prepares the queue for the next iteration.
-	{
-	    for (type it(m,indx); it; ++it)  // Iterate over the non-zero rows
-	      if(not domnIndicator[it.index()] && not insertIndicator[it.index()]) // Checking if the row is already dominated(set zero) or inserted	
-	      {  
-	        iterator.push(it.index()); 
-	        insertIndicator[it.index()] = true;
-	      }
-	} 
-	template <typename type, typename matrix>
-	doubleVector read(const matrix& m, const boolVector& domnIndicator, bool firstEntrOnly, double indx)
-	{
-		doubleVector nonZeroIndices; 
-      	for (type it(m, indx); it; ++it)             // Iterate over the non-zero rows/columns
-        	if(not domnIndicator[it.index()])
-        	{
-            	nonZeroIndices.push_back(it.index());  // inner index, here it is equal to it.row()/it.columns()
-        		if(firstEntrOnly)
-        			break;
-        	}
+	// template<typename type, typename matrix> // To update the working list might possible to include at one place
+ //  	void setZero(const matrix& m, boolVector& domnIndicator, boolVector& insertIndicator, doubleQueue& iterator, double indx) // Prepares the queue for the next iteration.
+	// {
+	//     for (type it(m,indx); it; ++it)  // Iterate over the non-zero rows
+	//       if(not domnIndicator[it.index()] && not insertIndicator[it.index()]) // Checking if the row is already dominated(set zero) or inserted	
+	//       {  
+	//         iterator.push(it.index()); 
+	//         insertIndicator[it.index()] = true;
+	//       }
+	// } 
+	// template <typename type, typename matrix>
+	// doubleVector read_row_index(const matrix& m, const boolVector& domnIndicator, bool firstEntrOnly, double indx)
+	// {
+	// 	doubleVector nonZeroIndices; 
+ //      	for (type it(m, indx); it; ++it)             // Iterate over the non-zero rows/columns
+ //        	if(not domnIndicator[it.index()])
+ //        	{
+ //            	nonZeroIndices.push_back(it.index());  // inner index, here it is equal to it.row()/it.columns()
+ //        		if(firstEntrOnly)
+ //        			break;
+ //        	}
     
-      return nonZeroIndices;
-	}
+ //      return nonZeroIndices;
+	// }
 
 public:
 
@@ -441,10 +432,10 @@ public:
 		init();
 	}
 
-	FlagComplexSpMatrix(std::size_t expRows, std::size_t expMaxSimp)
+	FlagComplexSpMatrix(std::size_t expRows)
 	{
 		init();
-		sparseRowAdjMatrix  = sparseRowMatrix(expansion_limit*expRows, expansion_limit*expMaxSimp);    	// Initializing sparseRowAdjMatrix, This is a row-major sparse matrix.  
+		sparseRowAdjMatrix  = sparseRowMatrix(expansion_limit*expRows, expansion_limit*expRows);    	// Initializing sparseRowAdjMatrix, This is a row-major sparse matrix.  
 	}
 
 	//! Main Constructor
@@ -473,7 +464,6 @@ public:
 		for(size_t bgn_idx = 0; bgn_idx < edge_t.size(); bgn_idx++) {
 	  		std::vector<size_t>  s = {std::get<1>(edge_t.at(bgn_idx)), std::get<2>(edge_t.at(bgn_idx))};
 	  		insert_new_edges(std::get<1>(edge_t.at(bgn_idx)), std::get<2>(edge_t.at(bgn_idx)), 1);
-	  		one_simplices.emplace_back(std::get<1>(edge_t.at(bgn_idx)), std::get<2>(edge_t.at(bgn_idx)));
 	  	}	
 
         // auto end = std::chrono::high_resolution_clock::now();
@@ -524,17 +514,27 @@ public:
 			return false;
 	}
 	 
-	template <typename Input_vertex_range>
-	bool membership(const Input_vertex_range & vertex_range) {  
-		if(vertex_range.size() > 0 &&  vertex_range.size() < 3)
-	    {
-	    	auto u = vertex_range.begin();
-	    	auto v = vertex_range.end(); 
-		    if(membership(u) && membership(v))
-		    	for( auto x : neighbors(u))
-		    		if(x == v)
-		    			return true;		
-		}
+	bool membership(const Edge & e) {  
+    	auto u = std::get<0>(e);
+        auto v = std::get<1>(e);
+	    if(membership(u) && membership(v)) {
+	    	auto rw_u = vertexToRow[u];
+	    	auto rw_v = vertexToRow[v];
+	    	if(rw_u <= rw_v)
+	    		for( auto x : read_row_index(rw_v)){ // Taking advantage of sorted lists.
+	    			if(rw_u == x)
+	    				return true;	
+	    			else if(rw_u < x)
+	    			 	return false;
+	    		}	 
+	    	else
+	    		for( auto x : read_row_index(rw_u)){ // Taking advantage of sorted lists.
+	    			if(rw_v == x)
+	    				return true;	
+	    			else if(rw_v < x)
+	    			 	return false;		
+	    		}	 
+	    }
 		return false;
 
 	}	 
@@ -564,6 +564,7 @@ public:
 
 		sparseRowAdjMatrix.insert(rw_u->second,rw_v->second) 	  = filt_val;
 		sparseRowAdjMatrix.insert(rw_v->second,rw_u->second) 	  = filt_val;
+		one_simplices.emplace_back(u, v);
 		numOneSimplices++;
 	    // else
 		// 	std::cout << "Already a member simplex,  skipping..." << std::endl;
@@ -589,7 +590,7 @@ public:
     std::unordered_set<Vertex> vertex_set() const {
     	return vertices;
     }
-    sparseMatrix collapsed_matrix() const {
+    sparseRowMatrix collapsed_matrix() const {
     	return sparse_colpsd_adj_Matrix;
     }
     
@@ -605,13 +606,13 @@ public:
     	
     	return nb;
     }
-    vertexVector non_active_neighbors(const Vertex & v) {
-    	vertexVector non_active;
-    	for(auto & x : all_neighbors(v) )
-    		if(contractionIndicator[vertexToRow[x]])
-    			non_active.push_back(x);	
- 		return non_active;
-    }
+   //  vertexVector non_active_neighbors(const Vertex & v) {
+   //  	vertexVector non_active;
+   //  	for(auto & x : all_neighbors(v) )
+   //  		if(contractionIndicator[vertexToRow[x]])
+   //  			non_active.push_back(x);	
+ 		// return non_active;
+   //  }
 
     vertexVector neighbors(const Vertex & v) {  
     	vertexVector nb;
@@ -621,32 +622,32 @@ public:
     	
     	return nb;
     }
-    vertexVector all_neighbors(const Vertex & v) {  
-    	vertexVector nb;
-    	auto rw_v = vertexToRow.find(v);
-    	if(rw_v != vertexToRow.end())  		
-    		nb = readAllRow(rw_v->second);
+    // vertexVector all_neighbors(const Vertex & v) {  
+    // 	vertexVector nb;
+    // 	auto rw_v = vertexToRow.find(v);
+    // 	if(rw_v != vertexToRow.end())  		
+    // 		nb = readAllRow(rw_v->second);
     	
-    	return nb;
-    }
+    // 	return nb;
+    // }
 
-    vertexVector all_common_neigbhour(const Vertex &v, const Vertex & w){
-    	auto  nbhrs_v = all_neighbors(v);
-    	auto  nbhrs_w = all_neighbors(w);
-    	std::vector<Vertex> common; // neighbors of v intersection w
- 		std::set_intersection(nbhrs_v.begin(), nbhrs_v.end(), nbhrs_w.begin(), nbhrs_w.end(), std::back_inserter(common));
- 		return common;
-    }
+   //  vertexVector all_common_neigbhour(const Vertex &v, const Vertex & w){
+   //  	auto  nbhrs_v = all_neighbors(v);
+   //  	auto  nbhrs_w = all_neighbors(w);
+   //  	std::vector<Vertex> common; // neighbors of v intersection w
+ 		// std::set_intersection(nbhrs_v.begin(), nbhrs_v.end(), nbhrs_w.begin(), nbhrs_w.end(), std::back_inserter(common));
+ 		// return common;
+   //  }
     
-    vertexVector all_active_common_neigbhour(const Vertex &v, const Vertex & w){
-    	auto  nbhrs_v = active_neighbors(v);
-    	auto  nbhrs_w = active_neighbors(w);
-    	std::vector<Vertex> common_active; // neighbors of v intersection w
- 		std::set_intersection(nbhrs_v.begin(), nbhrs_v.end(), nbhrs_w.begin(), nbhrs_w.end(), std::back_inserter(common_active));
- 		return common_active;
-    }
+   //  vertexVector all_active_common_neigbhour(const Vertex &v, const Vertex & w){
+   //  	auto  nbhrs_v = active_neighbors(v);
+   //  	auto  nbhrs_w = active_neighbors(w);
+   //  	std::vector<Vertex> common_active; // neighbors of v intersection w
+ 		// std::set_intersection(nbhrs_v.begin(), nbhrs_v.end(), nbhrs_w.begin(), nbhrs_w.end(), std::back_inserter(common_active));
+ 		// return common_active;
+   //  }
 
-    vertexVector active_relative_neighbors(const Vertex &v, const Vertex & w){
+    vertexVector active_relative_neighbors(const Vertex & v, const Vertex & w){
     	std::vector<Vertex> diff; 
     	if(membership(v) && membership(w)){
     		auto nbhrs_v = active_neighbors(v);
@@ -727,12 +728,12 @@ public:
 			doubleVector  del_indcs, keep_indcs, diff;
 			auto row_del = vertexToRow.find(del);
 			auto row_keep = vertexToRow.find(keep);
-			del_indcs = read(row_del->second, false);
-			keep_indcs = read(row_keep->second, false);
+			del_indcs = read_row_index(row_del->second);
+			keep_indcs = read_row_index(row_keep->second);
 			std::set_difference(del_indcs.begin(), del_indcs.end(), keep_indcs.begin(), keep_indcs.end(), std::inserter(diff, diff.begin()));
-			for (auto columns : diff) 
-			{
-        		sparseRowAdjMatrix.insert(row_keep->second,columns) = 1;	
+			for (auto v : diff) {
+				if( v != del)
+        			sparseRowAdjMatrix.insert(row_keep->second,v) = 1;	
 			}
 			
 			vertexToRow.erase(row_del);
@@ -751,7 +752,7 @@ public:
 		}
 		else
 		{
-			std::cerr << "The first vertex entered in the method contraction() doesn't exist in the matrix:" <<std::endl;	
+			std::cerr << "The first vertex entered in the method contraction() doesn't exist in the skeleton." <<std::endl;	
 			exit(-1); 	
 		}
 	}
@@ -760,11 +761,13 @@ public:
 	
     Vertex active_strong_expansion(const Vertex & v, const Vertex & w, double filt_val){
 		if(membership(v) && membership(w)){
+			std::cout << "Strong expansion of the vertex " << v << " and " << w << " begins. " << std::endl;
 			auto active_list_v_w = active_relative_neighbors(v,w);
 			auto active_list_w_v = active_relative_neighbors(w,v);
 			if(active_list_w_v.size() <= active_list_v_w.size()){ // simulate the contraction of w by expanding the star of v
 				for (auto &x : active_list_w_v){
 					active_edge_insertion(v,x, filt_val);
+					std::cout << "Inserted the edge " << v << " , " << x  << std::endl;
 				}
 				auto rw_d = vertexToRow.find(w);
 				contractionIndicator[rw_d->second] = true;
@@ -773,6 +776,7 @@ public:
 			else{  					
 				for (auto &y : active_list_v_w){
 					active_edge_insertion(w,y,filt_val);
+					std::cout << "Inserted the edge " << w << ", " << y  << std::endl;
 				}
 				auto rw_d = vertexToRow.find(v);  
 				contractionIndicator[rw_d->second] = true;	
@@ -784,6 +788,10 @@ public:
 	void active_edge_insertion(const Vertex & v, const Vertex & w, double filt_val){
 		insert_new_edges(v,w, filt_val);
 		//update_active_indicator(v,w);
-	}		
+	}	
+
+	void print_sparse_skeleton(){
+		std::cout << sparseRowAdjMatrix << std::endl;
+	}	
 
 };

@@ -9,12 +9,14 @@
 
 
 typedef std::size_t Vertex;
-using Edge                  = std:pair<Vertex,Vertex>;
-using Edge_list             = std:vector<Edge>;
+using Edge                  = std::pair<Vertex,Vertex>;
+using Edge_list             = std::vector<Edge>;
 using Simplex               = std::vector<Vertex>;
 
 using vectorVertex          = std::vector<Vertex>;
 using vert_unSet            = std::unordered_set<Vertex>;
+using Map                   = std::unordered_map<Vertex,Vertex>;
+
 
 
 // assumptions : (1) K1 and K2 have the same vertex set
@@ -28,16 +30,20 @@ class TowerAssembler_FlagComplex
 {
   private:
 	Map renamedVertices; 
+    Map representative_map;
 	std::size_t current_rename_counter;
-	
-    struct {
-	        bool operator()(std::size_t a, std::size_t b) const
-	        {   
-	            return a < b;
-	        }   
-	    } vertex_compare;
 
-    typedef std::vector< std::tuple<Filtration_value, Vertex_handle, Vertex_handle > > Filtered_sorted_edge_list;
+    // Filtered_sorted_edge_list * edge_t = new Filtered_sorted_edge_list();
+    FlagComplexSpMatrix * flag_Filtration; 
+	
+    // struct {
+	   //      bool operator()(std::size_t a, std::size_t b) const
+	   //      {   
+	   //          return a < b;
+	   //      }   
+	   //  } vertex_compare;
+
+    typedef std::vector< std::tuple< double, Vertex, Vertex > > Filtered_sorted_edge_list;
 
 	// template <typename Input_vertex_range>
 	// std::vector<Simplex> all_faces(const Input_vertex_range &vertex_range){
@@ -76,39 +82,40 @@ class TowerAssembler_FlagComplex
     {
     	for (std::size_t i = 0; i < numVert; ++i){
     		renamedVertices[i] = i;
+            representative_map[i] = i;
     	}
     	current_rename_counter = numVert;
-        Filtered_sorted_edge_list * edge_t = new Filtered_sorted_edge_list();
-        FlagComplexSpMatrix * flag_Filtration = new FlagComplexSpMatrix();
-
-
+        flag_Filtration = new FlagComplexSpMatrix(numVert);
     }
     
     ~TowerAssembler_FlagComplex(){};
-    double print_tower_for_two_cmplxs(FlagComplexSpMatrix mat_1, const FlagComplexSpMatrix & mat_2,  Map redmap_2,  double filtration_value, std::string outFile) // mat_1 and mat_2 are simplex_trees of K1c and K2c (the collapsed ones), redmap_2 is the map of K2 -> K2c
+    double build_tower_for_two_cmplxs(FlagComplexSpMatrix mat_1, const FlagComplexSpMatrix & mat_2,  Map redmap_2,  double filtration_value, std::string outFile) // mat_1 and mat_2 are simplex_trees of K1c and K2c (the collapsed ones), redmap_2 is the map of K2 -> K2c
     {
         auto begin_print  = std::chrono::high_resolution_clock::now();
         std::ofstream myfile (outFile, std::ios::app);
         if (myfile.is_open())
         {   
             for (auto & v : mat_1.vertex_set()) {
-                auto collapsed_to = redmap_2.find(v); 
-                if(collapsed_to != redmap_2.end()) {  // Collapse happend, there is an existing vertex in the map
-                    if(mat_1.membership(collapsed_to->second)) { // Collapsed to an existing vertex.
+                auto collapsed_to = redmap_2.find(v);  // If v collapsed to something?
+                if(collapsed_to != redmap_2.end()) {  // Collapse happened, because there is a vertex in the map
+                    if(mat_1.membership(collapsed_to->second)) { // Collapsed to an existing vertex in mat_1.
 
                     	myfile << filtration_value  << " c " << renamedVertices.at(v) << " " << renamedVertices.at(collapsed_to->second) << std::endl; 
-                    	// std::cout << filtration_value << " c " << renamedVertices.at(v) << " " << renamedVertices.at(collapsed_to->second) << std::endl;
-                        auto contracted = flag_Filtration->active_strong_expansion(renamedVertices.at(v), renamedVertices.at(collapsed_to->second));
+                    	std::cout << filtration_value << " c " << renamedVertices.at(v) << " " << renamedVertices.at(collapsed_to->second) << std::endl;
+                        auto contracted = flag_Filtration->active_strong_expansion(renamedVertices.at(v), renamedVertices.at(collapsed_to->second), filtration_value);
+                        std::cout << "The contracted vertex is: " << contracted << std::endl;
                         renamedVertices.at(contracted) = current_rename_counter;
                     	current_rename_counter++;
                     }
                     else {
 	                    myfile << filtration_value << " i " << renamedVertices.at(collapsed_to->second) << std::endl;
 	                    myfile  << filtration_value << " c " << renamedVertices.at(v) << " " << renamedVertices.at(collapsed_to->second) << std::endl; 
-	                    // std::cout << filtration_value << " i " << renamedVertices.at(collapsed_to->second) << std::endl;
-	                    // std::cout  << filtration_value << " c " << renamedVertices.at(v) << " " << renamedVertices.at(collapsed_to->second) << std::endl; 
-	                    flag_Filtration->insert(renamedVertices.at(collapsed_to->second));
-                        auto contracted = flag_Filtration->active_strong_expansion(renamedVertices.at(v), renamedVertices.at(collapsed_to->second));
+	                    std::cout << filtration_value << " i " << renamedVertices.at(collapsed_to->second) << std::endl;
+	                    std::cout  << filtration_value << " c " << renamedVertices.at(v) << " " << renamedVertices.at(collapsed_to->second) << std::endl; 
+	                    flag_Filtration->insert_vertex(renamedVertices.at(collapsed_to->second),filtration_value);
+                        auto contracted = flag_Filtration->active_strong_expansion(renamedVertices.at(v), renamedVertices.at(collapsed_to->second),filtration_value);
+                        // std::cout << filtration_value << " i " << renamedVertices.at(collapsed_to->second) << std::endl;
+                        // std::cout  << filtration_value << " c " << renamedVertices.at(v) << " " << renamedVertices.at(collapsed_to->second) << std::endl; 
                         renamedVertices.at(contracted)= current_rename_counter;
 	                    current_rename_counter++;
                     }
@@ -118,32 +125,50 @@ class TowerAssembler_FlagComplex
 
             //The core K1c (mat_1) has gone through the transformation(re-labeling)/collapse and it is now a subcomplex of K2c, the remaining simplices need to be included
             // Writing the inclusion of all remaining simplices...
-            std::vector<std::size_t>  renamed_simplex;
+            std::cout << "Begining the inclusion of edges " << std::endl;
             for( const Edge & e  : mat_2.all_edges()) {
-                auto u = e.begin();
-                auto v = e.end();
+                auto u = std::get<0>(e);
+                auto v = std::get<1>(e);
+                std::cout << "Going to insert the edge :" << u << ", " << v << std::endl;
+                // std::cout << "Going to insert the vertex :" << u << std::endl;
                 if(!mat_1.membership(u)) {
-                    flag_Filtration.insert_vertex(renamedVertices.at(u));
+                    flag_Filtration->insert_vertex(renamedVertices.at(u),filtration_value);
+                    std::cout << "Inserted the vertex :" << u <<  " in the new distance matrix"<< std::endl;
+
                     myfile << filtration_value << " i";
                     myfile  << " " << renamedVertices.at(u);
                     myfile  << std::endl;
-                    mat_1.insert_vertex(u);
+                    mat_1.insert_vertex(u,1);
+                    // std::cout << "Inserted the vertex :" << renamedVertices.at(u) <<  " in the old skeleton matrix"<< std::endl;
+
+
                 }
 
+                // std::cout << "Going to insert the vertex :" << v << std::endl ;
                 if(!mat_1.membership(v)) {
-                    flag_Filtration.insert_vertex(renamedVertices.at(v));
+                    // std::cout << "Begining the insertion the vertex :" << renamedVertices.at(v) <<  " in the new distance matrix"<< std::endl;
+
+                    flag_Filtration->insert_vertex(renamedVertices.at(v),filtration_value);
+                    std::cout << "Inserted the vertex :" << renamedVertices.at(v) <<  " in the new distance matrix"<< std::endl;
+
                     myfile << filtration_value << " i";
                     myfile  << " " << renamedVertices.at(v);
                     myfile  << std::endl;
-                    mat_1.insert_vertex(v);
-                }
+                    mat_1.insert_vertex(v,1);
+                    // std::cout << "Inserted the vertex :" << u <<  " in the old skeleton matrix"<< std::endl;
 
+                }
+                // std::cout << "Going to insert the edge :" << u << ", " << v << std::endl;
                 if(!mat_1.membership(e)){
-                    flag_Filtration.insert_new_edges({renamedVertices.at(u),renamedVertices.at(v)});
+                    flag_Filtration->insert_new_edges(renamedVertices.at(u),renamedVertices.at(v), filtration_value);
+                    std::cout << "Inserted the edge :" << renamedVertices.at(u) << ","<< renamedVertices.at(v) <<  " in the new distance matrix"<< std::endl;
+
                     myfile << filtration_value << " i";
-                    myfile  << " " <<  renamedVertices.at(u) << renamedVertices.at(v);
+                    myfile  << " " <<  renamedVertices.at(u) << ", " << renamedVertices.at(v);
                     myfile  << std::endl;
-                    mat_1.insert_new_edges(e);
+                    mat_1.insert_new_edges(u,v,1);
+                    // std::cout << "Inserted the edge :" << u << ","<< v <<  " in the old skeleton"<< std::endl;
+
                 
                 }         
             }                        
@@ -159,6 +184,10 @@ class TowerAssembler_FlagComplex
         auto printTime = std::chrono::duration<double, std::milli>(end_print- begin_print).count();
         // std::cout << " Time to print the tower : " << printTime << " ms\n" << std::endl;
         return printTime;
-    }    
+    } 
+    void print_distance_matrix()
+    {
+        flag_Filtration->print_sparse_skeleton();
+    }   
     
 };
