@@ -102,24 +102,28 @@ class TowerAssembler_FlagComplex
 
                     	myfile << filtration_value  << " c " << renamedVertices.at(v) << " " << renamedVertices.at(collapsed_to->second) << std::endl; 
                     	std::cout << filtration_value << " c " << renamedVertices.at(v) << " " << renamedVertices.at(collapsed_to->second) << std::endl;
-                        auto contracted = flag_Filtration->active_strong_expansion(renamedVertices.at(v), renamedVertices.at(collapsed_to->second), filtration_value);
-                        std::cout << "The contracted vertex is: " << contracted << std::endl;
-                        renamedVertices.at(contracted) = current_rename_counter;
-                    	current_rename_counter++;
+                        flag_Filtration->active_strong_expansion(renamedVertices.at(v), renamedVertices.at(collapsed_to->second), filtration_value);
+                        // mat_1.contraction(v, collapsed_to->second); 
+                        std::cout << "The contracted vertex is: " << renamedVertices.at(v) << std::endl;
+                        renamedVertices.at(v) = current_rename_counter;
+                        current_rename_counter++;                        
                     }
                     else {
 	                    myfile << filtration_value << " i " << renamedVertices.at(collapsed_to->second) << std::endl;
 	                    myfile  << filtration_value << " c " << renamedVertices.at(v) << " " << renamedVertices.at(collapsed_to->second) << std::endl; 
-	                    std::cout << filtration_value << " i " << renamedVertices.at(collapsed_to->second) << std::endl;
-	                    std::cout  << filtration_value << " c " << renamedVertices.at(v) << " " << renamedVertices.at(collapsed_to->second) << std::endl; 
-	                    flag_Filtration->insert_vertex(renamedVertices.at(collapsed_to->second),filtration_value);
-                        auto contracted = flag_Filtration->active_strong_expansion(renamedVertices.at(v), renamedVertices.at(collapsed_to->second),filtration_value);
+	                    // std::cout << filtration_value << " i " << renamedVertices.at(collapsed_to->second) << std::endl;
+	                    // std::cout  << filtration_value << " c " << renamedVertices.at(v) << " " << renamedVertices.at(collapsed_to->second) << std::endl; 
+	                    // flag_Filtration->relable(renamedVertices.at(v), renamedVertices.at(collapsed_to->second)); 
+                        //flag_Filtration->insert_vertex(renamedVertices.at(collapsed_to->second),filtration_value);
+                        flag_Filtration->active_strong_expansion(renamedVertices.at(v), renamedVertices.at(collapsed_to->second),filtration_value);
                         // std::cout << filtration_value << " i " << renamedVertices.at(collapsed_to->second) << std::endl;
                         // std::cout  << filtration_value << " c " << renamedVertices.at(v) << " " << renamedVertices.at(collapsed_to->second) << std::endl; 
-                        renamedVertices.at(contracted)= current_rename_counter;
-	                    current_rename_counter++;
+                        //renamedVertices.at(v) = current_rename_counter;
+	                    //current_rename_counter++;
                     }
-                    mat_1.contraction(v, collapsed_to->second);  // If the vertex "collapsed_to->second" is not a member of mat_1, the contraction function will simply add and then collapse
+                     // If the vertex "collapsed_to->second" is not a member of mat_1, the contraction function will simply add and then collapse
+                     std::cout<< "contracting the vertex " << v << " to " << collapsed_to->second << " in the original skeleton. " << std::endl;
+                     mat_1.contraction(v, collapsed_to->second);
                 }
             }
 
@@ -167,9 +171,7 @@ class TowerAssembler_FlagComplex
                     myfile  << " " <<  renamedVertices.at(u) << ", " << renamedVertices.at(v);
                     myfile  << std::endl;
                     mat_1.insert_new_edges(u,v,1);
-                    // std::cout << "Inserted the edge :" << u << ","<< v <<  " in the old skeleton"<< std::endl;
-
-                
+                    // std::cout << "Inserted the edge :" << u << ","<< v <<  " in the old skeleton"<< std::endl
                 }         
             }                        
             myfile << "# Tower updated for the additional subcomplex.\n";

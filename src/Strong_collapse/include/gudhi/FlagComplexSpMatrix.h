@@ -238,7 +238,7 @@ class FlagComplexSpMatrix
 				auto nbhrs_to_insert = read_row_index(rw); // returns row indices of the non-dominated vertices.
         		for(auto & v: nbhrs_to_insert){
           			sparse_colpsd_adj_Matrix.insert(rw, v) = 1;
-          			if(rw < v)
+          			if(rw <= v)
           				one_simplices.push_back({rowToVertex[rw],rowToVertex[v]});
         		}
 			}			
@@ -394,6 +394,16 @@ class FlagComplexSpMatrix
   		return colmns;
 	}
 
+	void swap_rows(const Vertex & v, const Vertex & w) {	// swap the rows of v and w. Both should be members of the skeleton
+		if(membership(v) && membership(w)){
+			auto rw_v = vertexToRow[v];
+			auto rw_w = vertexToRow[w];
+			vertexToRow[v] = rw_w;
+			vertexToRow[w] = rw_v;
+			rowToVertex[rw_v] = w;
+			rowToVertex[rw_w] = v;
+		}
+	}
 	// template<typename type, typename matrix> // To update the working list might possible to include at one place
  //  	void setZero(const matrix& m, boolVector& domnIndicator, boolVector& insertIndicator, doubleQueue& iterator, double indx) // Prepares the queue for the next iteration.
 	// {
@@ -474,7 +484,7 @@ public:
 		
 	  	sparseRowAdjMatrix.makeCompressed(); 
        	
- 	  	std::cout << sparseRowAdjMatrix << std::endl;
+ 	  	// std::cout << sparseRowAdjMatrix << std::endl;
 	}
 
 	//!	Destructor.
@@ -557,15 +567,17 @@ public:
 	void insert_new_edges(const Vertex & u, const Vertex & v, double filt_val)
 	{	
 		insert_vertex(u, filt_val);
-		insert_vertex(v, filt_val);
+		if( u != v) {
+			insert_vertex(v, filt_val);
 
-		auto rw_u = vertexToRow.find(u);
-		auto rw_v = vertexToRow.find(v);
+			auto rw_u = vertexToRow.find(u);
+			auto rw_v = vertexToRow.find(v);
 
-		sparseRowAdjMatrix.insert(rw_u->second,rw_v->second) 	  = filt_val;
-		sparseRowAdjMatrix.insert(rw_v->second,rw_u->second) 	  = filt_val;
-		one_simplices.emplace_back(u, v);
-		numOneSimplices++;
+			sparseRowAdjMatrix.insert(rw_u->second,rw_v->second) 	  = filt_val;
+			sparseRowAdjMatrix.insert(rw_v->second,rw_u->second) 	  = filt_val;
+			one_simplices.emplace_back(u, v);
+			numOneSimplices++;
+		}	
 	    // else
 		// 	std::cout << "Already a member simplex,  skipping..." << std::endl;
        		
@@ -603,7 +615,7 @@ public:
     	auto rw_v = vertexToRow.find(v);
     	if(rw_v != vertexToRow.end())  		
     		nb = readActiveRow(rw_v->second);
-    	
+		std::cout << std::endl;
     	return nb;
     }
    //  vertexVector non_active_neighbors(const Vertex & v) {
@@ -652,7 +664,7 @@ public:
     	if(membership(v) && membership(w)){
     		auto nbhrs_v = active_neighbors(v);
     		auto nbhrs_w = active_neighbors(w);
- 			std::set_difference(nbhrs_v.begin(), nbhrs_v.end(), nbhrs_w.begin(), nbhrs_w.end(), std::back_inserter(diff));		
+ 			std::set_difference(nbhrs_v.begin(), nbhrs_v.end(), nbhrs_w.begin(), nbhrs_w.end(), std::back_inserter(diff));	
         }	
         return diff;
     }
@@ -726,19 +738,20 @@ public:
 		if( del_mem && keep_mem)
 		{
 			doubleVector  del_indcs, keep_indcs, diff;
-			auto row_del = vertexToRow.find(del);
-			auto row_keep = vertexToRow.find(keep);
-			del_indcs = read_row_index(row_del->second);
-			keep_indcs = read_row_index(row_keep->second);
+			auto row_del = vertexToRow[del];
+			auto row_keep = vertexToRow[keep];
+			del_indcs = read_row_index(row_del);
+			keep_indcs = read_row_index(row_keep);
 			std::set_difference(del_indcs.begin(), del_indcs.end(), keep_indcs.begin(), keep_indcs.end(), std::inserter(diff, diff.begin()));
 			for (auto v : diff) {
-				if( v != del)
-        			sparseRowAdjMatrix.insert(row_keep->second,v) = 1;	
-			}
-			
-			vertexToRow.erase(row_del);
+				if( v != row_del){
+        			sparseRowAdjMatrix.insert(row_keep,v) = 1;
+        			sparseRowAdjMatrix.insert(v, row_keep) = 1;
+        		}		
+			}	
+			vertexToRow.erase(del);
 			vertices.erase(del);
-			rowToVertex.erase(del); 
+			rowToVertex.erase(row_del); 
 			//setZero(row_del->second, row_keep->second);
 		}
 		else if(del_mem && not keep_mem)
@@ -747,7 +760,7 @@ public:
 			rowToVertex[vertexToRow.find(del)->second] = keep;
 			vertices.emplace(keep);
 			vertices.erase(del);
-			vertexToRow.erase(vertexToRow.find(del));
+			vertexToRow.erase(del);
 
 		}
 		else
@@ -757,33 +770,44 @@ public:
 		}
 	}
 
+     void relable(const Vertex & v, const Vertex & w){ // relable v as w.
+     	if(membership(v)){
+     		auto rw_v = vertexToRow[v];
+      		rowToVertex[rw_v] = w;
+      		vertexToRow.insert(std::make_pair(w, rw_v));	 
+			vertices.emplace(w);
+			vertexToRow.erase(v);
+      		vertices.erase(v);
+
+     	}
+     } 
+
     //Returns the contracted edge. along with the contracted vertex in the begining of the list at {u,u} or {v,v}
 	
-    Vertex active_strong_expansion(const Vertex & v, const Vertex & w, double filt_val){
+    void active_strong_expansion(const Vertex & v, const Vertex & w, double filt_val){
 		if(membership(v) && membership(w)){
 			std::cout << "Strong expansion of the vertex " << v << " and " << w << " begins. " << std::endl;
 			auto active_list_v_w = active_relative_neighbors(v,w);
 			auto active_list_w_v = active_relative_neighbors(w,v);
-			if(active_list_w_v.size() <= active_list_v_w.size()){ // simulate the contraction of w by expanding the star of v
-				for (auto &x : active_list_w_v){
+			if(active_list_w_v.size() < active_list_v_w.size()){ // simulate the contraction of w by expanding the star of v
+				for (auto & x : active_list_w_v){
 					active_edge_insertion(v,x, filt_val);
 					std::cout << "Inserted the edge " << v << " , " << x  << std::endl;
 				}
-				auto rw_d = vertexToRow.find(w);
-				contractionIndicator[rw_d->second] = true;
-				return w;	
+				swap_rows(v,w);
 			}
-			else{  					
-				for (auto &y : active_list_v_w){
+			else if(active_list_w_v.size() >= active_list_v_w.size()){  					
+				for (auto & y : active_list_v_w){
 					active_edge_insertion(w,y,filt_val);
 					std::cout << "Inserted the edge " << w << ", " << y  << std::endl;
 				}
-				auto rw_d = vertexToRow.find(v);  
-				contractionIndicator[rw_d->second] = true;	
-				return v;
 			}
+			auto rw_v = vertexToRow.find(v);
+			contractionIndicator[rw_v->second] = true;
 		}
-		return -1;
+		if(membership(v) && !membership(w)){
+			relable(v,w);
+		}
 	}
 	void active_edge_insertion(const Vertex & v, const Vertex & w, double filt_val){
 		insert_new_edges(v,w, filt_val);
