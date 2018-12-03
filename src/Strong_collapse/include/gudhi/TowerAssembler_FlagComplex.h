@@ -123,8 +123,8 @@ class TowerAssembler_FlagComplex
                         flag_Filtration->active_strong_expansion(renamedVertices.at(v), renamedVertices.at(collapsed_to->second),filtration_value);
                         // std::cout << filtration_value << " i " << renamedVertices.at(collapsed_to->second) << std::endl;
                         // std::cout  << filtration_value << " c " << renamedVertices.at(v) << " " << renamedVertices.at(collapsed_to->second) << std::endl; 
-                        renamedVertices.at(v) = renamedVertices.at(collapsed_to->second);
-	                    //current_rename_counter++;
+                        renamedVertices.at(v) = current_rename_counter;
+	                    current_rename_counter++;
                     }
                      // If the vertex "collapsed_to->second" is not a member of mat_1, the contraction function will simply add and then collapse
                      // std::cout<< "contracting the vertex " << v << " to " << collapsed_to->second << " in the original skeleton. " << std::endl;

@@ -8,11 +8,6 @@
 #include <boost/program_options.hpp>
 
 using Point = CGAL::Epick_d< CGAL::Dynamic_dimension_tag>::Point_d;
-using Filtration_value = Fake_simplex_tree::Filtration_value;
-using Rips_complex = Gudhi::rips_complex::Rips_complex<Filtration_value>;
-
-using Fake_simplex_tree = Gudhi::Fake_simplex_tree ;
-using Simplex_tree = Gudhi::Simplex_tree<>;
 using Vector_of_points = std::vector<Point>;
 
 const double PI  = 3.141592653589793238463;
