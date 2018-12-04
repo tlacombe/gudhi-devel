@@ -6,6 +6,7 @@
 #include <fstream>
 #include <string>
 #include <algorithm>
+#include <limits>
 
 
 typedef std::size_t Vertex;
@@ -17,8 +18,7 @@ using vectorVertex          = std::vector<Vertex>;
 using vert_unSet            = std::unordered_set<Vertex>;
 using Map                   = std::unordered_map<Vertex,Vertex>;
 using Distance_matrix       = std::vector<std::vector<double>>;
-
-
+// using infinity              = std::numeric_limits<double>::max();
 // assumptions : (1) K1 and K2 have the same vertex set
 //               (2) The set of simplices of K1 is a subset of set of simplices of K2
 // K1  ->  K2    [Original Simplicial Complexes]
@@ -194,6 +194,7 @@ class TowerAssembler_FlagComplex
     Distance_matrix distance_matrix()
     {
         size_t non_zero_rw = flag_Filtration->num_vertices();
+        double inf = std::numeric_limits<double>::max();
         sparseRowMatrix mat = flag_Filtration->uncollapsed_matrix();
         doubleVector distances ;  
         for(size_t indx = 0; indx < non_zero_rw; indx++){ 
@@ -203,8 +204,10 @@ class TowerAssembler_FlagComplex
                     distances.push_back(it.value());  // inner index, here it is equal to it.columns()
                     ++it;
                 }
+                else if( j == indx)
+                    distances.push_back(0);
                 else
-                     distances.push_back(0);
+                     distances.push_back(inf);
 
             }
             distance_mat->push_back(distances);
