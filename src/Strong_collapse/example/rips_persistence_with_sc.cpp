@@ -23,24 +23,31 @@ class extract_sub_one_skeleton
     public:
         template<class Filtered_sorted_edge_list,  class Fil_vector >
         extract_sub_one_skeleton(double threshold, Filtered_sorted_edge_list & current_edge_t, Filtered_sorted_edge_list & edge_t, Fil_vector & edge_filt ) {
-            std::cout << "The number of the remaining edges are: " << (edge_t.size()) << std::endl;
-            std::cout << "Current number of the edges are: " << (current_edge_t.size()) << std::endl;
-            //std::cout << "The longest edge of the current edges is: "<< std::get<0>(*(current_edge_t.end()-1)) << " and threshold is: " << threshold << std::endl;
+          
+            
+            
             auto end_it = std::upper_bound(edge_filt.begin(), edge_filt.end(), threshold); // find_index(edge_t, threshold, 0, end_idx);
             size_t end_idx = std::distance(edge_filt.begin(), end_it);
 
             for( size_t idx = 0; idx < end_idx ; idx++) {
-               current_edge_t.push_back(*edge_t.begin()); //{std::get<0>(),std::get<1>(edge_t.at(0)), std::get<2>(edge_t.at(0))})
+               current_edge_t.push_back(*edge_t.begin()); 
                edge_filt.erase(edge_filt.begin());
                edge_t.erase(edge_t.begin());
             }
+            
+            // if(current_edge_t.size() != 0)
+            //     std::cout << "The longest edge in the remaining edges is: "<< std::get<0>(current_edge_t.at(current_edge_t.size()-1)) << " and threshold is: " << threshold << std::endl;
+            // if(edge_t.size() != 0)
+            //     std::cout << "The smallest edge in the current edges is: "<< std::get<0>(edge_t.at(0)) << " and threshold is: " << threshold << std::endl;
+            // std::cout << "The number of the remaining edges are: " << (edge_t.size()) << std::endl;
+            // std::cout << "Current number of the edges are: " << (current_edge_t.size()) << std::endl;
         }
 };
 
 
 int main(int argc, char * const argv[]) {
 	
-    // auto the_begin = std::chrono::high_resolution_clock::now();
+    auto the_begin = std::chrono::high_resolution_clock::now();
     PointSetGen point_generator;
     std::string out_file_name   = "default";
     std::string in_file_name    = "default";
@@ -67,13 +74,13 @@ int main(int argc, char * const argv[]) {
     double radius  = 1;
     double r_min  = 0.6;
     double r_max = 1;
-    int dim_max  = 3;
+    int dim_max  = 2;
 
-    point_generator.program_options(argc, argv, number_of_points, begin_thresold, steps, end_threshold, repetetions, manifold, dimension, in_file_name, out_file_name);
+    point_generator.program_options(argc, argv, number_of_points, begin_thresold, steps, end_threshold, repetetions, manifold, dimension, dim_max, in_file_name, out_file_name);
     
     std::cout << "The current input values to run the program is: "<< std::endl;
-    std::cout << "number_of_points, begin_thresold, steps, end_threshold, repetetions, manifold, dimension, in_file_name, out_file_name" << std::endl;
-    std::cout << number_of_points << ", " << begin_thresold << ", " << steps << ", " << end_threshold << ", " << repetetions << ", " << manifold << ", " << dimension << ", " << in_file_name << ", " << out_file_name << std::endl;
+    std::cout << "number_of_points, begin_thresold, steps, end_threshold, repetetions, manifold, dimension, max_complex_dimension, in_file_name, out_file_name" << std::endl;
+    std::cout << number_of_points << ", " << begin_thresold << ", " << steps << ", " << end_threshold << ", " << repetetions << ", " << manifold << ", " << dimension << ", " << dim_max << ", " << in_file_name << ", " << out_file_name << std::endl;
     
     if(manifold == 'f' || manifold =='F') {
         Gudhi::Points_off_reader<Point> off_reader(in_file_name);
@@ -92,13 +99,15 @@ int main(int argc, char * const argv[]) {
 
     std::string origFile ("./PersistenceOutput/original_tower_rips" );
     std::string collFile  ("./PersistenceOutput/collapsed_tower_rips") ;
-    std::string filediag_aft ("./PersistenceOutput/sparse_persistence_diags.txt") ;
-    std::string filediag_bfr ("./PersistenceOutput/original_persistence_diags.txt") ;
+    
+    std::string filediag_bfr ("./PersistenceOutput/uncollapsed_persistence_diags") ;
+    std::string filediag_aft ("./PersistenceOutput/collapsed_persistence_diags") ;
     
     
     std::string otherStats ("./PersistenceOutput/maximal_simplx_cnt");
     otherStats = otherStats+"_"+ out_file_name+ ".txt";
-
+    filediag_bfr = filediag_bfr+"_"+ out_file_name+ ".txt";
+    filediag_aft = filediag_aft+"_"+ out_file_name+ ".txt";
 
     double totAssembleTime = 0.0;
     double currentCreationTime = 0.0;
@@ -196,7 +205,7 @@ int main(int argc, char * const argv[]) {
         // rips_complex_from_points.create_complex(*subComplex, dim_max);
         // std::cout<< "Rips complex computed" << std::endl;
     }
-
+     auto the_collapse_begin = std::chrono::high_resolution_clock::now();
     //An additional vector <edge_filt> to perform binary search to find the index of given threshold
     edge_filt->clear();
     for(auto edIt = edge_t->begin(); edIt != edge_t->end(); edIt++) {
@@ -224,7 +233,7 @@ int main(int argc, char * const argv[]) {
 
     int i = 1;
     Map * redmap;
-    while(threshold <= end_threshold) {
+    while(threshold < end_threshold+steps) {
         extract_sub_one_skeleton(threshold, *sub_skeleton, *edge_t, *edge_filt);
        
         mat_coll = new FlagComplexSpMatrix(number_of_points, *sub_skeleton);
@@ -232,9 +241,9 @@ int main(int argc, char * const argv[]) {
         redmap = new Map();
         *redmap = mat_coll->reduction_map(); 
         
-        std::cout << "Subcomplex #" << i << " Collapsed" << std::endl;
-        totAssembleTime += twr_assembler.build_tower_for_two_cmplxs(*mat_prev_coll, *mat_coll, *redmap, threshold, "./PersistenceOutput/CollapsedTowerRips_manual.txt");
-        std::cout << "Tower updated for subcomplex #" << i << std::endl; 
+        // std::cout << "Subcomplex #" << i << " Collapsed" << std::endl;
+        totAssembleTime += twr_assembler.build_tower_for_two_cmplxs(*mat_prev_coll, *mat_coll, *redmap, threshold, "./PersistenceOutput/CollapsedTowerRips.txt");
+        // std::cout << "Tower updated for subcomplex #" << i << std::endl; 
         
         delete mat_prev_coll;
         mat_prev_coll = new FlagComplexSpMatrix();
@@ -244,46 +253,46 @@ int main(int argc, char * const argv[]) {
         i++;
         delete redmap;
     }
-
+    std::cout << "Tower updated for subcomplex #" << i << std::endl; 
+    auto the_collapse = std::chrono::high_resolution_clock::now();    
     sparse_distances = twr_assembler.distance_matrix();
     
+    // Rips_complex rips_complex_before_collapse(*point_vector, end_threshold, Gudhi::Euclidean_distance());
     Rips_complex rips_complex_after_collapse(sparse_distances, end_threshold);
-    Rips_complex rips_complex_before_collapse(*point_vector, end_threshold, Gudhi::Euclidean_distance());
-
     // Construct the Rips complex in a Simplex Tree
     
-    Simplex_tree simplex_tree_aft, simplex_tree_bfr;
-    rips_complex_before_collapse.create_complex(simplex_tree_bfr, dim_max);
+    Simplex_tree   simplex_tree_aft;
+    // Simplex_tree   simplex_tree_bfr;
+    // rips_complex_before_collapse.create_complex(simplex_tree_bfr, dim_max);
     rips_complex_after_collapse.create_complex(simplex_tree_aft, dim_max);
 
-    std::cout << "The complex contains " << simplex_tree_bfr.num_simplices() << " simplices before collapse. \n";
-    std::cout << "   and has dimension " << simplex_tree_bfr.dimension() << " \n";
+    // std::cout << "The complex contains " << simplex_tree_bfr.num_simplices() << " simplices before collapse. \n";
+    // std::cout << "   and has dimension " << simplex_tree_bfr.dimension() << " \n";
 
     std::cout << "The complex contains " << simplex_tree_aft.num_simplices() << " simplices  after collapse. \n";
     std::cout << "   and has dimension " << simplex_tree_aft.dimension() << " \n";
 
     // Sort the simplices in the order of the filtration
-    simplex_tree_bfr.initialize_filtration();
+    // simplex_tree_bfr.initialize_filtration();
     simplex_tree_aft.initialize_filtration();
     // Compute the persistence diagram of the complex
-    Persistent_cohomology pcoh_bfr(simplex_tree_bfr);
+    // Persistent_cohomology pcoh_bfr(simplex_tree_bfr);
     Persistent_cohomology pcoh_aft(simplex_tree_aft);
     // initializes the coefficient field for homology
-    pcoh_bfr.init_coefficients(2);
+    // pcoh_bfr.init_coefficients(2);
     pcoh_aft.init_coefficients(2);
 
-    pcoh_bfr.compute_persistent_cohomology(steps);
+    // pcoh_bfr.compute_persistent_cohomology(steps);
     pcoh_aft.compute_persistent_cohomology(0);
     // Output the diagram in filediag
-    if (filediag_bfr.empty()) {
-        pcoh_bfr.output_diagram();
-    } 
-    else {
-        std::ofstream out(filediag_bfr);
-        pcoh_bfr.output_diagram(out);
-        out.close();
-      }
-
+    // if (filediag_bfr.empty()) {
+    //     pcoh_bfr.output_diagram();
+    // } 
+    // else {
+    //     std::ofstream out(filediag_bfr);
+    //     pcoh_bfr.output_diagram(out);
+    //     out.close();
+    //   }
     if (filediag_aft.empty()) {
         pcoh_aft.output_diagram();
     } 
@@ -292,11 +301,13 @@ int main(int argc, char * const argv[]) {
         pcoh_aft.output_diagram(out);
         out.close();
       }
-    // for(auto & x : sparse_distances){
-    //     for( auto & y: x )
-    //         std::cout << y << ", " ;
-    //     std::cout << std::endl;
-    // }
+    
+    auto the_end = std::chrono::high_resolution_clock::now();   
+    std::cout << "Collapse And assembly time : " <<  std::chrono::duration<double, std::milli>(the_collapse- the_collapse_begin).count()
+                  << " ms\n" << std::endl;
+
+    std::cout << "Total computation time : " <<  std::chrono::duration<double, std::milli>(the_end- the_begin).count()
+                  << " ms\n" << std::endl;         
     return 0;
 
 }

@@ -115,23 +115,23 @@ int main()
     }
     // delete mat_coll;
     Distance_matrix dist = towerFormater.distance_matrix();
-    // for(auto & x : dist){
-    //     for( auto & y: x )
-    //         std::cout << y << ", " ;
-    //     std::cout << std::endl;
-    // }
-    // towerFormater.print_sparse_matrix();
-    Distance_matrix distances;
-    distances.push_back({});
-    distances.push_back({0.1});
-    distances.push_back({0.1, 10});
-    distances.push_back({0.2, 0.1, 0.1});
-    distances.push_back({0.3, 10, 10, 10});
-    distances.push_back({10, 10, 10, 10, 0.3});
-    distances.push_back({0.3, 10, 10, 10, 10, 0.3});
-    distances.push_back({0.4, 10, 10, 10, 10, 10, 10});
-    distances.push_back({0.4, 10, 10, 10, 10, 10, 10, 10});
-    distances.push_back({0.5, 10, 10, 10, 10, 10, 10, 0.4, 0.4});
+    for(auto & x : dist){
+        for( auto & y: x )
+            std::cout << y << ", " ;
+        std::cout << std::endl;
+    }
+   towerFormater.print_sparse_matrix();
+    // Distance_matrix distances;
+    // distances.push_back({});
+    // distances.push_back({0.1});
+    // distances.push_back({0.1, 10});
+    // distances.push_back({0.2, 0.1, 0.1});
+    // distances.push_back({0.3, 10, 10, 10});
+    // distances.push_back({10, 10, 10, 10, 0.3});
+    // distances.push_back({0.3, 10, 10, 10, 10, 0.3});
+    // distances.push_back({0.4, 10, 10, 10, 10, 10, 10});
+    // distances.push_back({0.4, 10, 10, 10, 10, 10, 10, 10});
+    // distances.push_back({0.5, 10, 10, 10, 10, 10, 10, 0.4, 0.4});
     // Distance_matrix distances;
   // distances.push_back({});
   // distances.push_back({0.94});
@@ -139,12 +139,7 @@ int main()
   // distances.push_back({0.99, 0.99, 0.28});
   // distances.push_back({0.11, 0.39, 0.97, 0.30});
 
-    Rips_complex rips_complex_after_collapse(distances, 0.6);
-    for(auto & x : dist){
-        for( auto & y: x )
-            std::cout << y << ", " ;
-        std::cout << std::endl;
-    }
+    Rips_complex rips_complex_after_collapse(dist, 1);
     // Construct the Rips complex in a Simplex Tree
     
     Simplex_tree simplex_tree_aft;
