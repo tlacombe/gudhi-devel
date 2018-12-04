@@ -273,7 +273,7 @@ int main(int argc, char * const argv[]) {
     pcoh_aft.init_coefficients(2);
 
     pcoh_bfr.compute_persistent_cohomology(steps);
-    pcoh_aft.compute_persistent_cohomology(steps);
+    pcoh_aft.compute_persistent_cohomology(0);
     // Output the diagram in filediag
     if (filediag_bfr.empty()) {
         pcoh_bfr.output_diagram();

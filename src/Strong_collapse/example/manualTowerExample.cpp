@@ -2,13 +2,24 @@
 #include <gudhi/TowerAssembler_FlagComplex.h>
 // #include <gudhi/VertexMaximalMaps.h>
 // #include <gudhi/Fake_simplex_tree.h>
+#include <gudhi/Rips_complex.h>
+#include <gudhi/Simplex_tree.h>
+#include <gudhi/Persistent_cohomology.h>
+#include <gudhi/Rips_edge_list.h>
+#include <gudhi/distance_functions.h>
+#include <gudhi/reader_utils.h>
 
 
 // using Fake_simplex_tree  = Gudhi::Fake_simplex_tree ;
 typedef std::size_t Vertex;
 typedef std::vector< std::tuple< double, Vertex, Vertex > > Filtered_sorted_edge_list;
-using Distance_matrix       = std::vector<std::vector<double>>;
-
+using Simplex_tree = Gudhi::Simplex_tree<Gudhi::Simplex_tree_options_fast_persistence>;
+using Filtration_value = double;
+using Rips_complex = Gudhi::rips_complex::Rips_complex<Filtration_value>;
+using Rips_edge_list      = Gudhi::rips_edge_list::Rips_edge_list<Filtration_value>;
+using Field_Zp = Gudhi::persistent_cohomology::Field_Zp;
+using Persistent_cohomology = Gudhi::persistent_cohomology::Persistent_cohomology<Simplex_tree, Field_Zp>;
+using Distance_matrix = std::vector<std::vector<Filtration_value>>;
 int main()
 {
     Map map_empty;
@@ -104,12 +115,63 @@ int main()
     }
     // delete mat_coll;
     Distance_matrix dist = towerFormater.distance_matrix();
+    // for(auto & x : dist){
+    //     for( auto & y: x )
+    //         std::cout << y << ", " ;
+    //     std::cout << std::endl;
+    // }
+    // towerFormater.print_sparse_matrix();
+    Distance_matrix distances;
+    distances.push_back({});
+    distances.push_back({0.1});
+    distances.push_back({0.1, 10});
+    distances.push_back({0.2, 0.1, 0.1});
+    distances.push_back({0.3, 10, 10, 10});
+    distances.push_back({10, 10, 10, 10, 0.3});
+    distances.push_back({0.3, 10, 10, 10, 10, 0.3});
+    distances.push_back({0.4, 10, 10, 10, 10, 10, 10});
+    distances.push_back({0.4, 10, 10, 10, 10, 10, 10, 10});
+    distances.push_back({0.5, 10, 10, 10, 10, 10, 10, 0.4, 0.4});
+    // Distance_matrix distances;
+  // distances.push_back({});
+  // distances.push_back({0.94});
+  // distances.push_back({0.77, 0.26});
+  // distances.push_back({0.99, 0.99, 0.28});
+  // distances.push_back({0.11, 0.39, 0.97, 0.30});
+
+    Rips_complex rips_complex_after_collapse(distances, 0.6);
     for(auto & x : dist){
         for( auto & y: x )
             std::cout << y << ", " ;
         std::cout << std::endl;
     }
-    towerFormater.print_sparse_matrix();
+    // Construct the Rips complex in a Simplex Tree
+    
+    Simplex_tree simplex_tree_aft;
+    rips_complex_after_collapse.create_complex(simplex_tree_aft, 3);
+
+
+
+    std::cout << "The complex contains " << simplex_tree_aft.num_simplices() << " simplices  after collapse. \n";
+    std::cout << "   and has dimension " << simplex_tree_aft.dimension() << " \n";
+    std::string filediag_aft ("./PersistenceOutput/sparse_persistence_diags_manual.txt") ;
+
+    // Sort the simplices in the order of the filtration
+    simplex_tree_aft.initialize_filtration();
+    // Compute the persistence diagram of the complex
+    Persistent_cohomology pcoh_aft(simplex_tree_aft);
+    // initializes the coefficient field for homology
+    pcoh_aft.init_coefficients(2);
+    pcoh_aft.compute_persistent_cohomology(0);
+    // Output the diagram in filedia
+    if (filediag_aft.empty()) {
+        pcoh_aft.output_diagram();
+    } 
+    else {
+        std::ofstream out(filediag_aft);
+        pcoh_aft.output_diagram(out);
+        out.close();
+      }
     return 0;
 }
 
