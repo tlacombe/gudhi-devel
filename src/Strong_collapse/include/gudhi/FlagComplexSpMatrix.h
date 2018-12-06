@@ -478,7 +478,7 @@ public:
 	  	}	
 
         // auto end = std::chrono::high_resolution_clock::now();
-		 std::cout << "Sparse Adjacency Matrix Created  " << std::endl;
+		 // std::cout << "Sparse Adjacency Matrix Created  " << std::endl;
 		// std::cout << "Formation time : " <<  std::chrono::duration<double, std::milli>(end- begin).count()
 	              // << " ms\n" << std::endl;
 		// std::cout << "Total number of Initial maximal simplices are: " << cols << std::endl;		
@@ -794,7 +794,7 @@ public:
 			vertices.emplace(w);
 			vertexToRow.erase(v);
       		vertices.erase(v);
-      		std::cout<< "Re-named the vertex " << v << " as " << w << std::endl;
+      		// std::cout<< "Re-named the vertex " << v << " as " << w << std::endl;
      	}
      } 
 
@@ -802,21 +802,21 @@ public:
 	
     void active_strong_expansion(const Vertex & v, const Vertex & w, double filt_val){
 		if(membership(v) && membership(w) && v!= w){
-			std::cout << "Strong expansion of the vertex " << v << " and " << w << " begins. " << std::endl;
+			// std::cout << "Strong expansion of the vertex " << v << " and " << w << " begins. " << std::endl;
 			auto active_list_v_w = active_relative_neighbors(v,w);
 			auto active_list_w_v = active_relative_neighbors(w,v);
 			if(active_list_w_v.size() < active_list_v_w.size()){ // simulate the contraction of w by expanding the star of v
 				for (auto & x : active_list_w_v){
 					active_edge_insertion(v,x, filt_val);
-					std::cout << "Inserted the edge " << v << " , " << x  << std::endl;
+					// std::cout << "Inserted the edge " << v << " , " << x  << std::endl;
 				}
 				swap_rows(v,w);
-				std::cout << "A swap of the vertex " << v << " and " << w << "took place." << std::endl;
+				// std::cout << "A swap of the vertex " << v << " and " << w << "took place." << std::endl;
 			}
 			else {  					
 				for (auto & y : active_list_v_w){
 					active_edge_insertion(w,y,filt_val);
-					std::cout << "Inserted the edge " << w << ", " << y  << std::endl;
+					// std::cout << "Inserted the edge " << w << ", " << y  << std::endl;
 				}
 			}
 			auto rw_v = vertexToRow.find(v);

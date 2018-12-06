@@ -25,6 +25,7 @@ class PointSetGen {
                          , int 	  & repetetions
                          , char   & manifold
                          , int 	  & dimension
+                         , int    & dim_max
                          , std::string & in_file_name
                          , std::string & out_file_name
                          ) {
@@ -46,10 +47,13 @@ class PointSetGen {
         ("repetetions,r", po::value<int>(&repetetions)->default_value(1),
         	"Num of repetetions of the experiments.")
       	("manifold,m", po::value<char>(&manifold)->default_value('s'),
-       		"Steps of the threshold")
+       		"Type of manifold")
            
         ("dimensions,D", po::value<int>(&dimension)->default_value(2),
          "Dimension of the manifold.")
+
+         ("dim_max,k ", po::value<int>(&dim_max)->default_value(2),
+         "Maximum allowed dimension of the Rips complex.")
 
         ("input_file_name,i", po::value<std::string>(&in_file_name),
          "The input file.")

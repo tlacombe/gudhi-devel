@@ -37,47 +37,9 @@ class TowerAssembler_FlagComplex
 
     // Filtered_sorted_edge_list * edge_t = new Filtered_sorted_edge_list();
     FlagComplexSpMatrix * flag_Filtration; 
-	
-    // struct {
-	   //      bool operator()(std::size_t a, std::size_t b) const
-	   //      {   
-	   //          return a < b;
-	   //      }   
-	   //  } vertex_compare;
-
     typedef std::vector< std::tuple< double, Vertex, Vertex > > Filtered_sorted_edge_list;
 
-	// template <typename Input_vertex_range>
-	// std::vector<Simplex> all_faces(const Input_vertex_range &vertex_range){
-	//     int set_size = vertex_range.size();
-	//     unsigned int pow_set_size = pow(2, set_size);
-	//     unsigned int counter, j;
-	//     std::vector<Simplex> facets;
-	//     std::vector<Vertex> maxSimplex(vertex_range.begin(), vertex_range.end());
-	//     // std::sort(maxSimplex.begin(), maxSimplex.end(), vertex_compare);
-
-	//     /*Run from counter 000..0 to 111..1*/
-	//     for(counter = 1; counter < pow_set_size; counter++)
-	//     {
-	//       Simplex f;
-	//       for(j = 0; j < set_size; j++)
-	//        {          
-	//           if(counter & (1<<j))                    /* Check if jth bit in the counter is set/true If set then inserts jth element from vertex_range */
-	//             f.insert(maxSimplex[j]);
-	//        }
-	//        facets.emplace_back(f);
-	//        f.clear();
-	//     }
-	//     return facets;
-	// }
- //    template< typename Input_vertex_range>
- //    std::vector<Vertex> sort(const Input_vertex_range & vertex_range) {
- //        std::vector<Vertex> soreted_simplex(vertex_range.begin(), vertex_range.end());
- //        std::sort(soreted_simplex.begin(), soreted_simplex.end(), vertex_compare);
- //        return soreted_simplex;
- //    }
-
-
+	
   public:
     
     TowerAssembler_FlagComplex(std::size_t numVert)
@@ -105,29 +67,22 @@ class TowerAssembler_FlagComplex
                 if(collapsed_to != redmap_2.end()) {  // Collapse happened, because there is a vertex in the map
                     if(mat_1.membership(collapsed_to->second)) { // Collapsed to an existing vertex in mat_1.
 
-                    	myfile << filtration_value  << " c " << renamedVertices.at(v) << " " << renamedVertices.at(collapsed_to->second) << std::endl; 
+                    	// myfile << filtration_value  << " c " << renamedVertices.at(v) << " " << renamedVertices.at(collapsed_to->second) << std::endl; 
                     	// std::cout << filtration_value << " c " << renamedVertices.at(v) << " " << renamedVertices.at(collapsed_to->second) << std::endl;
                         flag_Filtration->active_strong_expansion(renamedVertices.at(v), renamedVertices.at(collapsed_to->second), filtration_value);
-                        // mat_1.contraction(v, collapsed_to->second); 
-                        // std::cout << "The contracted vertex is: " << renamedVertices.at(v) << std::endl;
                         renamedVertices.at(v) = current_rename_counter;
                         current_rename_counter++;                        
                     }
                     else {
 	                    myfile << filtration_value << " i " << renamedVertices.at(collapsed_to->second) << std::endl;
 	                    myfile  << filtration_value << " c " << renamedVertices.at(v) << " " << renamedVertices.at(collapsed_to->second) << std::endl; 
-	                    // std::cout << filtration_value << " i " << renamedVertices.at(collapsed_to->second) << std::endl;
-	                    // std::cout  << filtration_value << " c " << renamedVertices.at(v) << " " << renamedVertices.at(collapsed_to->second) << std::endl; 
-	                    // flag_Filtration->relable(renamedVertices.at(v), renamedVertices.at(collapsed_to->second)); 
-                        //flag_Filtration->insert_vertex(renamedVertices.at(collapsed_to->second),filtration_value);
-                        flag_Filtration->active_strong_expansion(renamedVertices.at(v), renamedVertices.at(collapsed_to->second),filtration_value);
+	                    flag_Filtration->active_strong_expansion(renamedVertices.at(v), renamedVertices.at(collapsed_to->second),filtration_value);
                         // std::cout << filtration_value << " i " << renamedVertices.at(collapsed_to->second) << std::endl;
                         // std::cout  << filtration_value << " c " << renamedVertices.at(v) << " " << renamedVertices.at(collapsed_to->second) << std::endl; 
                         renamedVertices.at(v) = current_rename_counter;
 	                    current_rename_counter++;
                     }
                      // If the vertex "collapsed_to->second" is not a member of mat_1, the contraction function will simply add and then collapse
-                     // std::cout<< "contracting the vertex " << v << " to " << collapsed_to->second << " in the original skeleton. " << std::endl;
                      mat_1.contraction(v, collapsed_to->second);
                 }
             }
