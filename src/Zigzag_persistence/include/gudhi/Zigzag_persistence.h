@@ -465,6 +465,8 @@ void compute_zigzag_persistence()
   dim_max_ = zzit.dim_max();
   std::vector<unsigned int> faces_per_dim(dim_max_+1,0);
 
+  num_arrows_ = cpx_->key(*zzit);
+
   prev_fil_ = zzit.filtration(); // prev_fil_ = cpx_->filtration(*zzit);
   // filtration_values_.emplace_back(cpx_->key(*zzit), prev_fil_);
   filtration_values_.emplace_back(num_arrow_, prev_fil_);
@@ -472,13 +474,16 @@ void compute_zigzag_persistence()
   while( zzit != zzrg.end() )
   { 
     faces_per_dim[cpx_->dimension(*zzit)] += 1;
+    // if(num_arrow_ % 100000 == 0) std::cout << num_arrow_ << "\n";
 
-    if(num_arrow_ % 100000 == 0) std::cout << num_arrow_ << "\n";
+    if(zzit.arrow_direction()) { num_arrows_ = cpx_->key(*zzit); }
+    else { ++num_arrows_; }
 
     curr_fil_ = zzit.filtration();//cpx_->filtration(*zzit);
     if(curr_fil_ != prev_fil_) //check whether the filt val has changed
     { 
-      prev_fil_=curr_fil_; filtration_values_.emplace_back(num_arrow_-1, prev_fil_);
+      // prev_fil_=curr_fil_; filtration_values_.emplace_back(num_arrow_-1, prev_fil_);
+      prev_fil_=curr_fil_; filtration_values_.emplace_back(num_arrow_, prev_fil_);
       // filtration_values_.emplace_back(cpx_->key(*zzit), prev_fil_);
     }
     //Iterator zzit gives only Morse critical cells for insertion (forward arrows).
@@ -489,15 +494,19 @@ void compute_zigzag_persistence()
     //have been assigned correctly by the filtration_simplex_iterator, both tau and 
     //sigma must be elevated into critical cells. This last operation is 
     //implemented in make_pair_critical. sigma is then removed like a normal cell. 
-    if(zzit.arrow_direction()) { forward_arrow(*zzit); }//forward arrow
-    else {//backward arrow 
+    if(zzit.arrow_direction()) 
+    { //forward arrow 
+      forward_arrow(*zzit); 
+    }
+    else 
+    {//backward arrow 
       if(!cpx_->critical(*zzit)) //matrix A becomes matrix A U \{\tau,sigma\}
-      { std::cout << "A cell is critical.\n";
-        make_pair_critical(*zzit); }
+      { make_pair_critical(*zzit); }
       backward_arrow(*zzit); 
     }
-    ++zzit; ++num_arrow_; //count total number of arrows
+    ++zzit; 
   }
+
   if(!matrix_.empty()) {std::cout << "Remains " << matrix_.size() << " columns.\n";}
 
   std::cout << "Faces per dimension:\n";
@@ -505,29 +514,6 @@ void compute_zigzag_persistence()
     std::cout << "dim " << i << ":     " << faces_per_dim[i] << std::endl;
   }
   std::cout << "--------------end faces\n";
-
-  //Compute the right-open intervals, for the remaining columns in the matrix.
-  // for(auto & col : matrix_)
-  // {
-  //   switch(col.birth()) {
-  //     case -2:{ break; } //in H
-  //     case -1:{ //in G       //todo reverse birth and death?
-  //       persistence_diagram_.emplace_back( cpx_->dimension(col.lowest_idx_)
-  //                                        , cpx_->filtration(col.paired_col()->lowest_idx_)
-  //                                        , cpx_->filtration(col.lowest_idx_));
-  //       break; 
-  //     }
-  //     default:{ 
-  //       persistence_diagram_.emplace_back( cpx_->dimension(col.lowest_idx_)
-  //                                        , cpx_->filtration(col.birth_)
-  //                                        , log2(0));//todo gestion infinity in GUDHI
-  //       break;
-  //     }
-  //   }
-  // }
-
-  std::cout << "Total number of arrows: " << num_arrow_ << std::endl;
-
 }
 
 /* sh is a maximal simplex paired with a simplex tsh
@@ -552,6 +538,8 @@ void compute_zigzag_persistence()
 void make_pair_critical(Simplex_handle zzsh)
 {
   auto tsh = cpx_->morse_pair(zzsh);//Morse pair (*tsh, *sh)
+  //add the filtration value for recording, fil(tsh) == fil(zzsh)
+  filtration_values_.emplace_back(cpx_->key(tsh), cpx_->filtration(tsh));
   //new column and row for sigma
   Column * new_col_s = new Column();
   Row  * new_row_s   = new Row();
@@ -586,10 +574,7 @@ void make_pair_critical(Simplex_handle zzsh)
   chain_it_t->assign_paired_col(&(*chain_it_s));
   chain_it_s->assign_paired_col(&(*chain_it_t));
 
-
-
-  if(chain_it_s->lowest_idx_ != cpx_->key(zzsh)) {std::cout << "Error lowest key\n";}
-
+  if(chain_it_s->lowest_idx_ != cpx_->key(zzsh)) {std::cout << "Error low key\n";}
 
   //fill up col_tau with \partial \sigma in new Morse complex
   std::set< Simplex_key > col_bsh; //set maintains the order on indices
@@ -643,42 +628,42 @@ void make_pair_critical(Simplex_handle zzsh)
   }
 
 
-  Filtration_value index_to_filtration(Simplex_key k) {
-    auto it = 
-    std::upper_bound( filtration_values_.begin(), filtration_values_.end() 
-           , std::pair<Simplex_key, Filtration_value>(k, std::numeric_limits<double>::infinity() )
-           , []( std::pair<Simplex_key, Filtration_value> p1
-               , std::pair<Simplex_key, Filtration_value> p2) {
-              return p1.first < p2.first; }
-           );
-    if(it->first != k) {return (--it)->second;}
-    else {return it->second;}
-  }
+  // Filtration_value index_to_filtration(Simplex_key k) {
+  //   auto it = 
+  //   std::upper_bound( filtration_values_.begin(), filtration_values_.end() 
+  //          , std::pair<Simplex_key, Filtration_value>(k, std::numeric_limits<double>::infinity() )
+  //          , []( std::pair<Simplex_key, Filtration_value> p1
+  //              , std::pair<Simplex_key, Filtration_value> p2) {
+  //             return p1.first < p2.first; }
+  //          );
+  //   if(it->first != k) {return (--it)->second;}
+  //   else {return it->second;}
+  // }
 
 //Dionysus: In interval   
 // (idx i)_R_{eta eps_i}(Pi) -> .. <- R_{eta eps_i+1}(Pi+1)_(idx j), anything 
 // created from index i+1 on has birth eps_i+1, anything destroyed has death eps_i 
-  Filtration_value index_to_filtration_birth(Simplex_key k) {
-    auto it = //strictly greater
-    std::lower_bound( filtration_values_.begin(), filtration_values_.end() 
-           , std::pair<Simplex_key, Filtration_value>(k, std::numeric_limits<double>::infinity() )
-           , []( std::pair<Simplex_key, Filtration_value> p1
-               , std::pair<Simplex_key, Filtration_value> p2) {
-              return p1.first < p2.first; }
-           );
-    return it->second;
-  }
-  Filtration_value index_to_filtration_death(Simplex_key k) {
-    auto it = 
-    std::upper_bound( filtration_values_.begin(), filtration_values_.end() 
-           , std::pair<Simplex_key, Filtration_value>(k, std::numeric_limits<double>::infinity() )
-           , []( std::pair<Simplex_key, Filtration_value> p1
-               , std::pair<Simplex_key, Filtration_value> p2) {
-              return p1.first < p2.first; }
-           );
-    --it;
-    return it->second;
-  }
+  // Filtration_value index_to_filtration_birth(Simplex_key k) {
+  //   auto it = //strictly greater
+  //   std::lower_bound( filtration_values_.begin(), filtration_values_.end() 
+  //          , std::pair<Simplex_key, Filtration_value>(k, std::numeric_limits<double>::infinity() )
+  //          , []( std::pair<Simplex_key, Filtration_value> p1
+  //              , std::pair<Simplex_key, Filtration_value> p2) {
+  //             return p1.first < p2.first; }
+  //          );
+  //   return it->second;
+  // }
+  // Filtration_value index_to_filtration_death(Simplex_key k) {
+  //   auto it = 
+  //   std::upper_bound( filtration_values_.begin(), filtration_values_.end() 
+  //          , std::pair<Simplex_key, Filtration_value>(k, std::numeric_limits<double>::infinity() )
+  //          , []( std::pair<Simplex_key, Filtration_value> p1
+  //              , std::pair<Simplex_key, Filtration_value> p2) {
+  //             return p1.first < p2.first; }
+  //          );
+  //   --it;
+  //   return it->second;
+  // }
 
   void display_filtration_values() {
     std::cout << "*** Filtration values: \n"; 
@@ -698,45 +683,53 @@ void make_pair_critical(Simplex_handle zzsh)
    * p1*...*pr is the product of prime numbers pi such that the homology
    * feature exists in homology with Z/piZ coefficients.
    */
-  void output_diagram(std::ostream& ostream = std::cout) {
+  // void output_diagram(std::ostream& ostream = std::cout) {
     
-    int num_intervals = 10;
+  //   int num_intervals = 10;
 
-    // std::cout << "Filtration values: ";
-    // for(auto pp : filtration_values_) {
-    //   std::cout << "[ " << pp.first << " ; " << pp.second << " ]  ";
-    // } std::cout << std::endl;
+  //   // std::cout << "Filtration values: ";
+  //   // for(auto pp : filtration_values_) {
+  //   //   std::cout << "[ " << pp.first << " ; " << pp.second << " ]  ";
+  //   // } std::cout << std::endl;
 
-    std::vector< interval_t > tmp_diag; 
-    tmp_diag.reserve(persistence_diagram_.size());
-    for(auto bar : persistence_diagram_) {
-      tmp_diag.emplace_back(bar.dim_,index_to_filtration(bar.b_),index_to_filtration(bar.d_));
-    }
-    cmp_intervals_by_length cmp;
-    std::stable_sort(tmp_diag.begin(), tmp_diag.end(), cmp);
+  //   std::vector< interval_t > tmp_diag; 
+  //   tmp_diag.reserve(persistence_diagram_.size());
+  //   for(auto bar : persistence_diagram_) {
+  //     tmp_diag.emplace_back(bar.dim_,index_to_filtration(bar.b_),index_to_filtration(bar.d_));
+  //   }
+  //   cmp_intervals_by_length cmp;
+  //   std::stable_sort(tmp_diag.begin(), tmp_diag.end(), cmp);
 
-    if(tmp_diag.empty()) {return;}
+  //   if(tmp_diag.empty()) {return;}
 
-    int curr_dim = tmp_diag.begin()->dim_;
-    int curr_num_intervals = num_intervals;
+  //   int curr_dim = tmp_diag.begin()->dim_;
+  //   int curr_num_intervals = num_intervals;
 
-    for(auto bar : tmp_diag) {
-      if(curr_dim != bar.dim_) {
-        std::cout << "----------------------------------------- dim " << bar.dim_ 
-        << " \n";
-        curr_num_intervals = num_intervals; curr_dim = bar.dim_;
-      }
-      if(curr_num_intervals > 0) {
-        --curr_num_intervals;
-        std::cout << bar.dim_ << "   " << bar.b_ << " " << bar.d_ << 
-                                                "      " << bar.length() << " \n";
-      }
-    }
-  }
+  //   for(auto bar : tmp_diag) {
+  //     if(curr_dim != bar.dim_) {
+  //       std::cout << "----------------------------------------- dim " << bar.dim_ 
+  //       << " \n";
+  //       curr_num_intervals = num_intervals; curr_dim = bar.dim_;
+  //     }
+  //     if(curr_num_intervals > 0) {
+  //       --curr_num_intervals;
+  //       std::cout << bar.dim_ << "   " << bar.b_ << " " << bar.d_ << 
+  //                                               "      " << bar.length() << " \n";
+  //     }
+  //   }
+  // }
 
-
+//Dionysus: In interval   
+// (idx i)_R_{eta eps_i}(Pi) -> .. <- R_{eta eps_i+1}(Pi+1)_(idx j), anything 
+// created from index i+1 on has birth eps_i+1, anything destroyed has death eps_i 
   void output_diagram_dionysus(std::ostream& ostream = std::cout) {
     
+    std::stable_sort(filtration_values_.begin(), filtration_values_.end(),
+                    []( std::pair< Simplex_key, Filtration_value > p1
+                      , std::pair< Simplex_key, Filtration_value > p2 )
+                      { return p1.first < p2.first; }
+                    );
+
     int num_intervals = 50000;
 
     std::vector< interval_t > tmp_diag; 
@@ -795,41 +788,41 @@ void make_pair_critical(Simplex_handle zzsh)
     }
   }
 
-  void output_log2_diagram(std::ostream& ostream = std::cout) {
+  // void output_log2_diagram(std::ostream& ostream = std::cout) {
 
-    int num_intervals = 10;
+  //   int num_intervals = 10;
 
-    // std::cout << "Filtration values: ";
-    // for(auto pp : filtration_values_) {
-    //   std::cout << "[ " << pp.first << " ; " << pp.second << " ]  ";
-    // } std::cout << std::endl;
+  //   // std::cout << "Filtration values: ";
+  //   // for(auto pp : filtration_values_) {
+  //   //   std::cout << "[ " << pp.first << " ; " << pp.second << " ]  ";
+  //   // } std::cout << std::endl;
 
-    std::vector< interval_t > tmp_diag; 
-    tmp_diag.reserve(persistence_diagram_.size());
-    for(auto bar : persistence_diagram_) {
-      tmp_diag.emplace_back(bar.dim_,log2(index_to_filtration(bar.b_)),log2(index_to_filtration(bar.d_)));
-    }
-    cmp_intervals_by_length cmp;
-    std::stable_sort(tmp_diag.begin(), tmp_diag.end(), cmp);
+  //   std::vector< interval_t > tmp_diag; 
+  //   tmp_diag.reserve(persistence_diagram_.size());
+  //   for(auto bar : persistence_diagram_) {
+  //     tmp_diag.emplace_back(bar.dim_,log2(index_to_filtration(bar.b_)),log2(index_to_filtration(bar.d_)));
+  //   }
+  //   cmp_intervals_by_length cmp;
+  //   std::stable_sort(tmp_diag.begin(), tmp_diag.end(), cmp);
 
-    if(tmp_diag.empty()) {return;}
+  //   if(tmp_diag.empty()) {return;}
 
-    int curr_dim = tmp_diag.begin()->dim_;
-    int curr_num_intervals = num_intervals;
+  //   int curr_dim = tmp_diag.begin()->dim_;
+  //   int curr_num_intervals = num_intervals;
 
-    for(auto bar : tmp_diag) {
-      if(curr_dim != bar.dim_) {
-        std::cout << "----------------------------------------- dim " << bar.dim_ 
-        << " \n";
-        curr_num_intervals = num_intervals; curr_dim = bar.dim_;
-      }
-      if(curr_num_intervals > 0) {
-        --curr_num_intervals;
-        std::cout << bar.dim_ << "   " << bar.b_ << " " << bar.d_ << 
-                                                "      " << bar.length() << " \n";
-      }
-    }
-  }
+  //   for(auto bar : tmp_diag) {
+  //     if(curr_dim != bar.dim_) {
+  //       std::cout << "----------------------------------------- dim " << bar.dim_ 
+  //       << " \n";
+  //       curr_num_intervals = num_intervals; curr_dim = bar.dim_;
+  //     }
+  //     if(curr_num_intervals > 0) {
+  //       --curr_num_intervals;
+  //       std::cout << bar.dim_ << "   " << bar.b_ << " " << bar.d_ << 
+  //                                               "      " << bar.length() << " \n";
+  //     }
+  //   }
+  // }
 
 
   /** \brief Output the persistence diagram in ostream.
@@ -842,21 +835,21 @@ void make_pair_critical(Simplex_handle zzsh)
    * p1*...*pr is the product of prime numbers pi such that the homology
    * feature exists in homology with Z/piZ coefficients.
    */
-  void output_index_diagram(std::ostream& ostream = std::cout) {
-    std::vector< interval_t > tmp_diag; 
-    tmp_diag.reserve(persistence_diagram_.size());
-    for(auto bar : persistence_diagram_) {
-      tmp_diag.emplace_back(bar.dim_,bar.b_,bar.d_);
-    }
-    // cmp_intervals_by_length cmp;
-    // std::stable_sort(tmp_diag.begin(), tmp_diag.end(), cmp);
+  // void output_index_diagram(std::ostream& ostream = std::cout) {
+  //   std::vector< interval_t > tmp_diag; 
+  //   tmp_diag.reserve(persistence_diagram_.size());
+  //   for(auto bar : persistence_diagram_) {
+  //     tmp_diag.emplace_back(bar.dim_,bar.b_,bar.d_);
+  //   }
+  //   // cmp_intervals_by_length cmp;
+  //   // std::stable_sort(tmp_diag.begin(), tmp_diag.end(), cmp);
 
-    for(auto bar : tmp_diag) {
-        std::cout << bar.dim_ << "   " << bar.b_ << " " << bar.d_ << "      " << bar.length() << "     ";
-        std::cout << index_to_filtration_birth(bar.b_) << " " << 
-                     index_to_filtration_death(bar.d_) << "\n";
-    }
-  }
+  //   for(auto bar : tmp_diag) {
+  //       std::cout << bar.dim_ << "   " << bar.b_ << " " << bar.d_ << "      " << bar.length() << "     ";
+  //       std::cout << index_to_filtration_birth(bar.b_) << " " << 
+  //                    index_to_filtration_death(bar.d_) << "\n";
+  //   }
+  // }
 
 
 /** \brief Output the persistence diagram in ostream.
@@ -880,34 +873,34 @@ void make_pair_critical(Simplex_handle zzsh)
 
 
 
-void display_mat() {
-  std::cout << "---------------------------beg \n";
-  for(auto & col : matrix_)
-  {
-    // if(col.paired_col_ == NULL && col.birth() != col.lowest_idx_) {
-    //   std::cout << "birth != lowest_idx !!\n";
-    // } <---- birth != lowest_idx
-    std::cout << " : [k=" << col.lowest_idx_ <<"] ";
-    std::cout << "[b=" << col.birth_ <<"] ";
-    if(col.paired_col_ != NULL) { std::cout << "[pc=" << col.paired_col_->lowest_idx_ <<"]     ";}
-    else { std::cout << "[pc=" << "F" <<"]     ";}
-    std::cout <<"| ";
-    for(auto &cell : *(col.column_)) { std::cout << cell.key_ << " "; }
-    std::cout << " |" << std::endl;
-  }
-  std::cout << "----------- \n";
-  // std::cout << "Bv: "; for(auto b : birth_vector_.inv_b_vec) { std::cout << b << " "; } std::cout << "\n";
-  // std::cout << "Bv: "; for(auto pp : birth_ordering_.birth_to_pos_) { std::cout << "("<<pp.first<<";"<<pp.second<<") ";}
-  // std::cout << "    maxb = " << birth_ordering_.max_birth_pos_ << " , minb = " << birth_ordering_.min_birth_pos_ << "\n";
-  std::cout << "Pd: "; for(auto bd: persistence_diagram_) 
-                        { std::cout << "["<<bd.b_<<";"<<bd.d_<< "  d" << bd.dim_ << "] "; } std::cout << "\n";
-  // std::cout << "l_to_m: "; for(auto ltm : lowidx_to_matidx_) 
-  //                       { std::cout << ltm.first << "->" << ltm.second->lowest_idx_ << " ";} std::cout << "\n";
-  for(auto ltm : lowidx_to_matidx_) {
-    if(ltm.first != ltm.second->lowest_idx_) {std::cout << "ltm != lowest_idx ??\n";}
-  }
-  std::cout << "---------------------------end \n";
-}
+// void display_mat() {
+//   std::cout << "---------------------------beg \n";
+//   for(auto & col : matrix_)
+//   {
+//     // if(col.paired_col_ == NULL && col.birth() != col.lowest_idx_) {
+//     //   std::cout << "birth != lowest_idx !!\n";
+//     // } <---- birth != lowest_idx
+//     std::cout << " : [k=" << col.lowest_idx_ <<"] ";
+//     std::cout << "[b=" << col.birth_ <<"] ";
+//     if(col.paired_col_ != NULL) { std::cout << "[pc=" << col.paired_col_->lowest_idx_ <<"]     ";}
+//     else { std::cout << "[pc=" << "F" <<"]     ";}
+//     std::cout <<"| ";
+//     for(auto &cell : *(col.column_)) { std::cout << cell.key_ << " "; }
+//     std::cout << " |" << std::endl;
+//   }
+//   std::cout << "----------- \n";
+//   // std::cout << "Bv: "; for(auto b : birth_vector_.inv_b_vec) { std::cout << b << " "; } std::cout << "\n";
+//   // std::cout << "Bv: "; for(auto pp : birth_ordering_.birth_to_pos_) { std::cout << "("<<pp.first<<";"<<pp.second<<") ";}
+//   // std::cout << "    maxb = " << birth_ordering_.max_birth_pos_ << " , minb = " << birth_ordering_.min_birth_pos_ << "\n";
+//   std::cout << "Pd: "; for(auto bd: persistence_diagram_) 
+//                         { std::cout << "["<<bd.b_<<";"<<bd.d_<< "  d" << bd.dim_ << "] "; } std::cout << "\n";
+//   // std::cout << "l_to_m: "; for(auto ltm : lowidx_to_matidx_) 
+//   //                       { std::cout << ltm.first << "->" << ltm.second->lowest_idx_ << " ";} std::cout << "\n";
+//   for(auto ltm : lowidx_to_matidx_) {
+//     if(ltm.first != ltm.second->lowest_idx_) {std::cout << "ltm != lowest_idx ??\n";}
+//   }
+//   std::cout << "---------------------------end \n";
+// }
 
 
 

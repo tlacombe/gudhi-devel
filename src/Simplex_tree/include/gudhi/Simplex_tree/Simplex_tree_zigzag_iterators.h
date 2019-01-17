@@ -92,6 +92,7 @@ class Flagzigzag_simplex_iterator
       ++edge_it_;
       for(auto & sh : partial_zzfil_) 
       { sh->second.assign_key(counter_insert); ++counter_insert; } 
+
     }
 
 //User-defined copy constructor
