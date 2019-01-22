@@ -24,6 +24,7 @@
 #define GRAPH_SIMPLICIAL_COMPLEX_H_
 
 #include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/filtered_graph.hpp>
 
 #include <utility>  // for pair<>
 #include <vector>
@@ -104,6 +105,48 @@ Proximity_graph<SimplicialComplexForProximityGraph> compute_proximity_graph(
   }
 
   return skel_graph;
+}
+
+/* Edge predicate for Boost filtered_graph. */
+template <typename SimplicialComplexForProximityGraph>
+class edge_predicate_t {
+  using Prox_graph = Proximity_graph<SimplicialComplexForProximityGraph>;
+  using Filtration_value = typename SimplicialComplexForProximityGraph::Filtration_value;
+  using Edge_descriptor = typename Prox_graph::edge_descriptor;
+public:
+  edge_predicate_t()
+      : prox_graph_(),
+        threshold_(0.) {}
+  edge_predicate_t(const Prox_graph& prox_graph, Filtration_value threshold)
+      : prox_graph_(prox_graph),
+        threshold_(threshold) {}
+  bool operator()(const Edge_descriptor& edge_id) const {
+    return (boost::get(Gudhi::edge_filtration_t(), prox_graph_, edge_id) <= threshold_);
+  }
+private:
+  Prox_graph prox_graph_;
+  Filtration_value threshold_;
+};
+
+/** \brief Filtered_proximity_graph contains the vertices and edges with their filtration values in order to store the
+ * result of `Gudhi::filter_proximity_graph` function.
+ *
+ * \tparam SimplicialComplexForProximityGraph furnishes `Filtration_value` type definition.
+ *
+ */
+template <typename SimplicialComplexForProximityGraph>
+using Filtered_proximity_graph = typename boost::filtered_graph<Proximity_graph<SimplicialComplexForProximityGraph>,
+    edge_predicate_t<SimplicialComplexForProximityGraph>>;
+
+template< typename SimplicialComplexForProximityGraph >
+Filtered_proximity_graph<SimplicialComplexForProximityGraph> filter_proximity_graph(
+    const Proximity_graph<SimplicialComplexForProximityGraph>& proximity_graph,
+    typename SimplicialComplexForProximityGraph::Filtration_value new_threshold) {
+  using Edge_predicate_t = edge_predicate_t<SimplicialComplexForProximityGraph>;
+
+  Filtered_proximity_graph<SimplicialComplexForProximityGraph> filtered_graph(proximity_graph, Edge_predicate_t(proximity_graph, new_threshold));
+
+  return filtered_graph;
 }
 
 }  // namespace Gudhi

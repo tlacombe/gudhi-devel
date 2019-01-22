@@ -11,6 +11,9 @@ target_link_libraries(Common_test_distance_matrix_reader ${Boost_UNIT_TEST_FRAME
 add_executable ( Common_test_persistence_intervals_reader test_persistence_intervals_reader.cpp )
 target_link_libraries(Common_test_persistence_intervals_reader ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
 
+add_executable ( Common_test_graph_simplicial_complex test_graph_simplicial_complex.cpp )
+target_link_libraries(Common_test_graph_simplicial_complex ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+
 # Do not forget to copy test files in current binary dir
 file(COPY "${CMAKE_SOURCE_DIR}/data/points/alphacomplexdoc.off" DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 file(COPY "${CMAKE_SOURCE_DIR}/data/distance_matrix/lower_triangular_distance_matrix.csv" DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
@@ -22,3 +25,4 @@ file(COPY "${CMAKE_SOURCE_DIR}/src/common/test/persistence_intervals_without_dim
 gudhi_add_coverage_test(Common_test_points_off_reader)
 gudhi_add_coverage_test(Common_test_distance_matrix_reader)
 gudhi_add_coverage_test(Common_test_persistence_intervals_reader)
+gudhi_add_coverage_test(Common_test_graph_simplicial_complex)
