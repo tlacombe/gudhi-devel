@@ -118,6 +118,8 @@ class FlagComplexSpMatrix
 
 	std::size_t numOneSimplices;
 
+	std::size_t numDomEdge;
+
 	//! Stores the Sparse matrix of double values representing the Original Simplicial Complex.
     /*!
       \code
@@ -126,7 +128,7 @@ class FlagComplexSpMatrix
       ;
 	*/
 
-	sparseRowMatrix sparse_colpsd_adj_Matrix;       // Stores the collapsed sparse matrix representaion.
+	sparseRowMatrix* sparse_colpsd_adj_Matrix;       // Stores the collapsed sparse matrix representaion.
 	sparseRowMatrix sparseRowAdjMatrix; 			// This is row-major version of the same sparse-matrix, to facilitate easy access to elements when traversing the matrix row-wise.
 
 	
@@ -214,6 +216,7 @@ class FlagComplexSpMatrix
 		
 
 		rows = 0;
+		numDomEdge = 0;
 		
 		numOneSimplices = 0;
 		expansion_limit = 3;
@@ -225,7 +228,7 @@ class FlagComplexSpMatrix
     
  	void after_vertex_collapse()
 	{
-     	sparse_colpsd_adj_Matrix   =  sparseRowMatrix(rows,rows); // Just for debugging purpose.
+     	sparse_colpsd_adj_Matrix   =  new sparseRowMatrix(rows,rows); // Just for debugging purpose.
     	oneSimplices.clear();  
     	// rowIterator.clear();
 		for(int rw = 0 ; rw < rows ; ++rw)
@@ -234,7 +237,36 @@ class FlagComplexSpMatrix
 			{
 				auto nbhrs_to_insert = read_row_index(rw); // returns row indices of the non-dominated vertices.
         		for(auto & v: nbhrs_to_insert){
-          			sparse_colpsd_adj_Matrix.insert(rw, v) = 1;
+          			sparse_colpsd_adj_Matrix->insert(rw, v) = 1;
+          			if(rw < v){
+          				oneSimplices.push_back({rowToVertex[rw],rowToVertex[v]});
+          				edgeIterator.push({rw,v}) ; 
+          				// std::cout << "Pushed the edge {" << rw << ", " << v <<  "} " << std::endl;
+          				edgeStatusMap[{rw,v}] = {true, false};
+          			}
+        		}
+			}			
+		}
+		std::cout << "Total number of edges for domination check are: " << edgeIterator.size() << std::endl;
+    	// std::cout << sparse_colpsd_adj_Matrix << std::endl;
+		return ;
+	}
+
+	//!	Function for computing the sparse-matrix corresponding to the core of the complex. 
+    
+ 	void after_edge_collapse()
+	{
+		delete sparse_colpsd_adj_Matrix;
+     	sparse_colpsd_adj_Matrix   =  new sparseRowMatrix(rows,rows); // Just for debugging purpose.
+    	oneSimplices.clear();  
+    	// rowIterator.clear();
+		for(int rw = 0 ; rw < rows ; ++rw)
+		{
+			if(not vertDomnIndicator[rw]) 				//If the current column is not dominated
+			{
+				auto nbhrs_to_insert = read_row_index(rw); // returns row indices of the non-dominated vertices.
+        		for(auto & v: nbhrs_to_insert){
+          			sparse_colpsd_adj_Matrix->insert(rw, v) = 1;
           			if(rw < v){
           				oneSimplices.push_back({rowToVertex[rw],rowToVertex[v]});
           				edgeIterator.push({rw,v}) ; 
@@ -246,6 +278,7 @@ class FlagComplexSpMatrix
     	// std::cout << sparse_colpsd_adj_Matrix << std::endl;
 		return ;
 	}
+
 	//! Function to fully compact a particular vertex of the ReductionMap.
     /*!
       It takes as argument the iterator corresponding to a particular vertex pair (key-value) stored in the ReductionMap. <br>
@@ -281,11 +314,11 @@ class FlagComplexSpMatrix
 		}
 	}
 
-	void sparse_strong_collapse()
+	void sparse_strong_vertex_collapse()
 	{
  		complete_vertex_domination_check(rowIterator, rowInsertIndicator, vertDomnIndicator); 		// Complete check for rows in rowIterator, rowInsertIndicator is a list of boolean indicator if a vertex is already inserted in the working row_queue (rowIterator)
   		if( not rowIterator.empty())
-			sparse_strong_collapse();
+			sparse_strong_vertex_collapse();
 		else
 			return ;
   	}
@@ -336,12 +369,16 @@ class FlagComplexSpMatrix
 			        for (doubleVector::iterator it = cmnNonZeroInnerIdcs.begin(); it!=cmnNonZeroInnerIdcs.end(); it++) 
 			        {	c = *it;
 			       		if(c != u and c != v){
-							if(std::includes(read_row_index(c).begin(), read_row_index(c).end(), cmnNonZeroInnerIdcs.begin(), cmnNonZeroInnerIdcs.end()))
+							if(std::includes(read_row_index(c).begin(), read_row_index(c).end(), cmnNonZeroInnerIdcs.begin(), cmnNonZeroInnerIdcs.end())) {// If c contains the common neighbours.
 								set_edge_domination(cmnNonZeroInnerIdcs, e);
+								 std::cout << "The edge {" << u << ", " << v <<  "} is dominated." << std::endl;
+							}	
+
 						}         
 			       	}
 	    	}
 	    }
+	    std::cout << "Total number of dominated egdes were: " << numDomEdge << std::endl;
 	}
 
 
@@ -367,6 +404,7 @@ class FlagComplexSpMatrix
 	void set_edge_domination(doubleVector& common, Edge e) // checks if the edge 'e' is dominated by vertex 'w'
 	{
 		edgeStatusMap[e] = {false, true};
+		numDomEdge++;
 		Vertex u = std::get<0>(e) ;
 	  	Vertex v = std::get<1>(e) ;
 	  	sparseRowAdjMatrix.coeffRef(u,v) = 0;
@@ -421,7 +459,6 @@ class FlagComplexSpMatrix
 	            	nonZeroIndices_v.push_back(it.index());  // inner index, here it is equal to it.columns()
 	    	}
 	    	std::set_intersection(nonZeroIndices_u.begin(), nonZeroIndices_u.end(), nonZeroIndices_v.begin(), nonZeroIndices_v.end(), std::inserter(common, common.begin()));	
-
 	    }	
       	return common;
 	}
@@ -552,12 +589,12 @@ public:
 
 	//!	Function for performing strong collapse.
     /*!
-      calls sparse_strong_collapse(), and
+      calls sparse_strong_vertex_collapse(), and
       Then, it compacts the ReductionMap by calling the function fully_compact().
     */
-	double strong_collapse() {
+	double strong_vertex_collapse() {
 			auto begin_collapse  = std::chrono::high_resolution_clock::now();
-			sparse_strong_collapse();
+			sparse_strong_vertex_collapse();
 			already_collapsed = true;
 			auto end_collapse  = std::chrono::high_resolution_clock::now();
 		
@@ -568,6 +605,35 @@ public:
 			fully_compact();
 			//Post processing...
 			after_vertex_collapse();
+			return collapseTime;
+	}
+
+
+	double strong_edge_collapse() {
+			auto begin_collapse  = std::chrono::high_resolution_clock::now();
+			complete_edge_domination();
+			already_collapsed = true;
+			auto end_collapse  = std::chrono::high_resolution_clock::now();
+		
+			auto collapseTime = std::chrono::duration<double, std::milli>(end_collapse- begin_collapse).count();
+			// std::cout << "Time of Collapse : " << collapseTime << " ms\n" << std::endl;
+			
+			// Now we complete the Reduction Map
+			// fully_compact();
+			//Post processing...
+			after_edge_collapse();
+			return collapseTime;
+	}
+
+	double strong_vertex_edge_collapse() {
+			auto begin_collapse  = std::chrono::high_resolution_clock::now();
+			strong_vertex_collapse();
+			strong_edge_collapse();
+			// strong_vertex_collapse();
+			already_collapsed = true;
+			auto end_collapse  = std::chrono::high_resolution_clock::now();
+		
+			auto collapseTime = std::chrono::duration<double, std::milli>(end_collapse- begin_collapse).count();
 			return collapseTime;
 	}
 
@@ -657,7 +723,7 @@ public:
     	return vertices;
     }
     sparseRowMatrix collapsed_matrix() const {
-    	return sparse_colpsd_adj_Matrix;
+    	return *sparse_colpsd_adj_Matrix;
     }
 
     sparseRowMatrix uncollapsed_matrix() const {
