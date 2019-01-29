@@ -4,7 +4,7 @@
  *
  *    Author(s):       Siddharth Pritam 
  *
- *    Copyright (C) 2017 INRIA Sophia Antipolis (France)
+ *    Copyright (C) 2018 INRIA Sophia Antipolis (France)
  *
  *    This program is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 // #include "gudhi/Fake_simplex_tree.h"
 // #include "gudhi/Simplex_tree.h"
 #include <gudhi/Rips_edge_list.h>
+#include <boost/functional/hash.hpp>
 // #include <boost/graph/adjacency_list.hpp>
 // #include <boost/graph/bron_kerbosch_all_cliques.hpp>
 
@@ -46,11 +47,12 @@
 //using Fake_simplex_tree 	= Gudhi::Fake_simplex_tree ;
 //using Simplex_tree   		= Gudhi::Simplex_tree<>;
 //using Vertex 	            = std::size_t;
-//using Simplex             	= Fake_simplex_tree::Simplex;
+//using Simplex             = Fake_simplex_tree::Simplex;
 
 typedef std::size_t Vertex;
-using Edge 					= std::pair<Vertex,Vertex>;
-using Edge_list 			= std::vector<Edge>;
+using Edge 					= std::pair<Vertex,Vertex>; // This is an odered pair, An edge is stored with convention of the first element being the smaller i.e {2,3} not {3,2}.
+using edge_list 			= std::vector<Edge>;
+using boolpair				= std::pair<bool, bool>;
 
 using MapVertexToIndex 	  	= std::unordered_map<Vertex,int>;
 using Map 				  	= std::unordered_map<Vertex,Vertex>;
@@ -64,9 +66,11 @@ using vertexVector     = std::vector<Vertex>;
 using boolVector       = std::vector<bool>;
 
 using doubleQueue 	   = std::queue<double>;
+using edgeQueue		   = std::queue<Edge>;
 // using matixTuple	   = std::tuple<sparseMatrix, sparseRowMatrix>;
 
 typedef std::vector< std::tuple< double, Vertex, Vertex > > Filtered_sorted_edge_list;
+typedef std::unordered_map<Edge, boolpair, boost::hash< Edge > > u_edge_map;
 
 //!  Class SparseMsMatrix 
 /*!
@@ -82,15 +86,8 @@ class FlagComplexSpMatrix
   	std::unordered_set<Vertex> vertices; 
 
   
-  //! Stores the 1-simplices9edges) of the original Simplicial Complex.
-    /*!
-      \code
-      simplexVector = std::vector< Simplex >
-      \endcode
-      This is a vector that stores all the maximal simplices of the Original Simplicial Complex. <br>
-      \endverbatim
-    */
- 	Edge_list one_simplices;
+  //! Stores the 1-simplices(edges) of the original Simplicial Complex.
+   	edge_list oneSimplices;
  
 	//! Stores the Map between vertices<B>rowToVertex  and row indices <B>rowToVertex -> row-index</B>.
     /*!
@@ -124,22 +121,15 @@ class FlagComplexSpMatrix
 	//! Stores the Sparse matrix of double values representing the Original Simplicial Complex.
     /*!
       \code
-      sparseMatrix   = Eigen::SparseMatrix<double> ;
+      sparseRowMatrix   = Eigen::SparseMatrix<double, Eigen::RowMajor> ;
       \endcode
-      So after counting the number of rows and num of Maximal simplices, this is initialised as : <br>
-      \code
-      sparseMxSimplices =  sparseMatrix(rows,numOneSimplices);
-      \endcode
-      And filled with columns by the Constructor with a Fake Simplex tree as an argument.
-    ;
-	sparseMatrix* Sparse*/
-
+      ;
+	*/
 
 	sparseRowMatrix sparse_colpsd_adj_Matrix;       // Stores the collapsed sparse matrix representaion.
-	sparseRowMatrix sparseRowAdjMatrix; 		// This is row-major version of the same sparse-matrix, to facilitate easy access to elements when traversing the matrix row-wise.
+	sparseRowMatrix sparseRowAdjMatrix; 			// This is row-major version of the same sparse-matrix, to facilitate easy access to elements when traversing the matrix row-wise.
 
-	//Fake_simplex_tree collapsed_fake_simplex_tree;
-	//Simplex_tree collapsed_simplex_tree;
+	
 
 	//! Stores <I>true</I> for dominated rows and  <I>false</I> for undominated rows. 
     /*!
@@ -147,29 +137,29 @@ class FlagComplexSpMatrix
       Subsequent removal of dominated vertices is reflected by concerned entries changing to <I>true</I> in this vector.
     */
   	boolVector vertDomnIndicator;  //(domination indicator)
-	//! Stores <I>true</I> for maximal simplex(dominated) columns and  <I>false</I> for a non-maximal(non-dominated) columns. 
-    /*!
-      Initialised to an vector of length equal to the value of the variable <B>cols</B> with all <I>false</I> values.
-      Subsequent removal of Maximal Simplices (caused by removal of vertices) is reflected by concerned entries changing to <I>false</I> in this array.
-    */
-  	//boolVector simpDomnIndicator; //(domination indicator)
+	
 
-	//! Stores the indices of the rows to-be checked for domination in the current iteration. 
-    /*!
-      Initialised to a queue with all row-indices inserted.
-      Subsequently once the row is checked for dominated the row-index is poped out from the queue. A row-index is inserted once again if it is a non-zero element of a dominated column.
-    */
 	boolVector activeIndicator; 	// active indicator
 	boolVector contractionIndicator; //(contraction indicator)
+	
+	//! Stores the indices of the rows to-be checked for domination in the current iteration. 
+    /*!
+      Initialised with all rows for the first iteration.
+      Subsequently once a dominated row is found, its non-dominated neighbhour indices are inserted.
+    */
+	//doubleQueue rowIterator;
 
   	doubleQueue rowIterator;
-  	//! Stores the indices of the colums to-be checked for domination in the current iteration. 
-    /*!
-      Initialised to an empty queue.
-      Subsequently once a dominated row is found, its non-zero column indices are inserted.
-    */
-	//doubleQueue columnIterator;
 
+  	//! Stores the indices-pair of the edges to-be checked for domination in the current iteration. 
+    /*!
+      Initialised with all egdes for the first iteration.
+      Subsequently once a dominated row is found, its non-dominated neighbhour indices are inserted. // To be clarified.
+    */
+	//doubleQueue rowIterator;
+
+  	edgeQueue   edgeIterator;
+  	
 	//! Stores <I>true</I> if the current row is inserted in the queue <B>rowIterator<B> otherwise its value is <I>false<I>. 
     /*!
       Initialised to a boolean vector of length equal to the value of the variable <B>rows</B> with all <I>true</I> values.
@@ -177,14 +167,22 @@ class FlagComplexSpMatrix
     */
 	boolVector rowInsertIndicator;  //(current iteration row insertion indicator)
 
-  //! Stores <I>true</I> if the current column is inserted in the queue <B>columnIterator<B> otherwise its value is <I>false<I>. 
-    /*!
-      Initialised to a boolean vector of length equal to the value of the variable <B>cols</B> with all <I>false</I> values.
-      Subsequent addition/removal of a column in  <B>columnIterator<B> is reflected by concerned entries changing to <I>true</I>/<I>false</I> in this vector.
-    */
-	//boolVector colInsertIndicator; //(current iteration column insertion indicator)
 	
-  //! Map that stores the Reduction / Collapse of vertices.
+	//! Map that stores the current status of the edges after the vertex-collapse has been performeed. .
+    /*!
+      \code
+      u_edge_map = std::unordered_map<Edge, boolpair>
+      \endcode
+     The values an edge can take are 0, 1, 2, 3; 
+     {00} -> Not dominated and not inserted in edgeIterator;
+     {01} -> Dominated and not inserted
+     {10} -> Not dominated and inserted
+     {11}  -> Dominated and inserted ( This is not a valid state, as once an edge has been dominated it should not be inserted in the queue. However it's kept for debugging)
+     The right binary bit is for domination and the left is for insertion.
+    */
+	u_edge_map edgeStatusMap; 
+
+    //! Map that stores the Reduction / Collapse of vertices.
     /*!
       \code
       Map = std::unordered_map<Vertex,Vertex>
@@ -203,14 +201,18 @@ class FlagComplexSpMatrix
 	{
 		rowToVertex.clear();
     	vertexToRow.clear();
-    	one_simplices.clear();
+    	oneSimplices.clear();
     	ReductionMap.clear();
     	
 		vertDomnIndicator.clear();
 		rowInsertIndicator.clear();
 		rowIterator.push(0);
 		rowIterator.pop();
+
+		edgeIterator.push({0,0});
+		edgeIterator.pop();
 		
+
 		rows = 0;
 		
 		numOneSimplices = 0;
@@ -219,18 +221,13 @@ class FlagComplexSpMatrix
   		already_collapsed = false;
 	}
 	
-	//!	Function for computing the Fake Simplex_tree corresponding to the core of the complex.
-    /*!
-      First calls strong_collapse(), and then computes the Fake Simplex_tree of the core using the Sparse matrix that we have.
-      How does it compute the Fake simplex tree ? <br>
-      Goes over all the columns (remaining MaximalSimplices) and for each of them, inserts that simplex <br>
-      ['that simplex' means the maximal simplex with all the (remaining) vertices] with all subfaces using the <br>
-      <I>insert_new_edges()</I> function from Gudhi's Fake_simplex_tree.
-    */
- 	void after_collapse()
+	//!	Function for computing the sparse-matrix corresponding to the core of the complex. It also prepares the working list edgeIterator for edge collapses
+    
+ 	void after_vertex_collapse()
 	{
      	sparse_colpsd_adj_Matrix   =  sparseRowMatrix(rows,rows); // Just for debugging purpose.
-    	one_simplices.clear();
+    	oneSimplices.clear();  
+    	// rowIterator.clear();
 		for(int rw = 0 ; rw < rows ; ++rw)
 		{
 			if(not vertDomnIndicator[rw]) 				//If the current column is not dominated
@@ -238,8 +235,11 @@ class FlagComplexSpMatrix
 				auto nbhrs_to_insert = read_row_index(rw); // returns row indices of the non-dominated vertices.
         		for(auto & v: nbhrs_to_insert){
           			sparse_colpsd_adj_Matrix.insert(rw, v) = 1;
-          			if(rw <= v)
-          				one_simplices.push_back({rowToVertex[rw],rowToVertex[v]});
+          			if(rw < v){
+          				oneSimplices.push_back({rowToVertex[rw],rowToVertex[v]});
+          				edgeIterator.push({rw,v}) ; 
+          				edgeStatusMap[{rw,v}] = {true, false};
+          			}
         		}
 			}			
 		}
@@ -283,14 +283,14 @@ class FlagComplexSpMatrix
 
 	void sparse_strong_collapse()
 	{
- 		complete_domination_check(rowIterator, rowInsertIndicator, vertDomnIndicator); 		// Complete check for rows in rowIterator, rowInsertIndicator is a list of boolean indicator if a vertex is already inserted in the working row_queue (rowIterator)
+ 		complete_vertex_domination_check(rowIterator, rowInsertIndicator, vertDomnIndicator); 		// Complete check for rows in rowIterator, rowInsertIndicator is a list of boolean indicator if a vertex is already inserted in the working row_queue (rowIterator)
   		if( not rowIterator.empty())
 			sparse_strong_collapse();
 		else
 			return ;
   	}
 
-	void complete_domination_check (doubleQueue& iterator, boolVector& insertIndicator, boolVector& domnIndicator)
+	void complete_vertex_domination_check (doubleQueue& iterator, boolVector& insertIndicator, boolVector& domnIndicator)
 	{
 	  	double k;
 	  	doubleVector nonZeroInnerIdcs;
@@ -304,7 +304,7 @@ class FlagComplexSpMatrix
 		        nonZeroInnerIdcs  = read_row_index(k); 					     
 		        for (doubleVector::iterator it = nonZeroInnerIdcs.begin(); it!=nonZeroInnerIdcs.end(); it++) 
 		        {
-		       		int checkDom = pair_domination_check(k, *it);   	// "true" for row domination comparison
+		       		int checkDom = vertex_domination_check(k, *it);   	// "true" for row domination comparison
 		        	if( checkDom == 1)                                  	// row k is dominated by *it, k <= *it;
 			        {
 			            setZero(k, *it);
@@ -317,7 +317,35 @@ class FlagComplexSpMatrix
 	    }
 	}
 
-	int pair_domination_check( double i, double j) // True for row comparison, false for column comparison
+	void complete_edge_domination()
+	{
+	  	Edge e;
+	  	doubleVector cmnNonZeroInnerIdcs;
+	    while(not edgeIterator.empty())       // "edgeIterator" contains list(FIFO) of edges to be considered for domination check 
+	    { 									  // It is initialized with all the egdes left afte vertex-strong-collapse.			
+	      	e = edgeIterator.front();
+	      	edgeIterator.pop();
+	      	Vertex u = std::get<0>(e) ;
+	  		Vertex v = std::get<1>(e) ;
+	  		Vertex c;
+    	
+	    	if( not std::get<1>(edgeStatusMap[e]) ) 				// Check if it is not dominated
+	    	{ 
+		        cmnNonZeroInnerIdcs  = read_common_row_index(e); 
+		        if(cmnNonZeroInnerIdcs.size() > 2)					     
+			        for (doubleVector::iterator it = cmnNonZeroInnerIdcs.begin(); it!=cmnNonZeroInnerIdcs.end(); it++) 
+			        {	c = *it;
+			       		if(c != u and c != v){
+							if(std::includes(read_row_index(c).begin(), read_row_index(c).end(), cmnNonZeroInnerIdcs.begin(), cmnNonZeroInnerIdcs.end()))
+								set_edge_domination(cmnNonZeroInnerIdcs, e);
+						}         
+			       	}
+	    	}
+	    }
+	}
+
+
+	int vertex_domination_check( double i, double j) // True for row comparison, false for column comparison
 	{
 		if(i != j)
 		{
@@ -335,6 +363,33 @@ class FlagComplexSpMatrix
 		}
 		return 0;	
 	}
+
+	void set_edge_domination(doubleVector& common, Edge e) // checks if the edge 'e' is dominated by vertex 'w'
+	{
+		edgeStatusMap[e] = {false, true};
+		Vertex u = std::get<0>(e) ;
+	  	Vertex v = std::get<1>(e) ;
+	  	sparseRowAdjMatrix.coeffRef(u,v) = 0;
+	  	sparseRowAdjMatrix.coeffRef(v,u) = 0;
+	  	Edge e1, e2;  
+	  	Vertex c;
+		for (doubleVector::iterator it = common.begin(); it!=common.end(); it++) 
+		{
+			c = *it; // Typecasting
+			if(c != u and c != v)
+				e1 = std::minmax(c, u);
+				e2 = std::minmax(c, v);
+				
+				if(not std::get<0>(edgeStatusMap[e1]) and not std::get<1>(edgeStatusMap[e1])){
+					edgeIterator.push(e1);
+					edgeStatusMap[e1] = {true, false};
+				}
+				if(not std::get<0>(edgeStatusMap[e2]) and not std::get<1>(edgeStatusMap[e2])){
+					edgeIterator.push(e2);
+					edgeStatusMap[e2] = {true, false};
+				}
+		}	
+	}
 	
 	doubleVector read_row_index(double indx) 	// Returns list of non-zero columns of the particular indx. 
 	{													
@@ -346,6 +401,29 @@ class FlagComplexSpMatrix
 	        	}
 	    	}
       	return nonZeroIndices;
+	}
+
+	doubleVector read_common_row_index(Edge e) 	// Returns list of non-zero columns of the particular indx. 
+	{													
+	  	doubleVector nonZeroIndices_u;
+	  	doubleVector nonZeroIndices_v;
+	  	doubleVector common; 
+	  	Vertex u = std::get<0>(e) ;
+	  	Vertex v = std::get<1>(e) ;
+
+	  	if(not vertDomnIndicator[u] and  not vertDomnIndicator[v]) {
+	      	for (rowInnerIterator it(sparseRowAdjMatrix, u); it; ++it) {             // Iterate over the non-zero columns
+	        	if(not vertDomnIndicator[it.index()]) 
+	            	nonZeroIndices_u.push_back(it.index());  // inner index, here it is equal to it.columns()
+	        }
+	        for (rowInnerIterator it(sparseRowAdjMatrix, v); it; ++it) {             // Iterate over the non-zero columns
+	        	if(not vertDomnIndicator[it.index()]) 
+	            	nonZeroIndices_v.push_back(it.index());  // inner index, here it is equal to it.columns()
+	    	}
+	    	std::set_intersection(nonZeroIndices_u.begin(), nonZeroIndices_u.end(), nonZeroIndices_v.begin(), nonZeroIndices_v.end(), std::inserter(common, common.begin()));	
+
+	    }	
+      	return common;
 	}
 
 	void setZero(double dominated, double dominating)
@@ -405,30 +483,6 @@ class FlagComplexSpMatrix
 			rowToVertex[rw_w] = v;
 		}
 	}
-	// template<typename type, typename matrix> // To update the working list might possible to include at one place
- //  	void setZero(const matrix& m, boolVector& domnIndicator, boolVector& insertIndicator, doubleQueue& iterator, double indx) // Prepares the queue for the next iteration.
-	// {
-	//     for (type it(m,indx); it; ++it)  // Iterate over the non-zero rows
-	//       if(not domnIndicator[it.index()] && not insertIndicator[it.index()]) // Checking if the row is already dominated(set zero) or inserted	
-	//       {  
-	//         iterator.push(it.index()); 
-	//         insertIndicator[it.index()] = true;
-	//       }
-	// } 
-	// template <typename type, typename matrix>
-	// doubleVector read_row_index(const matrix& m, const boolVector& domnIndicator, bool firstEntrOnly, double indx)
-	// {
-	// 	doubleVector nonZeroIndices; 
- //      	for (type it(m, indx); it; ++it)             // Iterate over the non-zero rows/columns
- //        	if(not domnIndicator[it.index()])
- //        	{
- //            	nonZeroIndices.push_back(it.index());  // inner index, here it is equal to it.row()/it.columns()
- //        		if(firstEntrOnly)
- //        			break;
- //        	}
-    
- //      return nonZeroIndices;
-	// }
 
 public:
 
@@ -513,7 +567,7 @@ public:
 			// Now we complete the Reduction Map
 			fully_compact();
 			//Post processing...
-			after_collapse();
+			after_vertex_collapse();
 			return collapseTime;
 	}
 
@@ -576,7 +630,7 @@ public:
 
 			sparseRowAdjMatrix.insert(rw_u->second,rw_v->second) 	  = filt_val;
 			sparseRowAdjMatrix.insert(rw_v->second,rw_u->second) 	  = filt_val;
-			one_simplices.emplace_back(u, v);
+			oneSimplices.emplace_back(u, v);
 			numOneSimplices++;
 		}	
 	    // else
@@ -589,7 +643,6 @@ public:
     std::size_t num_vertices() const {
        return vertices.size();
 	}
-
 
 	//!	Function for returning the ReductionMap.
     /*!
@@ -611,8 +664,8 @@ public:
     	return sparseRowAdjMatrix;
     }
     
-    Edge_list all_edges() const {
-    	return one_simplices;
+    edge_list all_edges() const {
+    	return oneSimplices;
     }
 
     vertexVector active_neighbors(const Vertex & v) {  
@@ -620,21 +673,8 @@ public:
     	auto rw_v = vertexToRow.find(v);
     	if(rw_v != vertexToRow.end())  		
     		nb = readActiveRow(rw_v->second);
-		
-		// std::cout << "Active neighbors of " << v << "  are :"; 
- 	// 	for(auto & x: nb){
-		// 	std::cout << x << ", " ;
-		// }
-		// std::cout << std::endl;
-    	return nb;
+	   	return nb;
     }
-   //  vertexVector non_active_neighbors(const Vertex & v) {
-   //  	vertexVector non_active;
-   //  	for(auto & x : all_neighbors(v) )
-   //  		if(contractionIndicator[vertexToRow[x]])
-   //  			non_active.push_back(x);	
- 		// return non_active;
-   //  }
 
     vertexVector neighbors(const Vertex & v) {  
     	vertexVector nb;
@@ -644,30 +684,6 @@ public:
     	
     	return nb;
     }
-    // vertexVector all_neighbors(const Vertex & v) {  
-    // 	vertexVector nb;
-    // 	auto rw_v = vertexToRow.find(v);
-    // 	if(rw_v != vertexToRow.end())  		
-    // 		nb = readAllRow(rw_v->second);
-    	
-    // 	return nb;
-    // }
-
-   //  vertexVector all_common_neigbhour(const Vertex &v, const Vertex & w){
-   //  	auto  nbhrs_v = all_neighbors(v);
-   //  	auto  nbhrs_w = all_neighbors(w);
-   //  	std::vector<Vertex> common; // neighbors of v intersection w
- 		// std::set_intersection(nbhrs_v.begin(), nbhrs_v.end(), nbhrs_w.begin(), nbhrs_w.end(), std::back_inserter(common));
- 		// return common;
-   //  }
-    
-   //  vertexVector all_active_common_neigbhour(const Vertex &v, const Vertex & w){
-   //  	auto  nbhrs_v = active_neighbors(v);
-   //  	auto  nbhrs_w = active_neighbors(w);
-   //  	std::vector<Vertex> common_active; // neighbors of v intersection w
- 		// std::set_intersection(nbhrs_v.begin(), nbhrs_v.end(), nbhrs_w.begin(), nbhrs_w.end(), std::back_inserter(common_active));
- 		// return common_active;
-   //  }
 
     vertexVector active_relative_neighbors(const Vertex & v, const Vertex & w){
     	std::vector<Vertex> diff; 
@@ -675,77 +691,11 @@ public:
     		auto nbhrs_v = active_neighbors(v);
     		auto nbhrs_w = active_neighbors(w);
  			std::set_difference(nbhrs_v.begin(), nbhrs_v.end(), nbhrs_w.begin(), nbhrs_w.end(), std::inserter(diff, diff.begin()));	
- 			// std::cout << "Active neighbors of " << v << "relative to " << w << " are :"; 
- 			// for(auto & x: diff){
- 			// 	std::cout << x << ", " ;
- 			// }
- 			// std::cout << std::endl;
         }	
         return diff;
     }
 
- //    bool domination_check((const Vertex &v, const Vertex & w){ // checks if v is dominated by w // assumes both are active
- // 		if(v != w){
- // 			auto active_v = active_neighbors(v);
- // 			auto active_w = active_neighbors(w);
-	// 		if(active_v.size() <= active_w.size())
-	// 			if(std::includes(active_v.begin(), active_v.end(), active_w.begin(), active_w.end())) // Listj is a subset of Listi i.e. w is dominated by v.
-	// 				return true;
-	// 	}
-	// 	return false;
-	// }	
-
-	// void update_active_indicator(const Vertex &v, const Vertex & w){ // Assumption [v,w] is an edge in the graph // updates the active/inactive flag in the neighbourhood of the edge [v,w].
-		
-	// 	bool init_active_v = activeIndicator[vertexToRow[v]];
-	// 	bool init_active_w = activeIndicator[vertexToRow[v]];
-	// 	if(init_active_v && init_active_w)
-
-
-	// 	activeIndicator[vertexToRow[w]] = true; // forcefully making v,w active. So that it appears in v's neighbour list
-	// 	activeIndicator[vertexToRow[v]] = true;
-	// 	update_active_indicator(v);  
-	// 	if(not init_active_v && not activeIndicator[vertexToRow[v]])
-	// 		return;
-		
-	// 	if (activeIndicator[vertexToRow[v]]){
-	// 		update_active_indicator(w);
-	// 	}
-	// 	else
-	// 		activeIndicator[vertexToRow[w]] = init_active_w;
-
-	// 	if( not init_active_v &&  activeIndicator[vertexToRow[v]])
-	// 		deep_update_active_indicator(v);
-	// 	if(not init_active_w &&  activeIndicator[vertexToRow[v]])
-	// 		deep_update_active_indicator(w);
-		
-	// 	for( auto & x: all_active_common_neigbhour(v, w)){ 	// {v,w} may_not be present unless they are active. if they are active then can only be dominated by  {w,v} respectively.
-	// 		if(domination_check (x,w) || domination_check(x,v))
-	// 			activeIndicator[vertexToRow[x]] = false;
-	// 	}
-	// }
-	
-	// void update_active_indicator(const Vertex & v){  // checks for domination in the active neighborhood of the vertex v.
-	// 	for(auto & x: active_neighbors(v))
-	// 		if(domination_check(v,x)){  // Check in v is dominated by x
-	// 			activeIndicator[vertexToRow[v]] = false;
-	// 			return;
-	// 		}
-	// 	activeIndicator[vertexToRow[v]] = true;
-	// 	return;	
-	// }
-	// void deep_update_active_indicator(const Vertex & v){
-	// 	for(auto & x: non_active_neighbors(v)){
-	// 		for(auto & y : active_neighbors(x)){
-	// 			if(domination_check(x,y)){
-	// 				activeIndicator[vertexToRow[x]] = true;	
-	// 				deep_update_active_indicator(x);
-	// 			}
-	// 		}
-	// 	}
-	// 	return;		
-	// }
-    
+  
     void contraction(const Vertex & del, const Vertex & keep){	
 		if(del != keep){
 			bool del_mem  = membership (del);

@@ -11,7 +11,7 @@
 
 typedef std::size_t Vertex;
 using Edge                  = std::pair<Vertex,Vertex>;
-using Edge_list             = std::vector<Edge>;
+using edge_list             = std::vector<Edge>;
 using Simplex               = std::vector<Vertex>;
 
 using vectorVertex          = std::vector<Vertex>;
