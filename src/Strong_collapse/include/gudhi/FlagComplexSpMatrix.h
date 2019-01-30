@@ -85,10 +85,13 @@ class FlagComplexSpMatrix
   	// Vertices strored as an unordered_set
   	std::unordered_set<Vertex> vertices; 
 
-  
+ 
   //! Stores the 1-simplices(edges) of the original Simplicial Complex.
    	edge_list oneSimplices;
- 
+	
+	//Unordered set of dominated edges.
+	std::unordered_set<Edge, boost::hash< Edge >> domEdges; 
+
 	//! Stores the Map between vertices<B>rowToVertex  and row indices <B>rowToVertex -> row-index</B>.
     /*!
       \code
@@ -230,25 +233,29 @@ class FlagComplexSpMatrix
 	{
      	sparse_colpsd_adj_Matrix   =  new sparseRowMatrix(rows,rows); // Just for debugging purpose.
     	oneSimplices.clear();  
-    	// rowIterator.clear();
+    	if(not edgeIterator.empty())
+    		std::cout << "Working list for edge collapses are not empty before the edge-collapse." << std::endl;
+
 		for(int rw = 0 ; rw < rows ; ++rw)
 		{
 			if(not vertDomnIndicator[rw]) 				//If the current column is not dominated
 			{
-				auto nbhrs_to_insert = read_row_index(rw); // returns row indices of the non-dominated vertices.
+				auto nbhrs_to_insert = closed_neighbours_row_index(rw); // returns row indices of the non-dominated vertices.
         		for(auto & v: nbhrs_to_insert){
           			sparse_colpsd_adj_Matrix->insert(rw, v) = 1;
           			if(rw < v){
           				oneSimplices.push_back({rowToVertex[rw],rowToVertex[v]});
           				edgeIterator.push({rw,v}) ; 
+          				// if(rw == v)
           				// std::cout << "Pushed the edge {" << rw << ", " << v <<  "} " << std::endl;
           				edgeStatusMap[{rw,v}] = {true, false};
           			}
         		}
 			}			
 		}
-		std::cout << "Total number of edges for domination check are: " << edgeIterator.size() << std::endl;
-    	// std::cout << sparse_colpsd_adj_Matrix << std::endl;
+		// std::cout << "Total number of non-zero elements before domination check are: " << sparse_colpsd_adj_Matrix->nonZeros() << std::endl;
+		// std::cout << "Total number of edges for domination check are: " << edgeIterator.size() << std::endl;
+    	// std::cout << *sparse_colpsd_adj_Matrix << std::endl;
 		return ;
 	}
 
@@ -259,12 +266,14 @@ class FlagComplexSpMatrix
 		delete sparse_colpsd_adj_Matrix;
      	sparse_colpsd_adj_Matrix   =  new sparseRowMatrix(rows,rows); // Just for debugging purpose.
     	oneSimplices.clear();  
-    	// rowIterator.clear();
+    	if(not edgeIterator.empty())
+    		std::cout << "Working list for edge collapses are not empty after the edge-collapse." << std::endl;
+
 		for(int rw = 0 ; rw < rows ; ++rw)
 		{
 			if(not vertDomnIndicator[rw]) 				//If the current column is not dominated
 			{
-				auto nbhrs_to_insert = read_row_index(rw); // returns row indices of the non-dominated vertices.
+				auto nbhrs_to_insert = closed_neighbours_row_index(rw); // returns row indices of the non-dominated vertices.
         		for(auto & v: nbhrs_to_insert){
           			sparse_colpsd_adj_Matrix->insert(rw, v) = 1;
           			if(rw < v){
@@ -275,7 +284,8 @@ class FlagComplexSpMatrix
         		}
 			}			
 		}
-    	// std::cout << sparse_colpsd_adj_Matrix << std::endl;
+		std::cout << "Total number of non-zero elements after domination check are: " << sparse_colpsd_adj_Matrix->nonZeros() << std::endl;
+    	// std::cout << *sparse_colpsd_adj_Matrix << std::endl;
 		return ;
 	}
 
@@ -334,7 +344,7 @@ class FlagComplexSpMatrix
 	      	insertIndicator[k] = false;
 	    	if( not domnIndicator[k]) 				// Check if is  already dominated
 	    	{ 
-		        nonZeroInnerIdcs  = read_row_index(k); 					     
+		        nonZeroInnerIdcs  = closed_neighbours_row_index(k); 					     
 		        for (doubleVector::iterator it = nonZeroInnerIdcs.begin(); it!=nonZeroInnerIdcs.end(); it++) 
 		        {
 		       		int checkDom = vertex_domination_check(k, *it);   	// "true" for row domination comparison
@@ -354,6 +364,8 @@ class FlagComplexSpMatrix
 	{
 	  	Edge e;
 	  	doubleVector cmnNonZeroInnerIdcs;
+	  	std::size_t numDom = 0;
+
 	    while(not edgeIterator.empty())       // "edgeIterator" contains list(FIFO) of edges to be considered for domination check 
 	    { 									  // It is initialized with all the egdes left afte vertex-strong-collapse.			
 	      	e = edgeIterator.front();
@@ -364,21 +376,24 @@ class FlagComplexSpMatrix
     	
 	    	if( not std::get<1>(edgeStatusMap[e]) ) 				// Check if it is not dominated
 	    	{ 
-		        cmnNonZeroInnerIdcs  = read_common_row_index(e); 
+		        cmnNonZeroInnerIdcs  = closed_common_neighbours_row_index(e); 
 		        if(cmnNonZeroInnerIdcs.size() > 2)					     
 			        for (doubleVector::iterator it = cmnNonZeroInnerIdcs.begin(); it!=cmnNonZeroInnerIdcs.end(); it++) 
 			        {	c = *it;
 			       		if(c != u and c != v){
-							if(std::includes(read_row_index(c).begin(), read_row_index(c).end(), cmnNonZeroInnerIdcs.begin(), cmnNonZeroInnerIdcs.end())) {// If c contains the common neighbours.
+							if(std::includes(closed_neighbours_row_index(c).begin(), closed_neighbours_row_index(c).end(), cmnNonZeroInnerIdcs.begin(), cmnNonZeroInnerIdcs.end())) {// If c contains the common neighbours.
 								set_edge_domination(cmnNonZeroInnerIdcs, e);
-								 std::cout << "The edge {" << u << ", " << v <<  "} is dominated." << std::endl;
+								 // std::cout << "The edge {" << u << ", " << v <<  "} is dominated by the vertex : " << c << std::endl;
+								 cmnNonZeroInnerIdcs.clear();
+								 numDom++;
+								 break;
 							}	
 
 						}         
 			       	}
 	    	}
 	    }
-	    std::cout << "Total number of dominated egdes were: " << numDomEdge << std::endl;
+	    std::cout << "Total number of dominated egdes were: " << numDom << std::endl;
 	}
 
 
@@ -386,8 +401,8 @@ class FlagComplexSpMatrix
 	{
 		if(i != j)
 		{
-			doubleVector Listi = read_row_index(i);
-			doubleVector Listj = read_row_index(j);
+			doubleVector Listi = closed_neighbours_row_index(i);
+			doubleVector Listj = closed_neighbours_row_index(j);
 			if(Listj.size() <= Listi.size())
 			{
       			if(std::includes(Listi.begin(), Listi.end(), Listj.begin(), Listj.end())) // Listj is a subset of Listi
@@ -407,60 +422,63 @@ class FlagComplexSpMatrix
 		numDomEdge++;
 		Vertex u = std::get<0>(e) ;
 	  	Vertex v = std::get<1>(e) ;
-	  	sparseRowAdjMatrix.coeffRef(u,v) = 0;
-	  	sparseRowAdjMatrix.coeffRef(v,u) = 0;
+	  	// sparseRowAdjMatrix.coeffRef(u,v) = 0;
+	  	// sparseRowAdjMatrix.coeffRef(v,u) = 0;
+	  	domEdges.insert(e);
 	  	Edge e1, e2;  
 	  	Vertex c;
 		for (doubleVector::iterator it = common.begin(); it!=common.end(); it++) 
 		{
 			c = *it; // Typecasting
-			if(c != u and c != v)
+			if(c != u and c != v) {
 				e1 = std::minmax(c, u);
 				e2 = std::minmax(c, v);
 				
 				if(not std::get<0>(edgeStatusMap[e1]) and not std::get<1>(edgeStatusMap[e1])){
 					edgeIterator.push(e1);
+					// std::cout << "Pushed the edge {" << c << ", " << u <<  "} " << std::endl;
 					edgeStatusMap[e1] = {true, false};
 				}
 				if(not std::get<0>(edgeStatusMap[e2]) and not std::get<1>(edgeStatusMap[e2])){
 					edgeIterator.push(e2);
+					// std::cout << "Pushed the edge {" << c << ", " << v <<  "} " << std::endl;
 					edgeStatusMap[e2] = {true, false};
 				}
+			}	
 		}	
 	}
 	
-	doubleVector read_row_index(double indx) 	// Returns list of non-zero columns of the particular indx. 
+	doubleVector closed_neighbours_row_index(double indx) 	// Returns list of non-zero columns of the particular indx. 
 	{													
-	  	doubleVector nonZeroIndices;     
+	  	doubleVector nonZeroIndices; 
+	  	Vertex u = indx;
+	  	Vertex v;    
 	  	if(not vertDomnIndicator[indx])
 	      	for (rowInnerIterator it(sparseRowAdjMatrix, indx); it; ++it) {             // Iterate over the non-zero columns
-	        	if(not vertDomnIndicator[it.index()]) {
+	      		v = it.index();
+	        	if(not vertDomnIndicator[v] and domEdges.find(std::minmax(u, v)) == domEdges.end()) {
 	            	nonZeroIndices.push_back(it.index());  // inner index, here it is equal to it.columns()
 	        	}
 	    	}
       	return nonZeroIndices;
 	}
 
-	doubleVector read_common_row_index(Edge e) 	// Returns list of non-zero columns of the particular indx. 
+	doubleVector closed_common_neighbours_row_index(Edge e) 	// Returns list of non-zero columns of the particular indx. 
 	{													
-	  	doubleVector nonZeroIndices_u;
-	  	doubleVector nonZeroIndices_v;
+	
 	  	doubleVector common; 
+	  	doubleVector nonZeroIndices_u; 
+		doubleVector nonZeroIndices_v;
 	  	Vertex u = std::get<0>(e) ;
 	  	Vertex v = std::get<1>(e) ;
 
-	  	if(not vertDomnIndicator[u] and  not vertDomnIndicator[v]) {
-	      	for (rowInnerIterator it(sparseRowAdjMatrix, u); it; ++it) {             // Iterate over the non-zero columns
-	        	if(not vertDomnIndicator[it.index()]) 
-	            	nonZeroIndices_u.push_back(it.index());  // inner index, here it is equal to it.columns()
-	        }
-	        for (rowInnerIterator it(sparseRowAdjMatrix, v); it; ++it) {             // Iterate over the non-zero columns
-	        	if(not vertDomnIndicator[it.index()]) 
-	            	nonZeroIndices_v.push_back(it.index());  // inner index, here it is equal to it.columns()
-	    	}
-	    	std::set_intersection(nonZeroIndices_u.begin(), nonZeroIndices_u.end(), nonZeroIndices_v.begin(), nonZeroIndices_v.end(), std::inserter(common, common.begin()));	
-	    }	
-      	return common;
+	  	if(not vertDomnIndicator[u] and  not vertDomnIndicator[v]){
+		  	nonZeroIndices_u = closed_neighbours_row_index(u);
+		  	nonZeroIndices_v = closed_neighbours_row_index(v);
+		  	std::set_intersection(nonZeroIndices_u.begin(), nonZeroIndices_u.end(), nonZeroIndices_v.begin(), nonZeroIndices_v.end(), std::inserter(common, common.begin()));
+	  	}
+
+	   	return common;
 	}
 
 	void setZero(double dominated, double dominating)
@@ -472,36 +490,35 @@ class FlagComplexSpMatrix
   		vertices.erase(rowToVertex[dominated]);
   		rowToVertex.erase(dominated);
 
-  		for (rowInnerIterator it(sparseRowAdjMatrix,dominated); it; ++it)  // Iterate over the non-zero rows
-	      if(not vertDomnIndicator[it.index()] && not rowInsertIndicator[it.index()]) // Checking if the row is already dominated(set zero) or inserted	
+  		//for (rowInnerIterator it(sparseRowAdjMatrix,dominated); it; ++it)  // Iterate over the non-zero rows
+  		for(auto & v: closed_neighbours_row_index(dominated))	
+	      if(not rowInsertIndicator[v]) // Checking if the row is already dominated(set zero) or inserted	
 	      {  
-	        rowIterator.push(it.index()); 
-	        rowInsertIndicator[it.index()] = true;
+	        rowIterator.push(v); 
+	        rowInsertIndicator[v] = true;
 	      }
 	}
  	
-	vertexVector readRow(double rowIndx) // Returns list of non-zero "vertices" of the particular colIndx. the difference is in the return type
+	vertexVector closed_neighbours_vertex_index(double rowIndx) // Returns list of non-zero "vertices" of the particular colIndx. the difference is in the return type
 	{
 		vertexVector colmns ; 
-  		for (rowInnerIterator itCol(sparseRowAdjMatrix,rowIndx); itCol; ++itCol)  // Iterate over the non-zero columns
-     		if(not vertDomnIndicator[itCol.index()])  					          // Check if the row corresponds to a dominated vertex
-      			colmns.push_back(rowToVertex[itCol.index()]); 			          // inner index, here it is equal to it.col()
+  		for(auto & v: closed_neighbours_row_index(rowIndx)) // Iterate over the non-zero columns				          
+      		colmns.push_back(rowToVertex[v]); 	
       	std::sort(colmns.begin(), colmns.end());
   		return colmns;
 	}
 
-	vertexVector readActiveRow(double rowIndx) // Returns list of all non-zero "vertices" of the particular colIndx which are currently active. the difference is in the return type.
+	vertexVector vertex_closed_active_neighbours(double rowIndx) // Returns list of all non-zero "vertices" of the particular colIndx which are currently active. the difference is in the return type.
 	{
 		vertexVector colmns ; 
-  		for (rowInnerIterator itCol(sparseRowAdjMatrix,rowIndx); itCol; ++itCol)  // Iterate over the non-zero columns
-     		if( not contractionIndicator[itCol.index()])  					      // Check if the row corresponds to a contracted vertex
-      			colmns.push_back(rowToVertex[itCol.index()]); 			          // inner index, here it is equal to it.col()
-
+  		for(auto & v: closed_neighbours_row_index(rowIndx))  // Iterate over the non-zero columns
+     		if(not contractionIndicator[v])  					      // Check if the row corresponds to a contracted vertex
+      			colmns.push_back(rowToVertex[v]); 			        
       	std::sort(colmns.begin(), colmns.end());	
   		return colmns;
 	}
 	
-	vertexVector readAllRow(double rowIndx) // Returns list of all non-zero "vertices" of the particular colIndx whether dominated or not. the difference is in the return type.
+	vertexVector closed_all_neighbours_row_index(double rowIndx) // Returns list of all non-zero "vertices" of the particular colIndx whether dominated or not. the difference is in the return type.
 	{
 		vertexVector colmns ; 
   		for (rowInnerIterator itCol(sparseRowAdjMatrix,rowIndx); itCol; ++itCol)  // Iterate over the non-zero columns
@@ -652,14 +669,14 @@ public:
 	    	auto rw_u = vertexToRow[u];
 	    	auto rw_v = vertexToRow[v];
 	    	if(rw_u <= rw_v)
-	    		for( auto x : read_row_index(rw_v)){ // Taking advantage of sorted lists.
+	    		for( auto x : closed_neighbours_row_index(rw_v)){ // Taking advantage of sorted lists.
 	    			if(rw_u == x)
 	    				return true;	
 	    			else if(rw_u < x)
 	    			 	return false;
 	    		}	 
 	    	else
-	    		for( auto x : read_row_index(rw_u)){ // Taking advantage of sorted lists.
+	    		for( auto x : closed_neighbours_row_index(rw_u)){ // Taking advantage of sorted lists.
 	    			if(rw_v == x)
 	    				return true;	
 	    			else if(rw_v < x)
@@ -738,7 +755,7 @@ public:
     	vertexVector nb;
     	auto rw_v = vertexToRow.find(v);
     	if(rw_v != vertexToRow.end())  		
-    		nb = readActiveRow(rw_v->second);
+    		nb = vertex_closed_active_neighbours(rw_v->second);
 	   	return nb;
     }
 
@@ -746,7 +763,7 @@ public:
     	vertexVector nb;
     	auto rw_v = vertexToRow.find(v);
     	if(rw_v != vertexToRow.end())  		
-    		nb = readRow(rw_v->second);
+    		nb = closed_neighbours_vertex_index(rw_v->second);
     	
     	return nb;
     }
@@ -771,8 +788,8 @@ public:
 				doubleVector  del_indcs, keep_indcs, diff;
 				auto row_del = vertexToRow[del];
 				auto row_keep = vertexToRow[keep];
-				del_indcs = read_row_index(row_del);
-				keep_indcs = read_row_index(row_keep);
+				del_indcs = closed_neighbours_row_index(row_del);
+				keep_indcs = closed_neighbours_row_index(row_keep);
 				std::set_difference(del_indcs.begin(), del_indcs.end(), keep_indcs.begin(), keep_indcs.end(), std::inserter(diff, diff.begin()));
 				for (auto & v : diff) {
 					if( v != row_del){
