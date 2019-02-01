@@ -465,7 +465,7 @@ void compute_zigzag_persistence()
   dim_max_ = zzit.dim_max();
   std::vector<unsigned int> faces_per_dim(dim_max_+1,0);
 
-  num_arrows_ = cpx_->key(*zzit);
+  num_arrow_ = cpx_->key(*zzit);
 
   prev_fil_ = zzit.filtration(); // prev_fil_ = cpx_->filtration(*zzit);
   // filtration_values_.emplace_back(cpx_->key(*zzit), prev_fil_);
@@ -476,8 +476,8 @@ void compute_zigzag_persistence()
     faces_per_dim[cpx_->dimension(*zzit)] += 1;
     // if(num_arrow_ % 100000 == 0) std::cout << num_arrow_ << "\n";
 
-    if(zzit.arrow_direction()) { num_arrows_ = cpx_->key(*zzit); }
-    else { ++num_arrows_; }
+    if(zzit.arrow_direction()) { num_arrow_ = cpx_->key(*zzit); }
+    else { ++num_arrow_; }//can't be the first arrow
 
     curr_fil_ = zzit.filtration();//cpx_->filtration(*zzit);
     if(curr_fil_ != prev_fil_) //check whether the filt val has changed
@@ -743,6 +743,9 @@ void make_pair_critical(Simplex_handle zzsh)
                  , std::pair<Simplex_key, Filtration_value> p2) {
                 return p1.first < p2.first; }
              );
+      //
+      if(it_b->first > bar.b_) { --it_b; }
+
       auto it_d = 
       std::upper_bound( filtration_values_.begin(), filtration_values_.end() 
              , std::pair<Simplex_key, Filtration_value>(bar.d_, std::numeric_limits<double>::infinity() )
@@ -764,7 +767,7 @@ void make_pair_critical(Simplex_handle zzsh)
 
     if(tmp_diag.empty()) {return;}
 
-    int curr_dim = tmp_diag.begin()->dim_;
+    int curr_dim = -2;//tmp_diag.begin()->dim_;
     int curr_num_intervals = num_intervals;
 
     int i=0;
@@ -1171,7 +1174,11 @@ void surjective_reflection_diamond( Simplex_handle zzsh
       
       // std::cout << "birth stolen\n";
 
-      if(available_birth.empty()) {std::cout << "Should not be empty\n";}
+
+      if(available_birth.empty()) {std::cout << "Should not be empty\n";
+        std::cout << "        available_birth.size() == " << available_birth.size() <<"\n";
+      }
+//to do check this..
 
       auto max_avail_b_it = available_birth.begin(); 
       Simplex_key max_avail_b = *max_avail_b_it;//max available birth
@@ -1334,23 +1341,12 @@ void backward_arrow( Simplex_handle zzsh )
   }
 
   // std::cout << curr_col->row_->size() << "  " << curr_col->column_->size() << "\n";
-
-
-  // std::cout << "D\n";
-
   delete curr_col->row_;
   delete curr_col->column_;
 
-  // std::cout << "DE\n";
-
   matrix_.erase(curr_col_it->second);
   lowidx_to_matidx_.erase(curr_col_it);
-  
-  
-  // std::cout << "E\n";
 
-
-  // std::cout << "F\n";
 }
 
 // void mini_function(int curr_col) {

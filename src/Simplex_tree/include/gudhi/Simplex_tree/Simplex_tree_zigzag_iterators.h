@@ -73,6 +73,7 @@ class Flagzigzag_simplex_iterator
                                , std::vector< Edge_type >  * zz_edge_fil_ptr
                                , int                         dim_max )
     {
+      progress_edges_ = 0;
       zigzag_edge_filtration_ = zz_edge_fil_ptr;
       dim_max_                = dim_max;
       are_we_done             = false;
@@ -97,7 +98,8 @@ class Flagzigzag_simplex_iterator
 
 //User-defined copy constructor
     Flagzigzag_simplex_iterator(const Flagzigzag_simplex_iterator& other )
-    : cpx_(other.cpx_)
+    : progress_edges_(0)
+    , cpx_(other.cpx_)
     , zigzag_edge_filtration_(other.zigzag_edge_filtration_)
     , dim_max_(other.dim_max_)
     , partial_zzfil_(other.partial_zzfil_)
@@ -215,9 +217,12 @@ class Flagzigzag_simplex_iterator
         fil_ = edge_it_->fil();
         sh_it_ = partial_zzfil_.begin(); 
         ++edge_it_;
+        std::cout << ++progress_edges_ << " / " << zigzag_edge_filtration_->size() << "\n";
       }
     }
   
+  unsigned int progress_edges_;
+
   //complex getting modified
   FlagZigzagFilteredComplex                                            * cpx_; 
 /* List of insertion and deletion of edges representing the flag zigzag fil.*/
