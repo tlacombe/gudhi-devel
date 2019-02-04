@@ -34,14 +34,14 @@ int main()
 	
 	Vector_of_points points;
 	//Vector_of_points noisePoints;
-	Filtered_sorted_edge_list edge_list;
+	Filtered_sorted_edge_list edge_list, edgeAftCol;
 	std::vector<std::vector<std::size_t>> contents;
     // std::vector<std::vector<std::size_t>> edges;
 
 
-    std::cout << "Please enter the vertices of the edge in the following format" <<std::endl;
-    std::cout << "2" << std::endl;
-    std::cout << "2 3" << std::endl;
+    std::cout << "Please enter the filtration value and the vertices of the edge in the following format" <<std::endl;
+    std::cout << "3" << std::endl;
+    std::cout << "f u v -> 3 2 3 " << std::endl;
     std::cout << "Enter s to stop" << std::endl;
     int number;
     // std::vector<std::vector<std::size_t>> random = { {1,4},{3,4},{4,8}, {1,8},{3,8},{89}, {6}, {2},{4},{5} }; //{{89,77,29},{2,4,6}, {2,4,5},{3,4},{2,3},{6},{2,7},{7,5}, {2,3,4,5}};
@@ -67,7 +67,7 @@ int main()
     
     for (auto & row : contents)
     {
-        edge_list.emplace_back(0,row[0], row[1]);
+        edge_list.emplace_back(row[0], row[1], row[2]);
         // edges.emplace_back(row);
         //std::copy(row.begin(), row.end(), std::ostream_iterator<double>(std::cout," "));
         //std::cout << "\n";
@@ -80,7 +80,7 @@ int main()
 	clock_t edge_list_formed = clock();
 	std::cout << "Now going for matrix formation" << std::endl;
 
-	FlagComplexSpMatrix mat(5,edge_list);
+	FlagComplexSpMatrix mat(7,edge_list,true);
     // mat.contraction(2,6);
     // mat.contraction(6,4);
     // mat.contraction(5,8);
@@ -112,9 +112,24 @@ int main()
     // std::cout << "The contracted vertex is :" << w <<"; " << std::endl;
     // mat.contraction(4,3);
     // std::cout << "Manually contracted the edge [4,3]" << std::endl;
-    mat.strong_collapse();
+    
+     for(auto & v: mat.all_edges())
+    {   
+        std::cout << "The current edge in the complex before the collapse are: " ;
+        // for(auto & w: v)
+            std::cout << std::get<0>(v) << " " << std::get<1>(v);
+        std::cout << std::endl;
+    } 
+    // mat.strong_vertex_edge_collapse();
+    edgeAftCol = mat.filtered_edge_collapse();
+
+
+    // mat.strong_vertex_collapse();
     // Fake_simplex_tree coll_tree = mat.collapsed_tree();
     clock_t collapse_done = clock();
+    
+    std::cout << "Collapse done !" << std::endl;
+
     // for(auto & v: mat.vertex_set())
     // {   
     //     std::cout << "Active relative neighbors of the vertex 2 and : " << v << " are, " ;
@@ -122,11 +137,11 @@ int main()
     //         std::cout << w << " ";
     //     std::cout << std::endl;
     // }
-     for(auto & v: mat.all_edges())
+     for(auto & fe: edgeAftCol)
     {   
         std::cout << "The current edge in the complex after the collapse are: " ;
         // for(auto & w: v)
-            std::cout << std::get<0>(v) << " " << std::get<1>(v);
+            std::cout << std::get<0>(fe) << " " << std::get<1>(fe) << " " << std::get<2>(fe);
         std::cout << std::endl;
     } 
   
@@ -148,8 +163,6 @@ int main()
     //     //std::cout << "\n";
     // } 
     
-	std::cout << "Collapse done !" << std::endl;
-
 	std::cout << "Time for formation of Matrix : " << (matrix_formed - edge_list_formed)/CLOCKS_PER_SEC << " seconds" << std::endl;
 	std::cout << "Time for Collapse : " << (collapse_done - matrix_formed)/CLOCKS_PER_SEC  << " seconds" << std::endl;
 

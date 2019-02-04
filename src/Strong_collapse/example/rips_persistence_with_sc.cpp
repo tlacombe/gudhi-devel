@@ -104,8 +104,8 @@ int main(int argc, char * const argv[]) {
     std::string filediag_aft ("./PersistenceOutput/collapsed_persistence_diags") ;
     
     
-    std::string otherStats ("./PersistenceOutput/maximal_simplx_cnt");
-    otherStats = otherStats+"_"+ out_file_name+ ".txt";
+    // std::string otherStats ("./PersistenceOutput/maximal_simplx_cnt");
+    // otherStats = otherStats+"_"+ out_file_name+ ".txt";
     filediag_bfr = filediag_bfr+"_"+ out_file_name+ ".txt";
     filediag_aft = filediag_aft+"_"+ out_file_name+ ".txt";
 
@@ -118,7 +118,9 @@ int main(int argc, char * const argv[]) {
     Distance_matrix distances, sparse_distances;
 
     if(manifold == 's' || manifold == 'S'){
-        point_generator.generate_points_sphere(*point_vector, number_of_points, dimension, radius);
+        // point_generator.generate_points_sphere(*point_vector, number_of_points, dimension, radius); 
+        point_generator.generate_grid_2sphere(*point_vector, number_of_points, radius); 
+        
         origFile = origFile+"_sphere_"+out_file_name+".txt";
         collFile = collFile+"_sphere_"+out_file_name+".txt";
         std::cout << number_of_points << " points successfully chosen randomly from "<< dimension <<"-sphere of radius " << radius << std::endl;
@@ -164,15 +166,15 @@ int main(int argc, char * const argv[]) {
     }
     std::cout << "Point Set Generated."  <<std::endl;
     //Preparing the statsfile to record the reduction in num of maximal simplices and the dimension of the complex.
-    std::ofstream statsfile (otherStats, std::ios::app);
-    if(statsfile.is_open()){
-        statsfile << " #number_of_points, begin_thresold, steps, end_threshold, repetetions, manifold, dimension, in_file_name, out_file_name" << std::endl;
-        statsfile << " Original_maximal_simplex, Original_complex_dimension, Collapsed_maximal_simplex, Collapsed_complex_dimension" << std::endl;
-    }
-    else {
-        std::cerr << "Unable to open stats file";
-        exit(-1) ;
-    }
+    // std::ofstream statsfile (otherStats, std::ios::app);
+    // if(statsfile.is_open()){
+        // statsfile << " #number_of_points, begin_thresold, steps, end_threshold, repetetions, manifold, dimension, in_file_name, out_file_name" << std::endl;
+        // statsfile << " Original_maximal_simplex, Original_complex_dimension, Collapsed_maximal_simplex, Collapsed_complex_dimension" << std::endl;
+    // }
+    // else {
+        // std::cerr << "Unable to open stats file";
+        // exit(-1) ;
+    // }
 
     // for(int i = 0; i < number_of_points; i++ )
     //     point_generator.print_point(point_vector->at(i));
@@ -206,6 +208,15 @@ int main(int argc, char * const argv[]) {
         // std::cout<< "Rips complex computed" << std::endl;
     }
      auto the_collapse_begin = std::chrono::high_resolution_clock::now();
+    
+    //Now we will perform filtered edge collapse to sparsify the edge list edge_t.
+    
+    FlagComplexSpMatrix * mat_filt_edge_coll  = new FlagComplexSpMatrix(number_of_points,*edge_t,true);
+    delete edge_t;
+    edge_t = new Filtered_sorted_edge_list();
+    *edge_t = mat_filt_edge_coll->filtered_edge_collapse(); 
+     
+
     //An additional vector <edge_filt> to perform binary search to find the index of given threshold
     edge_filt->clear();
     for(auto edIt = edge_t->begin(); edIt != edge_t->end(); edIt++) {
@@ -224,7 +235,7 @@ int main(int argc, char * const argv[]) {
     currentCreationTime = std::chrono::duration<double, std::milli>(end_full_cmplx - begin_full_cmplx).count();
     maxCreationTime = currentCreationTime;
    
-    auto threshold =  min_dist;  
+    auto threshold =  begin_thresold;  
 
     FlagComplexSpMatrix * mat_coll       = new FlagComplexSpMatrix(); 
     FlagComplexSpMatrix * mat_prev_coll  = new FlagComplexSpMatrix(number_of_points); 
@@ -237,11 +248,12 @@ int main(int argc, char * const argv[]) {
         extract_sub_one_skeleton(threshold, *sub_skeleton, *edge_t, *edge_filt);
        
         mat_coll = new FlagComplexSpMatrix(number_of_points, *sub_skeleton);
-        mat_coll->strong_collapse();
+        // mat_coll->strong_vertex_edge_collapse();
+        mat_coll->strong_vertex_collapse();
         redmap = new Map();
         *redmap = mat_coll->reduction_map(); 
         
-        // std::cout << "Subcomplex #" << i << " Collapsed" << std::endl;
+        // std::cout << "Subcomplex #" << i << " of threshold "<< threshold << " Collapsed" << std::endl;
         totAssembleTime += twr_assembler.build_tower_for_two_cmplxs(*mat_prev_coll, *mat_coll, *redmap, threshold, "./PersistenceOutput/CollapsedTowerRips.txt");
         // std::cout << "Tower updated for subcomplex #" << i << std::endl; 
         
