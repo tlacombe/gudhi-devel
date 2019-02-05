@@ -207,16 +207,17 @@ int main(int argc, char * const argv[]) {
         // rips_complex_from_points.create_complex(*subComplex, dim_max);
         // std::cout<< "Rips complex computed" << std::endl;
     }
-     auto the_collapse_begin = std::chrono::high_resolution_clock::now();
     
     //Now we will perform filtered edge collapse to sparsify the edge list edge_t.
-    
+  
+    std::cout<< "Filtered edge collapse begins" << std::endl;
     FlagComplexSpMatrix * mat_filt_edge_coll  = new FlagComplexSpMatrix(number_of_points,*edge_t,true);
     delete edge_t;
     edge_t = new Filtered_sorted_edge_list();
-    *edge_t = mat_filt_edge_coll->filtered_edge_collapse(); 
+    *edge_t = mat_filt_edge_coll->filtered_edge_collapse(steps); 
      
 
+    auto the_collapse_begin = std::chrono::high_resolution_clock::now();
     //An additional vector <edge_filt> to perform binary search to find the index of given threshold
     edge_filt->clear();
     for(auto edIt = edge_t->begin(); edIt != edge_t->end(); edIt++) {

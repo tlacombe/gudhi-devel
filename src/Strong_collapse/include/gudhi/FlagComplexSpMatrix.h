@@ -48,7 +48,7 @@ using Edge 					= std::pair<Vertex,Vertex>;  // This is an ordered pair, An edge
 using FiltEdge              = std::pair<Edge, double>;
 using edge_list 			= std::vector<Edge>;
 
-using MapVertexToIndex 	  	= std::unordered_map<Vertex,int>;
+using MapVertexToIndex 	  	= std::unordered_map<Vertex, std::size_t>;
 using Map 				  	= std::unordered_map<Vertex,Vertex>;
 
 using sparseRowMatrix  	 	= Eigen::SparseMatrix<double, Eigen::RowMajor> ;
@@ -63,6 +63,7 @@ using doubleQueue 	   = std::queue<double>;
 using edgeQueue		   = std::queue<Edge>;
 
 using FiltEdgeQueue    = std::queue<FiltEdge>;
+using FiltEdgeVector   = std::vector<FiltEdge>;
 
 typedef std::vector< std::tuple< double, Vertex, Vertex > > Filtered_sorted_edge_list;
 typedef std::unordered_map<Edge, bool, boost::hash< Edge > > u_edge_map;
@@ -161,8 +162,11 @@ class FlagComplexSpMatrix
   	// Queue of filtered edges, for edge-collapse, the indices of the edges are the row-indices.
   	FiltEdgeQueue filteredEgdeIter;
 
+  	// Vector of filtered edges, for edge-collapse, the indices of the edges are the row-indices.
+  	FiltEdgeVector fEgdeVector;
+
   	// List of non-dominated edges,  the indices of the edges are the vertex lables!!.
-  	Filtered_sorted_edge_list nonDomEdges;
+  	Filtered_sorted_edge_list criticalCoreEdges;
   	
 	//! Stores <I>true</I> if the current row is inserted in the queue <B>rowIterator<B> otherwise its value is <I>false<I>. 
     /*!
@@ -215,7 +219,7 @@ class FlagComplexSpMatrix
 
 		filteredEgdeIter.push({{0,0},0});
 		filteredEgdeIter.pop();
-		
+		fEgdeVector.clear();
 
 		rows = 0;
 		numDomEdge = 0;
@@ -258,34 +262,6 @@ class FlagComplexSpMatrix
     	// std::cout << *sparse_colpsd_adj_Matrix << std::endl;
 		return ;
 	}
-
-	//!	Function for computing the sparse-matrix corresponding to the core of the complex. 
-    
- // 	void after_edge_collapse()
-	// {
-	// 	delete sparse_colpsd_adj_Matrix;
- //     	sparse_colpsd_adj_Matrix   =  new sparseRowMatrix(rows,rows); // Just for debugging purpose.
- //    	oneSimplices.clear();  
- //    	if(not filteredEgdeIter.empty())
- //    		std::cout << "Working list for edge collapses are not empty after the edge-collapse." << std::endl;
-
-	// 	for(int rw = 0 ; rw < rows ; ++rw)
-	// 	{
-	// 		if(not vertDomnIndicator[rw]) 				//If the current column is not dominated
-	// 		{
-	// 			auto nbhrs_to_insert = closed_neighbours_row_index(rw); // returns row indices of the non-dominated vertices.
- //        		for(auto & v: nbhrs_to_insert){
- //          			sparse_colpsd_adj_Matrix->insert(rw, v) = 1;
- //          			if(rw < v){
- //          				oneSimplices.push_back({rowToVertex[rw],rowToVertex[v]});
- //          			}
- //        		}
-	// 		}			
-	// 	}
-	// 	// std::cout << "Total number of non-zero elements after domination check are: " << sparse_colpsd_adj_Matrix->nonZeros() << std::endl;
- //    	// std::cout << *sparse_colpsd_adj_Matrix << std::endl;
-	// 	return ;
-	// }
 
 	//! Function to fully compact a particular vertex of the ReductionMap.
     /*!
@@ -358,79 +334,90 @@ class FlagComplexSpMatrix
 	    }
 	}
 
-	void complete_edge_domination()
+	void complete_filtered_edge_domination(double steps)
 	{
-	  	FiltEdge fe;
+	  	FiltEdge fe, fec;
 	  	Edge e;
-	  	Vertex u, v, c;
+	  	Vertex u, v, rw_c;
 	  	doubleVector commonNeighbours;
 	  	doubleVector neighbours_c;
-	  	std::size_t numDomItr = 0;
-	  	int itern = 1;
+	  	std::unordered_set<std::size_t> criticalCoreIndcs;
+
 	  	bool domntd;
-	  	filteredEgdeIter.push({{-1,-1},-1});   	// Inserting a dummy edge to identify the end of the stream.
-	    while(not filteredEgdeIter.empty())     // "filteredEgdeIter" contains list(FIFO) of edges to be considered for domination check. 
-	    { 									  	// It is initialized with all the egdes left after vertex-strong-collapse or at the time of construction for filtered edge collapse.			
-	      	fe = filteredEgdeIter.front();
-	      	filteredEgdeIter.pop();
-	      	e = std::get<0>(fe);
-	      	u = std::get<0>(e);
-	  		v = std::get<1>(e);
-	  		if( u != -1 and v != -1) {
-		  		domntd = false;
-		  		// std::cout << "The edge {" << rowToVertex[u] << ", " << rowToVertex[v] <<  "} is going for domination check." << std::endl;
-		        commonNeighbours  = closed_common_neighbours_row_index(e); 
-		        // std::cout << "And its common neighbours are." << std::endl;
-		        // for (doubleVector::iterator it = commonNeighbours.begin(); it!=commonNeighbours.end(); it++) {
-		        	// std::cout << rowToVertex[*it] << ", " ;
-		        // }
-		        // std::cout<< std::endl;
-		        if(commonNeighbours.size() > 2) {					     
-			        for (doubleVector::iterator it = commonNeighbours.begin(); it!=commonNeighbours.end(); it++) {	
-			        	c = *it; // Typecasting
-			       		if(c != u and c != v) {
-			       			neighbours_c = closed_neighbours_row_index(c);
-							if(std::includes(neighbours_c.begin(), neighbours_c.end(), commonNeighbours.begin(), commonNeighbours.end())) {// If neighbours_c contains the common neighbours.
-								set_edge_domination(commonNeighbours, e);
-								 // std::cout << "The edge {" << rowToVertex[u] << ", " << rowToVertex[v] <<  "} is dominated by the vertex : " << rowToVertex[c] << std::endl;
-								 commonNeighbours.clear();
-								 neighbours_c.clear();
-								 numDomItr++;
-								 numOneSimplices--;
-								 domntd = true;
-								 break;
-							}	
-						}         
-			       	}
-			    }
+	  	std::size_t totEdges = fEgdeVector.size();
+	  	std::size_t endIdx = 0;
+	  	double currThreshold = std::get<1>(fEgdeVector.at(0))+steps;
+	  	double cfiltVal = std::get<1>(fEgdeVector.at(0));
+	  	std::cout << "Total number of edges to be processed are: " << totEdges  << std::endl;
 
-			    if ( not domntd and filtEdgeCol){
-	    			// nonDomEdges.push_back({std::get<1>(fe),rowToVertex[u],rowToVertex[v]}); 
-	    			filteredEgdeIter.push(fe);
-	    		}   	
+	    while( endIdx < totEdges)
+	    {
+		    if(steps > 0)
+		    {
+			    while ( cfiltVal <= currThreshold and endIdx < totEdges)
+			    {	
+			    	fec = fEgdeVector.at(endIdx);
+				    insert_new_edges(std::get<0>(std::get<0>(fec)), std::get<1>(std::get<0>(fec)),std::get<1>(fec));
+				    cfiltVal = std::get<1>(fEgdeVector.at(endIdx));
+				    endIdx++;
+				}
+				currThreshold = currThreshold+steps;    
 		    }
-		    else {
-		    	std::cout << "Iteration " << itern << " of the edge-collapse finished with " << numDomItr << " dominated edges being found. "<< std::endl;
-		    	if(numDomItr != 0) {
-		    		filteredEgdeIter.push({{-1,-1},-1});   	// Inserting a dummy edge to identify the end of the stream.
-		    		numDomItr = 0;
-		    		itern++;
-		    	}
-		    	else {
-		    		while(not filteredEgdeIter.empty()) { 									  	
-				      	fe = filteredEgdeIter.front();
-				      	filteredEgdeIter.pop();
-				      	e = std::get<0>(fe);
-				      	Vertex u = std::get<0>(e);
-				  		Vertex v = std::get<1>(e);	
-		    			nonDomEdges.push_back({std::get<1>(fe),rowToVertex[u],rowToVertex[v]}); 
-		    		}
-		    	}	
-		    	
+		    else
+		    {
+		    	fec = fEgdeVector.at(endIdx);
+				insert_new_edges(std::get<0>(std::get<0>(fec)), std::get<1>(std::get<0>(fec)),std::get<1>(fec));
+		    	endIdx++;
 		    }
 
-	    }
-	    // std::cout << "Total number of dominated egdes were: " << numDom << std::endl;
+		    u_set_domEdges.clear();
+		    for(int j = endIdx-1; j >= 0; --j) //The order of domination check  is in decreasing edge-length. The experiment suggests it results in fewer critical edges.
+		    {  
+		      	if(criticalCoreIndcs.find(j) == criticalCoreIndcs.end())
+		      	{
+			      	fe = fEgdeVector.at(j);
+			      	e = std::get<0>(fe);
+			      	u = std::get<0>(e);
+			  		v = std::get<1>(e);
+
+			  		auto rw_u = vertexToRow[u];
+			  		auto rw_v = vertexToRow[v];
+			  		auto rw_e = std::minmax(rw_u,rw_v);
+			  		domntd = false;
+			  		// std::cout << "The edge {" << u << ", " << v <<  "} is going for domination check." << std::endl;
+			        commonNeighbours  = closed_common_neighbours_row_index(rw_e); 
+			        // std::cout << "And its common neighbours are." << std::endl;
+			        // for (doubleVector::iterator it = commonNeighbours.begin(); it!=commonNeighbours.end(); it++) {
+			        	// std::cout << rowToVertex[*it] << ", " ;
+			        // }
+			        // std::cout<< std::endl;
+			        if(commonNeighbours.size() > 2) {					     
+				        for (doubleVector::iterator it = commonNeighbours.begin(); it!=commonNeighbours.end(); it++) {	
+				        	rw_c = *it; // Typecasting
+				       		if(rw_c != rw_u and rw_c != rw_v) {
+				       			neighbours_c = closed_neighbours_row_index(rw_c);
+								if(std::includes(neighbours_c.begin(), neighbours_c.end(), commonNeighbours.begin(), commonNeighbours.end())) {// If neighbours_c contains the common neighbours.
+									u_set_domEdges.emplace(rw_e);
+									// std::cout << "The edge {" << u << ", " << v <<  "} is dominated by " << rowToVertex[rw_c] << std::endl;
+									commonNeighbours.clear();
+									neighbours_c.clear();
+									domntd = true;
+									break;
+								}	
+							}         
+				       	}
+					}
+					if ( not domntd ){
+		    			criticalCoreIndcs.emplace(j);
+		    			criticalCoreEdges.push_back({std::get<1>(fe),u,v});
+	    			}
+				}
+		    }
+			// std::cout << "Total number of dominated egdes were: " << numDom << std::endl;
+		}
+		std::cout << "********************************************************************" << std::endl;
+		std::cout << "Total number of critical edges are: " << criticalCoreIndcs.size()  << std::endl;	
+
 	}
 
 
@@ -452,41 +439,6 @@ class FlagComplexSpMatrix
 		}
 		return 0;	
 	}
-
-	void set_edge_domination(doubleVector& common, Edge e) // checks if the edge 'e' is dominated by vertex 'w'
-	{
-		edgeStatusMap[e] = false;
-		numDomEdge++;
-		// sparseRowAdjMatrix.coeffRef(u,v) = 0;
-	  	// sparseRowAdjMatrix.coeffRef(v,u) = 0;
-	  	u_set_domEdges.insert(e);
-	  	if(not filtEdgeCol) {
-	  		Vertex u = std::get<0>(e);
-	  		Vertex v = std::get<1>(e);
-		  	Edge e1, e2;  
-		  	Vertex c;
-			for (doubleVector::iterator it = common.begin(); it!=common.end(); it++) 
-			{
-				c = *it; // Typecasting
-				if(c != u and c != v) {
-					e1 = std::minmax(c, u);
-					e2 = std::minmax(c, v);
-					
-					if(not edgeStatusMap[e1]) {
-						filteredEgdeIter.push({e1,1});
-						// std::cout << "Pushed the edge {" << rowToVertex[c] << ", " << rowToVertex[u] <<  "} " << std::endl;
-						edgeStatusMap[e1] = true ;
-					}
-					if(not edgeStatusMap[e2] ) {
-						filteredEgdeIter.push({e2,1});
-						// std::cout << "Pushed the edge {" << rowToVertex[c] << ", " << rowToVertex[v] <<  "} " << std::endl;
-						edgeStatusMap[e2] = true;
-					}
-				}	
-			}	
-		}
-	}
-	
 
 	doubleVector closed_neighbours_row_index(double indx) 	// Returns list of non-zero columns of the particular indx. 
 	{													
@@ -626,12 +578,12 @@ public:
 	 		sparseRowAdjMatrix  = sparseRowMatrix(num_vertices, num_vertices);    	// Initializing sparseRowAdjMatrix, This is a row-major sparse matrix.  
 			
 			for(size_t bgn_idx = 0; bgn_idx < edge_t.size(); bgn_idx++) {
-		  		std::vector<size_t>  s = {std::get<1>(edge_t.at(bgn_idx)), std::get<2>(edge_t.at(bgn_idx))};
-		  		insert_new_edges(std::get<1>(edge_t.at(bgn_idx)), std::get<2>(edge_t.at(bgn_idx)), 1);
-		  		filteredEgdeIter.push({std::minmax(vertexToRow[std::get<1>(edge_t.at(bgn_idx))], vertexToRow[std::get<2>(edge_t.at(bgn_idx))]),std::get<0>(edge_t.at(bgn_idx))}); 
+		  		// std::vector<size_t>  s = {std::get<1>(edge_t.at(bgn_idx)), std::get<2>(edge_t.at(bgn_idx))};
+		  		// insert_new_edges(std::get<1>(edge_t.at(bgn_idx)), std::get<2>(edge_t.at(bgn_idx)), 1);
+		  		fEgdeVector.push_back({{std::get<1>(edge_t.at(bgn_idx)), std::get<2>(edge_t.at(bgn_idx))},std::get<0>(edge_t.at(bgn_idx))}); 
 		  	}	
 		
-		  	sparseRowAdjMatrix.makeCompressed(); 
+		  	// sparseRowAdjMatrix.makeCompressed(); 
        	}
        	else
        		FlagComplexSpMatrix(num_vertices, edge_t);
@@ -671,7 +623,7 @@ public:
 	// Performs edge collapse in of a given sparse-matrix(graph) without considering the filtration value.
 	// double strong_edge_collapse() {
 	// 	auto begin_collapse  = std::chrono::high_resolution_clock::now();
-	// 	complete_edge_domination();
+	// 	complete_filtered_edge_domination();
 	// 	vertexCollapsed = false;
 	// 	edgeCollapsed	= true;
 	// 	auto end_collapse  = std::chrono::high_resolution_clock::now();
@@ -683,9 +635,9 @@ public:
 	// 	return collapseTime;
 	// }
 	// Performs edge collapse in a decreasing sequence of the filtration value.
-	Filtered_sorted_edge_list filtered_edge_collapse() {
+	Filtered_sorted_edge_list filtered_edge_collapse(double steps) {
 		auto begin_collapse  = std::chrono::high_resolution_clock::now();
-		complete_edge_domination();
+		complete_filtered_edge_domination(steps);
 		vertexCollapsed = false;
 		edgeCollapsed	= true;
 		auto end_collapse  = std::chrono::high_resolution_clock::now();
@@ -694,7 +646,7 @@ public:
 		std::cout << "Time of filtered edge Collapse : " << collapseTime << " ms\n" << std::endl;
 		//Post processing...
 		// after_edge_collapse();
-		return nonDomEdges;
+		return criticalCoreEdges;
 	}
 
 	// double strong_vertex_edge_collapse() {
