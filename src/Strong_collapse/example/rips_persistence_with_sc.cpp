@@ -20,28 +20,110 @@ using Persistent_cohomology = Gudhi::persistent_cohomology::Persistent_cohomolog
 using Distance_matrix = std::vector<std::vector<Filtration_value>>;
 class extract_sub_one_skeleton
 {
-    public:
-        template<class Filtered_sorted_edge_list,  class Fil_vector >
-        extract_sub_one_skeleton(double threshold, Filtered_sorted_edge_list & current_edge_t, Filtered_sorted_edge_list & edge_t, Fil_vector & edge_filt ) {
-          
-            
-            
-            auto end_it = std::upper_bound(edge_filt.begin(), edge_filt.end(), threshold); // find_index(edge_t, threshold, 0, end_idx);
-            size_t end_idx = std::distance(edge_filt.begin(), end_it);
+public:
+    template<class Filtered_sorted_edge_list,  class Fil_vector >
+    extract_sub_one_skeleton(double threshold, Filtered_sorted_edge_list & current_edge_t, Filtered_sorted_edge_list & edge_t, Fil_vector & edge_filt ) {
+ 
+        auto end_it = std::upper_bound(edge_filt.begin(), edge_filt.end(), threshold); // find_index(edge_t, threshold, 0, end_idx);
+        size_t end_idx = std::distance(edge_filt.begin(), end_it);
 
-            for( size_t idx = 0; idx < end_idx ; idx++) {
-               current_edge_t.push_back(*edge_t.begin()); 
-               edge_filt.erase(edge_filt.begin());
-               edge_t.erase(edge_t.begin());
-            }
-            
-            // if(current_edge_t.size() != 0)
-            //     std::cout << "The longest edge in the remaining edges is: "<< std::get<0>(current_edge_t.at(current_edge_t.size()-1)) << " and threshold is: " << threshold << std::endl;
-            // if(edge_t.size() != 0)
-            //     std::cout << "The smallest edge in the current edges is: "<< std::get<0>(edge_t.at(0)) << " and threshold is: " << threshold << std::endl;
-            // std::cout << "The number of the remaining edges are: " << (edge_t.size()) << std::endl;
-            // std::cout << "Current number of the edges are: " << (current_edge_t.size()) << std::endl;
+        for( size_t idx = 0; idx < end_idx ; idx++) {
+           current_edge_t.push_back(*edge_t.begin()); 
+           edge_filt.erase(edge_filt.begin());
+           edge_t.erase(edge_t.begin());
         }
+        
+    }
+};
+class strong_filtered_vertex_collapse
+{
+public:
+    template<class Filtered_sorted_edge_list, class Distance_matrix>
+    strong_filtered_vertex_collapse(std::size_t number_of_points, Filtered_sorted_edge_list & edge_t, double steps, Distance_matrix & sparse_distances)
+    {
+         auto the_collapse_begin = std::chrono::high_resolution_clock::now();
+        //An additional vector <edge_filt> to perform binary search to find the index of given threshold
+        std::vector<Filtration_value> * edge_filt = new std::vector<Filtration_value>();
+        edge_filt->clear();
+        for(auto edIt = edge_t.begin(); edIt != edge_t.end(); edIt++) {
+            edge_filt->push_back(std::get<0>(*edIt));
+        }
+        double begin_thresold = edge_filt->at(0);
+        double end_threshold = edge_filt->at(edge_filt->size()-1);
+        double totAssembleTime = 0.0;
+        Filtered_sorted_edge_list * sub_skeleton  = new Filtered_sorted_edge_list();  
+        TowerAssembler_FlagComplex twr_assembler(number_of_points) ;
+
+        std::cout<< "Begin and end thresholds (filteration values) are , " << begin_thresold <<", " << end_threshold << "." <<std::endl;
+
+        int iterations = (end_threshold - begin_thresold)/steps;
+        std::cout << "Total number of iterations to be run are: " << iterations << std::endl;
+       
+        auto threshold =  begin_thresold;  
+
+        FlagComplexSpMatrix * mat_coll       = new FlagComplexSpMatrix(); 
+        FlagComplexSpMatrix * mat_prev_coll  = new FlagComplexSpMatrix(number_of_points); 
+
+        std::cout << "Going for vertex collapse and tower assembly" << std::endl;
+
+        int i = 1;
+        Map * redmap;
+        while(threshold < end_threshold+steps) {
+            extract_sub_one_skeleton(threshold, *sub_skeleton, edge_t, *edge_filt);
+           
+            mat_coll = new FlagComplexSpMatrix(number_of_points, *sub_skeleton);
+            // mat_coll->strong_vertex_edge_collapse();
+            mat_coll->strong_vertex_collapse();
+            redmap = new Map();
+            *redmap = mat_coll->reduction_map(); 
+            
+            // std::cout << "Subcomplex #" << i << " of threshold "<< threshold << " Collapsed" << std::endl;
+            totAssembleTime += twr_assembler.build_tower_for_two_cmplxs(*mat_prev_coll, *mat_coll, *redmap, threshold, "./PersistenceOutput/CollapsedTowerRips.txt");
+            // std::cout << "Tower updated for subcomplex #" << i << std::endl; 
+            
+            delete mat_prev_coll;
+            mat_prev_coll = new FlagComplexSpMatrix();
+            mat_prev_coll = mat_coll;
+            mat_coll  = new FlagComplexSpMatrix();
+            threshold = threshold+steps;
+            i++;
+            delete redmap;
+        }
+        std::cout << "Tower updated for subcomplex #" << i << std::endl; 
+        auto the_collapse = std::chrono::high_resolution_clock::now();    
+        sparse_distances = twr_assembler.distance_matrix();
+        std::cout << "Collapse And assembly time : " <<  std::chrono::duration<double, std::milli>(the_collapse- the_collapse_begin).count()
+            << " ms\n" << std::endl;
+    }    
+
+};
+class filt_edge_to_dist_matrix
+{
+public:
+    template<class Distance_matrix, class Filtered_sorted_edge_list>
+    filt_edge_to_dist_matrix(Distance_matrix & distance_mat, Filtered_sorted_edge_list & edge_filt, std::size_t number_of_points)
+    {
+        double inf = std::numeric_limits<double>::max();
+        doubleVector distances ; 
+        std::pair<std::size_t, std::size_t> e;
+        for(std::size_t indx = 0; indx < number_of_points; indx++) { 
+            for (int j = 0; j <= indx; j++)
+            {
+               if( j == indx)
+                    distances.push_back(0);
+                
+                else
+                     distances.push_back(inf);
+            }
+            distance_mat.push_back(distances);
+            distances.clear();
+        }
+
+        for(auto edIt = edge_filt.begin(); edIt != edge_filt.end(); edIt++) {
+            e=std::minmax(std::get<1>(*edIt),std::get<2>(*edIt));
+            distance_mat.at(std::get<1>(e)).at(std::get<0>(e)) = std::get<0>(*edIt);
+        } 
+    }
 };
 
 
@@ -55,13 +137,10 @@ int main(int argc, char * const argv[]) {
     
     typedef size_t Vertex_handle;
     typedef std::vector< std::tuple<Filtration_value, Vertex_handle, Vertex_handle > > Filtered_sorted_edge_list;
-    std::vector<Filtration_value> * edge_filt = new std::vector<Filtration_value>() ;
 
     int     dimension;
     double  begin_thresold;
     double  end_threshold;
-    double  min_dist;
-    double  max_dist;
     double  steps;
     int     repetetions = 1;
     char    manifold;
@@ -109,13 +188,14 @@ int main(int argc, char * const argv[]) {
     filediag_bfr = filediag_bfr+"_"+ out_file_name+ ".txt";
     filediag_aft = filediag_aft+"_"+ out_file_name+ ".txt";
 
-    double totAssembleTime = 0.0;
     double currentCreationTime = 0.0;
     double maxCreationTime     = 0.0;
 
    
     point_vector = new Vector_of_points();
-    Distance_matrix distances, sparse_distances;
+    Distance_matrix distances;
+    Distance_matrix *sparse_distances = new Distance_matrix();
+
 
     if(manifold == 's' || manifold == 'S'){
         // point_generator.generate_points_sphere(*point_vector, number_of_points, dimension, radius); 
@@ -179,15 +259,14 @@ int main(int argc, char * const argv[]) {
     // for(int i = 0; i < number_of_points; i++ )
     //     point_generator.print_point(point_vector->at(i));
 
-    Filtered_sorted_edge_list * sub_skeleton  = new Filtered_sorted_edge_list();  
+    // Filtered_sorted_edge_list * sub_skeleton  = new Filtered_sorted_edge_list();  
     Filtered_sorted_edge_list * edge_t = new Filtered_sorted_edge_list();
-    TowerAssembler_FlagComplex twr_assembler(number_of_points) ;
+    // TowerAssembler_FlagComplex twr_assembler(number_of_points) ;
     
     std::cout << "Computing the one-skeleton for threshold: " << end_threshold << std::endl; 
     
     auto begin_full_cmplx = std::chrono::high_resolution_clock::now();
-    if(manifold == 'm'){ //Input is a distance 'm'atrix
-        //Creating the edge list
+    if(manifold == 'm'){ //Input is a distance 'm'atrix //Creating the edge list
         Rips_edge_list Rips_edge_list_from_file(distances, end_threshold);
         Rips_edge_list_from_file.create_edges(*edge_t);
         std::cout<< "Sorted edge list computed" << std::endl;
@@ -197,8 +276,7 @@ int main(int argc, char * const argv[]) {
         //rips_complex_from_file.create_complex(*subComplex, dim_max);
         //std::cout<< "Rips complex computed" << std::endl;
     }
-    else{ //Point cloud input
-         //Creating the edge list
+    else{ //Point cloud input  //Creating the edge list
         Rips_edge_list Rips_edge_list_from_points(*point_vector, end_threshold, Gudhi::Euclidean_distance());
         Rips_edge_list_from_points.create_edges(*edge_t);
         std::cout<< "Sorted edge list computed" << std::endl;
@@ -209,69 +287,23 @@ int main(int argc, char * const argv[]) {
     }
     
     //Now we will perform filtered edge collapse to sparsify the edge list edge_t.
-  
     std::cout<< "Filtered edge collapse begins" << std::endl;
     FlagComplexSpMatrix * mat_filt_edge_coll  = new FlagComplexSpMatrix(number_of_points,*edge_t,true);
     delete edge_t;
     edge_t = new Filtered_sorted_edge_list();
-    *edge_t = mat_filt_edge_coll->filtered_edge_collapse(steps); 
-     
+    *edge_t = mat_filt_edge_coll->filtered_edge_collapse(0); 
+    // filt_edge_to_dist_matrix(*sparse_distances, *edge_t, number_of_points); 
 
-    auto the_collapse_begin = std::chrono::high_resolution_clock::now();
-    //An additional vector <edge_filt> to perform binary search to find the index of given threshold
-    edge_filt->clear();
-    for(auto edIt = edge_t->begin(); edIt != edge_t->end(); edIt++) {
-        edge_filt->push_back(std::get<0>(*edIt));
-    }
-    min_dist = edge_filt->at(0);
-    max_dist = edge_filt->at(edge_filt->size()-1);
 
-    if(begin_thresold < min_dist){
-        std::cout<< "Begin threshold re-set to the minimum filteration value, " << min_dist << "." <<std::endl;
-    }
-    int iterations = (end_threshold - min_dist)/steps;
-    std::cout << "Total number of iterations to be run are: " << iterations << std::endl;
+    strong_filtered_vertex_collapse(number_of_points, *edge_t, steps, *sparse_distances); 
 
     auto end_full_cmplx = std::chrono::high_resolution_clock::now();
     currentCreationTime = std::chrono::duration<double, std::milli>(end_full_cmplx - begin_full_cmplx).count();
     maxCreationTime = currentCreationTime;
    
-    auto threshold =  begin_thresold;  
-
-    FlagComplexSpMatrix * mat_coll       = new FlagComplexSpMatrix(); 
-    FlagComplexSpMatrix * mat_prev_coll  = new FlagComplexSpMatrix(number_of_points); 
-
-    std::cout << "Going for collapse and tower assembly" << std::endl;
-
-    int i = 1;
-    Map * redmap;
-    while(threshold < end_threshold+steps) {
-        extract_sub_one_skeleton(threshold, *sub_skeleton, *edge_t, *edge_filt);
-       
-        mat_coll = new FlagComplexSpMatrix(number_of_points, *sub_skeleton);
-        // mat_coll->strong_vertex_edge_collapse();
-        mat_coll->strong_vertex_collapse();
-        redmap = new Map();
-        *redmap = mat_coll->reduction_map(); 
-        
-        // std::cout << "Subcomplex #" << i << " of threshold "<< threshold << " Collapsed" << std::endl;
-        totAssembleTime += twr_assembler.build_tower_for_two_cmplxs(*mat_prev_coll, *mat_coll, *redmap, threshold, "./PersistenceOutput/CollapsedTowerRips.txt");
-        // std::cout << "Tower updated for subcomplex #" << i << std::endl; 
-        
-        delete mat_prev_coll;
-        mat_prev_coll = new FlagComplexSpMatrix();
-        mat_prev_coll = mat_coll;
-        mat_coll  = new FlagComplexSpMatrix();
-        threshold = threshold+steps;
-        i++;
-        delete redmap;
-    }
-    std::cout << "Tower updated for subcomplex #" << i << std::endl; 
-    auto the_collapse = std::chrono::high_resolution_clock::now();    
-    sparse_distances = twr_assembler.distance_matrix();
-    
+ 
     // Rips_complex rips_complex_before_collapse(*point_vector, end_threshold, Gudhi::Euclidean_distance());
-    Rips_complex rips_complex_after_collapse(sparse_distances, end_threshold);
+    Rips_complex rips_complex_after_collapse(*sparse_distances, end_threshold);
     // Construct the Rips complex in a Simplex Tree
     
     Simplex_tree   simplex_tree_aft;
@@ -316,8 +348,6 @@ int main(int argc, char * const argv[]) {
       }
     
     auto the_end = std::chrono::high_resolution_clock::now();   
-    std::cout << "Collapse And assembly time : " <<  std::chrono::duration<double, std::milli>(the_collapse- the_collapse_begin).count()
-                  << " ms\n" << std::endl;
 
     std::cout << "Total computation time : " <<  std::chrono::duration<double, std::milli>(the_end- the_begin).count()
                   << " ms\n" << std::endl;         
