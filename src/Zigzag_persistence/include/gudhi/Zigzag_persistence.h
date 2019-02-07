@@ -831,28 +831,30 @@ void make_pair_critical(Simplex_handle zzsh)
   /** \brief Output the persistence diagram in ostream.
    *
    * The file format is the following:
-   *    p1*...*pr   dim b d
+   *    dim b d
    *
    * where "dim" is the dimension of the homological feature,
    * b and d are respectively the birth and death of the feature and
    * p1*...*pr is the product of prime numbers pi such that the homology
    * feature exists in homology with Z/piZ coefficients.
    */
-  // void output_index_diagram(std::ostream& ostream = std::cout) {
-  //   std::vector< interval_t > tmp_diag; 
-  //   tmp_diag.reserve(persistence_diagram_.size());
-  //   for(auto bar : persistence_diagram_) {
-  //     tmp_diag.emplace_back(bar.dim_,bar.b_,bar.d_);
-  //   }
-  //   // cmp_intervals_by_length cmp;
-  //   // std::stable_sort(tmp_diag.begin(), tmp_diag.end(), cmp);
+  void output_index_diagram(std::ostream& ostream = std::cout) {
+    // std::vector< interval_t > tmp_diag; 
+    // tmp_diag.reserve(persistence_diagram_.size());
+    // for(auto bar : persistence_diagram_) {
+    //   tmp_diag.emplace_back(bar.dim_,bar.b_,bar.d_);
+    // }
+    // cmp_intervals_by_length cmp;
+    // std::stable_sort(tmp_diag.begin(), tmp_diag.end(), cmp);
 
-  //   for(auto bar : tmp_diag) {
-  //       std::cout << bar.dim_ << "   " << bar.b_ << " " << bar.d_ << "      " << bar.length() << "     ";
-  //       std::cout << index_to_filtration_birth(bar.b_) << " " << 
-  //                    index_to_filtration_death(bar.d_) << "\n";
-  //   }
-  // }
+    for(auto bar : persistence_diagram_) {
+        ostream << bar.dim_ << "   " << bar.b_ << " " << bar.d_ << std::endl;
+        // "      " << bar.length() << "     ";
+        // ostream << index_to_filtration_birth(bar.b_) << " " << 
+        //              index_to_filtration_death(bar.d_) << "\n";
+    }
+  }
+
 
 
 /** \brief Output the persistence diagram in ostream.
