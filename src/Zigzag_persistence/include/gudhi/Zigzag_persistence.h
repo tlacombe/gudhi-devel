@@ -473,8 +473,8 @@ void compute_zigzag_persistence()
 
   while( zzit != zzrg.end() )
   { 
-    faces_per_dim[cpx_->dimension(*zzit)] += 1;
-    // if(num_arrow_ % 100000 == 0) std::cout << num_arrow_ << "\n";
+    // faces_per_dim[cpx_->dimension(*zzit)] += 1;
+    // // if(num_arrow_ % 100000 == 0) std::cout << num_arrow_ << "\n";
 
     if(zzit.arrow_direction()) { num_arrow_ = cpx_->key(*zzit); }
     else { ++num_arrow_; }//can't be the first arrow
@@ -507,13 +507,13 @@ void compute_zigzag_persistence()
     ++zzit; 
   }
 
-  if(!matrix_.empty()) {std::cout << "Remains " << matrix_.size() << " columns.\n";}
+  // if(!matrix_.empty()) {std::cout << "Remains " << matrix_.size() << " columns.\n";}
 
-  std::cout << "Faces per dimension:\n";
-  for(int i=0; i<=dim_max_; ++i) {
-    std::cout << "dim " << i << ":     " << faces_per_dim[i] << std::endl;
-  }
-  std::cout << "--------------end faces\n";
+  // std::cout << "Faces per dimension:\n";
+  // for(int i=0; i<=dim_max_; ++i) {
+  //   std::cout << "dim " << i << ":     " << faces_per_dim[i] << std::endl;
+  // }
+  // std::cout << "--------------end faces\n";
 }
 
 /* sh is a maximal simplex paired with a simplex tsh
@@ -736,7 +736,7 @@ void make_pair_critical(Simplex_handle zzsh)
     tmp_diag.reserve(persistence_diagram_.size());
     for(auto bar : persistence_diagram_) 
     {
-      auto it_b = 
+      auto it_b = //lower_bound(x) returns leftmost y s.t. x <= y
       std::lower_bound( filtration_values_.begin(), filtration_values_.end() 
              , std::pair<Simplex_key, Filtration_value>(bar.b_, std::numeric_limits<double>::infinity() )
              , []( std::pair<Simplex_key, Filtration_value> p1
@@ -746,7 +746,7 @@ void make_pair_critical(Simplex_handle zzsh)
       //
       if(it_b->first > bar.b_) { --it_b; }
 
-      auto it_d = 
+      auto it_d = //upper_bound(x) returns leftmost y s.t. x < y, or last 
       std::upper_bound( filtration_values_.begin(), filtration_values_.end() 
              , std::pair<Simplex_key, Filtration_value>(bar.d_, std::numeric_limits<double>::infinity() )
              , []( std::pair<Simplex_key, Filtration_value> p1

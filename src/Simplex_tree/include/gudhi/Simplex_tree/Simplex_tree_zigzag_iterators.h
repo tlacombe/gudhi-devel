@@ -217,7 +217,7 @@ class Flagzigzag_simplex_iterator
         fil_ = edge_it_->fil();
         sh_it_ = partial_zzfil_.begin(); 
         ++edge_it_;
-        std::cout << ++progress_edges_ << " / " << zigzag_edge_filtration_->size() << "\n";
+        // std::cout << ++progress_edges_ << " / " << zigzag_edge_filtration_->size() << "\n";
       }
     }
   
