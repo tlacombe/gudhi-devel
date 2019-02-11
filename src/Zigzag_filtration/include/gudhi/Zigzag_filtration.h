@@ -200,7 +200,7 @@ void points_to_edge_filtration(Point_container         &points,
   //add vertices later
   for(size_t i = 0; i < n-1; ++i) {//all ascending arrows eps_i
   // tbb::parallel_for(size_t(0), n-1, [&](size_t i) {
-    //R({p_0, ... , p_i}, nu * eps_i) -> R({p_1, ... , p_i}, mu * eps_i)  radius   
+    //R({p_0, ... , p_i}, nu * eps_i) -> R({p_0, ... , p_i}, mu * eps_i)  radius   
     for(size_t j = 1; j <= i ; ++j) { //first strictly longer edge
       it = std::upper_bound(dist_matrix[j].begin(), dist_matrix[j].end(), 
                 std::pair<int, FiltrationValue>(n, mu * filtration_values[i]), cmp);

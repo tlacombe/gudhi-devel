@@ -70,7 +70,7 @@ int main(int argc, char* argv[])
   start = std::chrono::system_clock::now();
   std::vector<Point_d> sorted_points;
   Gudhi::subsampling::choose_n_farthest_points( k_d, off_reader.get_point_cloud() 
-    , off_reader.get_point_cloud().size() //all points
+    , 2000//off_reader.get_point_cloud().size() //all points
     , 0//start with point [0]//Gudhi::subsampling::random_starting_point
     , std::back_inserter(sorted_points));
 
@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
 
   auto sqdist = k_d.squared_distance_d_object();
 
-  //Compute edge filtration
+  //Compute edge filtration  
   start = std::chrono::system_clock::now();
   points_to_edge_filtration( sorted_points, 
                              sqdist, //Gudhi::Euclidean_distance(),
@@ -95,6 +95,8 @@ int main(int argc, char* argv[])
   for(auto & f : filtration_values) { f = std::sqrt(f); }
   for(auto & e : edge_filtration) { e.assign_fil(std::sqrt(e.fil())); }
 
+  std::cout << "Number of edges total: " << edge_filtration.size() << "\n";
+
   Simplex_tree st;
   st.initialize_filtration(edge_filtration, dim_max); 
   // auto zz_rg = st.filtration_simplex_range();
@@ -107,12 +109,16 @@ int main(int argc, char* argv[])
 
   std::cout << "Compute zigzag persistence in: " << enlapsed_sec << " sec.\n";
   std::cout << std::endl;
-  std::cout << "Persistence diagram (log2): \n";
-  zz.output_log2_diagram();
 
-  std::cout << "\n\n\n";
-  std::cout << "Persistence diagram: \n";
-  zz.output_diagram();
+  std::cout << "Persistence diagram (dionysus): \n";
+  zz.output_diagram_dionysus();
+
+  // std::cout << "Persistence diagram (log2): \n";
+  // zz.output_log2_diagram();
+
+  // std::cout << "\n\n\n";
+  // std::cout << "Persistence diagram: \n";
+  // zz.output_diagram();
 
   return 0;
 }
