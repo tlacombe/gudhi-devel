@@ -471,8 +471,7 @@ public:
 	num_arrow_ = cpx_->key(*zzit);
 
 	prev_fil_ = zzit.filtration(); // prev_fil_ = cpx_->filtration(*zzit);
-	// filtration_values_.emplace_back(cpx_->key(*zzit), prev_fil_);
-	//filtration_values_.emplace_back(num_arrow_, prev_fil_);
+	filtration_values_.emplace_back(num_arrow_, prev_fil_);
 
 	while( zzit != zzrg.end() )
 	{
@@ -483,6 +482,7 @@ public:
 		num_arrow_ = cpx_->key(*zzit);
 #ifdef COMPLEX_TIME
 		++currentSize;
+		++numberOfInsertions_;
 		if (maxComplexSize_ < currentSize) maxComplexSize_ = currentSize;
 		//if (cpx_->dimension(*zzit) == 0) std::cout << cpx_->dimension(*zzit) << " -\n";
 #endif
@@ -490,6 +490,7 @@ public:
 		++num_arrow_;
 #ifdef COMPLEX_TIME
 		--currentSize;
+		++numberOfRemovals_;
 		//std::cout << currentSize << " -\n";
 #endif
 	    }//can't be the first arrow
@@ -498,8 +499,7 @@ public:
 	    if(curr_fil_ != prev_fil_) //check whether the filt val has changed
 	    {
 		// prev_fil_=curr_fil_; filtration_values_.emplace_back(num_arrow_-1, prev_fil_);
-		prev_fil_=curr_fil_; //filtration_values_.emplace_back(num_arrow_, prev_fil_);
-		// filtration_values_.emplace_back(cpx_->key(*zzit), prev_fil_);
+		prev_fil_=curr_fil_; filtration_values_.emplace_back(num_arrow_, prev_fil_);
 	    }
 	    //Iterator zzit gives only Morse critical cells for insertion (forward arrows).
 	    //It gives both critical and non-critical cells for deletion (backward arrows).
@@ -1260,9 +1260,9 @@ private:
 	//                                    , max_birth_fil_//cpx_->filtration(max_birth)
 	//                                    , curr_fil_);//cpx_->filtration(zzsh));
 	// // }
-	/*persistence_diagram_.emplace_back( cpx_->dimension(zzsh)-1
+	persistence_diagram_.emplace_back( cpx_->dimension(zzsh)-1
 					   , maxb//cpx_->filtration(max_birth)
-					   , cpx_->key(zzsh)-1);//-1);//cpx_->filtration(zzsh));*/
+					   , cpx_->key(zzsh)-1);//-1);//cpx_->filtration(zzsh));
 
     }
 
@@ -1322,12 +1322,12 @@ private:
 	    //                                      , curr_fil_);
 	    // // }
 	    int dim_zzsh = cpx_->dimension(zzsh);
-	    /*if(dim_zzsh < dim_max_) {
+	    if(dim_zzsh < dim_max_) {
 		persistence_diagram_.emplace_back( dim_zzsh
 						   , curr_col->birth()
 						   // , cpx_->key(zzsh) <-- incorrect
 						   , num_arrow_ -1);
-	    }*/
+	    }
 
 	}
 	else { //in H    -> paired c_g belongs to F now
@@ -1572,10 +1572,20 @@ private:
 
 #ifdef COMPLEX_TIME
     unsigned long maxComplexSize_ = 0;
+    unsigned long numberOfInsertions_ = 0;
+    unsigned long numberOfRemovals_ = 0;
 
 public:
-    double get_max_complex_size(){
+    unsigned long get_max_complex_size(){
 	return maxComplexSize_;
+    }
+
+    unsigned long get_number_of_insertions(){
+	return numberOfInsertions_;
+    }
+
+    unsigned long get_number_of_removals(){
+	return numberOfRemovals_;
     }
 #endif
 };
