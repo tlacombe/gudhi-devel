@@ -458,6 +458,9 @@ public:
     { //compute index persistence, interval are closed, i.e., [b,d) is stored as [b,d-1]
 	// std::vector< std::pair< Simplex_key, Filtration_value > > filtration_values;
 	Filtration_value prev_fil_, curr_fil_;
+#ifdef COMPLEX_TIME
+	unsigned long currentSize = 0;
+#endif
 
 	assert(num_arrow_ == 0);
 	auto zzrg = cpx_->filtration_simplex_range();
@@ -476,8 +479,20 @@ public:
 	    // faces_per_dim[cpx_->dimension(*zzit)] += 1;
 	    // // if(num_arrow_ % 100000 == 0) std::cout << num_arrow_ << "\n";
 
-	    if(zzit.arrow_direction()) { num_arrow_ = cpx_->key(*zzit); }
-	    else { ++num_arrow_; }//can't be the first arrow
+	    if(zzit.arrow_direction()) {
+		num_arrow_ = cpx_->key(*zzit);
+#ifdef COMPLEX_TIME
+		++currentSize;
+		if (maxComplexSize_ < currentSize) maxComplexSize_ = currentSize;
+		//if (cpx_->dimension(*zzit) == 0) std::cout << cpx_->dimension(*zzit) << " -\n";
+#endif
+	    } else {
+		++num_arrow_;
+#ifdef COMPLEX_TIME
+		--currentSize;
+		//std::cout << currentSize << " -\n";
+#endif
+	    }//can't be the first arrow
 
 	    curr_fil_ = zzit.filtration();//cpx_->filtration(*zzit);
 	    if(curr_fil_ != prev_fil_) //check whether the filt val has changed
@@ -501,7 +516,13 @@ public:
 	    else
 	    {//backward arrow
 		if(!cpx_->critical(*zzit)) //matrix A becomes matrix A U \{\tau,sigma\}
-		{ make_pair_critical(*zzit); }
+		{
+		    make_pair_critical(*zzit);
+#ifdef COMPLEX_TIME
+		    currentSize += 2;
+		    if (maxComplexSize_ < currentSize) maxComplexSize_ = currentSize;
+#endif
+		}
 		backward_arrow(*zzit);
 	    }
 	    ++zzit;
@@ -1549,7 +1570,14 @@ private:
     // meaning that all inserted simplices with key in [i;j-1] have filtration value f
     std::vector< std::pair< Simplex_key, Filtration_value > > filtration_values_;
 
+#ifdef COMPLEX_TIME
+    unsigned long maxComplexSize_ = 0;
 
+public:
+    double get_max_complex_size(){
+	return maxComplexSize_;
+    }
+#endif
 };
 
 } //namespace zigzag_persistence
