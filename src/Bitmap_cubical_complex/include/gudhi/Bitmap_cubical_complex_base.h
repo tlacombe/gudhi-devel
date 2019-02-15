@@ -24,6 +24,7 @@
 #define BITMAP_CUBICAL_COMPLEX_BASE_H_
 
 #include <gudhi/Bitmap_cubical_complex/counter.h>
+#include <gudhi/Bitmap_cubical_complex/read_perseus_file.h>
 
 #include <iostream>
 #include <vector>
@@ -514,10 +515,8 @@ class Bitmap_cubical_complex_base {
     std::reverse(counter.begin(), counter.end());
     return counter;
   }
-  void read_perseus_style_file(const char* perseus_style_file);
   void setup_bitmap_based_on_top_dimensional_cells_list(const std::vector<unsigned>& sizes_in_following_directions,
                                                         const std::vector<T>& top_dimensional_cells);
-  Bitmap_cubical_complex_base(const char* perseus_style_file, std::vector<bool> directions);
   Bitmap_cubical_complex_base(const std::vector<unsigned>& sizes, std::vector<bool> directions);
   Bitmap_cubical_complex_base(const std::vector<unsigned>& dimensions, const std::vector<T>& top_dimensional_cells,
                               std::vector<bool> directions);
@@ -621,78 +620,6 @@ Bitmap_cubical_complex_base<T>::Bitmap_cubical_complex_base(const std::vector<un
 }
 
 template <typename T>
-void Bitmap_cubical_complex_base<T>::read_perseus_style_file(const char* perseus_style_file) {
-  bool dbg = false;
-  std::ifstream inFiltration;
-  inFiltration.open(perseus_style_file);
-  unsigned dimensionOfData;
-  inFiltration >> dimensionOfData;
-
-  if (dbg) {
-    std::cerr << "dimensionOfData : " << dimensionOfData << std::endl;
-  }
-
-  std::vector<unsigned> sizes;
-  sizes.reserve(dimensionOfData);
-  // all dimensions multiplied
-  std::size_t dimensions = 1;
-  for (std::size_t i = 0; i != dimensionOfData; ++i) {
-    unsigned size_in_this_dimension;
-    inFiltration >> size_in_this_dimension;
-    sizes.push_back(size_in_this_dimension);
-    dimensions *= size_in_this_dimension;
-    if (dbg) {
-      std::cerr << "size_in_this_dimension : " << size_in_this_dimension << std::endl;
-    }
-  }
-  this->set_up_containers(sizes);
-
-  Bitmap_cubical_complex_base<T>::Top_dimensional_cells_iterator it(*this);
-  it = this->top_dimensional_cells_iterator_begin();
-
-  T filtrationLevel = 0.;
-  std::size_t filtration_counter = 0;
-  while (!inFiltration.eof()) {
-    std::string line;
-    getline(inFiltration, line);
-    if (line.length() != 0) {
-      int n = sscanf(line.c_str(), "%lf", &filtrationLevel);
-      if (n != 1) {
-        std::string perseus_error("Bad Perseus file format. This line is incorrect : " + line);
-        throw std::ios_base::failure(perseus_error.c_str());
-      }
-
-      if (dbg) {
-        std::cerr << "Cell of an index : " << it.compute_index_in_bitmap()
-                  << " and dimension: " << this->get_dimension_of_a_cell(it.compute_index_in_bitmap())
-                  << " get the value : " << filtrationLevel << std::endl;
-      }
-      this->get_cell_data(*it) = filtrationLevel;
-      ++it;
-      ++filtration_counter;
-    }
-  }
-
-  if (filtration_counter != dimensions) {
-    std::string perseus_error("Bad Perseus file format. Read " + std::to_string(filtration_counter) + " expected " + \
-      std::to_string(dimensions) + " values");
-    throw std::ios_base::failure(perseus_error.c_str());
-  }
-
-  inFiltration.close();
-  this->impose_lower_star_filtration();
-}
-
-template <typename T>
-Bitmap_cubical_complex_base<T>::Bitmap_cubical_complex_base(const char* perseus_style_file,
-                                                            std::vector<bool> directions) {
-  // this constructor is here just for compatibility with a class that creates cubical complexes with periodic boundary
-  // conditions.
-  // It ignores the last parameter of the function.
-  this->read_perseus_style_file(perseus_style_file);
-}
-
-template <typename T>
 Bitmap_cubical_complex_base<T>::Bitmap_cubical_complex_base(const std::vector<unsigned>& sizes,
                                                             std::vector<bool> directions) {
   // this constructor is here just for compatibility with a class that creates cubical complexes with periodic boundary
@@ -713,7 +640,12 @@ Bitmap_cubical_complex_base<T>::Bitmap_cubical_complex_base(const std::vector<un
 
 template <typename T>
 Bitmap_cubical_complex_base<T>::Bitmap_cubical_complex_base(const char* perseus_style_file) {
-  this->read_perseus_style_file(perseus_style_file);
+  std::vector<unsigned> dimensions;
+  std::vector<T> top_dimensional_cells;
+  std::vector<bool> directions;
+
+  read_perseus_style_file(perseus_style_file, dimensions, top_dimensional_cells, directions);
+  this->setup_bitmap_based_on_top_dimensional_cells_list(dimensions, top_dimensional_cells);
 }
 
 template <typename T>

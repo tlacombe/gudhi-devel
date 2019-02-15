@@ -218,46 +218,15 @@ Bitmap_cubical_complex_periodic_boundary_conditions_base<T>::Bitmap_cubical_comp
 template <typename T>
 Bitmap_cubical_complex_periodic_boundary_conditions_base<T>::Bitmap_cubical_complex_periodic_boundary_conditions_base(
     const char* perseus_style_file) {
-  // for Perseus style files:
-  bool dbg = false;
 
-  std::ifstream inFiltration;
-  inFiltration.open(perseus_style_file);
-  unsigned dimensionOfData;
-  inFiltration >> dimensionOfData;
+  std::vector<unsigned> dimensions;
+  std::vector<T> top_dimensional_cells;
+  std::vector<bool> directions_in_which_periodic_b_cond_are_to_be_imposed;
 
-  this->directions_in_which_periodic_b_cond_are_to_be_imposed = std::vector<bool>(dimensionOfData, false);
+  read_perseus_style_file(perseus_style_file, dimensions, top_dimensional_cells, directions_in_which_periodic_b_cond_are_to_be_imposed);
+  this->construct_complex_based_on_top_dimensional_cells(dimensions, top_dimensional_cells,
+                                                         directions_in_which_periodic_b_cond_are_to_be_imposed);
 
-  std::vector<unsigned> sizes;
-  sizes.reserve(dimensionOfData);
-  for (std::size_t i = 0; i != dimensionOfData; ++i) {
-    int size_in_this_dimension;
-    inFiltration >> size_in_this_dimension;
-    if (size_in_this_dimension < 0) {
-      this->directions_in_which_periodic_b_cond_are_to_be_imposed[i] = true;
-    }
-    sizes.push_back(abs(size_in_this_dimension));
-  }
-  this->set_up_containers(sizes);
-
-  typename Bitmap_cubical_complex_periodic_boundary_conditions_base<T>::Top_dimensional_cells_iterator it(*this);
-  it = this->top_dimensional_cells_iterator_begin();
-
-  while (!inFiltration.eof()) {
-    double filtrationLevel;
-    inFiltration >> filtrationLevel;
-    if (inFiltration.eof()) break;
-
-    if (dbg) {
-      std::cerr << "Cell of an index : " << it.compute_index_in_bitmap()
-                << " and dimension: " << this->get_dimension_of_a_cell(it.compute_index_in_bitmap())
-                << " get the value : " << filtrationLevel << std::endl;
-    }
-    this->get_cell_data(*it) = filtrationLevel;
-    ++it;
-  }
-  inFiltration.close();
-  this->impose_lower_star_filtration();
 }
 
 template <typename T>
