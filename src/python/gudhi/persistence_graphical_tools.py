@@ -291,7 +291,13 @@ def plot_persistence_diagram(
         # infinity line and text
         axes.plot([axis_start, axis_end], [axis_start, axis_end], linewidth=1.0, color="k")
         axes.plot([axis_start, axis_end], [infinity, infinity], linewidth=1.0, color="k", alpha=alpha)
-        axes.text(axis_start, infinity, r"$\infty$", color="k", alpha=alpha, fontsize=fontsize)
+        # Infinity label
+        yt = axes.get_yticks()
+        yt = np.append(yt, infinity)
+        ytl = yt.tolist()
+        ytl[-1] = r'$+\infty$'
+        axes.set_yticks(yt)
+        axes.set_yticklabels(ytl)
         # bootstrap band
         if band > 0.0:
             axes.fill_between(x, x, x + band, alpha=alpha, facecolor="red")
