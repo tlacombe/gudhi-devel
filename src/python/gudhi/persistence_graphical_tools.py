@@ -283,20 +283,21 @@ def plot_persistence_diagram(
         # Replace infinity values with max_death + delta for diagram to be more
         # readable
         infinity = max_death + delta
+        axis_end = max_death + delta / 2
         axis_start = min_birth - delta
 
         # line display of equation : birth = death
         x = np.linspace(axis_start, infinity, 1000)
         # infinity line and text
-        axes.plot(x, x, color="k", linewidth=1.0)
-        axes.plot(x, [infinity] * len(x), linewidth=1.0, color="k", alpha=alpha)
-        axes.text(axis_start, infinity, r"$\infty$", color="k", alpha=alpha)
+        axes.plot([axis_start, axis_end], [axis_start, axis_end], linewidth=1.0, color="k")
+        axes.plot([axis_start, axis_end], [infinity, infinity], linewidth=1.0, color="k", alpha=alpha)
+        axes.text(axis_start, infinity, r"$\infty$", color="k", alpha=alpha, fontsize=fontsize)
         # bootstrap band
         if band > 0.0:
             axes.fill_between(x, x, x + band, alpha=alpha, facecolor="red")
         # lower diag patch
         if greyblock:
-            axes.add_patch(mpatches.Polygon([[axis_start, axis_start], [infinity, axis_start], [infinity, infinity]], fill=True, color='lightgrey'))
+            axes.add_patch(mpatches.Polygon([[axis_start, axis_start], [axis_end, axis_start], [axis_end, axis_end]], fill=True, color='lightgrey'))
         # Draw points in loop
         for interval in reversed(persistence):
             if float(interval[1][1]) != float("inf"):
@@ -325,7 +326,7 @@ def plot_persistence_diagram(
         axes.set_xlabel("Birth", fontsize=fontsize)
         axes.set_ylabel("Death", fontsize=fontsize)
         # Ends plot on infinity value and starts a little bit before min_birth
-        axes.axis([axis_start, infinity, axis_start, infinity + delta])
+        axes.axis([axis_start, axis_end, axis_start, infinity + delta])
         axes.set_title(title, fontsize=fontsize)  # a different fontsize for the title?
         if aspect_equal:
             axes.set_aspect("equal")
