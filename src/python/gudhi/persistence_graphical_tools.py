@@ -56,7 +56,6 @@ def plot_persistence_barcode(
     colormap=None,
     axes=None,
     fontsize=16,
-    title="Persistence barcode"
 ):
     """This function plots the persistence bar code from persistence values list
     or from a :doc:`persistence file <fileformats>`.
@@ -87,8 +86,6 @@ def plot_persistence_barcode(
     :type axes: `matplotlib.axes.Axes`
     :param fontsize: Fontsize to use in axis.
     :type fontsize: int
-    :param title: title for the plot.
-    :type title: string
     :returns: (`matplotlib.axes.Axes`): The axes on which the plot was drawn.
     """
     try:
@@ -174,7 +171,7 @@ def plot_persistence_barcode(
                 loc="lower right",
             )
 
-        axes.set_title(title)
+        axes.set_title("Persistence barcode", fontsize=fontsize)
 
         # Ends plot on infinity value and starts a little bit before min_birth
         axes.axis([axis_start, infinity, 0, ind])
@@ -195,9 +192,7 @@ def plot_persistence_diagram(
     legend=False,
     colormap=None,
     axes=None,
-    aspect_equal=False,
     fontsize=16,
-    title="Persistence diagram",
     greyblock=True
 ):
     """This function plots the persistence diagram from persistence values
@@ -229,12 +224,8 @@ def plot_persistence_diagram(
     :param axes: A matplotlib-like subplot axes. If None, the plot is drawn on
         a new set of axes.
     :type axes: `matplotlib.axes.Axes`
-    :param aspect_equal: if True, force plot to be square shaped.
-    :type aspect_equal: boolean
     :param fontsize: Fontsize to use in axis.
     :type fontsize: int
-    :param title: title for the plot.
-    :type title: string
     :param greyblock: if we want to plot a grey patch on the lower half plane for nicer rendering. Default True.
     :type greyblock: boolean
     :returns: (`matplotlib.axes.Axes`): The axes on which the plot was drawn.
@@ -286,20 +277,20 @@ def plot_persistence_diagram(
         axis_end = max_death + delta / 2
         axis_start = min_birth - delta
 
-        # line display of equation : birth = death
-        x = np.linspace(axis_start, infinity, 1000)
         # infinity line and text
         axes.plot([axis_start, axis_end], [axis_start, axis_end], linewidth=1.0, color="k")
         axes.plot([axis_start, axis_end], [infinity, infinity], linewidth=1.0, color="k", alpha=alpha)
         # Infinity label
         yt = axes.get_yticks()
+        yt = yt[np.where(yt < axis_end)] # to avoid ploting ticklabel higher than infinity
         yt = np.append(yt, infinity)
-        ytl = ["%.3f" % e for e in yt]
+        ytl = ["%.3f" % e for e in yt]  # to avoid float precision error
         ytl[-1] = r'$+\infty$'
         axes.set_yticks(yt)
         axes.set_yticklabels(ytl)
         # bootstrap band
         if band > 0.0:
+            x = np.linspace(axis_start, infinity, 1000)
             axes.fill_between(x, x, x + band, alpha=alpha, facecolor="red")
         # lower diag patch
         if greyblock:
@@ -331,11 +322,9 @@ def plot_persistence_diagram(
 
         axes.set_xlabel("Birth", fontsize=fontsize)
         axes.set_ylabel("Death", fontsize=fontsize)
+        axes.set_title("Persistence diagram", fontsize=fontsize)
         # Ends plot on infinity value and starts a little bit before min_birth
-        axes.axis([axis_start, axis_end, axis_start, infinity + delta])
-        axes.set_title(title, fontsize=fontsize)  # a different fontsize for the title?
-        if aspect_equal:
-            axes.set_aspect("equal")
+        axes.axis([axis_start, axis_end, axis_start, infinity + delta/2])
         return axes
 
     except ImportError:
@@ -352,9 +341,7 @@ def plot_persistence_density(
     cmap=None,
     legend=False,
     axes=None,
-    aspect_equal=False,
     fontsize=16,
-    title="Persistence density",
     greyblock=True
 ):
     """This function plots the persistence density from persistence
@@ -397,12 +384,8 @@ def plot_persistence_density(
     :param axes: A matplotlib-like subplot axes. If None, the plot is drawn on
         a new set of axes.
     :type axes: `matplotlib.axes.Axes`
-    :param aspect_equal: if True, force plot to be square shaped.
-    :type aspect_equal: boolean
     :param fontsize: Fontsize to use in axis.
     :type fontsize: int
-    :param title: title for the plot.
-    :type title: string
     :param greyblock: if we want to plot a grey patch on the lower half plane 
                          for nicer rendering. Default True.
     :type greyblock: boolean
@@ -482,9 +465,7 @@ def plot_persistence_density(
 
         axes.set_xlabel("Birth", fontsize=fontsize)
         axes.set_ylabel("Death", fontsize=fontsize)
-        axes.set_title(title, fontsize=fontsize)
-        if aspect_equal:
-            axes.set_aspect("equal")
+        axes.set_title("Persistence density", fontsize=fontsize)
 
         return axes
 
