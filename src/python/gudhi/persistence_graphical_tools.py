@@ -294,7 +294,7 @@ def plot_persistence_diagram(
         # Infinity label
         yt = axes.get_yticks()
         yt = np.append(yt, infinity)
-        ytl = yt.tolist()
+        ytl = ["%.3f" % e for e in yt]
         ytl[-1] = r'$+\infty$'
         axes.set_yticks(yt)
         axes.set_yticklabels(ytl)
